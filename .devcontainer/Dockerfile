@@ -49,14 +49,24 @@ RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master
     echo "DISABLE_UPDATE_PROMPT=true" >> /root/.zshrc && \
     LC_ALL=C sed -i 's/[^[:print:]\t]//g' /root/.zshrc
 
-# 9. (Facoltativo) ModSecurity rimosso per velocità
-# Se vuoi tenerlo, te lo metto come blocco opzionale a parte
+# 9. Installa GitHub Copilot CLI + alias zsh
+RUN npm install -g @githubnext/github-copilot-cli && \
+    echo '\n# GitHub Copilot CLI alias' >> /root/.zshrc && \
+    echo 'eval "$(github-copilot-cli alias -- "$0")"' >> /root/.zshrc
 
-# 10. Working directory
+# 10. Alias Zsh personalizzati
+RUN echo '\n# Alias personalizzati' >> /root/.zshrc && \
+    echo "alias ..='cd ..'" >> /root/.zshrc && \
+    echo "alias push='git add . && git commit -m "fastpush" && git push'" >> /root/.zshrc && \
+    echo "alias CLEAR='clear'" >> /root/.zshrc && \
+    echo "alias clera='clear'" >> /root/.zshrc
+
+# 11. Working directory
 WORKDIR /app
 
-# 11. Shell di default
+# 12. Shell di default
 CMD ["zsh"]
 
 # per runnare nella finestra giusta premere F1 e poi compia-incollare "Remote-Containers: Reopen in Container".
 # cosi' ti apre la finestra in remoto con tutte le installazioni
+# se si modifica il docker lanciare "Remote-Containers: Rebuild Container"
