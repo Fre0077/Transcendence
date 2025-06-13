@@ -26,19 +26,26 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
 # 4. Aggiorna npm
 RUN npm install -g npm@latest
 
+
 # 5. Frontend essentials
-RUN npm install -g \
+WORKDIR /Trash/frontend
+RUN npm init -y
+RUN npm install \
     vite eslint prettier typescript \
-    create-react-app serve next react react-dom \
     tailwindcss postcss autoprefixer
 
 # 6. Backend essentials
-RUN npm install -g \
+WORKDIR /Trash/backend
+RUN npm init -y
+RUN npm install \
     fastify express nodemon dotenv \
-    prisma pg sqlite3 sequelize \
-    socket.io jsonwebtoken bcryptjs zod
+    prisma pg sqlite3 sqlite sequelize \
+    socket.io jsonwebtoken bcryptjs zod \
+    @sequelize/cli sequelize-typescript ts-node
+
 
 # 7. Python minimal AI/ML stack
+WORKDIR /Trash
 RUN python3 -m pip install --upgrade pip setuptools wheel && \
     python3 -m pip install \
     numpy scipy scikit-learn flask flask-cors
@@ -62,11 +69,17 @@ RUN echo '\n# Alias personalizzati' >> /root/.zshrc && \
     echo "alias clera='clear'" >> /root/.zshrc
 
 # 11. Working directory
-WORKDIR /app
+WORKDIR /Trash
 
 # 12. Shell di default
 CMD ["zsh"]
 
-# per runnare nella finestra giusta premere F1 e poi compia-incollare "Remote-Containers: Reopen in Container".
+# per runnare nella finestra giusta premere F1 e poi compia-incollare:
+# "Remote-Containers: Reopen in Container".
 # cosi' ti apre la finestra in remoto con tutte le installazioni
-# se si modifica il docker lanciare "Remote-Containers: Rebuild Container"
+# se si modifica il docker lanciare:
+# "Remote-Containers: Rebuild Container"
+
+# docker system prune -a --volumes -f
+
+# aggiunte da fare

@@ -1,24 +1,25 @@
 {
   "name": "y",
   "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
   "main": "index.js",
   "scripts": {
-	"dev": "tsc -w",
-	"host": "vite"
+    "dev": "tsc -w",
+    "host": "vite"
   },
-  "author": "",
-  "license": "ISC",
-  "description": "",
   "dependencies": {
-	"@tailwindcss/postcss": "^4.1.8",
-	"postcss": "^8.5.4",
-	"tailwindcss": "^4.1.8",
-	"vite": "^6.3.5"
+    "@tailwindcss/postcss": "^4.1.8",
+    "postcss": "^8.5.4",
+    "tailwindcss": "^4.1.8",
+    "vite": "^6.3.5"
   },
   "devDependencies": {
-	"autoprefixer": "^10.4.21",
-	"postcss": "^8.5.4",
-	"tailwindcss": "^4.1.8",
-	"typescript": "^5.0.0"
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.4",
+    "tailwindcss": "^4.1.8",
+    "typescript": "^5.0.0"
   }
 }

@@ -15,10 +15,10 @@
   "mounts": [
     {
       "source": "${localWorkspaceFolder}",
-      "target": "/app",
+      "target": "/Trash",
       "type": "bind"
     }
   ],
-  "workspaceFolder": "/app",
+  "workspaceFolder": "/Trash",
   "remoteUser": "root"
 }
