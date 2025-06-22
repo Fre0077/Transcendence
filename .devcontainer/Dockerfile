@@ -42,6 +42,7 @@ RUN npm install \
     prisma pg sqlite3 sqlite sequelize \
     socket.io jsonwebtoken bcryptjs zod \
     @sequelize/cli sequelize-typescript ts-node
+RUN npm install -g prisma
 
 
 # 7. Python minimal AI/ML stack
