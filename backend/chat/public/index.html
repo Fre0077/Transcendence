@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+	<meta charset="UTF-8">
+	<title>Chat Fastify</title>
+</head>
+<body>
+	<input id="msgInput" type="text" placeholder="Scrivi un messaggio..." />
+	<pre id="output"></pre>
+</body>
+<script>
+	document.getElementById('msgInput').addEventListener('keydown', async function(e) {
+		if (e.key === 'Enter') {
+			const msgInput = document.getElementById('msgInput')
+			const msg = msgInput.value
+			const res = await fetch('/chat', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ message: msg })
+			})
+			const data = await res.json()
+			document.getElementById('output').textContent = data.reply || data.error
+			msgInput.value = ''
+		}
+	})
+</script>
+</html>
