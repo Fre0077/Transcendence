@@ -7,6 +7,8 @@ import {
 import { createLoginPage } from "../login/login";
 import { sendPostRequest } from "../generals/generalUse";
 
+
+//TODO: qui lo username deve essere cambiato con il surname, lo username viene settato di base = a name
 async function handleSignUp(event?: Event): Promise<void> {
     if (event) {
         event.preventDefault();
@@ -45,26 +47,25 @@ async function handleSignUp(event?: Event): Promise<void> {
     setSignUpButtonState(true, "Creating account...");
 
     try {
-        const response = await sendPostRequest(
-            'http://localhost:3000/api/auth/register',
-            { username, password, email, name: name || username },
-            'application/json'
-        );
+        // Crea la stringa unica separata da \n
+        const bodyString = `${name}\n${name}\n${username}\n${email}\n${password}`;
 
-        if (response.success && response.user) {
-            console.log('Registration successful:', response.user);
+        const response = await fetch('http://localhost:3000/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            body: bodyString
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
             showMessage("Account created successfully! Redirecting to login...", "success");
-            
-            // Redirect to login page after a short delay
             setTimeout(() => {
                 createLoginPage();
             }, 2000);
-
         } else {
-            console.error('Registration failed:', response);
-            showMessage(response.error || 'Registration failed', "error");
+            showMessage(result.error || 'Registration failed', "error");
         }
-
     } catch (error: any) {
         console.error('Registration error:', error);
         showMessage(error.message || 'Registration failed. Please try again.', "error");

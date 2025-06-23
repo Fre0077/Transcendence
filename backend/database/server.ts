@@ -1,12 +1,33 @@
 import Fastify from 'fastify'
 import { createChat, deletemessages, handleMessage } from './chat'
 import { createUser, loginUser } from './user'
+import cors from '@fastify/cors';
 
 import { PrismaClient as userPrismaClient } from "./prisma/generate/user"
 const userPrisma = new userPrismaClient()
 import { PrismaClient as chatPrismaClient } from "./prisma/generate/chat"
 const chatPrisma = new chatPrismaClient()
 const fastify = Fastify()
+
+fastify.register(cors, {
+  origin: (origin, cb) => {
+    const allowedOrigins = [
+      'http://localhost:4269', // frontend
+      'http://localhost:3000'  // eventualmente anche il backend stesso
+    ];
+
+    if (!origin || allowedOrigins.includes(origin)) {
+      cb(null, true); // ok
+    } else {
+      cb(new Error("Not allowed by CORS"), false);
+    }
+  },
+  credentials: true // se usi cookie o autenticazione
+});
+
+fastify.addContentTypeParser('text/plain', { parseAs: 'string' }, function (req, body, done) {
+  done(null, body);
+});
 
 // Endpoint POST per creare nuova chat
 fastify.post('/chat', async (request, reply) => {
@@ -48,7 +69,7 @@ fastify.post('/chat-delete', async (request, reply) => {
 
 // Endpoint POST per registrarsi
 fastify.post('/register', async (request, reply) => {
-    const { userData } = request.body as { userData?: string}
+    const userData = request.body as string
     if (!userData) return reply.status(400).send({ error: 'Missing user data' })
     try {
         await createUser(userData)

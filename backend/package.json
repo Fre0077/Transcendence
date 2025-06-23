@@ -9,11 +9,11 @@
   "scripts": {
     "start": "clear && npx ts-node ./database/server.ts",
     "migrate": "npx prisma migrate dev --name init --schema=./database/prisma/chat.prisma && npx prisma migrate dev --name init --schema=./database/prisma/user.prisma",
-    "generate-chat": "npx prisma generate --schema=./database/prisma/chat.prisma --watch",
-    "generate-user": "npx prisma generate --schema=./database/prisma/user.prisma --watch",
+    "generate": "npx prisma generate --schema=./database/prisma/chat.prisma && npx prisma generate --schema=./database/prisma/user.prisma",
     "push": "npx prisma db push"
   },
   "dependencies": {
+    "@fastify/cors": "^11.0.1",
     "@prisma/client": "^6.10.1",
     "fastify": "^5.4.0"
   },

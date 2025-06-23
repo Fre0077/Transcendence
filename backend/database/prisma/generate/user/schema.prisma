@@ -14,7 +14,7 @@ datasource dbuser {
   url      = "file:./user.db"
 }
 
-model accoutn {
+model account {
   id       Int    @id @default(autoincrement())
   name     String
   surname  String
