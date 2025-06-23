@@ -16,6 +16,7 @@ datasource db {
 model messages {
   id      Int @id @default(autoincrement())
   chat    Int
+  user    String
   message String
   date    DateTime @default(now())
 }
@@ -23,6 +24,7 @@ model messages {
 model chats {
   id      Int @id @default(autoincrement())
   name    String
+  host    String
   members String
 }
 

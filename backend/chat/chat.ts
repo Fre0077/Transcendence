@@ -31,15 +31,6 @@ export async function handleMessage(input: string): Promise<string> {
 			output += '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n'
 			return output
 		}
-	} else if (input.toLowerCase() === 'delete') {
-		return await new Promise((resolve) => {
-			rl.question('Witch chat: ', async (chatIdInput) => {
-				const chatId = parseInt(chatIdInput.trim())
-				const risultato = await prisma.messages.deleteMany({ where: { chat: chatId } })
-				let output = `🗑️ Eliminati ${risultato.count} messaggi dalla chat ${chatId}\n`
-				resolve(output)
-			})
-		})
 	} else if (input.toLowerCase() === 'search') {
 		return await new Promise((resolve) => {
 			rl.question('what search: : ', async (search) => {
@@ -65,9 +56,13 @@ export async function handleMessage(input: string): Promise<string> {
 		})
 	} else if (input !== '') {
 		await prisma.messages.create({
-			data: {chat: 1,message: input,date: new Date()}
+			data: {chat: 1, user: 'marcolino', message: input, date: new Date()}
 		})
 		return 'Messaggio salvato.'
 	}
 	return ''
+}
+
+export async function deleteChat(input: number) {
+	await prisma.messages.deleteMany({ where: { chat: input } })
 }
