@@ -1,0 +1,46 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator chat {
+  provider = "prisma-client-js"
+  output = "./generate/chat"
+}
+
+datasource dbchat {
+  provider = "sqlite"
+  url      = "file:./chat.db"
+}
+
+model messages {
+  id      Int @id @default(autoincrement())
+  chat    chats @relation( fields: [id], references: [chatId], onDelete: Cascade)
+  user    user @relation( fields: [id], references: [userId], onDelete: Cascade)
+  message String
+  date    DateTime @default(now())
+}
+
+model chats {
+  chatId    Int @id @default(autoincrement())
+  name      String
+  host      user @relation("host", fields: [chatId], references: [userId], onDelete: Cascade)
+  users     user[] @relation("members")
+  messages  messages[]
+}
+
+model user {
+  userId    Int @id @default(autoincrement())
+  linkId    Int @unique
+  name      String
+  messages  messages[]
+  chatHost  chats[] @relation("host")
+  members   chats[] @relation("members")
+}
+
+// with ? the fild become optional, and with [] there are multiple of that
+//-SOME TYYPE OF VARIABEL
+// Int, Float, Boolean, BigInt, Float, Decimal(come float number), DataTime, Bytes(big file)
+// you che make relascionschip by using the name of table:
+// aggiungi il nome come attributo e post nella tabella che vuoi importare

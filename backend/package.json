@@ -7,23 +7,18 @@
   "type": "commonjs",
   "main": "index.js",
   "scripts": {
-    "start": "npx ts-node /Trash/backend/server.ts",
-    "migrate-chat": "npx prisma migrate dev --name init --schema=./chat/prisma/schema.prisma",
-    "generate-chat": "npx prisma generate --schema=./chat/prisma/schema.prisma",
+    "start": "clear && npx ts-node ./database/server.ts",
+    "migrate": "npx prisma migrate dev --name init --schema=./database/prisma/chat.prisma && npx prisma migrate dev --name init --schema=./database/prisma/user.prisma",
+    "generate-chat": "npx prisma generate --schema=./database/prisma/chat.prisma --watch",
+    "generate-user": "npx prisma generate --schema=./database/prisma/user.prisma --watch",
     "push": "npx prisma db push"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.10.1",
+    "fastify": "^5.4.0"
   },
   "devDependencies": {
     "@types/node": "^24.0.3",
-    "@types/readline-sync": "^1.4.8",
-    "nodemon": "^3.1.10",
-    "prisma": "^6.10.1",
-    "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
-  },
-  "dependencies": {
-    "@fastify/static": "^8.2.0",
-    "@prisma/client": "^6.10.1",
-    "fastify": "^5.4.0",
-    "readline-sync": "^1.4.10"
   }
 }

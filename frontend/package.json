@@ -7,8 +7,8 @@
   "type": "commonjs",
   "main": "index.js",
   "scripts": {
-    "dev": "tsc -w",
-    "host": "vite"
+    "start": "vite",
+    "dev": "tsc -w"
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.1.8",

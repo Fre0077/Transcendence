@@ -1,9 +1,7 @@
 import {
 	createInputElement,
 	createButtonElement,
-	createSeparator,
-	createFormElement,
-	createSelectElement
+	createFormElement
 } from './general/createElements'
 
 function searchChat(event?: Event) {
