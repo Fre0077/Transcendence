@@ -1,0 +1,353 @@
+/* Body styling consistent with login */
+body {
+    padding: 20px;
+    min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+#signUpDiv {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 420px;
+    max-width: 90vw;
+    max-height: 90vh;
+    padding: 32px 24px;
+    background-color: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+#signUpForm {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+}
+
+#signUpForm h2 {
+    margin: 0;
+    color: #2d3748;
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-align: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Input styling */
+#signUpDiv input[type="text"],
+#signUpDiv input[type="password"],
+#signUpDiv input[type="email"],
+#signUpDiv select {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 1rem;
+    background: rgba(255, 255, 255, 0.9);
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+    box-sizing: border-box;
+}
+
+#signUpDiv input[type="text"]:focus,
+#signUpDiv input[type="password"]:focus,
+#signUpDiv input[type="email"]:focus,
+#signUpDiv select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    background: rgba(255, 255, 255, 1);
+    transform: translateY(-1px);
+}
+
+/* Select dropdown styling */
+#subjectInputMenu {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 12px center;
+    background-repeat: no-repeat;
+    background-size: 16px;
+    padding-right: 40px;
+    cursor: pointer;
+}
+
+#subjectInputMenu :hover {
+    background-color: rgba(229, 231, 235, 0.8);
+    border-color: #cbd5e0;
+}
+
+/* Button styling */
+#signUpButton {
+    width: 100%;
+    padding: 14px 0;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 8px;
+}
+
+#signUpButton:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 10px rgba(16, 185, 129, 0.4);
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+}
+
+#signUpButton:active {
+    transform: translateY(0);
+}
+
+#signUpButton:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Back to login button */
+#toLoginButton {
+    width: 100%;
+    padding: 14px 0;
+    background: rgba(229, 231, 235, 0.8);
+    color: #374151;
+    border: 2px solid rgba(209, 213, 219, 0.5);
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+}
+
+#toLoginButton:hover {
+    background: rgba(243, 244, 246, 0.9);
+    border-color: rgba(156, 163, 175, 0.7);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+#toLoginButton:active {
+    transform: translateY(0);
+}
+
+/* Separator styling */
+hr {
+    width: 100%;
+    margin: 10px 0;
+    border: none;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #cbd5e0, transparent);
+    border-radius: 1px;
+}
+
+/* Password strength indicator */
+.password-strength {
+    width: 100%;
+    height: 4px;
+    background: #e2e8f0;
+    border-radius: 2px;
+    margin-top: -8px;
+    margin-bottom: 8px;
+    overflow: hidden;
+}
+
+.password-strength-bar {
+    height: 100%;
+    transition: all 0.3s ease;
+    border-radius: 2px;
+}
+
+.strength-weak { background: #ef4444; width: 25%; }
+.strength-fair { background: #f59e0b; width: 50%; }
+.strength-good { background: #10b981; width: 75%; }
+.strength-strong { background: #059669; width: 100%; }
+
+/* Form validation messages */
+.validation-message {
+    font-size: 0.875rem;
+    margin-top: -8px;
+    margin-bottom: 8px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.validation-error {
+    color: #dc2626;
+    background: rgba(254, 226, 226, 0.8);
+    border: 1px solid rgba(252, 165, 165, 0.5);
+}
+
+.validation-success {
+    color: #059669;
+    background: rgba(220, 252, 231, 0.8);
+    border: 1px solid rgba(167, 243, 208, 0.5);
+}
+
+/* Message styling */
+.signup-message {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 10px 0;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.signup-message.error-message {
+    background: rgba(254, 226, 226, 0.9);
+    color: #dc2626;
+    border: 1px solid rgba(252, 165, 165, 0.5);
+}
+
+.signup-message.success-message {
+    background: rgba(220, 252, 231, 0.9);
+    color: #059669;
+    border: 1px solid rgba(167, 243, 208, 0.5);
+}
+
+/* Loading state */
+.loading {
+    position: relative;
+    color: transparent !important;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    top: 50%;
+    left: 50%;
+    margin-left: -10px;
+    margin-top: -10px;
+    border: 2px solid transparent;
+    border-top: 2px solid currentColor;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+#signUpButton.loading {
+    position: relative;
+    color: transparent !important;
+    cursor: not-allowed;
+}
+
+#signUpButton.loading::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    top: 50%;
+    left: 50%;
+    margin-left: -10px;
+    margin-top: -10px;
+    border: 2px solid transparent;
+    border-top: 2px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Terms and conditions */
+.terms-checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin: 16px 0;
+    padding: 16px;
+    background: rgba(248, 250, 252, 0.5);
+    border-radius: 12px;
+    border: 1px solid rgba(203, 213, 224, 0.3);
+}
+
+.terms-checkbox input[type="checkbox"] {
+    width: auto !important;
+    min-width: 18px;
+    height: 18px;
+    margin: 2px 0 0 0;
+    cursor: pointer;
+}
+
+.terms-checkbox label {
+    font-size: 0.875rem;
+    color: #4b5563;
+    cursor: pointer;
+    line-height: 1.4;
+}
+
+.terms-checkbox a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.terms-checkbox a:hover {
+    text-decoration: underline;
+}
+
+/* Responsive design */
+@media (max-width: 480px) {
+    #signUpDiv {
+        width: 95vw;
+        padding: 24px 20px;
+        margin: 10px;
+    }
+    
+    body {
+        padding: 10px;
+    }
+    
+    .terms-checkbox {
+        padding: 12px;
+    }
+}
+
+/* Success message after signup */
+.signup-success {
+    text-align: center;
+    padding: 24px;
+    background: rgba(220, 252, 231, 0.9);
+    border: 2px solid rgba(167, 243, 208, 0.8);
+    border-radius: 16px;
+    margin: 16px 0;
+}
+
+.signup-success h3 {
+    color: #059669;
+    margin: 0 0 12px 0;
+    font-size: 1.25rem;
+}
+
+.signup-success p {
+    color: #047857;
+    margin: 0;
+    font-size: 0.95rem;
+}

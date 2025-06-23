@@ -7,7 +7,7 @@
   "type": "commonjs",
   "main": "index.js",
   "scripts": {
-    "start": "npx ts-node /Trash/backend/server.ts",
+    "start": "npx ts-node ./server.ts",
     "migrate-chat": "npx prisma migrate dev --name init --schema=./chat/prisma/schema.prisma",
     "generate-chat": "npx prisma generate --schema=./chat/prisma/schema.prisma",
     "push": "npx prisma db push"
