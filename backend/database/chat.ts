@@ -98,3 +98,50 @@ export async function createChat(input: string): Promise<string> {
 
 	return 'Chat created successfully'
 }
+
+export async function userChatList(input: string): Promise<string> {
+	if (!input || input.trim() === '') {
+		console.log('Input string is empty')
+		throw new Error('Input string is empty')
+	}
+
+	// input = username dell'utente
+	const username = input.trim();
+
+	// Trova l'utente tramite username
+	const user = await chatPrisma.user.findFirst({
+		where: { name: username },
+		include: { members: true }
+	})
+	if (!user) {
+		console.log(`User with username '${username}' does not exist`)
+		throw new Error(`User with username '${username}' does not exist`)
+	}
+
+	// Prendi tutte le chat dove l'utente è membro o host
+	const chats = await chatPrisma.chats.findMany({
+		where: {
+			OR: [
+				{ users: { some: { userId: user.userId } } },
+				{ host: { userId: user.userId } }
+			]
+		},
+		select: {
+			chatId: true,
+			name: true,
+			lastAccessed: true
+		},
+		orderBy: {
+			lastAccessed: 'desc'
+		}
+	})
+
+	// Mappa i risultati in array di dizionari
+	const result = chats.map(chat => ({
+		chatId: chat.chatId,
+		name: chat.name
+	}))
+
+	return JSON.stringify(result)
+}
+

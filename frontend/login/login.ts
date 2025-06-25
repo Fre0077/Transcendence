@@ -46,6 +46,10 @@ async function loginFunction(event?: Event): Promise<void> {
         });
 
         if (response.ok) {
+			const data = await response.json();
+			localStorage.setItem('userSession', JSON.stringify({
+				username: data.message
+			}))
             showMessage(
                 "Login success!",
                 "success"

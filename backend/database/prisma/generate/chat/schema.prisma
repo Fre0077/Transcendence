@@ -23,17 +23,18 @@ model messages {
 }
 
 model chats {
-  chatId   Int        @id @default(autoincrement())
-  name     String
-  host     user       @relation("host", fields: [chatId], references: [userId], onDelete: Cascade)
-  users    user[]     @relation("members")
-  messages messages[]
+  chatId       Int        @id @default(autoincrement())
+  name         String
+  host         user       @relation("host", fields: [chatId], references: [userId], onDelete: Cascade)
+  users        user[]     @relation("members")
+  messages     messages[]
+  lastAccessed DateTime?  @updatedAt
 }
 
 model user {
   userId   Int        @id @default(autoincrement())
   linkId   Int        @unique
-  name     String
+  name     String     @unique
   messages messages[]
   chatHost chats[]    @relation("host")
   members  chats[]    @relation("members")

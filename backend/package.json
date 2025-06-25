@@ -1,26 +1,26 @@
 {
-  "name": "backend",
-  "version": "1.0.0",
-  "description": "",
-  "license": "ISC",
-  "author": "",
-  "type": "commonjs",
-  "main": "index.js",
-  "scripts": {
-    "start": "clear && npx ts-node ./database/server.ts",
-    "migrate": "npx prisma migrate dev --name init --schema=./database/prisma/chat.prisma && npx prisma migrate dev --name init --schema=./database/prisma/user.prisma",
-    "generate": "npx prisma generate --schema=./database/prisma/chat.prisma && npx prisma generate --schema=./database/prisma/user.prisma",
-    "push": "npx prisma db push --schema=./database/prisma/user.prisma && npx prisma db push --schema=./database/prisma/chat.prisma",
-    "delete": "npx ts-node ./database/dataUtils/deleteUser.ts",
-    "show": "npx ts-node ./database/dataUtils/showUser.ts"
-  },
-  "dependencies": {
-    "@fastify/cors": "^11.0.1",
-    "@prisma/client": "^6.10.1",
-    "fastify": "^5.4.0"
-  },
-  "devDependencies": {
-    "@types/node": "^24.0.3",
-    "typescript": "^5.8.3"
-  }
+	"name": "backend",
+	"version": "1.0.0",
+	"description": "",
+	"license": "ISC",
+	"author": "",
+	"type": "commonjs",
+	"main": "index.js",
+	"scripts": {
+		"start": "clear && npx ts-node ./database/server.ts",
+		"migrate": "npx prisma migrate dev --name init --schema=./database/prisma/chat.prisma && npx prisma migrate dev --name init --schema=./database/prisma/user.prisma",
+		"generate": "npx prisma generate --schema=./database/prisma/chat.prisma && npx prisma generate --schema=./database/prisma/user.prisma",
+		"push": "npx prisma db push --schema=./database/prisma/user.prisma && npx prisma db push --schema=./database/prisma/chat.prisma",
+		"delete": "npx ts-node ./database/dataUtils/deleteUser.ts",
+		"show": "npx ts-node ./database/dataUtils/showUser.ts"
+	},
+	"dependencies": {
+		"@fastify/cors": "^11.0.1",
+		"@prisma/client": "^6.10.1",
+		"fastify": "^5.4.0"
+	},
+	"devDependencies": {
+		"@types/node": "^24.0.3",
+		"typescript": "^5.8.3"
+	}
 }

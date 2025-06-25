@@ -1,7 +1,9 @@
-import { user } from "./prisma/generate/chat"
+//import { user } from "./prisma/generate/chat"
 import { userLogin } from "../classes/userLogin"
 import { PrismaClient as userPrismaClient } from "./prisma/generate/user"
 const userPrisma = new userPrismaClient()
+import { PrismaClient as chatPrismaClient } from "./prisma/generate/chat"
+const chatPrisma = new chatPrismaClient()
 
 //ordine request:stesso ordine della tabella di prisma (username = name)
 export async function createUser(user: userLogin): Promise<string> {	
@@ -18,13 +20,18 @@ export async function createUser(user: userLogin): Promise<string> {
 	}
 
 	//creazione del nuovo messaggio
-	await userPrisma.account.create({
+	const newAccount = await userPrisma.account.create({
 		data: {
 			name: user.name.toString(),
 			surname: user.surname.toString(),
 			username: user.username.toString(),
 			email: user.email.toString(),
 			password: user.password.toString()}
+	})
+	await chatPrisma.user.create({
+		data: {
+			name: newAccount.username,
+			linkId: newAccount.id}
 	})
 	return 'user created'
 }
@@ -41,5 +48,5 @@ export async function loginUser(user:  userLogin): Promise<string> {
         console.log(`Wrong password`);
 		throw new Error(`Wrong password`);
     }
-	return 'login successful'
+	return account.username
 }

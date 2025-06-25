@@ -16,7 +16,29 @@ function createNewChat() {
 	// Logic to create a new chat can be added here
 }
 
-function createChatsDiv() {
+async function getChats()
+{
+	let userSession = localStorage.getItem('userSession');
+	if (!userSession)
+		return [];
+	let username = JSON.parse(userSession)['username'];
+	console.log(username);
+	const response = await fetch("http://localhost:3000/chat-list", {
+		method: "POST",
+		headers: { "Content-Type": "text/plain" },
+		body: username,
+	});
+	if (response.ok)
+	{
+		let data = JSON.parse(await response.text());
+		let chats = JSON.parse(data.chats);
+		console.log(chats);
+		return chats;
+	}
+	return [];
+}
+
+async function createChatsDiv() {
 	let chatsDiv = document.createElement("div");
 	chatsDiv.id = "chats";
 
@@ -28,14 +50,13 @@ function createChatsDiv() {
 	chatsDiv.appendChild(searchChatForm);
 
 	// TODO: implement the chat get function to fetch chats from the server
-	let chatsList: Array<{ name: string }> = [{ name: "Chat 1" }, { name: "Chat 2" }, { name: "Chat 3" }]; // Example chat data
+	let chatsList: Array<{ id: number, name: string }> = await getChats();
 	chatsList.forEach((chat) => {
 		let chatDiv = document.createElement("div");
 		chatDiv.className = "chat-item";
 		chatDiv.innerText = chat.name; // Assuming chat has a 'name' property
-		chatDiv.addEventListener("click", () => {
-			console.log(`Chat ${chat.name} clicked`);
-			// Logic to load the chat can be added here
+		chatDiv.addEventListener("click", async () => {
+			console.log("cazzi duri");
 		});
 
 		chatsDiv.appendChild(chatDiv);
@@ -73,13 +94,13 @@ function createCurrentChatDiv() {
 	return currentChatDiv;
 }
 
-export function createChatPage() {
+export async function createChatPage() {
 	let contentDiv = document.getElementById("content");
 	if (!contentDiv) {
 		console.error("Content div not found");
 		return;
 	}
-	let chatsDiv = createChatsDiv();
+	let chatsDiv = await createChatsDiv();
 
 	let currentChatDiv = createCurrentChatDiv();
 
