@@ -66,8 +66,15 @@ RUN npm install -g @githubnext/github-copilot-cli && \
 RUN echo '\n# Alias personalizzati' >> /root/.zshrc && \
     echo "alias ..='cd ..'" >> /root/.zshrc && \
     echo "alias push='git add . && git commit -m "fastpush" && git push'" >> /root/.zshrc && \
+    echo "alias pushback='git add backend/ && git commit -m "fastpush" && git push'" >> /root/.zshrc && \
+    echo "alias pushfront='git add frontend/ && git commit -m "fastpush" && git push'" >> /root/.zshrc && \
+    echo "alias backend='git checkout backend'" >> /root/.zshrc && \
+    echo "alias frontend='git checkout frontend'" >> /root/.zshrc && \
+    echo "alias main='git checkout main'" >> /root/.zshrc && \
     echo "alias CLEAR='clear'" >> /root/.zshrc && \
-    echo "alias clera='clear'" >> /root/.zshrc
+    echo "alias clera='clear'" >> /root/.zshrc && \
+    echo "alias clea='clear'" >> /root/.zshrc && \
+    echo "alias c='clear'" >> /root/.zshrc
 
 # 11. Working directory
 WORKDIR /Trash
