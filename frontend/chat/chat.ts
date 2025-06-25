@@ -83,10 +83,13 @@ export function createChatPage() {
 
 	let currentChatDiv = createCurrentChatDiv();
 
+	let cssLink = document.getElementById("content-css") as HTMLLinkElement;
+	cssLink.href = "./chat/chat.css";
+	contentDiv.innerHTML = "";
 	contentDiv.appendChild(chatsDiv);
 	contentDiv.appendChild(currentChatDiv);
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-	createChatPage();
-});
+//document.addEventListener("DOMContentLoaded", () => {
+//	createChatPage();
+//});

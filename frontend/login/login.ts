@@ -6,24 +6,30 @@ import {
     createSeparator,
 } from "../generals/createElements";
 import { googleLoginFunction } from "./googleLogin";
-import { sendPostRequest } from "../generals/generalUse";
+//import { sendPostRequest } from "../generals/generalUse";
 import { createChatPage } from "../chat/chat";
+import { userLogin } from "../classes/userLogin";
 
 async function loginFunction(event?: Event): Promise<void> {
     if (event) {
         event.preventDefault();
     }
 
-    const usernameInput = document.getElementById("usernameInput") as HTMLInputElement;
+    const emailInput = document.getElementById("emailInput") as HTMLInputElement;
     const passwordInput = document.getElementById("passwordInput") as HTMLInputElement;
-    const loginButton = document.getElementById("loginButton") as HTMLButtonElement;
+    //const loginButton = document.getElementById("loginButton") as HTMLButtonElement;
 
-    const username = usernameInput.value.trim();
-    const password = passwordInput.value.trim();
+    const user: userLogin = {
+            name: '',
+            surname: '',
+            username: '',
+            password: passwordInput.value.trim(),
+            email: emailInput.value.trim(),
+        };
 
     // Validate input
-    if (!username || !password) {
-        showMessage("Please enter both username and password", "error");
+    if (!user.email || !user.password) {
+        showMessage("Please enter both email and password", "error");
         return;
     }
 
@@ -31,40 +37,52 @@ async function loginFunction(event?: Event): Promise<void> {
     setLoginButtonState(true, "Logging in...");
 
     try {
-        console.log('Attempting login for:', username);
+        console.log('Attempting login for:', user.email);
         
-        const response = await sendPostRequest(
-            'http://localhost:3000/api/auth/login',
-            { username, password },
-            'application/json'
-        );
+        const response = await fetch("http://localhost:3000/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(user),
+        });
 
-        if (response.success && response.user) {
-            console.log('Login successful:', response.user);
-            
-            // Store user session data
-            localStorage.setItem('userSession', JSON.stringify({
-                id: response.user.id,
-                username: response.user.username,
-                email: response.user.email,
-                name: response.user.name,
-                picture: response.user.picture,
-                role: response.user.role,
-                loginType: 'local',
-                loginTime: new Date().toISOString()
-            }));
-
-            showMessage("Login successful! Redirecting...", "success");
-            
-            // Redirect to chat page after a short delay
+        if (response.ok) {
+            showMessage(
+                "Login success!",
+                "success"
+            );
             setTimeout(() => {
                 createChatPage();
             }, 1000);
-
         } else {
-            console.error('Login failed:', response);
-            showMessage(response.error || 'Login failed', "error");
+            showMessage("Login failed", "error");
         }
+
+        //if (response.success && response.user) {
+        //    console.log('Login successful:', response.user);
+            
+        //    // Store user session data
+        //    localStorage.setItem('userSession', JSON.stringify({
+        //        id: response.user.id,
+        //        username: response.user.username,
+        //        email: response.user.email,
+        //        name: response.user.name,
+        //        picture: response.user.picture,
+        //        role: response.user.role,
+        //        loginType: 'local',
+        //        loginTime: new Date().toISOString()
+        //    }));
+
+        //    showMessage("Login successful! Redirecting...", "success");
+            
+        //    // Redirect to chat page after a short delay
+        //    setTimeout(() => {
+        //        createChatPage();
+        //    }, 1000);
+
+        //} else {
+        //    console.error('Login failed:', response);
+        //    showMessage(response.error || 'Login failed', "error");
+        //}
 
     } catch (error: any) {
         console.error('Login error:', error);
@@ -130,11 +148,11 @@ export function createLoginPage() {
     
     let loginForm = createFormElement("loginForm", "Login Form");
     
-    let usernameInput = createInputElement(
-        "usernameInput",
+    let emailInput = createInputElement(
+        "emailInput",
         "text",
-        "Username or Email",
-        "username"
+        "email",
+        "email"
     );
     
     let passwordInput = createInputElement(
@@ -168,11 +186,11 @@ export function createLoginPage() {
     });
 
     // Add Enter key listeners to both input fields
-    usernameInput.addEventListener('keypress', handleEnterKeyPress);
+    emailInput.addEventListener('keypress', handleEnterKeyPress);
     passwordInput.addEventListener('keypress', handleEnterKeyPress);
 
     // Also add keydown listener for better compatibility
-    usernameInput.addEventListener('keydown', (e) => {
+    emailInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
             loginFunction(e);
@@ -189,7 +207,7 @@ export function createLoginPage() {
     // Set the login button as the default submit button
     loginButton.type = "submit";
 
-    loginForm.appendChild(usernameInput);
+    loginForm.appendChild(emailInput);
     loginForm.appendChild(passwordInput);
     loginForm.appendChild(loginButton);
     
@@ -202,23 +220,12 @@ export function createLoginPage() {
     document.getElementById("content")!.innerHTML = "";
     document.getElementById("content")!.appendChild(loginDiv);
 
-    // Focus on the username input when the page loads
+    // Focus on the email input when the page loads
     setTimeout(() => {
-        usernameInput.focus();
+        emailInput.focus();
     }, 100);
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    let cssBase = document.createElement("link");
-    cssBase.rel = "stylesheet";
-    let loginCss = cssBase.cloneNode() as HTMLLinkElement;
-    loginCss.href = "/src/components/login/login.css";
-    document.head.appendChild(loginCss);
-    let signUpCss = cssBase.cloneNode() as HTMLLinkElement;
-    signUpCss.href = "/src/components/signUp/signUp.css";
-    document.head.appendChild(signUpCss);
-    let homeCss = cssBase.cloneNode() as HTMLLinkElement;
-    homeCss.href = "/src/components/home/home.css";
-    document.head.appendChild(homeCss);
     createLoginPage();
 });

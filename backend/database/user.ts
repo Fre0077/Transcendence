@@ -1,64 +1,45 @@
+import { user } from "./prisma/generate/chat"
+import { userLogin } from "../classes/userLogin"
 import { PrismaClient as userPrismaClient } from "./prisma/generate/user"
 const userPrisma = new userPrismaClient()
 
 //ordine request:stesso ordine della tabella di prisma (username = name)
-export async function createUser(input: string): Promise<string> {
-	if (!input || input.trim() === '') {
-		console.log('Input string is empty')
-		throw new Error('Input string is empty')
-	}
-
-	//divisione degli argomenti
-	const lines = input.split('\n').map(line => line.trim()).filter(line => line !== '')
-	if (lines.length < 5) {
-		console.log('Input must contain at least a name, a surname, a username, an email and a passowrd')
-		throw new Error('Input must contain at least a name, a surname, a username, an email and a passowrd')
-	}
-	
+export async function createUser(user: userLogin): Promise<string> {	
 	//ricerca dello user e della chat
-	const findUsername = await userPrisma.account.findUnique({ where: { username: lines[2] } })
+	const findUsername = await userPrisma.account.findUnique({ where: { username: user.username.toString() } })
 	if (findUsername) {
-		console.log(`the username ${lines[2]} already exist`)
-		throw new Error(`the username ${lines[2]} already exist`)
+		console.log(`the username ${user.username} already exist`)
+		throw new Error(`the username ${user.username} already exist`)
 	}
-	const findEmail = await userPrisma.account.findUnique({ where: { email: lines[3] } })
+	const findEmail = await userPrisma.account.findUnique({ where: { email: user.email.toString() } })
 	if (findEmail) {
-		console.log(`the email ${lines[3]} already exist`)
-		throw new Error(`the email ${lines[3]} already exist`)
+		console.log(`the email ${user.email} already exist`)
+		throw new Error(`the email ${user.email} already exist`)
 	}
 
 	//creazione del nuovo messaggio
 	await userPrisma.account.create({
 		data: {
-			name: lines[0],
-			surname: lines[1],
-			username: lines[2],
-			email: lines[3],
-			password: lines[4]}
+			name: user.name.toString(),
+			surname: user.surname.toString(),
+			username: user.username.toString(),
+			email: user.email.toString(),
+			password: user.password.toString()}
 	})
 	return 'user created'
 }
 
-export async function loginUser(input: string): Promise<string> {
-	if (!input || input.trim() === '') {
-		console.log('Input string is empty')
-		throw new Error('Input string is empty')
-	}
-
-	//divisione degli argomenti
-	const lines = input.split('\n').map(line => line.trim()).filter(line => line !== '')
-	if (lines.length < 5) {
-		throw new Error('Input must contain at least a name, a surname, a username, an email and a passowrd')
-	}
-	
-	//ricerca dello user e della chat
-	const findUsername = await userPrisma.account.findUnique({ where: { username: lines[2] } })
-	if (findUsername) {
-		throw new Error(`the username ${lines[2]} already exist`)
-	}
-	const findEmail = await userPrisma.account.findUnique({ where: { email: lines[3] } })
-	if (findEmail) {
-		throw new Error(`the email ${lines[3]} already exist`)
-	}
+export async function loginUser(user:  userLogin): Promise<string> {
+	// Controlla se esiste un account con l'email fornita
+    const account = await userPrisma.account.findUnique({ where: { email: user.email.toString() } });
+    if (!account) {
+        console.log(`Wrong email`);
+        throw new Error(`Wrong email`);
+    }
+    // Verifica che la password fornita corrisponda a quella dell'account trovato
+    if (account.password !== user.password.toString()) {
+        console.log(`Wrong password`);
+		throw new Error(`Wrong password`);
+    }
 	return 'login successful'
 }

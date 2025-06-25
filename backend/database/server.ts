@@ -3,6 +3,8 @@ import { createChat, deletemessages, handleMessage } from './chat'
 import { createUser, loginUser } from './user'
 import cors from '@fastify/cors';
 
+import { userLogin } from "../classes/userLogin"
+
 import { PrismaClient as userPrismaClient } from "./prisma/generate/user"
 const userPrisma = new userPrismaClient()
 import { PrismaClient as chatPrismaClient } from "./prisma/generate/chat"
@@ -37,7 +39,7 @@ fastify.post('/chat', async (request, reply) => {
 		const output = await createChat(info)
 		return { reply: output }
 	} catch (err) {
-		return reply.status(500).send({ error: err + 'Internal server error' })
+		return reply.status(500).send({ error: err + ' Internal server error' })
 	}
 })
 
@@ -49,7 +51,7 @@ fastify.post('/chat-message', async (request, reply) => {
 		const output = await handleMessage(message)
 		return { reply: output }
 	} catch (err) {
-		return reply.status(500).send({ error: err + 'Internal server error' })
+		return reply.status(500).send({ error: err + ' Internal server error' })
 	}
 })
 
@@ -63,31 +65,31 @@ fastify.post('/chat-delete', async (request, reply) => {
         await deletemessages(id)
         return { reply: `🗑️ messages deleted from chat ${id}\n` }
     } catch (err) {
-        return reply.status(500).send({ error: err + 'Internal server error' })
+        return reply.status(500).send({ error: err + ' Internal server error' })
     }
 })
 
 // Endpoint POST per registrarsi
 fastify.post('/register', async (request, reply) => {
-    const userData = request.body as string
+    const userData = request.body as userLogin
     if (!userData) return reply.status(400).send({ error: 'Missing user data' })
     try {
         await createUser(userData)
-        return { reply: `User created\n` }
+        return reply.status(201).send({ message: 'User created' })
     } catch (err) {
-        return reply.status(500).send({ error: err + 'Internal server error' })
+        return reply.status(500).send({ error: err + ' Internal server error' })
     }
 })
 
 // Endpoint POST per fare il login
 fastify.post('/login', async (request, reply) => {
-    const { userData } = request.body as { userData?: string}
+    const userData = request.body as userLogin
     if (!userData) return reply.status(400).send({ error: 'Missing user data' })
     try {
         await loginUser(userData)
-        return { reply: `User lgoin\n` }
+        return reply.status(201).send({ message: 'login success' })
     } catch (err) {
-        return reply.status(500).send({ error: err + 'Internal server error' })
+        return reply.status(500).send({ error: err + ' Internal server error' })
     }
 })
 

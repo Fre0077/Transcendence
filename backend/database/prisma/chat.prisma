@@ -44,3 +44,5 @@ model user {
 // Int, Float, Boolean, BigInt, Float, Decimal(come float number), DataTime, Bytes(big file)
 // you che make relascionschip by using the name of table:
 // aggiungi il nome come attributo e post nella tabella che vuoi importare
+
+// TODO: al signup registrare l'utente in tutti i database che contengono una tabella user

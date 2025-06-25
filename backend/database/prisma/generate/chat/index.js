@@ -156,7 +156,6 @@ const config = {
     "dbchat"
   ],
   "activeProvider": "sqlite",
-  "postinstall": false,
   "inlineDatasources": {
     "dbchat": {
       "url": {

@@ -10,7 +10,9 @@
     "start": "clear && npx ts-node ./database/server.ts",
     "migrate": "npx prisma migrate dev --name init --schema=./database/prisma/chat.prisma && npx prisma migrate dev --name init --schema=./database/prisma/user.prisma",
     "generate": "npx prisma generate --schema=./database/prisma/chat.prisma && npx prisma generate --schema=./database/prisma/user.prisma",
-    "push": "npx prisma db push"
+    "push": "npx prisma db push --schema=./database/prisma/user.prisma && npx prisma db push --schema=./database/prisma/chat.prisma",
+    "delete": "npx ts-node ./database/dataUtils/deleteUser.ts",
+    "show": "npx ts-node ./database/dataUtils/showUser.ts"
   },
   "dependencies": {
     "@fastify/cors": "^11.0.1",
