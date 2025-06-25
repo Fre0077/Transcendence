@@ -3,3 +3,5 @@ backend/node_modules
 frontend/dist
 frontend/accounts.json
 .editorconfig
+.vscode
+.devcontainer
