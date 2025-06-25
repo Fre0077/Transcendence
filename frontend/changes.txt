@@ -6,3 +6,11 @@ Frontend Framework/Toolkit: Bootstrap ⇒ Tailwind CSS
 Database: PostgreSQL ⇒ SQLite
 Blockchain: Ethereum and Solidity ⇒ Avalanche and Solidity
 Remote auth module: 42-OAuth ⇒ Google Sign-in
+
+swagger
+sequalize / prisma / drizzle
+elastic
+grafana
+compdock
+restAPI / protobuff ( tRPC )
+websocket per pong on steroids
