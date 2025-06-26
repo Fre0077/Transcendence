@@ -1,5 +1,5 @@
 import Fastify from "fastify";
-import { createChat, deletemessages, handleMessage, userChatList, userList } from "./chat";
+import { createChat, deletemessages, handleMessage, userChatList, userList, listMessage } from "./chat";
 import { createUser, loginUser } from "./user";
 import cors from "@fastify/cors";
 
@@ -80,6 +80,21 @@ fastify.post("/chat-list", async (request, reply) => {
 			.status(500)
 			.send({ error: err + " Internal server error" });
 	}
+});
+
+// Endpoint POST per avere la lista degli ultimi 100 messaggi a partire da un certo indice
+fastify.post("/index-message", async (request, reply) => {
+    const { message } = request.body as { message?: number[] };
+    if (!message || !Array.isArray(message))
+        return reply.status(400).send({ error: "No valid index array provided" });
+    try {
+        const output = await listMessage(message);
+        return reply.status(201).send({ reply: output });
+    } catch (err) {
+        return reply
+            .status(500)
+            .send({ error: err + " Internal server error" });
+    }
 });
 
 // Endpoint POST per ricevere il messaggio

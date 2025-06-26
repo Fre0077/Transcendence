@@ -3,8 +3,6 @@ const chatPrisma = new chatPrismaClient()
 
 import { newChat } from "../classes/classes";
 
-//TODO: mettere a posto il fatotr che i messaggi vengono splittati se c'è uno \n
-//ordine request: user, chat, messaggio
 //crea un nuovo messaggio a partire dalla chat da dove è stato mandato e dallo user
 export async function handleMessage(input: string): Promise<string> {
 	if (!input || input.trim() === '') {
@@ -42,6 +40,30 @@ export async function handleMessage(input: string): Promise<string> {
 			date: new Date()}
 	})
 	return 'Messaggio salvato.'
+}
+
+export async function listMessage(input: number[]): Promise<string> {
+    if (!Array.isArray(input) || input.length < 2) {
+		console.log('Input must be an array: [chatId, startIndex]')
+        throw new Error('Input must be an array: [chatId, startIndex]');
+    }
+    const chatId = input[0];
+    const startIndex = input[1];
+
+    const messages = await chatPrisma.messages.findMany({
+        where: { chatId },
+        orderBy: { date: 'desc' },
+        skip: startIndex,
+        take: 100,
+        select: {
+            id: true,
+            userId: true,
+            message: true,
+            date: true
+        }
+    });
+
+    return JSON.stringify(messages);
 }
 
 //cancella tutti i messaggi di una specifica chat
