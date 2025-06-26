@@ -137,7 +137,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/home/alborghi/Desktop/Transcendence/backend/database/prisma/generate/chat",
+      "value": "/home/fre007/42/Transcendence/backend/database/prisma/generate/chat",
       "fromEnvVar": null
     },
     "config": {
@@ -151,7 +151,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/home/alborghi/Desktop/Transcendence/backend/database/prisma/chat.prisma",
+    "sourceFilePath": "/home/fre007/42/Transcendence/backend/database/prisma/chat.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
@@ -164,7 +164,6 @@ const config = {
     "dbchat"
   ],
   "activeProvider": "sqlite",
-  "postinstall": false,
   "inlineDatasources": {
     "dbchat": {
       "url": {

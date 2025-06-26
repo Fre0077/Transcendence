@@ -126,7 +126,6 @@ export async function userChatList(input: string): Promise<string> {
 		chatId: chat.chatId,
 		name: chat.name
 	}))
-
 	return JSON.stringify(result)
 }
 

@@ -75,7 +75,7 @@ fastify.post("/chat-list", async (request, reply) => {
 		const output = await userChatList(username);
 		return reply.status(201).send({ chats: output });
 	} catch (err) {
-		// console.log("Error fetching chat list:", err);
+		console.log("Error fetching chat list:", err);
 		return reply
 			.status(500)
 			.send({ error: err + " Internal server error" });
