@@ -119,7 +119,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/home/fre007/42/Transcendence/backend/database/prisma/generate/user",
+      "value": "/home/alborghi/Desktop/Transcendence/backend/database/prisma/generate/user",
       "fromEnvVar": null
     },
     "config": {
@@ -133,7 +133,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/home/fre007/42/Transcendence/backend/database/prisma/user.prisma",
+    "sourceFilePath": "/home/alborghi/Desktop/Transcendence/backend/database/prisma/user.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
@@ -146,6 +146,7 @@ const config = {
     "dbuser"
   ],
   "activeProvider": "sqlite",
+  "postinstall": false,
   "inlineDatasources": {
     "dbuser": {
       "url": {

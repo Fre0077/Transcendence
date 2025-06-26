@@ -16,18 +16,21 @@ datasource dbchat {
 
 model messages {
   id      Int @id @default(autoincrement())
-  chat    chats @relation( fields: [id], references: [chatId], onDelete: Cascade)
-  user    user @relation( fields: [id], references: [userId], onDelete: Cascade)
+  chatId  Int
+  userId  Int
+  chat    chats @relation(fields: [chatId], references: [chatId], onDelete: Cascade)
+  user    user @relation(fields: [userId], references: [userId], onDelete: Cascade)
   message String
   date    DateTime @default(now())
 }
 
 model chats {
-  chatId		Int @id @default(autoincrement())
-  name      	String @unique
-  host      	user @relation("host", fields: [chatId], references: [userId], onDelete: Cascade)
-  users     	user[] @relation("members")
-  messages  	messages[]
+  chatId        Int @id @default(autoincrement())
+  name          String @unique
+  hostId        Int
+  host          user @relation("host", fields: [hostId], references: [userId], onDelete: Cascade)
+  users         user[] @relation("members")
+  messages      messages[]
   lastAccessed  DateTime? @updatedAt
 }
 

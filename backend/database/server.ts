@@ -45,6 +45,7 @@ fastify.post("/user-list", async (request, reply) => {
 		const output = await userList(host);
 		return reply.status(201).send({ reply: output });
 	} catch (err) {
+		// console.log("Error fetching user list:", err);
 		return reply
 			.status(500)
 			.send({ error: err + " Internal server error" });
@@ -59,6 +60,7 @@ fastify.post("/new-chat", async (request, reply) => {
 		const output = await createChat(chatData);
 		return { reply: output };
 	} catch (err) {
+		// console.error("Error creating chat:", err);
 		return reply
 			.status(500)
 			.send({ error: err + " Internal server error" });
@@ -73,6 +75,7 @@ fastify.post("/chat-list", async (request, reply) => {
 		const output = await userChatList(username);
 		return reply.status(201).send({ chats: output });
 	} catch (err) {
+		// console.log("Error fetching chat list:", err);
 		return reply
 			.status(500)
 			.send({ error: err + " Internal server error" });
@@ -145,5 +148,6 @@ fastify.listen({ port: 3000, host: "0.0.0.0" }, (err, address) => {
 	if (err) throw err;
 	console.log(`Server Fastify avviato su ${address}`);
 });
+
 
 

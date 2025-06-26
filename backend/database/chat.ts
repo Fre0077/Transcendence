@@ -51,41 +51,45 @@ export async function deletemessages(input: number) {
 
 //crea una nuova chat a partire da user e membri e namechat
 export async function createChat(input: newChat): Promise<string> {
-	// 1. Controllo che il nome della chat non esista già
-	const existingChat = await chatPrisma.chats.findUnique({ where: { name: input.chatName.toString() } });
+    // 1. Controllo che il nome della chat non esista già
+    console.log(input.chatName.toString());
+    const existingChat = await chatPrisma.chats.findUnique({ where: { name: input.chatName.toString() } });
+    console.log(input.chatName.toString());
 	if (existingChat) {
-		throw new Error(`A chat with the name "${input.chatName}" already exists`);
-	}
+		console.log(`A chat with the name "${input.chatName}" already exists`);
+        throw new Error(`A chat with the name "${input.chatName}" already exists`);
+    }
+    // 2. Trova l'host tramite nome (o id se preferisci)
+    const host = await chatPrisma.user.findUnique({ where: { name: input.host.toString() } });
+    if (!host) {
+		console.log(`Host user "${input.host}" does not exist`);
+        throw new Error(`Host user "${input.host}" does not exist`);
+    }
 
-	// 2. Trova l'host tramite nome (o id se preferisci)
-	const host = await chatPrisma.user.findUnique({ where: { name: input.host.toString() } });
-	if (!host) {
-		throw new Error(`Host user "${input.host}" does not exist`);
-	}
+    // 3. Trova tutti i membri (escludendo l'host se presente)
+    const memberUsers = [];
+    for (const memberName of input.members) {
+        if (memberName === input.host) continue; // evita di aggiungere l'host come membro
+        const user = await chatPrisma.user.findUnique({ where: { name: memberName.toString() } });
+        if (!user) {
+			console.log(`Member user "${memberName}" does not exist`);
+            throw new Error(`Member user "${memberName}" does not exist`);
+        }
+        memberUsers.push(user);
+    }
 
-	// 3. Trova tutti i membri (escludendo l'host se presente)
-	const memberUsers = [];
-	for (const memberName of input.members) {
-		if (memberName === input.host) continue; // evita di aggiungere l'host come membro
-		const user = await chatPrisma.user.findUnique({ where: { name: memberName.toString() } });
-		if (!user) {
-			throw new Error(`Member user "${memberName}" does not exist`);
-		}
-		memberUsers.push(user);
-	}
+    // 4. Crea la chat con host e membri
+    await chatPrisma.chats.create({
+        data: {
+            name: input.chatName.toString(),
+            hostId: host.userId, // Use hostId instead of host relation
+            users: {
+                connect: memberUsers.map(u => ({ userId: u.userId }))
+            }
+        }
+    });
 
-	// 4. Crea la chat con host e membri
-	await chatPrisma.chats.create({
-		data: {
-			name: input.chatName.toString(),
-			host: { connect: { userId: host.userId } },
-			users: {
-				connect: memberUsers.map(u => ({ userId: u.userId }))
-			}
-		}
-	});
-
-	return 'Chat created successfully';
+    return 'Chat created successfully';
 }
 
 export async function userChatList(input: string): Promise<string> {
@@ -128,10 +132,19 @@ export async function userChatList(input: string): Promise<string> {
 
 export async function userList(input: string): Promise<string> {
 	if (!input || input.trim() === '') {
-		console.log('Input string is empty')
-		throw new Error('Input string is empty')
-	}
-	const username = input.trim();
-	const userList = await chatPrisma.user.findMany({ where: { name: {not: username} } })
-	return JSON.stringify(userList)
+        console.log('Input string is empty')
+        throw new Error('Input string is empty')
+    }
+    const username = input.trim();
+    const userList = await chatPrisma.user.findMany({ 
+        where: { 
+            name: { not: username } 
+        },
+        select: {
+            userId: true,
+            linkId: true,
+            name: true
+        }
+    })
+    return JSON.stringify(userList)
 }
