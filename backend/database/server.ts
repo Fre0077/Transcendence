@@ -1,9 +1,9 @@
 import Fastify from "fastify";
-import { createChat, deletemessages, handleMessage, userChatList } from "./chat";
+import { createChat, deletemessages, handleMessage, userChatList, userList } from "./chat";
 import { createUser, loginUser } from "./user";
 import cors from "@fastify/cors";
 
-import { userLogin } from "../classes/userLogin";
+import { userLogin, newChat } from "../classes/classes";
 
 import { PrismaClient as userPrismaClient } from "./prisma/generate/user";
 const userPrisma = new userPrismaClient();
@@ -35,12 +35,28 @@ fastify.addContentTypeParser(
 	}
 );
 
+// ENDPOINT PER GESTIRE LE REQUEST
+
+// Endpoint POST per avere la lista di user dentro chat
+fastify.post("/user-list", async (request, reply) => {
+	const { host } = request.body as { host?: string };
+	if (!host) return reply.status(400).send({ error: "Missing host" });
+	try {
+		const output = await userList(host);
+		return reply.status(201).send({ reply: output });
+	} catch (err) {
+		return reply
+			.status(500)
+			.send({ error: err + " Internal server error" });
+	}
+});
+
 // Endpoint POST per creare nuova chat
 fastify.post("/new-chat", async (request, reply) => {
-	const { info } = request.body as { info?: string };
-	if (!info) return reply.status(400).send({ error: "Missing chat info" });
+	const chatData = request.body as newChat;
+	if (!chatData) return reply.status(400).send({ error: "Missing chat info" });
 	try {
-		const output = await createChat(info);
+		const output = await createChat(chatData);
 		return { reply: output };
 	} catch (err) {
 		return reply
@@ -129,3 +145,5 @@ fastify.listen({ port: 3000, host: "0.0.0.0" }, (err, address) => {
 	if (err) throw err;
 	console.log(`Server Fastify avviato su ${address}`);
 });
+
+

@@ -6,7 +6,7 @@ import {
 } from "../generals/createElements";
 import { createLoginPage } from "../login/login";
 //import { sendPostRequest } from "../generals/generalUse";
-import { userLogin } from "../classes/userLogin";
+import { userLogin } from "../classes/classes";
 
 async function handleSignUp(event?: Event): Promise<void> {
 	if (event) {

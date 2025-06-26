@@ -1,5 +1,5 @@
 //import { user } from "./prisma/generate/chat"
-import { userLogin } from "../classes/userLogin"
+import { userLogin } from "../classes/classes"
 import { PrismaClient as userPrismaClient } from "./prisma/generate/user"
 const userPrisma = new userPrismaClient()
 import { PrismaClient as chatPrismaClient } from "./prisma/generate/chat"

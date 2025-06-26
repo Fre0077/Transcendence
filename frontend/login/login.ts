@@ -8,7 +8,7 @@ import {
 import { googleLoginFunction } from "./googleLogin";
 //import { sendPostRequest } from "../generals/generalUse";
 // import { createChatPage } from "../chat/chat";
-import { userLogin } from "../classes/userLogin";
+import { userLogin } from "../classes/classes";
 import { createHomePage } from "../home/home";
 import { getUsername } from "../chat/chat";
 

@@ -4632,15 +4632,15 @@ export namespace Prisma {
 
   export type chatsWhereUniqueInput = Prisma.AtLeast<{
     chatId?: number
+    name?: string
     AND?: chatsWhereInput | chatsWhereInput[]
     OR?: chatsWhereInput[]
     NOT?: chatsWhereInput | chatsWhereInput[]
-    name?: StringFilter<"chats"> | string
     lastAccessed?: DateTimeNullableFilter<"chats"> | Date | string | null
     host?: XOR<UserScalarRelationFilter, userWhereInput>
     users?: UserListRelationFilter
     messages?: MessagesListRelationFilter
-  }, "chatId">
+  }, "chatId" | "name">
 
   export type chatsOrderByWithAggregationInput = {
     chatId?: SortOrder

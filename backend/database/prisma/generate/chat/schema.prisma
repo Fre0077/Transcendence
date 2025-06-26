@@ -24,7 +24,7 @@ model messages {
 
 model chats {
   chatId       Int        @id @default(autoincrement())
-  name         String
+  name         String     @unique
   host         user       @relation("host", fields: [chatId], references: [userId], onDelete: Cascade)
   users        user[]     @relation("members")
   messages     messages[]
