@@ -16,13 +16,20 @@ function createNewChat() {
 	// Logic to create a new chat can be added here
 }
 
-async function getChats()
-{
+export function getUsername(): string {
 	let userSession = localStorage.getItem('userSession');
 	if (!userSession)
-		return [];
+		return "";
 	let username = JSON.parse(userSession)['username'];
 	console.log(username);
+	return username;
+}
+
+async function getChats()
+{
+	let username = getUsername();
+	if (!username)
+		return [];
 	const response = await fetch("http://localhost:3000/chat-list", {
 		method: "POST",
 		headers: { "Content-Type": "text/plain" },
@@ -38,18 +45,27 @@ async function getChats()
 	return [];
 }
 
-async function createChatsDiv() {
-	let chatsDiv = document.createElement("div");
-	chatsDiv.id = "chats";
+function createHeaderDiv() {
+	let headerDiv = document.createElement("div");
+	headerDiv.id = "header";
 
 	let searchChatForm = createFormElement("searchChatForm", "Search Chat");
 	let searchInput = createInputElement("searchChatInput", "text", "Search chat by name");
 	let searchButton = createButtonElement("searchChatButton", "Search", searchChat);
 	searchChatForm.appendChild(searchInput);
 	searchChatForm.appendChild(searchButton);
-	chatsDiv.appendChild(searchChatForm);
+	headerDiv.appendChild(searchChatForm);
 
-	// TODO: implement the chat get function to fetch chats from the server
+	return headerDiv;
+}
+
+async function createChatsDiv() {
+	let chatsDiv = document.createElement("div");
+	chatsDiv.id = "chats";
+
+	let headerDiv = createHeaderDiv();
+	chatsDiv.appendChild(headerDiv);
+
 	let chatsList: Array<{ id: number, name: string }> = await getChats();
 	chatsList.forEach((chat) => {
 		let chatDiv = document.createElement("div");

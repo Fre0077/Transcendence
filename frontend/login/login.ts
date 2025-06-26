@@ -7,8 +7,10 @@ import {
 } from "../generals/createElements";
 import { googleLoginFunction } from "./googleLogin";
 //import { sendPostRequest } from "../generals/generalUse";
-import { createChatPage } from "../chat/chat";
+// import { createChatPage } from "../chat/chat";
 import { userLogin } from "../classes/userLogin";
+import { createHomePage } from "../home/home";
+import { getUsername } from "../chat/chat";
 
 async function loginFunction(event?: Event): Promise<void> {
     if (event) {
@@ -55,7 +57,7 @@ async function loginFunction(event?: Event): Promise<void> {
                 "success"
             );
             setTimeout(() => {
-                createChatPage();
+                createHomePage();
             }, 1000);
         } else {
             showMessage("Login failed", "error");
@@ -231,5 +233,9 @@ export function createLoginPage() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    createLoginPage();
-});
+    let username = getUsername();
+    if (username)
+        createHomePage();
+    else
+        createLoginPage();
+}); 
