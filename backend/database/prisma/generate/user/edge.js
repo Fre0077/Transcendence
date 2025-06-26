@@ -145,7 +145,6 @@ const config = {
     "dbuser"
   ],
   "activeProvider": "sqlite",
-  "postinstall": false,
   "inlineDatasources": {
     "dbuser": {
       "url": {
