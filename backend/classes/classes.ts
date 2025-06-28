@@ -7,7 +7,13 @@ export interface userLogin {
 }
 
 export interface newChat {
-	host: String;
+	host: number;
 	chatName: String;
-	members: String[];
+	members: number[];
+}
+
+export interface newMessage {
+	message: String;
+	chatId: number;
+	userId: number;
 }
