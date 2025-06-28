@@ -1,4 +1,5 @@
-import { FastifyInstance } from "fastify";
+import type { RawData } from "ws";
+import type { FastifyInstance } from "fastify";
 import { createChat, deletemessages, handleMessage } from "../dataFunction/chat";
 import { userChatList, userList, listChatMessage } from "../dataFunction/chat";
 
@@ -37,49 +38,34 @@ export async function chatEndpoint(fastify: FastifyInstance) {
 		}
 	});
 
-	// Endpoint POST per avere la lista di chat di uno user
-	fastify.post("/chat-list", async (request, reply) => {
-		const username = request.body as string ;
-		if (!username) return reply.status(400).send({ error: "No username provided" });
-		try {
-			const output = await userChatList(username);
-			return reply.status(201).send({ chats: output });
-		} catch (err) {
-			console.log("Error fetching chat list:", err);
-			return reply
-				.status(500)
-				.send({ error: err + " Internal server error" });
-		}
+	// Endpoint WebSocket per ottenere la lista delle chat di uno user
+	fastify.get("/ws-chat-list", { websocket: true }, (connection: any, req) => {
+		connection.socket.on('message', async (rawMessage: RawData) => {
+			try {
+				const username = rawMessage.toString();
+				const output = await userChatList(username);
+				connection.socket.send(JSON.stringify({ chats: output }));
+			} catch (err) {
+				connection.socket.send(JSON.stringify({ error: err + " Internal server error" }));
+			}
+		});
 	});
 
-	// Endpoint POST per avere la lista degli ultimi 100 messaggi a partire da un certo indice
-	fastify.post("/index-message", async (request, reply) => {
-		const { message } = request.body as { message?: number[] };
-		if (!message || !Array.isArray(message))
-			return reply.status(400).send({ error: "No valid index array provided" });
-		try {
-			const output = await listChatMessage(message);
-			return reply.status(201).send({ reply: output });
-		} catch (err) {
-			return reply
-				.status(500)
-				.send({ error: err + " Internal server error" });
-		}
-	});
-
-	// Endpoint POST per ricevere il messaggio
-	fastify.post("/chat-message", async (request, reply) => {
-		const message = request.body as newMessage;
-		if (!message)
-			return reply.status(400).send({ error: "No message provided" });
-		try {
-			const output = await handleMessage(message);
-			return { reply: output };
-		} catch (err) {
-			return reply
-				.status(500)
-				.send({ error: err + " Internal server error" });
-		}
+	// Endpoint WebSocket per ottenere gli ultimi 100 messaggi a partire da un certo indice
+	fastify.get("/index-message", { websocket: true }, (connection: any, req) => {
+		connection.socket.on('message', async (rawMessage: RawData) => {
+			try {
+				const { message } = JSON.parse(rawMessage.toString()) as { message?: number[] };
+				if (!message || !Array.isArray(message)) {
+					connection.socket.send(JSON.stringify({ error: "No valid index array provided" }));
+					return;
+				}
+				const output = await listChatMessage(message);
+				connection.socket.send(JSON.stringify({ reply: output }));
+			} catch (err) {
+				connection.socket.send(JSON.stringify({ error: err + " Internal server error" }));
+			}
+		});
 	});
 
 	// Endpoint POST per eliminare una chat
@@ -97,4 +83,29 @@ export async function chatEndpoint(fastify: FastifyInstance) {
 				.send({ error: err + " Internal server error" });
 		}
 	});
+	
+	// Endpoint WebSocket per ricevere messaggi
+	fastify.get("/chat-message", { websocket: true }, (connection: any, req) => {
+		connection.socket.on('message', async (rawMessage: RawData) => {
+			try {
+				const msg: newMessage = JSON.parse(rawMessage.toString());
+				await handleMessage(msg);
+				connection.socket.send(JSON.stringify({ status: "ok" }));
+			} catch (err) {
+				connection.socket.send(JSON.stringify({ status: "error", error: err + "" }));
+			}
+		});
+	});
 }
+
+//const ws = new WebSocket("ws://localhost:3000/ws-message");
+//ws.onopen = () => {
+//ws.send(JSON.stringify({
+//	message: "Ciao!",
+//	chatId: 1,
+//	userId: 2
+//}));
+//};
+//ws.onmessage = (event) => {
+//console.log("Risposta dal server:", event.data);
+//};
