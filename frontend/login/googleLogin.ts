@@ -37,9 +37,9 @@ async function handleGoogleAuthSuccess(token: string): Promise<void> {
         
         console.log("Authentication response:", response);
         
-        // Store user data in localStorage for session management
+        // Store user data in sessionStorage for session management
         if (response.success) {
-            localStorage.setItem('userSession', JSON.stringify({
+            sessionStorage.setItem('userSession', JSON.stringify({
                 id: response.user.id,
                 email: response.user.email,
                 name: response.user.name,

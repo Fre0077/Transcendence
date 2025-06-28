@@ -12,7 +12,9 @@
 		"generate": "npx prisma generate --schema=./database/prisma/chat.prisma && npx prisma generate --schema=./database/prisma/user.prisma",
 		"push": "npx prisma db push --schema=./database/prisma/user.prisma --force-reset && npx prisma db push --schema=./database/prisma/chat.prisma --force-reset",
 		"delete": "npx ts-node ./database/dataUtils/deleteUser.ts",
-		"show": "npx ts-node ./database/dataUtils/showUser.ts"
+		"show": "npx ts-node ./database/dataUtils/showUser.ts",
+		"studio_user": "npx prisma studio --schema=./database/prisma/user.prisma",
+		"studio_chat": "npx prisma studio --schema=./database/prisma/chat.prisma"
 	},
 	"dependencies": {
 		"@fastify/cors": "^11.0.1",
