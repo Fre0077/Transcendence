@@ -132,11 +132,11 @@ async function createNewChat() {
 		let checkbox = document.createElement("input");
 		checkbox.type = "checkbox";
 		checkbox.value = user.name;
-		checkbox.id = `member-${user.userId || user.id}`;
+		checkbox.id = `member-${user.linkId || user.id}`;
 		checkbox.style.marginRight = "8px";
 		
 		let label = document.createElement("label");
-		label.htmlFor = `member-${user.userId || user.id}`;
+		label.htmlFor = `member-${user.linkId || user.id}`;
 		label.innerText = user.name;
 		label.style.cursor = "pointer";
 
@@ -156,7 +156,7 @@ async function createNewChat() {
 }
 
 export function getUsername(): string {
-	let userSession = localStorage.getItem('userSession');
+	let userSession = sessionStorage.getItem('userSession');
 	if (!userSession)
 		return "";
 	let username = JSON.parse(userSession)['username'];
@@ -197,7 +197,7 @@ function createHeaderDiv() {
 	homeButton.src = "./assets/shared/home.png";
 	homeButton.alt = "Home";
 	homeButton.addEventListener("click", () => {
-		window.location.reload();
+		window.location.pathname = "/home";
 	});
 
 	TopDiv.appendChild(title);
@@ -210,6 +210,10 @@ function createHeaderDiv() {
 	headerDiv.appendChild(searchButton);
 
 	return headerDiv;
+}
+
+async function openChat(chat: { id: number, name: string }) {
+	
 }
 
 async function createChatsDiv() {
@@ -225,7 +229,7 @@ async function createChatsDiv() {
 		chatDiv.className = "chat-item";
 		chatDiv.innerText = chat.name; // Assuming chat has a 'name' property
 		chatDiv.addEventListener("click", async () => {
-			console.log("opening chat with id:", chat.id);
+			openChat(chat);
 		});
 
 		chatsDiv.appendChild(chatDiv);

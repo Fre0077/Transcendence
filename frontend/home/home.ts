@@ -30,8 +30,9 @@ function createProfileDiv() {
 }
 
 function logoutUser() {
-	localStorage.setItem("userSession", JSON.stringify({}));
-	window.location.reload();
+	sessionStorage.setItem("userSession", JSON.stringify({}));
+	window.location.pathname = "/login";
+	// window.location.reload();
 }
 
 function loadSettingsPage() {
@@ -53,7 +54,7 @@ function createNavDiv() {
 
 	let navItems = [
 		{ text: "Settings", onClick: () => loadSettingsPage() },
-		{ text: "Chat", onClick: () => createChatPage() },
+		{ text: "Chat", onClick: () => window.location.pathname = "/chat" },
 		{ text: "Play", onClick: () => loadPlayPage() },
 		{ text: "Logout", onClick: () => logoutUser() }
 	];
@@ -90,6 +91,7 @@ function createDashboardDiv() {
 }
 
 export function createHomePage() {
+	document.title = "Home - My Application";
 	const homePage = document.createElement("div");
 	homePage.className = "home-page";
 

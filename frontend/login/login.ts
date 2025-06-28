@@ -9,7 +9,6 @@ import { googleLoginFunction } from "./googleLogin";
 //import { sendPostRequest } from "../generals/generalUse";
 // import { createChatPage } from "../chat/chat";
 import { userLogin } from "../classes/classes";
-import { createHomePage } from "../home/home";
 import { getUsername } from "../chat/chat";
 
 async function loginFunction(event?: Event): Promise<void> {
@@ -49,7 +48,7 @@ async function loginFunction(event?: Event): Promise<void> {
 
         if (response.ok) {
 			const data = await response.json();
-			localStorage.setItem('userSession', JSON.stringify({
+			sessionStorage.setItem('userSession', JSON.stringify({
 				username: data.message
 			}))
             showMessage(
@@ -57,7 +56,7 @@ async function loginFunction(event?: Event): Promise<void> {
                 "success"
             );
             setTimeout(() => {
-                createHomePage();
+                window.location.pathname = "/home";
             }, 1000);
         } else {
             showMessage("Login failed", "error");
@@ -67,7 +66,7 @@ async function loginFunction(event?: Event): Promise<void> {
         //    console.log('Login successful:', response.user);
             
         //    // Store user session data
-        //    localStorage.setItem('userSession', JSON.stringify({
+        //    sessionStorage.setItem('userSession', JSON.stringify({
         //        id: response.user.id,
         //        username: response.user.username,
         //        email: response.user.email,
@@ -231,11 +230,3 @@ export function createLoginPage() {
         emailInput.focus();
     }, 100);
 }
-
-document.addEventListener("DOMContentLoaded", () => {
-    let username = getUsername();
-    if (username)
-        createHomePage();
-    else
-        createLoginPage();
-}); 
