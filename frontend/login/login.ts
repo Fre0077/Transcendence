@@ -148,6 +148,13 @@ function handleEnterKeyPress(event: KeyboardEvent): void {
 }
 
 export function createLoginPage() {
+    let username = getUsername();
+    if (username !== "" && username !== null && username !== undefined) {
+        console.log('User already logged in, redirecting to home page');
+        window.location.pathname = "/home";
+        return;
+    }
+
     let loginDiv = document.createElement("div");
     loginDiv.id = "loginDiv";
     
