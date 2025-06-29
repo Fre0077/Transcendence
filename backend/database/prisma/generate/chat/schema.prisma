@@ -26,21 +26,21 @@ model messages {
 
 model chats {
   chatId       Int        @id @default(autoincrement())
-  name         String     @unique
   hostId       Int
   host         user       @relation("host", fields: [hostId], references: [userId], onDelete: Cascade)
   users        user[]     @relation("members")
   messages     messages[]
+  name         String
   lastAccessed DateTime?  @updatedAt
 }
 
 model user {
   userId   Int        @id @default(autoincrement())
   linkId   Int        @unique
-  name     String     @unique
   messages messages[]
   chatHost chats[]    @relation("host")
   members  chats[]    @relation("members")
+  name     String     @unique
 }
 
 // with ? the fild become optional, and with [] there are multiple of that

@@ -1,11 +1,13 @@
-import { FastifyInstance } from "fastify";
+import type { RawData } from "ws";
+import type { FastifyInstance } from "fastify";
 import { createChat, deletemessages, handleMessage } from "../dataFunction/chat";
 import { userChatList, userList, listChatMessage } from "../dataFunction/chat";
+import { deletemessage, searchMessage, searchChat } from "../dataFunction/chat";
 
 import { PrismaClient as chatPrismaClient } from "../prisma/generate/chat";
 const chatPrisma = new chatPrismaClient();
 
-import { newChat, newMessage } from "../../classes/classes";
+import { newChat, newMessage, srcChat } from "../../classes/classes";
 
 export async function chatEndpoint(fastify: FastifyInstance) {
 	fastify.post("/user-list", async (request, reply) => {
@@ -37,44 +39,49 @@ export async function chatEndpoint(fastify: FastifyInstance) {
 		}
 	});
 
-	// Endpoint POST per avere la lista di chat di uno user
-	fastify.post("/chat-list", async (request, reply) => {
-		const username = request.body as string ;
-		if (!username) return reply.status(400).send({ error: "No username provided" });
-		try {
-			const output = await userChatList(username);
-			return reply.status(201).send({ chats: output });
-		} catch (err) {
-			console.log("Error fetching chat list:", err);
-			return reply
-				.status(500)
-				.send({ error: err + " Internal server error" });
-		}
+	// Endpoint WebSocket per ottenere la lista delle chat di uno user
+	fastify.get("/chat-list", { websocket: true }, (connection: any, req) => {
+		connection.socket.on('message', async (rawMessage: RawData) => {
+			try {
+				const userId = Number(rawMessage.toString());
+				if (isNaN(userId)) {
+					connection.socket.send(JSON.stringify({ error: "Invalid userId" }));
+					return;
+				}
+				const output = await userChatList(userId);
+				connection.socket.send(JSON.stringify({ chats: output }));
+			} catch (err) {
+				connection.socket.send(JSON.stringify({ error: err + " Internal server error" }));
+			}
+		});
 	});
 
-	// Endpoint POST per avere la lista degli ultimi 100 messaggi a partire da un certo indice
-	fastify.post("/index-message", async (request, reply) => {
-		const { message } = request.body as { message?: number[] };
-		if (!message || !Array.isArray(message))
-			return reply.status(400).send({ error: "No valid index array provided" });
-		try {
-			const output = await listChatMessage(message);
-			return reply.status(201).send({ reply: output });
-		} catch (err) {
-			return reply
-				.status(500)
-				.send({ error: err + " Internal server error" });
-		}
+	// Endpoint WebSocket per ottenere gli ultimi 100 messaggi a partire da un certo indice
+	fastify.get("/index-message", { websocket: true }, (connection: any, req) => {
+		connection.socket.on('message', async (rawMessage: RawData) => {
+			try {
+				const { message } = JSON.parse(rawMessage.toString()) as { message?: number[] };
+				if (!message || !Array.isArray(message)) {
+					connection.socket.send(JSON.stringify({ error: "No valid index array provided" }));
+					return;
+				}
+				const output = await listChatMessage(message);
+				connection.socket.send(JSON.stringify({ reply: output }));
+			} catch (err) {
+				connection.socket.send(JSON.stringify({ error: err + " Internal server error" }));
+			}
+		});
 	});
 
-	// Endpoint POST per ricevere il messaggio
-	fastify.post("/chat-message", async (request, reply) => {
-		const message = request.body as newMessage;
-		if (!message)
-			return reply.status(400).send({ error: "No message provided" });
+	// Endpoint POST per eliminare una chat
+	fastify.post("/delete-chat-messages", async (request, reply) => {
+		const { chatId } = request.body as { chatId?: string | number };
+		if (!chatId) return reply.status(400).send({ error: "No ID provided" });
 		try {
-			const output = await handleMessage(message);
-			return { reply: output };
+			const id = typeof chatId === "string" ? parseInt(chatId, 10) : chatId;
+			if (isNaN(id)) return reply.status(400).send({ error: "Invalid ID" });
+			await deletemessages(id);
+			return { reply: `🗑️ messages deleted from chat ${id}\n` };
 		} catch (err) {
 			return reply
 				.status(500)
@@ -83,14 +90,56 @@ export async function chatEndpoint(fastify: FastifyInstance) {
 	});
 
 	// Endpoint POST per eliminare una chat
-	fastify.post("/delete-chat", async (request, reply) => {
-		const { chatId } = request.body as { chatId?: string | number };
-		if (!chatId) return reply.status(400).send({ error: "No ID provided" });
+	fastify.post("/delete-message", async (request, reply) => {
+		const { messageId } = request.body as { messageId?: string | number };
+		if (!messageId) return reply.status(400).send({ error: "No ID provided" });
 		try {
-			const id = typeof chatId === "string" ? parseInt(chatId, 10) : chatId;
+			const id = typeof messageId === "string" ? parseInt(messageId, 10) : messageId;
 			if (isNaN(id)) return reply.status(400).send({ error: "Invalid ID" });
-			await deletemessages(id);
+			await deletemessage(id);
 			return { reply: `🗑️ messages deleted from chat ${id}\n` };
+		} catch (err) {
+			return reply
+				.status(500)
+				.send({ error: err + " Internal server error" });
+		}
+	});
+	
+	// Endpoint per ricevere messaggi
+	fastify.post("/chat-message", async (request, reply) => {
+		try {
+			const msg = request.body as newMessage;
+			if (!msg || !msg.message || !msg.chatId || !msg.userId) {
+				return reply.status(400).send({ error: "Missing message data" });
+			}
+			await handleMessage(msg);
+			return reply.status(201).send({ status: "ok" });
+		} catch (err) {
+			return reply
+				.status(500)
+				.send({ status: "error", error: err + " Internal server error" });
+		}
+	});
+
+	// Endpoint POST ricercare le chat
+	fastify.post("/search-chat", async (request, reply) => {
+		const chatData = request.body as srcChat;
+		if (!chatData) return reply.status(400).send({ error: "no data for research provided" });
+		try {
+			await searchChat(chatData);
+		} catch (err) {
+			return reply
+				.status(500)
+				.send({ error: err + " Internal server error" });
+		}
+	});
+
+	// Endpoint POST ricercare i messaggi
+	fastify.post("/search-message", async (request, reply) => {
+		const { srcMess } = request.body as { srcMess?: string | number };
+		if (!srcMess) return reply.status(400).send({ error: "no data for research provided" });
+		try {
+			await searchMessage(srcMess.toString());
 		} catch (err) {
 			return reply
 				.status(500)

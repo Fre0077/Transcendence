@@ -2269,22 +2269,22 @@ export namespace Prisma {
 
   export type ChatsMinAggregateOutputType = {
     chatId: number | null
-    name: string | null
     hostId: number | null
+    name: string | null
     lastAccessed: Date | null
   }
 
   export type ChatsMaxAggregateOutputType = {
     chatId: number | null
-    name: string | null
     hostId: number | null
+    name: string | null
     lastAccessed: Date | null
   }
 
   export type ChatsCountAggregateOutputType = {
     chatId: number
-    name: number
     hostId: number
+    name: number
     lastAccessed: number
     _all: number
   }
@@ -2302,22 +2302,22 @@ export namespace Prisma {
 
   export type ChatsMinAggregateInputType = {
     chatId?: true
-    name?: true
     hostId?: true
+    name?: true
     lastAccessed?: true
   }
 
   export type ChatsMaxAggregateInputType = {
     chatId?: true
-    name?: true
     hostId?: true
+    name?: true
     lastAccessed?: true
   }
 
   export type ChatsCountAggregateInputType = {
     chatId?: true
-    name?: true
     hostId?: true
+    name?: true
     lastAccessed?: true
     _all?: true
   }
@@ -2410,8 +2410,8 @@ export namespace Prisma {
 
   export type ChatsGroupByOutputType = {
     chatId: number
-    name: string
     hostId: number
+    name: string
     lastAccessed: Date | null
     _count: ChatsCountAggregateOutputType | null
     _avg: ChatsAvgAggregateOutputType | null
@@ -2436,8 +2436,8 @@ export namespace Prisma {
 
   export type chatsSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     chatId?: boolean
-    name?: boolean
     hostId?: boolean
+    name?: boolean
     lastAccessed?: boolean
     host?: boolean | userDefaultArgs<ExtArgs>
     users?: boolean | chats$usersArgs<ExtArgs>
@@ -2447,28 +2447,28 @@ export namespace Prisma {
 
   export type chatsSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     chatId?: boolean
-    name?: boolean
     hostId?: boolean
+    name?: boolean
     lastAccessed?: boolean
     host?: boolean | userDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["chats"]>
 
   export type chatsSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     chatId?: boolean
-    name?: boolean
     hostId?: boolean
+    name?: boolean
     lastAccessed?: boolean
     host?: boolean | userDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["chats"]>
 
   export type chatsSelectScalar = {
     chatId?: boolean
-    name?: boolean
     hostId?: boolean
+    name?: boolean
     lastAccessed?: boolean
   }
 
-  export type chatsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"chatId" | "name" | "hostId" | "lastAccessed", ExtArgs["result"]["chats"]>
+  export type chatsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"chatId" | "hostId" | "name" | "lastAccessed", ExtArgs["result"]["chats"]>
   export type chatsInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     host?: boolean | userDefaultArgs<ExtArgs>
     users?: boolean | chats$usersArgs<ExtArgs>
@@ -2491,8 +2491,8 @@ export namespace Prisma {
     }
     scalars: $Extensions.GetPayloadResult<{
       chatId: number
-      name: string
       hostId: number
+      name: string
       lastAccessed: Date | null
     }, ExtArgs["result"]["chats"]>
     composites: {}
@@ -2921,8 +2921,8 @@ export namespace Prisma {
    */
   interface chatsFieldRefs {
     readonly chatId: FieldRef<"chats", 'Int'>
-    readonly name: FieldRef<"chats", 'String'>
     readonly hostId: FieldRef<"chats", 'Int'>
+    readonly name: FieldRef<"chats", 'String'>
     readonly lastAccessed: FieldRef<"chats", 'DateTime'>
   }
     
@@ -4544,8 +4544,8 @@ export namespace Prisma {
 
   export const ChatsScalarFieldEnum: {
     chatId: 'chatId',
-    name: 'name',
     hostId: 'hostId',
+    name: 'name',
     lastAccessed: 'lastAccessed'
   };
 
@@ -4678,8 +4678,8 @@ export namespace Prisma {
     OR?: chatsWhereInput[]
     NOT?: chatsWhereInput | chatsWhereInput[]
     chatId?: IntFilter<"chats"> | number
-    name?: StringFilter<"chats"> | string
     hostId?: IntFilter<"chats"> | number
+    name?: StringFilter<"chats"> | string
     lastAccessed?: DateTimeNullableFilter<"chats"> | Date | string | null
     host?: XOR<UserScalarRelationFilter, userWhereInput>
     users?: UserListRelationFilter
@@ -4688,8 +4688,8 @@ export namespace Prisma {
 
   export type chatsOrderByWithRelationInput = {
     chatId?: SortOrder
-    name?: SortOrder
     hostId?: SortOrder
+    name?: SortOrder
     lastAccessed?: SortOrderInput | SortOrder
     host?: userOrderByWithRelationInput
     users?: userOrderByRelationAggregateInput
@@ -4698,21 +4698,21 @@ export namespace Prisma {
 
   export type chatsWhereUniqueInput = Prisma.AtLeast<{
     chatId?: number
-    name?: string
     AND?: chatsWhereInput | chatsWhereInput[]
     OR?: chatsWhereInput[]
     NOT?: chatsWhereInput | chatsWhereInput[]
     hostId?: IntFilter<"chats"> | number
+    name?: StringFilter<"chats"> | string
     lastAccessed?: DateTimeNullableFilter<"chats"> | Date | string | null
     host?: XOR<UserScalarRelationFilter, userWhereInput>
     users?: UserListRelationFilter
     messages?: MessagesListRelationFilter
-  }, "chatId" | "name">
+  }, "chatId">
 
   export type chatsOrderByWithAggregationInput = {
     chatId?: SortOrder
-    name?: SortOrder
     hostId?: SortOrder
+    name?: SortOrder
     lastAccessed?: SortOrderInput | SortOrder
     _count?: chatsCountOrderByAggregateInput
     _avg?: chatsAvgOrderByAggregateInput
@@ -4726,8 +4726,8 @@ export namespace Prisma {
     OR?: chatsScalarWhereWithAggregatesInput[]
     NOT?: chatsScalarWhereWithAggregatesInput | chatsScalarWhereWithAggregatesInput[]
     chatId?: IntWithAggregatesFilter<"chats"> | number
-    name?: StringWithAggregatesFilter<"chats"> | string
     hostId?: IntWithAggregatesFilter<"chats"> | number
+    name?: StringWithAggregatesFilter<"chats"> | string
     lastAccessed?: DateTimeNullableWithAggregatesFilter<"chats"> | Date | string | null
   }
 
@@ -4845,8 +4845,8 @@ export namespace Prisma {
 
   export type chatsUncheckedCreateInput = {
     chatId?: number
-    name: string
     hostId: number
+    name: string
     lastAccessed?: Date | string | null
     users?: userUncheckedCreateNestedManyWithoutMembersInput
     messages?: messagesUncheckedCreateNestedManyWithoutChatInput
@@ -4862,8 +4862,8 @@ export namespace Prisma {
 
   export type chatsUncheckedUpdateInput = {
     chatId?: IntFieldUpdateOperationsInput | number
-    name?: StringFieldUpdateOperationsInput | string
     hostId?: IntFieldUpdateOperationsInput | number
+    name?: StringFieldUpdateOperationsInput | string
     lastAccessed?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     users?: userUncheckedUpdateManyWithoutMembersNestedInput
     messages?: messagesUncheckedUpdateManyWithoutChatNestedInput
@@ -4871,8 +4871,8 @@ export namespace Prisma {
 
   export type chatsCreateManyInput = {
     chatId?: number
-    name: string
     hostId: number
+    name: string
     lastAccessed?: Date | string | null
   }
 
@@ -4883,8 +4883,8 @@ export namespace Prisma {
 
   export type chatsUncheckedUpdateManyInput = {
     chatId?: IntFieldUpdateOperationsInput | number
-    name?: StringFieldUpdateOperationsInput | string
     hostId?: IntFieldUpdateOperationsInput | number
+    name?: StringFieldUpdateOperationsInput | string
     lastAccessed?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
@@ -5106,8 +5106,8 @@ export namespace Prisma {
 
   export type chatsCountOrderByAggregateInput = {
     chatId?: SortOrder
-    name?: SortOrder
     hostId?: SortOrder
+    name?: SortOrder
     lastAccessed?: SortOrder
   }
 
@@ -5118,15 +5118,15 @@ export namespace Prisma {
 
   export type chatsMaxOrderByAggregateInput = {
     chatId?: SortOrder
-    name?: SortOrder
     hostId?: SortOrder
+    name?: SortOrder
     lastAccessed?: SortOrder
   }
 
   export type chatsMinOrderByAggregateInput = {
     chatId?: SortOrder
-    name?: SortOrder
     hostId?: SortOrder
+    name?: SortOrder
     lastAccessed?: SortOrder
   }
 
@@ -5590,8 +5590,8 @@ export namespace Prisma {
 
   export type chatsUncheckedCreateWithoutMessagesInput = {
     chatId?: number
-    name: string
     hostId: number
+    name: string
     lastAccessed?: Date | string | null
     users?: userUncheckedCreateNestedManyWithoutMembersInput
   }
@@ -5641,8 +5641,8 @@ export namespace Prisma {
 
   export type chatsUncheckedUpdateWithoutMessagesInput = {
     chatId?: IntFieldUpdateOperationsInput | number
-    name?: StringFieldUpdateOperationsInput | string
     hostId?: IntFieldUpdateOperationsInput | number
+    name?: StringFieldUpdateOperationsInput | string
     lastAccessed?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     users?: userUncheckedUpdateManyWithoutMembersNestedInput
   }
@@ -5868,8 +5868,8 @@ export namespace Prisma {
 
   export type chatsUncheckedCreateWithoutUsersInput = {
     chatId?: number
-    name: string
     hostId: number
+    name: string
     lastAccessed?: Date | string | null
     messages?: messagesUncheckedCreateNestedManyWithoutChatInput
   }
@@ -5916,8 +5916,8 @@ export namespace Prisma {
     OR?: chatsScalarWhereInput[]
     NOT?: chatsScalarWhereInput | chatsScalarWhereInput[]
     chatId?: IntFilter<"chats"> | number
-    name?: StringFilter<"chats"> | string
     hostId?: IntFilter<"chats"> | number
+    name?: StringFilter<"chats"> | string
     lastAccessed?: DateTimeNullableFilter<"chats"> | Date | string | null
   }
 
@@ -6048,16 +6048,16 @@ export namespace Prisma {
 
   export type chatsUncheckedUpdateWithoutUsersInput = {
     chatId?: IntFieldUpdateOperationsInput | number
-    name?: StringFieldUpdateOperationsInput | string
     hostId?: IntFieldUpdateOperationsInput | number
+    name?: StringFieldUpdateOperationsInput | string
     lastAccessed?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     messages?: messagesUncheckedUpdateManyWithoutChatNestedInput
   }
 
   export type chatsUncheckedUpdateManyWithoutUsersInput = {
     chatId?: IntFieldUpdateOperationsInput | number
-    name?: StringFieldUpdateOperationsInput | string
     hostId?: IntFieldUpdateOperationsInput | number
+    name?: StringFieldUpdateOperationsInput | string
     lastAccessed?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 

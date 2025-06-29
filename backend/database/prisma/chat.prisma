@@ -16,8 +16,8 @@ datasource dbchat {
 
 model messages {
   id      Int @id @default(autoincrement())
-  chatId  Int
-  userId  Int
+  chatId  Int @unique
+  userId  Int @unique
   chat    chats @relation(fields: [chatId], references: [chatId], onDelete: Cascade)
   user    user @relation(fields: [userId], references: [userId], onDelete: Cascade)
   message String
@@ -26,21 +26,21 @@ model messages {
 
 model chats {
   chatId        Int @id @default(autoincrement())
-  name          String @unique
-  hostId        Int
+  hostId        Int @unique
   host          user @relation("host", fields: [hostId], references: [userId], onDelete: Cascade)
   users         user[] @relation("members")
   messages      messages[]
+  name          String
   lastAccessed  DateTime? @updatedAt
 }
 
 model user {
   userId    Int @id @default(autoincrement())
   linkId    Int @unique
-  name      String @unique
   messages  messages[]
   chatHost  chats[] @relation("host")
   members   chats[] @relation("members")
+  name      String @unique
 }
 
 // with ? the fild become optional, and with [] there are multiple of that

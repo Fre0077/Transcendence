@@ -17,3 +17,8 @@ export interface newMessage {
 	chatId: number;
 	userId: number;
 }
+
+export interface srcChat {
+	userId: number;
+	chatName: String;
+}

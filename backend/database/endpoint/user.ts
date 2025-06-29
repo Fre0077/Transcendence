@@ -1,4 +1,5 @@
-import { FastifyInstance } from "fastify";
+import type { RawData } from "ws";
+import type { FastifyInstance } from "fastify";
 import { createUser, loginUser } from "../dataFunction/user";
 
 import { PrismaClient as userPrismaClient } from "../prisma/generate/user";
