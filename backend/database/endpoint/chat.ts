@@ -2,12 +2,12 @@ import type { RawData } from "ws";
 import type { FastifyInstance } from "fastify";
 import { createChat, deletemessages, handleMessage } from "../dataFunction/chat";
 import { userChatList, userList, listChatMessage } from "../dataFunction/chat";
-import { deletemessage } from "../dataFunction/chat";
+import { deletemessage, searchMessage, searchChat } from "../dataFunction/chat";
 
 import { PrismaClient as chatPrismaClient } from "../prisma/generate/chat";
 const chatPrisma = new chatPrismaClient();
 
-import { newChat, newMessage } from "../../classes/classes";
+import { newChat, newMessage, srcChat } from "../../classes/classes";
 
 export async function chatEndpoint(fastify: FastifyInstance) {
 	fastify.post("/user-list", async (request, reply) => {
@@ -43,8 +43,12 @@ export async function chatEndpoint(fastify: FastifyInstance) {
 	fastify.get("/chat-list", { websocket: true }, (connection: any, req) => {
 		connection.socket.on('message', async (rawMessage: RawData) => {
 			try {
-				const username = rawMessage.toString();
-				const output = await userChatList(username);
+				const userId = Number(rawMessage.toString());
+				if (isNaN(userId)) {
+					connection.socket.send(JSON.stringify({ error: "Invalid userId" }));
+					return;
+				}
+				const output = await userChatList(userId);
 				connection.socket.send(JSON.stringify({ chats: output }));
 			} catch (err) {
 				connection.socket.send(JSON.stringify({ error: err + " Internal server error" }));
@@ -101,16 +105,45 @@ export async function chatEndpoint(fastify: FastifyInstance) {
 		}
 	});
 	
-	// Endpoint WebSocket per ricevere messaggi
-	fastify.get("/chat-message", { websocket: true }, (connection: any, req) => {
-		connection.socket.on('message', async (rawMessage: RawData) => {
-			try {
-				const msg: newMessage = JSON.parse(rawMessage.toString());
-				await handleMessage(msg);
-				connection.socket.send(JSON.stringify({ status: "ok" }));
-			} catch (err) {
-				connection.socket.send(JSON.stringify({ status: "error", error: err + "" }));
+	// Endpoint per ricevere messaggi
+	fastify.post("/chat-message", async (request, reply) => {
+		try {
+			const msg = request.body as newMessage;
+			if (!msg || !msg.message || !msg.chatId || !msg.userId) {
+				return reply.status(400).send({ error: "Missing message data" });
 			}
-		});
+			await handleMessage(msg);
+			return reply.status(201).send({ status: "ok" });
+		} catch (err) {
+			return reply
+				.status(500)
+				.send({ status: "error", error: err + " Internal server error" });
+		}
+	});
+
+	// Endpoint POST ricercare le chat
+	fastify.post("/search-chat", async (request, reply) => {
+		const chatData = request.body as srcChat;
+		if (!chatData) return reply.status(400).send({ error: "no data for research provided" });
+		try {
+			await searchChat(chatData);
+		} catch (err) {
+			return reply
+				.status(500)
+				.send({ error: err + " Internal server error" });
+		}
+	});
+
+	// Endpoint POST ricercare i messaggi
+	fastify.post("/search-message", async (request, reply) => {
+		const { srcMess } = request.body as { srcMess?: string | number };
+		if (!srcMess) return reply.status(400).send({ error: "no data for research provided" });
+		try {
+			await searchMessage(srcMess.toString());
+		} catch (err) {
+			return reply
+				.status(500)
+				.send({ error: err + " Internal server error" });
+		}
 	});
 }
