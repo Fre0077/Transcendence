@@ -63,46 +63,46 @@ export async function deletemessages(input: number) {
 	await chatPrisma.messages.deleteMany({ where: { chat: { chatId: input } } })
 }
 
+//cancella il messaggio indicato
+export async function deletemessage(input: number) {
+	await chatPrisma.messages.deleteMany({ where: { id: input } })
+}
+
 //creazione di una nuova chat
 export async function createChat(input: newChat): Promise<string> {
 	//controllo input
 	if (input.chatName.toString().trim() === '') {
 		console.log(`no chat name provided`);
-        throw new Error(`no chat name provided`);
-    }
-	
-	//ricerca host e controllo per nome chat univoco
-    const existingChat = await chatPrisma.chats.findUnique({ where: { name: input.chatName.toString() } });
-	if (existingChat) {
-		console.log(`A chat with the name "${input.chatName}" already exists`);
-        throw new Error(`A chat with the name "${input.chatName}" already exists`);
-    }
-    const host = await chatPrisma.user.findUnique({ where: { name: input.host.toString() } });
-    if (!host) {
+		throw new Error(`no chat name provided`);
+	}
+
+	//ricerca host e members
+	const host = await chatPrisma.user.findUnique({ where: { name: input.host.toString() } });
+	if (!host) {
 		console.log(`Host user "${input.host}" does not exist`);
-        throw new Error(`Host user "${input.host}" does not exist`);
-    }
-    const memberUsers = [];
-    for (const memberName of input.members) {
-        if (memberName === input.host) continue;
-        const user = await chatPrisma.user.findUnique({ where: { name: memberName.toString() } });
-        if (!user) {
+		throw new Error(`Host user "${input.host}" does not exist`);
+	}
+	const memberUsers = [];
+	for (const memberName of input.members) {
+		if (memberName === input.host) continue;
+		const user = await chatPrisma.user.findUnique({ where: { name: memberName.toString() } });
+		if (!user) {
 			console.log(`Member user "${memberName}" does not exist`);
-            throw new Error(`Member user "${memberName}" does not exist`);
-        }
-        memberUsers.push(user);
-    }
+			throw new Error(`Member user "${memberName}" does not exist`);
+		}
+		memberUsers.push(user);
+	}
 
 	//creazione della chat
-    await chatPrisma.chats.create({
-        data: {
-            name: input.chatName.toString(),
-            hostId: host.userId,
-            users: {
-                connect: memberUsers.map(u => ({ userId: u.userId }))
-            }
-        }
-    });
+	await chatPrisma.chats.create({
+		data: {
+			name: input.chatName.toString(),
+			hostId: host.userId,
+			users: {
+				connect: memberUsers.map(u => ({ userId: u.userId }))
+			}
+		}
+	});
 
     return 'Chat created successfully';
 }

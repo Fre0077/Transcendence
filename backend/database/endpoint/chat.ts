@@ -2,6 +2,7 @@ import type { RawData } from "ws";
 import type { FastifyInstance } from "fastify";
 import { createChat, deletemessages, handleMessage } from "../dataFunction/chat";
 import { userChatList, userList, listChatMessage } from "../dataFunction/chat";
+import { deletemessage } from "../dataFunction/chat";
 
 import { PrismaClient as chatPrismaClient } from "../prisma/generate/chat";
 const chatPrisma = new chatPrismaClient();
@@ -39,7 +40,7 @@ export async function chatEndpoint(fastify: FastifyInstance) {
 	});
 
 	// Endpoint WebSocket per ottenere la lista delle chat di uno user
-	fastify.get("/ws-chat-list", { websocket: true }, (connection: any, req) => {
+	fastify.get("/chat-list", { websocket: true }, (connection: any, req) => {
 		connection.socket.on('message', async (rawMessage: RawData) => {
 			try {
 				const username = rawMessage.toString();
@@ -69,13 +70,29 @@ export async function chatEndpoint(fastify: FastifyInstance) {
 	});
 
 	// Endpoint POST per eliminare una chat
-	fastify.post("/delete-chat", async (request, reply) => {
+	fastify.post("/delete-chat-messages", async (request, reply) => {
 		const { chatId } = request.body as { chatId?: string | number };
 		if (!chatId) return reply.status(400).send({ error: "No ID provided" });
 		try {
 			const id = typeof chatId === "string" ? parseInt(chatId, 10) : chatId;
 			if (isNaN(id)) return reply.status(400).send({ error: "Invalid ID" });
 			await deletemessages(id);
+			return { reply: `🗑️ messages deleted from chat ${id}\n` };
+		} catch (err) {
+			return reply
+				.status(500)
+				.send({ error: err + " Internal server error" });
+		}
+	});
+
+	// Endpoint POST per eliminare una chat
+	fastify.post("/delete-message", async (request, reply) => {
+		const { messageId } = request.body as { messageId?: string | number };
+		if (!messageId) return reply.status(400).send({ error: "No ID provided" });
+		try {
+			const id = typeof messageId === "string" ? parseInt(messageId, 10) : messageId;
+			if (isNaN(id)) return reply.status(400).send({ error: "Invalid ID" });
+			await deletemessage(id);
 			return { reply: `🗑️ messages deleted from chat ${id}\n` };
 		} catch (err) {
 			return reply
@@ -97,15 +114,3 @@ export async function chatEndpoint(fastify: FastifyInstance) {
 		});
 	});
 }
-
-//const ws = new WebSocket("ws://localhost:3000/ws-message");
-//ws.onopen = () => {
-//ws.send(JSON.stringify({
-//	message: "Ciao!",
-//	chatId: 1,
-//	userId: 2
-//}));
-//};
-//ws.onmessage = (event) => {
-//console.log("Risposta dal server:", event.data);
-//};
