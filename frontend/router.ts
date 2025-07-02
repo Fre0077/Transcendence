@@ -6,9 +6,12 @@ document.addEventListener('DOMContentLoaded', () => {
 	let url = window.location.pathname;
 	console.log('Current URL:', url);
 
-	if (getUsername() === "") {
+	let username = getUsername();
+	console.log('Username:', username);
+	if (url != '/login' && (username === "" || username === null || username === undefined)) {
 		console.log('No username found, redirecting to login page');
-		url = '/login';
+		window.location.pathname = "/login";
+		return;
 	}
 
 	switch (url) {
