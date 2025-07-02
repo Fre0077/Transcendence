@@ -2,21 +2,24 @@ import { PrismaClient as chatPrismaClient } from "../prisma/generate/chat"
 const chatPrisma = new chatPrismaClient()
 
 import { newChat, newMessage, srcChat } from "../../classes/classes";
+import { fastify } from "../server";
 
 //aggiunta del messaggio al database
 export async function handleMessage(input: newMessage): Promise<string> {
 	if (input.message.toString().trim() === '') {
-		console.log('No message text provided');
+		fastify.log.info('No message text provided');
         throw new Error('No message text provided');
     }
 
 	//ricerca dello user e della chat
 	const findUser = await chatPrisma.user.findUnique({ where: { linkId: input.userId } })
 	if (!findUser) {
+		fastify.log.info('user with ID ${input.userId} does not exist');
 		throw new Error(`user with ID ${input.userId} does not exist`)
 	}
 	const findChat = await chatPrisma.chats.findUnique({ where: { chatId: input.userId } })
 	if (!findChat) {
+		fastify.log.info('chat with ID ${input.chatId} does not exist');
 		throw new Error(`chat with ID ${input.chatId} does not exist`)
 	}
 
@@ -28,6 +31,8 @@ export async function handleMessage(input: newMessage): Promise<string> {
 			message: input.message.toString(),
 			date: new Date()}
 	})
+
+	fastify.log.info('Message saved');
 	return 'Messaggio salvato.'
 }
 
@@ -35,7 +40,7 @@ export async function handleMessage(input: newMessage): Promise<string> {
 export async function listChatMessage(input: number[]): Promise<string> {
 	//controllo per l'input
     if (!Array.isArray(input) || input.length < 2) {
-		console.log('Input must be an array: [chatId, startIndex]')
+		fastify.log.info('Input must be an array: [chatId, startIndex]')
         throw new Error('Input must be an array: [chatId, startIndex]');
     }
     const chatId = input[0];
@@ -55,39 +60,42 @@ export async function listChatMessage(input: number[]): Promise<string> {
         }
     });
 
+	fastify.log.info('Message list returned');
     return JSON.stringify(messages);
 }
 
 //cancella tutti i messaggi di una specifica chat
 export async function deletemessages(input: number) {
 	await chatPrisma.messages.deleteMany({ where: { chat: { chatId: input } } })
+	fastify.log.info('Chat deleted');
 }
 
 //cancella il messaggio indicato
 export async function deletemessage(input: number) {
 	await chatPrisma.messages.deleteMany({ where: { id: input } })
+	fastify.log.info(`Message deleted`);
 }
 
 //creazione di una nuova chat
 export async function createChat(input: newChat): Promise<string> {
 	//controllo input
 	if (input.chatName.toString().trim() === '') {
-		console.log(`no chat name provided`);
+		fastify.log.info(`no chat name provided`);
 		throw new Error(`no chat name provided`);
 	}
 
 	//ricerca host e members
-	const host = await chatPrisma.user.findUnique({ where: { name: input.host.toString() } });
+	const host = await chatPrisma.user.findUnique({ where: { username: input.host.toString() } });
 	if (!host) {
-		console.log(`Host user "${input.host}" does not exist`);
+		fastify.log.info(`Host user "${input.host}" does not exist`);
 		throw new Error(`Host user "${input.host}" does not exist`);
 	}
 	const memberUsers = [];
 	for (const memberName of input.members) {
 		if (memberName === input.host) continue;
-		const user = await chatPrisma.user.findUnique({ where: { name: memberName.toString() } });
+		const user = await chatPrisma.user.findUnique({ where: { username: memberName.toString() } });
 		if (!user) {
-			console.log(`Member user "${memberName}" does not exist`);
+			fastify.log.info(`Member user "${memberName}" does not exist`);
 			throw new Error(`Member user "${memberName}" does not exist`);
 		}
 		memberUsers.push(user);
@@ -104,6 +112,7 @@ export async function createChat(input: newChat): Promise<string> {
 		}
 	});
 
+	fastify.log.info(`Chat created successfully`);
     return 'Chat created successfully';
 }
 
@@ -115,7 +124,7 @@ export async function userChatList(input: number): Promise<string> {
 		include: { members: true }
 	});
 	if (!user) {
-		console.log(`User with userId '${input}' does not exist`);
+		fastify.log.info(`User with userId '${input}' does not exist`);
 		throw new Error(`User with userId '${input}' does not exist`);
 	}
 
@@ -140,6 +149,8 @@ export async function userChatList(input: number): Promise<string> {
 		chatId: chat.chatId,
 		name: chat.name
 	}));
+
+	fastify.log.info('Chat list returned');
 	return JSON.stringify(result);
 }
 
@@ -147,21 +158,23 @@ export async function userChatList(input: number): Promise<string> {
 export async function userList(input: string): Promise<string> {
 	//controllo input
 	if (!input || input.trim() === '') {
-        console.log('Input string is empty')
+        fastify.log.info('Input string is empty')
         throw new Error('Input string is empty')
     }
     const username = input.trim();
 
     const userList = await chatPrisma.user.findMany({ 
         where: { 
-            name: { not: username } 
+            username: { not: username } 
         },
         select: {
             userId: true,
             linkId: true,
-            name: true
+            username: true
         }
     })
+
+	fastify.log.info('User list returned');
     return JSON.stringify(userList)
 }
 
@@ -169,7 +182,7 @@ export async function userList(input: string): Promise<string> {
 export async function searchMessage(input: string): Promise<string> {
 	//controllo input
 	if (!input || input.trim() === '') {
-        console.log('Input string is empty');
+        fastify.log.info('Input string is empty');
         throw new Error('Input string is empty');
     }
     const searchText = input.trim();
@@ -193,6 +206,7 @@ export async function searchMessage(input: string): Promise<string> {
         },
     });
 
+	fastify.log.info('Message found');
     return JSON.stringify(messageList);
 }
 
@@ -200,7 +214,7 @@ export async function searchMessage(input: string): Promise<string> {
 export async function searchChat(input: srcChat): Promise<string> {
 	// Controllo input
 	if (!input || !input.chatName || input.chatName.trim() === '' || !input.userId) {
-		console.log('Input string or userId is empty');
+		fastify.log.info('Input string or userId is empty');
 		throw new Error('Input string or userId is empty');
 	}
 	const searchText = input.chatName.trim();
@@ -233,5 +247,6 @@ export async function searchChat(input: srcChat): Promise<string> {
 		},
 	});
 
+	fastify.log.info('Chat found');
 	return JSON.stringify(chatList);
 }

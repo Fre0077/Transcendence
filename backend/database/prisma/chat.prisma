@@ -5,46 +5,40 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator chat {
-  provider = "prisma-client-js"
-  output = "./generate/chat"
+	provider = "prisma-client-js"
+	output = "./generate/chat"
 }
 
 datasource dbchat {
-  provider = "sqlite"
-  url      = "file:./chat.db"
+	provider = "sqlite"
+	url      = "file:./chat.db"
 }
 
 model messages {
-  id      Int @id @default(autoincrement())
-  chatId  Int @unique
-  userId  Int @unique
-  chat    chats @relation(fields: [chatId], references: [chatId], onDelete: Cascade)
-  user    user @relation(fields: [userId], references: [userId], onDelete: Cascade)
-  message String
-  date    DateTime @default(now())
+	id		Int @id @default(autoincrement())
+	chatId	Int @unique
+	userId	Int @unique
+	chat	chats @relation(fields: [chatId], references: [chatId], onDelete: Cascade)
+	user	user @relation(fields: [userId], references: [userId], onDelete: Cascade)
+	message	String
+	date	DateTime @default(now())
 }
 
 model chats {
-  chatId        Int @id @default(autoincrement())
-  hostId        Int @unique
-  host          user @relation("host", fields: [hostId], references: [userId], onDelete: Cascade)
-  users         user[] @relation("members")
-  messages      messages[]
-  name          String
-  lastAccessed  DateTime? @updatedAt
+	chatId			Int @id @default(autoincrement())
+	hostId			Int @unique
+	host			user @relation("host", fields: [hostId], references: [userId], onDelete: Cascade)
+	users			user[] @relation("members")
+	messages		messages[]
+	name			String
+	lastAccessed	DateTime? @updatedAt
 }
 
 model user {
-  userId    Int @id @default(autoincrement())
-  linkId    Int @unique
-  messages  messages[]
-  chatHost  chats[] @relation("host")
-  members   chats[] @relation("members")
-  name      String @unique
+	userId		Int @id @default(autoincrement())
+	linkId		Int @unique
+	messages	messages[]
+	chatHost	chats[] @relation("host")
+	members		chats[] @relation("members")
+	username	String @unique
 }
-
-// with ? the fild become optional, and with [] there are multiple of that
-//-SOME TYYPE OF VARIABEL
-// Int, Float, Boolean, BigInt, Float, Decimal(come float number), DataTime, Bytes(big file)
-// you che make relascionschip by using the name of table:
-// aggiungi il nome come attributo e post nella tabella che vuoi importare

@@ -10,6 +10,7 @@ const chatPrisma = new chatPrismaClient();
 import { newChat, newMessage, srcChat } from "../../classes/classes";
 
 export async function chatEndpoint(fastify: FastifyInstance) {
+	// Endpoint POST per avere la lsita degli user
 	fastify.post("/user-list", async (request, reply) => {
 		const { host } = request.body as { host?: string };
 		if (!host) return reply.status(400).send({ error: "Missing host" });
@@ -62,7 +63,7 @@ export async function chatEndpoint(fastify: FastifyInstance) {
 			try {
 				const { message } = JSON.parse(rawMessage.toString()) as { message?: number[] };
 				if (!message || !Array.isArray(message)) {
-					connection.socket.send(JSON.stringify({ error: "No valid index array provided" }));
+					connection.socket.send(JSON.stringify({ error: "Invalid index array provided" }));
 					return;
 				}
 				const output = await listChatMessage(message);

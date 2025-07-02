@@ -5,20 +5,20 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator user {
-  provider = "prisma-client-js"
-  output = "./generate/user"
+	provider = "prisma-client-js"
+	output = "./generate/user"
 }
 
 datasource dbuser {
-  provider = "sqlite"
-  url      = "file:./user.db"
+	provider = "sqlite"
+	url      = "file:./user.db"
 }
 
 model account {
-  id        Int @id @default(autoincrement())
-  name      String
-  surname   String
-  username  String @unique
-  email     String @unique
-  password  String
+	id        Int @id @default(autoincrement())
+	name      String
+	surname   String
+	username  String @unique
+	email     String @unique
+	password  String
 }

@@ -22,3 +22,8 @@ export interface srcChat {
 	userId: number;
 	chatName: String;
 }
+
+export interface changeProfile {
+	userId: number;
+	newValue: String;
+}

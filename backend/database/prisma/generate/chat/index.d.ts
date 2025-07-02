@@ -3409,19 +3409,19 @@ export namespace Prisma {
   export type UserMinAggregateOutputType = {
     userId: number | null
     linkId: number | null
-    name: string | null
+    username: string | null
   }
 
   export type UserMaxAggregateOutputType = {
     userId: number | null
     linkId: number | null
-    name: string | null
+    username: string | null
   }
 
   export type UserCountAggregateOutputType = {
     userId: number
     linkId: number
-    name: number
+    username: number
     _all: number
   }
 
@@ -3439,19 +3439,19 @@ export namespace Prisma {
   export type UserMinAggregateInputType = {
     userId?: true
     linkId?: true
-    name?: true
+    username?: true
   }
 
   export type UserMaxAggregateInputType = {
     userId?: true
     linkId?: true
-    name?: true
+    username?: true
   }
 
   export type UserCountAggregateInputType = {
     userId?: true
     linkId?: true
-    name?: true
+    username?: true
     _all?: true
   }
 
@@ -3544,7 +3544,7 @@ export namespace Prisma {
   export type UserGroupByOutputType = {
     userId: number
     linkId: number
-    name: string
+    username: string
     _count: UserCountAggregateOutputType | null
     _avg: UserAvgAggregateOutputType | null
     _sum: UserSumAggregateOutputType | null
@@ -3569,7 +3569,7 @@ export namespace Prisma {
   export type userSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     userId?: boolean
     linkId?: boolean
-    name?: boolean
+    username?: boolean
     messages?: boolean | user$messagesArgs<ExtArgs>
     chatHost?: boolean | user$chatHostArgs<ExtArgs>
     members?: boolean | user$membersArgs<ExtArgs>
@@ -3579,22 +3579,22 @@ export namespace Prisma {
   export type userSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     userId?: boolean
     linkId?: boolean
-    name?: boolean
+    username?: boolean
   }, ExtArgs["result"]["user"]>
 
   export type userSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     userId?: boolean
     linkId?: boolean
-    name?: boolean
+    username?: boolean
   }, ExtArgs["result"]["user"]>
 
   export type userSelectScalar = {
     userId?: boolean
     linkId?: boolean
-    name?: boolean
+    username?: boolean
   }
 
-  export type userOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"userId" | "linkId" | "name", ExtArgs["result"]["user"]>
+  export type userOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"userId" | "linkId" | "username", ExtArgs["result"]["user"]>
   export type userInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     messages?: boolean | user$messagesArgs<ExtArgs>
     chatHost?: boolean | user$chatHostArgs<ExtArgs>
@@ -3614,7 +3614,7 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       userId: number
       linkId: number
-      name: string
+      username: string
     }, ExtArgs["result"]["user"]>
     composites: {}
   }
@@ -4043,7 +4043,7 @@ export namespace Prisma {
   interface userFieldRefs {
     readonly userId: FieldRef<"user", 'Int'>
     readonly linkId: FieldRef<"user", 'Int'>
-    readonly name: FieldRef<"user", 'String'>
+    readonly username: FieldRef<"user", 'String'>
   }
     
 
@@ -4555,7 +4555,7 @@ export namespace Prisma {
   export const UserScalarFieldEnum: {
     userId: 'userId',
     linkId: 'linkId',
-    name: 'name'
+    username: 'username'
   };
 
   export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
@@ -4638,16 +4638,16 @@ export namespace Prisma {
 
   export type messagesWhereUniqueInput = Prisma.AtLeast<{
     id?: number
+    chatId?: number
+    userId?: number
     AND?: messagesWhereInput | messagesWhereInput[]
     OR?: messagesWhereInput[]
     NOT?: messagesWhereInput | messagesWhereInput[]
-    chatId?: IntFilter<"messages"> | number
-    userId?: IntFilter<"messages"> | number
     message?: StringFilter<"messages"> | string
     date?: DateTimeFilter<"messages"> | Date | string
     chat?: XOR<ChatsScalarRelationFilter, chatsWhereInput>
     user?: XOR<UserScalarRelationFilter, userWhereInput>
-  }, "id">
+  }, "id" | "chatId" | "userId">
 
   export type messagesOrderByWithAggregationInput = {
     id?: SortOrder
@@ -4698,16 +4698,16 @@ export namespace Prisma {
 
   export type chatsWhereUniqueInput = Prisma.AtLeast<{
     chatId?: number
+    hostId?: number
     AND?: chatsWhereInput | chatsWhereInput[]
     OR?: chatsWhereInput[]
     NOT?: chatsWhereInput | chatsWhereInput[]
-    hostId?: IntFilter<"chats"> | number
     name?: StringFilter<"chats"> | string
     lastAccessed?: DateTimeNullableFilter<"chats"> | Date | string | null
     host?: XOR<UserScalarRelationFilter, userWhereInput>
     users?: UserListRelationFilter
     messages?: MessagesListRelationFilter
-  }, "chatId">
+  }, "chatId" | "hostId">
 
   export type chatsOrderByWithAggregationInput = {
     chatId?: SortOrder
@@ -4737,7 +4737,7 @@ export namespace Prisma {
     NOT?: userWhereInput | userWhereInput[]
     userId?: IntFilter<"user"> | number
     linkId?: IntFilter<"user"> | number
-    name?: StringFilter<"user"> | string
+    username?: StringFilter<"user"> | string
     messages?: MessagesListRelationFilter
     chatHost?: ChatsListRelationFilter
     members?: ChatsListRelationFilter
@@ -4746,7 +4746,7 @@ export namespace Prisma {
   export type userOrderByWithRelationInput = {
     userId?: SortOrder
     linkId?: SortOrder
-    name?: SortOrder
+    username?: SortOrder
     messages?: messagesOrderByRelationAggregateInput
     chatHost?: chatsOrderByRelationAggregateInput
     members?: chatsOrderByRelationAggregateInput
@@ -4755,19 +4755,19 @@ export namespace Prisma {
   export type userWhereUniqueInput = Prisma.AtLeast<{
     userId?: number
     linkId?: number
-    name?: string
+    username?: string
     AND?: userWhereInput | userWhereInput[]
     OR?: userWhereInput[]
     NOT?: userWhereInput | userWhereInput[]
     messages?: MessagesListRelationFilter
     chatHost?: ChatsListRelationFilter
     members?: ChatsListRelationFilter
-  }, "userId" | "linkId" | "name">
+  }, "userId" | "linkId" | "username">
 
   export type userOrderByWithAggregationInput = {
     userId?: SortOrder
     linkId?: SortOrder
-    name?: SortOrder
+    username?: SortOrder
     _count?: userCountOrderByAggregateInput
     _avg?: userAvgOrderByAggregateInput
     _max?: userMaxOrderByAggregateInput
@@ -4781,7 +4781,7 @@ export namespace Prisma {
     NOT?: userScalarWhereWithAggregatesInput | userScalarWhereWithAggregatesInput[]
     userId?: IntWithAggregatesFilter<"user"> | number
     linkId?: IntWithAggregatesFilter<"user"> | number
-    name?: StringWithAggregatesFilter<"user"> | string
+    username?: StringWithAggregatesFilter<"user"> | string
   }
 
   export type messagesCreateInput = {
@@ -4890,7 +4890,7 @@ export namespace Prisma {
 
   export type userCreateInput = {
     linkId: number
-    name: string
+    username: string
     messages?: messagesCreateNestedManyWithoutUserInput
     chatHost?: chatsCreateNestedManyWithoutHostInput
     members?: chatsCreateNestedManyWithoutUsersInput
@@ -4899,7 +4899,7 @@ export namespace Prisma {
   export type userUncheckedCreateInput = {
     userId?: number
     linkId: number
-    name: string
+    username: string
     messages?: messagesUncheckedCreateNestedManyWithoutUserInput
     chatHost?: chatsUncheckedCreateNestedManyWithoutHostInput
     members?: chatsUncheckedCreateNestedManyWithoutUsersInput
@@ -4907,7 +4907,7 @@ export namespace Prisma {
 
   export type userUpdateInput = {
     linkId?: IntFieldUpdateOperationsInput | number
-    name?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
     messages?: messagesUpdateManyWithoutUserNestedInput
     chatHost?: chatsUpdateManyWithoutHostNestedInput
     members?: chatsUpdateManyWithoutUsersNestedInput
@@ -4916,7 +4916,7 @@ export namespace Prisma {
   export type userUncheckedUpdateInput = {
     userId?: IntFieldUpdateOperationsInput | number
     linkId?: IntFieldUpdateOperationsInput | number
-    name?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
     messages?: messagesUncheckedUpdateManyWithoutUserNestedInput
     chatHost?: chatsUncheckedUpdateManyWithoutHostNestedInput
     members?: chatsUncheckedUpdateManyWithoutUsersNestedInput
@@ -4925,18 +4925,18 @@ export namespace Prisma {
   export type userCreateManyInput = {
     userId?: number
     linkId: number
-    name: string
+    username: string
   }
 
   export type userUpdateManyMutationInput = {
     linkId?: IntFieldUpdateOperationsInput | number
-    name?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
   }
 
   export type userUncheckedUpdateManyInput = {
     userId?: IntFieldUpdateOperationsInput | number
     linkId?: IntFieldUpdateOperationsInput | number
-    name?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
   }
 
   export type IntFilter<$PrismaModel = never> = {
@@ -5162,7 +5162,7 @@ export namespace Prisma {
   export type userCountOrderByAggregateInput = {
     userId?: SortOrder
     linkId?: SortOrder
-    name?: SortOrder
+    username?: SortOrder
   }
 
   export type userAvgOrderByAggregateInput = {
@@ -5173,13 +5173,13 @@ export namespace Prisma {
   export type userMaxOrderByAggregateInput = {
     userId?: SortOrder
     linkId?: SortOrder
-    name?: SortOrder
+    username?: SortOrder
   }
 
   export type userMinOrderByAggregateInput = {
     userId?: SortOrder
     linkId?: SortOrder
-    name?: SortOrder
+    username?: SortOrder
   }
 
   export type userSumOrderByAggregateInput = {
@@ -5603,7 +5603,7 @@ export namespace Prisma {
 
   export type userCreateWithoutMessagesInput = {
     linkId: number
-    name: string
+    username: string
     chatHost?: chatsCreateNestedManyWithoutHostInput
     members?: chatsCreateNestedManyWithoutUsersInput
   }
@@ -5611,7 +5611,7 @@ export namespace Prisma {
   export type userUncheckedCreateWithoutMessagesInput = {
     userId?: number
     linkId: number
-    name: string
+    username: string
     chatHost?: chatsUncheckedCreateNestedManyWithoutHostInput
     members?: chatsUncheckedCreateNestedManyWithoutUsersInput
   }
@@ -5660,7 +5660,7 @@ export namespace Prisma {
 
   export type userUpdateWithoutMessagesInput = {
     linkId?: IntFieldUpdateOperationsInput | number
-    name?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
     chatHost?: chatsUpdateManyWithoutHostNestedInput
     members?: chatsUpdateManyWithoutUsersNestedInput
   }
@@ -5668,14 +5668,14 @@ export namespace Prisma {
   export type userUncheckedUpdateWithoutMessagesInput = {
     userId?: IntFieldUpdateOperationsInput | number
     linkId?: IntFieldUpdateOperationsInput | number
-    name?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
     chatHost?: chatsUncheckedUpdateManyWithoutHostNestedInput
     members?: chatsUncheckedUpdateManyWithoutUsersNestedInput
   }
 
   export type userCreateWithoutChatHostInput = {
     linkId: number
-    name: string
+    username: string
     messages?: messagesCreateNestedManyWithoutUserInput
     members?: chatsCreateNestedManyWithoutUsersInput
   }
@@ -5683,7 +5683,7 @@ export namespace Prisma {
   export type userUncheckedCreateWithoutChatHostInput = {
     userId?: number
     linkId: number
-    name: string
+    username: string
     messages?: messagesUncheckedCreateNestedManyWithoutUserInput
     members?: chatsUncheckedCreateNestedManyWithoutUsersInput
   }
@@ -5695,7 +5695,7 @@ export namespace Prisma {
 
   export type userCreateWithoutMembersInput = {
     linkId: number
-    name: string
+    username: string
     messages?: messagesCreateNestedManyWithoutUserInput
     chatHost?: chatsCreateNestedManyWithoutHostInput
   }
@@ -5703,7 +5703,7 @@ export namespace Prisma {
   export type userUncheckedCreateWithoutMembersInput = {
     userId?: number
     linkId: number
-    name: string
+    username: string
     messages?: messagesUncheckedCreateNestedManyWithoutUserInput
     chatHost?: chatsUncheckedCreateNestedManyWithoutHostInput
   }
@@ -5748,7 +5748,7 @@ export namespace Prisma {
 
   export type userUpdateWithoutChatHostInput = {
     linkId?: IntFieldUpdateOperationsInput | number
-    name?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
     messages?: messagesUpdateManyWithoutUserNestedInput
     members?: chatsUpdateManyWithoutUsersNestedInput
   }
@@ -5756,7 +5756,7 @@ export namespace Prisma {
   export type userUncheckedUpdateWithoutChatHostInput = {
     userId?: IntFieldUpdateOperationsInput | number
     linkId?: IntFieldUpdateOperationsInput | number
-    name?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
     messages?: messagesUncheckedUpdateManyWithoutUserNestedInput
     members?: chatsUncheckedUpdateManyWithoutUsersNestedInput
   }
@@ -5783,7 +5783,7 @@ export namespace Prisma {
     NOT?: userScalarWhereInput | userScalarWhereInput[]
     userId?: IntFilter<"user"> | number
     linkId?: IntFilter<"user"> | number
-    name?: StringFilter<"user"> | string
+    username?: StringFilter<"user"> | string
   }
 
   export type messagesUpsertWithWhereUniqueWithoutChatInput = {
@@ -5946,7 +5946,7 @@ export namespace Prisma {
 
   export type userUpdateWithoutMembersInput = {
     linkId?: IntFieldUpdateOperationsInput | number
-    name?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
     messages?: messagesUpdateManyWithoutUserNestedInput
     chatHost?: chatsUpdateManyWithoutHostNestedInput
   }
@@ -5954,7 +5954,7 @@ export namespace Prisma {
   export type userUncheckedUpdateWithoutMembersInput = {
     userId?: IntFieldUpdateOperationsInput | number
     linkId?: IntFieldUpdateOperationsInput | number
-    name?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
     messages?: messagesUncheckedUpdateManyWithoutUserNestedInput
     chatHost?: chatsUncheckedUpdateManyWithoutHostNestedInput
   }
@@ -5962,7 +5962,7 @@ export namespace Prisma {
   export type userUncheckedUpdateManyWithoutMembersInput = {
     userId?: IntFieldUpdateOperationsInput | number
     linkId?: IntFieldUpdateOperationsInput | number
-    name?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
   }
 
   export type messagesUpdateWithoutChatInput = {

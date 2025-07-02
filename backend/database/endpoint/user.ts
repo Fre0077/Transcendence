@@ -1,4 +1,3 @@
-import type { RawData } from "ws";
 import type { FastifyInstance } from "fastify";
 import { createUser, loginUser } from "../dataFunction/user";
 
@@ -8,10 +7,11 @@ const userPrisma = new userPrismaClient();
 import { userLogin } from "../../classes/classes";
 
 export async function userEndpoint(fastify: FastifyInstance) {
+	// Endpoint POST per la creazione di un account
 	fastify.post("/register", async (request, reply) => {
 		const userData = request.body as userLogin;
 		if (!userData)
-			return reply.status(400).send({ error: "Missing user data" });
+			return reply.status(400).send({ error: "Missing register data" });
 		try {
 			await createUser(userData);
 			return reply.status(201).send({ message: "User created" });

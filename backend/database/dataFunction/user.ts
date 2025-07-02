@@ -4,18 +4,19 @@ import { PrismaClient as chatPrismaClient } from "../prisma/generate/chat"
 const chatPrisma = new chatPrismaClient()
 
 import { userLogin } from "../../classes/classes"
+import { fastify } from "../server";
 
-//ordine request:stesso ordine della tabella di prisma (username = name)
+//aggiunge user al databse
 export async function createUser(input: userLogin): Promise<string> {	
-	//ricerca dello user e della chat
+	//ricerca dello user
 	const findUsername = await userPrisma.account.findUnique({ where: { username: input.username.toString() } })
 	if (findUsername) {
-		console.log(`the username ${input.username} already exist`)
+		fastify.log.info(`the username ${input.username} already exist`)
 		throw new Error(`the username ${input.username} already exist`)
 	}
 	const findEmail = await userPrisma.account.findUnique({ where: { email: input.email.toString() } })
 	if (findEmail) {
-		console.log(`the email ${input.email} already exist`)
+		fastify.log.info(`the email ${input.email} already exist`)
 		throw new Error(`the email ${input.email} already exist`)
 	}
 
@@ -30,23 +31,28 @@ export async function createUser(input: userLogin): Promise<string> {
 	})
 	await chatPrisma.user.create({
 		data: {
-			name: newAccount.username,
+			username: newAccount.username,
 			linkId: newAccount.id}
 	})
+
+	fastify.log.info(`User created`);
 	return 'user created'
 }
 
+//check per il login
 export async function loginUser(input:  userLogin): Promise<string> {
 	// Controlla se esiste un account con l'email fornita
     const account = await userPrisma.account.findUnique({ where: { email: input.email.toString() } });
     if (!account) {
-        console.log(`Wrong email`);
+        fastify.log.info(`Wrong email`);
         throw new Error(`Wrong email`);
     }
     // Verifica che la password fornita corrisponda a quella dell'account trovato
     if (account.password !== input.password.toString()) {
-        console.log(`Wrong password`);
+        fastify.log.info(`Wrong password`);
 		throw new Error(`Wrong password`);
     }
+
+	fastify.log.info(`Login success`);
 	return account.username
 }

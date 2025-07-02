@@ -1,0 +1,30 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator profile {
+  provider = "prisma-client-js"
+  output   = "./generate/profile"
+}
+
+datasource dbprofile {
+  provider = "sqlite"
+  url      = "file:./profile.db"
+}
+
+model score {
+  id       Int    @id @default(autoincrement())
+  playerid Int    @unique
+  user     player @relation(fields: [playerid], references: [playerid], onDelete: Cascade)
+  score    String
+  game     String
+}
+
+model player {
+  playerid   Int     @id @default(autoincrement())
+  tournament score[]
+  username   String  @unique
+  bios       String
+}

@@ -16,8 +16,8 @@ datasource dbchat {
 
 model messages {
   id      Int      @id @default(autoincrement())
-  chatId  Int
-  userId  Int
+  chatId  Int      @unique
+  userId  Int      @unique
   chat    chats    @relation(fields: [chatId], references: [chatId], onDelete: Cascade)
   user    user     @relation(fields: [userId], references: [userId], onDelete: Cascade)
   message String
@@ -26,7 +26,7 @@ model messages {
 
 model chats {
   chatId       Int        @id @default(autoincrement())
-  hostId       Int
+  hostId       Int        @unique
   host         user       @relation("host", fields: [hostId], references: [userId], onDelete: Cascade)
   users        user[]     @relation("members")
   messages     messages[]
@@ -40,11 +40,5 @@ model user {
   messages messages[]
   chatHost chats[]    @relation("host")
   members  chats[]    @relation("members")
-  name     String     @unique
+  username String     @unique
 }
-
-// with ? the fild become optional, and with [] there are multiple of that
-//-SOME TYYPE OF VARIABEL
-// Int, Float, Boolean, BigInt, Float, Decimal(come float number), DataTime, Bytes(big file)
-// you che make relascionschip by using the name of table:
-// aggiungi il nome come attributo e post nella tabella che vuoi importare

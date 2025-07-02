@@ -135,7 +135,7 @@ exports.Prisma.ChatsScalarFieldEnum = {
 exports.Prisma.UserScalarFieldEnum = {
   userId: 'userId',
   linkId: 'linkId',
-  name: 'name'
+  username: 'username'
 };
 
 exports.Prisma.SortOrder = {

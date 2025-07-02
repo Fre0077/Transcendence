@@ -5,26 +5,26 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator profile {
-  provider = "prisma-client-js"
-  output = "./generate/profile"
+	provider = "prisma-client-js"
+	output = "./generate/profile"
 }
 
-datasource dbuser {
-  provider = "sqlite"
-  url      = "file:./profile.db"
+datasource dbprofile {
+	provider = "sqlite"
+	url      = "file:./profile.db"
 }
 
-model dashboard {
-  id		Int @id @default(autoincrement())
-  userid	number @unique
-  user		chats @relation(fields: [userid], references: [userid], onDelete: Cascade)
-  score		String
-  game		String
+model score {
+	id			Int @id @default(autoincrement())
+	playerid	Int @unique
+	user		player @relation(fields: [playerid], references: [playerid], onDelete: Cascade)
+	score		String
+	game		String
 }
 
-model user {
-  userid		Int @id @default(autoincrement())
-  tournament	tournament[]
-  username		String @unique
-  bios			String
+model player {
+	playerid	Int @id @default(autoincrement())
+	tournament	score[]
+	username	String @unique
+	bios		String
 }

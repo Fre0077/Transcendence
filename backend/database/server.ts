@@ -3,8 +3,14 @@ import cors from "@fastify/cors";
 import websocket from "@fastify/websocket";
 import { chatEndpoint } from "./endpoint/chat";
 import { userEndpoint } from "./endpoint/user";
+import { profileEndpoint } from "./endpoint/profile";
 
-const fastify = Fastify();
+export const fastify = Fastify({
+	logger: {
+        level: 'info',
+		file: './database/Log.log'
+    }
+});
 
 //registro cors e i websocket
 fastify.register(cors, {
@@ -35,6 +41,7 @@ fastify.addContentTypeParser(
 // ENDPOINT PER GESTIRE LE REQUEST
 fastify.register(chatEndpoint);
 fastify.register(userEndpoint);
+fastify.register(profileEndpoint);
 
 // Avvia il server
 fastify.listen({ port: 3000, host: "0.0.0.0" }, (err, address) => {
