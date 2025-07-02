@@ -8,19 +8,42 @@ import { fastify } from "../server";
 export async function handleMessage(input: newMessage): Promise<string> {
 	if (input.message.toString().trim() === '') {
 		fastify.log.info('No message text provided');
-        throw new Error('No message text provided');
-    }
-
-	//ricerca dello user e della chat
-	const findUser = await chatPrisma.user.findUnique({ where: { linkId: input.userId } })
-	if (!findUser) {
-		fastify.log.info('user with ID ${input.userId} does not exist');
-		throw new Error(`user with ID ${input.userId} does not exist`)
+		throw new Error('No message text provided');
 	}
-	const findChat = await chatPrisma.chats.findUnique({ where: { chatId: input.userId } })
+
+	// ricerca dello user e della chat
+	const findUser = await chatPrisma.user.findUnique({ where: { linkId: input.userId }, include: { blockedUsers: true, blockedBy: true } });
+	if (!findUser) {
+		fastify.log.info(`user with ID ${input.userId} does not exist`);
+		throw new Error(`user with ID ${input.userId} does not exist`);
+	}
+	const findChat = await chatPrisma.chats.findUnique({ where: { chatId: input.chatId }, include: { users: true, host: true } });
 	if (!findChat) {
-		fastify.log.info('chat with ID ${input.chatId} does not exist');
-		throw new Error(`chat with ID ${input.chatId} does not exist`)
+		fastify.log.info(`chat with ID ${input.chatId} does not exist`);
+		throw new Error(`chat with ID ${input.chatId} does not exist`);
+	}
+
+	// Trova tutti gli userId partecipanti alla chat (escludendo chi invia)
+	const otherUserIds = findChat.users
+		.filter(u => u.linkId !== input.userId)
+		.map(u => u.userId);
+	if (findChat.host && findChat.host.linkId !== input.userId) {
+		otherUserIds.push(findChat.host.userId);
+	}
+
+	// Controlla se uno degli altri utenti ha bloccato chi invia, o viceversa
+	for (const otherUserId of otherUserIds) {
+		// L'utente che invia ha bloccato l'altro?
+		if (findUser.blockedUsers.some(u => u.userId === otherUserId)) {
+			fastify.log.info(`User ${input.userId} has blocked user ${otherUserId}`);
+			throw new Error(`You have blocked a participant in this chat`);
+		}
+		// L'altro ha bloccato chi invia?
+		const otherUser = await chatPrisma.user.findUnique({ where: { userId: otherUserId }, include: { blockedUsers: true } });
+		if (otherUser && otherUser.blockedUsers.some(u => u.userId === findUser.userId)) {
+			fastify.log.info(`User ${otherUserId} has blocked user ${input.userId}`);
+			throw new Error(`You are blocked by a participant in this chat`);
+		}
 	}
 
 	//creazione del nuovo messaggio
@@ -29,8 +52,9 @@ export async function handleMessage(input: newMessage): Promise<string> {
 			chat: { connect: { chatId: findChat.chatId } },
 			user: { connect: { linkId: findUser.linkId } },
 			message: input.message.toString(),
-			date: new Date()}
-	})
+			date: new Date()
+		}
+	});
 
 	fastify.log.info('Message saved');
 	return 'Messaggio salvato.'
@@ -38,30 +62,63 @@ export async function handleMessage(input: newMessage): Promise<string> {
 
 //ricerca tutti i messaggi apperteneti ad una chat
 export async function listChatMessage(input: number[]): Promise<string> {
-	//controllo per l'input
-    if (!Array.isArray(input) || input.length < 2) {
-		fastify.log.info('Input must be an array: [chatId, startIndex]')
-        throw new Error('Input must be an array: [chatId, startIndex]');
-    }
-    const chatId = input[0];
-    const startIndex = input[1];
+	if (!Array.isArray(input) || input.length < 2) {
+		fastify.log.info('Input must be an array: [chatId, startIndex, userId]');
+		throw new Error('Input must be an array: [chatId, startIndex, userId]');
+	}
+	const chatId = input[0];
+	const startIndex = input[1];
+	const userId = input[2];
+
+	// Controlla che l'utente esista
+	const user = await chatPrisma.user.findUnique({ where: { userId }, include: { blockedUsers: true, blockedBy: true } });
+	if (!user) {
+		fastify.log.info(`User with ID ${userId} does not exist`);
+		throw new Error(`User with ID ${userId} does not exist`);
+	}
+
+	// Trova tutti gli altri utenti della chat
+	const chat = await chatPrisma.chats.findUnique({ where: { chatId }, include: { users: true, host: true } });
+	if (!chat) {
+		fastify.log.info(`Chat with ID ${chatId} does not exist`);
+		throw new Error(`Chat with ID ${chatId} does not exist`);
+	}
+	const otherUserIds = chat.users
+		.filter(u => u.userId !== userId)
+		.map(u => u.userId);
+	if (chat.host && chat.host.userId !== userId) {
+		otherUserIds.push(chat.host.userId);
+	}
+
+	// Controlla se uno degli altri utenti ha bloccato chi richiede, o viceversa
+	for (const otherUserId of otherUserIds) {
+		if (user.blockedUsers.some(u => u.userId === otherUserId)) {
+			fastify.log.info(`User ${userId} has blocked user ${otherUserId}`);
+			throw new Error(`You have blocked a participant in this chat`);
+		}
+		const otherUser = await chatPrisma.user.findUnique({ where: { userId: otherUserId }, include: { blockedUsers: true } });
+		if (otherUser && otherUser.blockedUsers.some(u => u.userId === user.userId)) {
+			fastify.log.info(`User ${otherUserId} has blocked user ${userId}`);
+			throw new Error(`You are blocked by a participant in this chat`);
+		}
+	}
 
 	//ricerca dei messaggi
-    const messages = await chatPrisma.messages.findMany({
-        where: { chatId },
-        orderBy: { date: 'desc' },
-        skip: startIndex,
-        take: 100,
-        select: {
-            id: true,
-            userId: true,
-            message: true,
-            date: true
-        }
-    });
+	const messages = await chatPrisma.messages.findMany({
+		where: { chatId },
+		orderBy: { date: 'desc' },
+		skip: startIndex,
+		take: 100,
+		select: {
+			id: true,
+			userId: true,
+			message: true,
+			date: true
+		}
+	});
 
 	fastify.log.info('Message list returned');
-    return JSON.stringify(messages);
+	return JSON.stringify(messages);
 }
 
 //cancella tutti i messaggi di una specifica chat
@@ -249,4 +306,64 @@ export async function searchChat(input: srcChat): Promise<string> {
 
 	fastify.log.info('Chat found');
 	return JSON.stringify(chatList);
+}
+
+//blocca lo user indicato
+export async function blockUser(input: number[]): Promise<string> {
+	if (!Array.isArray(input) || input.length !== 2) {
+		fastify.log.info('Input must be [blockerUserId, blockedUserId]');
+		throw new Error('Input must be [blockerUserId, blockedUserId]');
+	}
+	const [blockerUserId, blockedUserId] = input;
+
+	// Controlla che entrambi gli utenti esistano
+	const blocker = await chatPrisma.user.findUnique({ where: { userId: blockerUserId } });
+	const blocked = await chatPrisma.user.findUnique({ where: { userId: blockedUserId } });
+	if (!blocker || !blocked) {
+		fastify.log.info('One or both users do not exist');
+		throw new Error('One or both users do not exist');
+	}
+
+	// Aggiorna la relazione blockedUsers
+	await chatPrisma.user.update({
+		where: { userId: blockerUserId },
+		data: {
+			blockedUsers: {
+				connect: { userId: blockedUserId }
+			}
+		}
+	});
+
+	fastify.log.info(`User ${blockedUserId} blocked by ${blockerUserId}`);
+	return `User ${blockedUserId} blocked by ${blockerUserId}`;
+}
+
+//sblocca una user bloccato
+export async function FreeUser(input: number[]): Promise<string> {
+	if (!Array.isArray(input) || input.length !== 2) {
+		fastify.log.info('Input must be [blockerUserId, blockedUserId]');
+		throw new Error('Input must be [blockerUserId, blockedUserId]');
+	}
+	const [blockerUserId, blockedUserId] = input;
+
+	// Controlla che entrambi gli utenti esistano
+	const blocker = await chatPrisma.user.findUnique({ where: { userId: blockerUserId } });
+	const blocked = await chatPrisma.user.findUnique({ where: { userId: blockedUserId } });
+	if (!blocker || !blocked) {
+		fastify.log.info('One or both users do not exist');
+		throw new Error('One or both users do not exist');
+	}
+
+	// Aggiorna la relazione blockedUsers
+	await chatPrisma.user.update({
+		where: { userId: blockerUserId },
+		data: {
+			blockedUsers: {
+				disconnect: { userId: blockedUserId }
+			}
+		}
+	});
+
+	fastify.log.info(`User ${blockedUserId} unblocked by ${blockerUserId}`);
+	return `User ${blockedUserId} unblocked by ${blockerUserId}`;
 }

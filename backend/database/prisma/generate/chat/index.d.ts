@@ -1094,12 +1094,16 @@ export namespace Prisma {
     messages: number
     chatHost: number
     members: number
+    blockedUsers: number
+    blockedBy: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     messages?: boolean | UserCountOutputTypeCountMessagesArgs
     chatHost?: boolean | UserCountOutputTypeCountChatHostArgs
     members?: boolean | UserCountOutputTypeCountMembersArgs
+    blockedUsers?: boolean | UserCountOutputTypeCountBlockedUsersArgs
+    blockedBy?: boolean | UserCountOutputTypeCountBlockedByArgs
   }
 
   // Custom InputTypes
@@ -1132,6 +1136,20 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountMembersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: chatsWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountBlockedUsersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: userWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountBlockedByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: userWhereInput
   }
 
 
@@ -3573,6 +3591,8 @@ export namespace Prisma {
     messages?: boolean | user$messagesArgs<ExtArgs>
     chatHost?: boolean | user$chatHostArgs<ExtArgs>
     members?: boolean | user$membersArgs<ExtArgs>
+    blockedUsers?: boolean | user$blockedUsersArgs<ExtArgs>
+    blockedBy?: boolean | user$blockedByArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -3599,6 +3619,8 @@ export namespace Prisma {
     messages?: boolean | user$messagesArgs<ExtArgs>
     chatHost?: boolean | user$chatHostArgs<ExtArgs>
     members?: boolean | user$membersArgs<ExtArgs>
+    blockedUsers?: boolean | user$blockedUsersArgs<ExtArgs>
+    blockedBy?: boolean | user$blockedByArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type userIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -3610,6 +3632,8 @@ export namespace Prisma {
       messages: Prisma.$messagesPayload<ExtArgs>[]
       chatHost: Prisma.$chatsPayload<ExtArgs>[]
       members: Prisma.$chatsPayload<ExtArgs>[]
+      blockedUsers: Prisma.$userPayload<ExtArgs>[]
+      blockedBy: Prisma.$userPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       userId: number
@@ -4012,6 +4036,8 @@ export namespace Prisma {
     messages<T extends user$messagesArgs<ExtArgs> = {}>(args?: Subset<T, user$messagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$messagesPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     chatHost<T extends user$chatHostArgs<ExtArgs> = {}>(args?: Subset<T, user$chatHostArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$chatsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     members<T extends user$membersArgs<ExtArgs> = {}>(args?: Subset<T, user$membersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$chatsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    blockedUsers<T extends user$blockedUsersArgs<ExtArgs> = {}>(args?: Subset<T, user$blockedUsersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$userPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    blockedBy<T extends user$blockedByArgs<ExtArgs> = {}>(args?: Subset<T, user$blockedByArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$userPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -4502,6 +4528,54 @@ export namespace Prisma {
   }
 
   /**
+   * user.blockedUsers
+   */
+  export type user$blockedUsersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the user
+     */
+    select?: userSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the user
+     */
+    omit?: userOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: userInclude<ExtArgs> | null
+    where?: userWhereInput
+    orderBy?: userOrderByWithRelationInput | userOrderByWithRelationInput[]
+    cursor?: userWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: UserScalarFieldEnum | UserScalarFieldEnum[]
+  }
+
+  /**
+   * user.blockedBy
+   */
+  export type user$blockedByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the user
+     */
+    select?: userSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the user
+     */
+    omit?: userOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: userInclude<ExtArgs> | null
+    where?: userWhereInput
+    orderBy?: userOrderByWithRelationInput | userOrderByWithRelationInput[]
+    cursor?: userWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: UserScalarFieldEnum | UserScalarFieldEnum[]
+  }
+
+  /**
    * user without action
    */
   export type userDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4741,6 +4815,8 @@ export namespace Prisma {
     messages?: MessagesListRelationFilter
     chatHost?: ChatsListRelationFilter
     members?: ChatsListRelationFilter
+    blockedUsers?: UserListRelationFilter
+    blockedBy?: UserListRelationFilter
   }
 
   export type userOrderByWithRelationInput = {
@@ -4750,6 +4826,8 @@ export namespace Prisma {
     messages?: messagesOrderByRelationAggregateInput
     chatHost?: chatsOrderByRelationAggregateInput
     members?: chatsOrderByRelationAggregateInput
+    blockedUsers?: userOrderByRelationAggregateInput
+    blockedBy?: userOrderByRelationAggregateInput
   }
 
   export type userWhereUniqueInput = Prisma.AtLeast<{
@@ -4762,6 +4840,8 @@ export namespace Prisma {
     messages?: MessagesListRelationFilter
     chatHost?: ChatsListRelationFilter
     members?: ChatsListRelationFilter
+    blockedUsers?: UserListRelationFilter
+    blockedBy?: UserListRelationFilter
   }, "userId" | "linkId" | "username">
 
   export type userOrderByWithAggregationInput = {
@@ -4894,6 +4974,8 @@ export namespace Prisma {
     messages?: messagesCreateNestedManyWithoutUserInput
     chatHost?: chatsCreateNestedManyWithoutHostInput
     members?: chatsCreateNestedManyWithoutUsersInput
+    blockedUsers?: userCreateNestedManyWithoutBlockedByInput
+    blockedBy?: userCreateNestedManyWithoutBlockedUsersInput
   }
 
   export type userUncheckedCreateInput = {
@@ -4903,6 +4985,8 @@ export namespace Prisma {
     messages?: messagesUncheckedCreateNestedManyWithoutUserInput
     chatHost?: chatsUncheckedCreateNestedManyWithoutHostInput
     members?: chatsUncheckedCreateNestedManyWithoutUsersInput
+    blockedUsers?: userUncheckedCreateNestedManyWithoutBlockedByInput
+    blockedBy?: userUncheckedCreateNestedManyWithoutBlockedUsersInput
   }
 
   export type userUpdateInput = {
@@ -4911,6 +4995,8 @@ export namespace Prisma {
     messages?: messagesUpdateManyWithoutUserNestedInput
     chatHost?: chatsUpdateManyWithoutHostNestedInput
     members?: chatsUpdateManyWithoutUsersNestedInput
+    blockedUsers?: userUpdateManyWithoutBlockedByNestedInput
+    blockedBy?: userUpdateManyWithoutBlockedUsersNestedInput
   }
 
   export type userUncheckedUpdateInput = {
@@ -4920,6 +5006,8 @@ export namespace Prisma {
     messages?: messagesUncheckedUpdateManyWithoutUserNestedInput
     chatHost?: chatsUncheckedUpdateManyWithoutHostNestedInput
     members?: chatsUncheckedUpdateManyWithoutUsersNestedInput
+    blockedUsers?: userUncheckedUpdateManyWithoutBlockedByNestedInput
+    blockedBy?: userUncheckedUpdateManyWithoutBlockedUsersNestedInput
   }
 
   export type userCreateManyInput = {
@@ -5349,6 +5437,18 @@ export namespace Prisma {
     connect?: chatsWhereUniqueInput | chatsWhereUniqueInput[]
   }
 
+  export type userCreateNestedManyWithoutBlockedByInput = {
+    create?: XOR<userCreateWithoutBlockedByInput, userUncheckedCreateWithoutBlockedByInput> | userCreateWithoutBlockedByInput[] | userUncheckedCreateWithoutBlockedByInput[]
+    connectOrCreate?: userCreateOrConnectWithoutBlockedByInput | userCreateOrConnectWithoutBlockedByInput[]
+    connect?: userWhereUniqueInput | userWhereUniqueInput[]
+  }
+
+  export type userCreateNestedManyWithoutBlockedUsersInput = {
+    create?: XOR<userCreateWithoutBlockedUsersInput, userUncheckedCreateWithoutBlockedUsersInput> | userCreateWithoutBlockedUsersInput[] | userUncheckedCreateWithoutBlockedUsersInput[]
+    connectOrCreate?: userCreateOrConnectWithoutBlockedUsersInput | userCreateOrConnectWithoutBlockedUsersInput[]
+    connect?: userWhereUniqueInput | userWhereUniqueInput[]
+  }
+
   export type messagesUncheckedCreateNestedManyWithoutUserInput = {
     create?: XOR<messagesCreateWithoutUserInput, messagesUncheckedCreateWithoutUserInput> | messagesCreateWithoutUserInput[] | messagesUncheckedCreateWithoutUserInput[]
     connectOrCreate?: messagesCreateOrConnectWithoutUserInput | messagesCreateOrConnectWithoutUserInput[]
@@ -5367,6 +5467,18 @@ export namespace Prisma {
     create?: XOR<chatsCreateWithoutUsersInput, chatsUncheckedCreateWithoutUsersInput> | chatsCreateWithoutUsersInput[] | chatsUncheckedCreateWithoutUsersInput[]
     connectOrCreate?: chatsCreateOrConnectWithoutUsersInput | chatsCreateOrConnectWithoutUsersInput[]
     connect?: chatsWhereUniqueInput | chatsWhereUniqueInput[]
+  }
+
+  export type userUncheckedCreateNestedManyWithoutBlockedByInput = {
+    create?: XOR<userCreateWithoutBlockedByInput, userUncheckedCreateWithoutBlockedByInput> | userCreateWithoutBlockedByInput[] | userUncheckedCreateWithoutBlockedByInput[]
+    connectOrCreate?: userCreateOrConnectWithoutBlockedByInput | userCreateOrConnectWithoutBlockedByInput[]
+    connect?: userWhereUniqueInput | userWhereUniqueInput[]
+  }
+
+  export type userUncheckedCreateNestedManyWithoutBlockedUsersInput = {
+    create?: XOR<userCreateWithoutBlockedUsersInput, userUncheckedCreateWithoutBlockedUsersInput> | userCreateWithoutBlockedUsersInput[] | userUncheckedCreateWithoutBlockedUsersInput[]
+    connectOrCreate?: userCreateOrConnectWithoutBlockedUsersInput | userCreateOrConnectWithoutBlockedUsersInput[]
+    connect?: userWhereUniqueInput | userWhereUniqueInput[]
   }
 
   export type messagesUpdateManyWithoutUserNestedInput = {
@@ -5410,6 +5522,32 @@ export namespace Prisma {
     deleteMany?: chatsScalarWhereInput | chatsScalarWhereInput[]
   }
 
+  export type userUpdateManyWithoutBlockedByNestedInput = {
+    create?: XOR<userCreateWithoutBlockedByInput, userUncheckedCreateWithoutBlockedByInput> | userCreateWithoutBlockedByInput[] | userUncheckedCreateWithoutBlockedByInput[]
+    connectOrCreate?: userCreateOrConnectWithoutBlockedByInput | userCreateOrConnectWithoutBlockedByInput[]
+    upsert?: userUpsertWithWhereUniqueWithoutBlockedByInput | userUpsertWithWhereUniqueWithoutBlockedByInput[]
+    set?: userWhereUniqueInput | userWhereUniqueInput[]
+    disconnect?: userWhereUniqueInput | userWhereUniqueInput[]
+    delete?: userWhereUniqueInput | userWhereUniqueInput[]
+    connect?: userWhereUniqueInput | userWhereUniqueInput[]
+    update?: userUpdateWithWhereUniqueWithoutBlockedByInput | userUpdateWithWhereUniqueWithoutBlockedByInput[]
+    updateMany?: userUpdateManyWithWhereWithoutBlockedByInput | userUpdateManyWithWhereWithoutBlockedByInput[]
+    deleteMany?: userScalarWhereInput | userScalarWhereInput[]
+  }
+
+  export type userUpdateManyWithoutBlockedUsersNestedInput = {
+    create?: XOR<userCreateWithoutBlockedUsersInput, userUncheckedCreateWithoutBlockedUsersInput> | userCreateWithoutBlockedUsersInput[] | userUncheckedCreateWithoutBlockedUsersInput[]
+    connectOrCreate?: userCreateOrConnectWithoutBlockedUsersInput | userCreateOrConnectWithoutBlockedUsersInput[]
+    upsert?: userUpsertWithWhereUniqueWithoutBlockedUsersInput | userUpsertWithWhereUniqueWithoutBlockedUsersInput[]
+    set?: userWhereUniqueInput | userWhereUniqueInput[]
+    disconnect?: userWhereUniqueInput | userWhereUniqueInput[]
+    delete?: userWhereUniqueInput | userWhereUniqueInput[]
+    connect?: userWhereUniqueInput | userWhereUniqueInput[]
+    update?: userUpdateWithWhereUniqueWithoutBlockedUsersInput | userUpdateWithWhereUniqueWithoutBlockedUsersInput[]
+    updateMany?: userUpdateManyWithWhereWithoutBlockedUsersInput | userUpdateManyWithWhereWithoutBlockedUsersInput[]
+    deleteMany?: userScalarWhereInput | userScalarWhereInput[]
+  }
+
   export type messagesUncheckedUpdateManyWithoutUserNestedInput = {
     create?: XOR<messagesCreateWithoutUserInput, messagesUncheckedCreateWithoutUserInput> | messagesCreateWithoutUserInput[] | messagesUncheckedCreateWithoutUserInput[]
     connectOrCreate?: messagesCreateOrConnectWithoutUserInput | messagesCreateOrConnectWithoutUserInput[]
@@ -5449,6 +5587,32 @@ export namespace Prisma {
     update?: chatsUpdateWithWhereUniqueWithoutUsersInput | chatsUpdateWithWhereUniqueWithoutUsersInput[]
     updateMany?: chatsUpdateManyWithWhereWithoutUsersInput | chatsUpdateManyWithWhereWithoutUsersInput[]
     deleteMany?: chatsScalarWhereInput | chatsScalarWhereInput[]
+  }
+
+  export type userUncheckedUpdateManyWithoutBlockedByNestedInput = {
+    create?: XOR<userCreateWithoutBlockedByInput, userUncheckedCreateWithoutBlockedByInput> | userCreateWithoutBlockedByInput[] | userUncheckedCreateWithoutBlockedByInput[]
+    connectOrCreate?: userCreateOrConnectWithoutBlockedByInput | userCreateOrConnectWithoutBlockedByInput[]
+    upsert?: userUpsertWithWhereUniqueWithoutBlockedByInput | userUpsertWithWhereUniqueWithoutBlockedByInput[]
+    set?: userWhereUniqueInput | userWhereUniqueInput[]
+    disconnect?: userWhereUniqueInput | userWhereUniqueInput[]
+    delete?: userWhereUniqueInput | userWhereUniqueInput[]
+    connect?: userWhereUniqueInput | userWhereUniqueInput[]
+    update?: userUpdateWithWhereUniqueWithoutBlockedByInput | userUpdateWithWhereUniqueWithoutBlockedByInput[]
+    updateMany?: userUpdateManyWithWhereWithoutBlockedByInput | userUpdateManyWithWhereWithoutBlockedByInput[]
+    deleteMany?: userScalarWhereInput | userScalarWhereInput[]
+  }
+
+  export type userUncheckedUpdateManyWithoutBlockedUsersNestedInput = {
+    create?: XOR<userCreateWithoutBlockedUsersInput, userUncheckedCreateWithoutBlockedUsersInput> | userCreateWithoutBlockedUsersInput[] | userUncheckedCreateWithoutBlockedUsersInput[]
+    connectOrCreate?: userCreateOrConnectWithoutBlockedUsersInput | userCreateOrConnectWithoutBlockedUsersInput[]
+    upsert?: userUpsertWithWhereUniqueWithoutBlockedUsersInput | userUpsertWithWhereUniqueWithoutBlockedUsersInput[]
+    set?: userWhereUniqueInput | userWhereUniqueInput[]
+    disconnect?: userWhereUniqueInput | userWhereUniqueInput[]
+    delete?: userWhereUniqueInput | userWhereUniqueInput[]
+    connect?: userWhereUniqueInput | userWhereUniqueInput[]
+    update?: userUpdateWithWhereUniqueWithoutBlockedUsersInput | userUpdateWithWhereUniqueWithoutBlockedUsersInput[]
+    updateMany?: userUpdateManyWithWhereWithoutBlockedUsersInput | userUpdateManyWithWhereWithoutBlockedUsersInput[]
+    deleteMany?: userScalarWhereInput | userScalarWhereInput[]
   }
 
   export type NestedIntFilter<$PrismaModel = never> = {
@@ -5606,6 +5770,8 @@ export namespace Prisma {
     username: string
     chatHost?: chatsCreateNestedManyWithoutHostInput
     members?: chatsCreateNestedManyWithoutUsersInput
+    blockedUsers?: userCreateNestedManyWithoutBlockedByInput
+    blockedBy?: userCreateNestedManyWithoutBlockedUsersInput
   }
 
   export type userUncheckedCreateWithoutMessagesInput = {
@@ -5614,6 +5780,8 @@ export namespace Prisma {
     username: string
     chatHost?: chatsUncheckedCreateNestedManyWithoutHostInput
     members?: chatsUncheckedCreateNestedManyWithoutUsersInput
+    blockedUsers?: userUncheckedCreateNestedManyWithoutBlockedByInput
+    blockedBy?: userUncheckedCreateNestedManyWithoutBlockedUsersInput
   }
 
   export type userCreateOrConnectWithoutMessagesInput = {
@@ -5663,6 +5831,8 @@ export namespace Prisma {
     username?: StringFieldUpdateOperationsInput | string
     chatHost?: chatsUpdateManyWithoutHostNestedInput
     members?: chatsUpdateManyWithoutUsersNestedInput
+    blockedUsers?: userUpdateManyWithoutBlockedByNestedInput
+    blockedBy?: userUpdateManyWithoutBlockedUsersNestedInput
   }
 
   export type userUncheckedUpdateWithoutMessagesInput = {
@@ -5671,6 +5841,8 @@ export namespace Prisma {
     username?: StringFieldUpdateOperationsInput | string
     chatHost?: chatsUncheckedUpdateManyWithoutHostNestedInput
     members?: chatsUncheckedUpdateManyWithoutUsersNestedInput
+    blockedUsers?: userUncheckedUpdateManyWithoutBlockedByNestedInput
+    blockedBy?: userUncheckedUpdateManyWithoutBlockedUsersNestedInput
   }
 
   export type userCreateWithoutChatHostInput = {
@@ -5678,6 +5850,8 @@ export namespace Prisma {
     username: string
     messages?: messagesCreateNestedManyWithoutUserInput
     members?: chatsCreateNestedManyWithoutUsersInput
+    blockedUsers?: userCreateNestedManyWithoutBlockedByInput
+    blockedBy?: userCreateNestedManyWithoutBlockedUsersInput
   }
 
   export type userUncheckedCreateWithoutChatHostInput = {
@@ -5686,6 +5860,8 @@ export namespace Prisma {
     username: string
     messages?: messagesUncheckedCreateNestedManyWithoutUserInput
     members?: chatsUncheckedCreateNestedManyWithoutUsersInput
+    blockedUsers?: userUncheckedCreateNestedManyWithoutBlockedByInput
+    blockedBy?: userUncheckedCreateNestedManyWithoutBlockedUsersInput
   }
 
   export type userCreateOrConnectWithoutChatHostInput = {
@@ -5698,6 +5874,8 @@ export namespace Prisma {
     username: string
     messages?: messagesCreateNestedManyWithoutUserInput
     chatHost?: chatsCreateNestedManyWithoutHostInput
+    blockedUsers?: userCreateNestedManyWithoutBlockedByInput
+    blockedBy?: userCreateNestedManyWithoutBlockedUsersInput
   }
 
   export type userUncheckedCreateWithoutMembersInput = {
@@ -5706,6 +5884,8 @@ export namespace Prisma {
     username: string
     messages?: messagesUncheckedCreateNestedManyWithoutUserInput
     chatHost?: chatsUncheckedCreateNestedManyWithoutHostInput
+    blockedUsers?: userUncheckedCreateNestedManyWithoutBlockedByInput
+    blockedBy?: userUncheckedCreateNestedManyWithoutBlockedUsersInput
   }
 
   export type userCreateOrConnectWithoutMembersInput = {
@@ -5751,6 +5931,8 @@ export namespace Prisma {
     username?: StringFieldUpdateOperationsInput | string
     messages?: messagesUpdateManyWithoutUserNestedInput
     members?: chatsUpdateManyWithoutUsersNestedInput
+    blockedUsers?: userUpdateManyWithoutBlockedByNestedInput
+    blockedBy?: userUpdateManyWithoutBlockedUsersNestedInput
   }
 
   export type userUncheckedUpdateWithoutChatHostInput = {
@@ -5759,6 +5941,8 @@ export namespace Prisma {
     username?: StringFieldUpdateOperationsInput | string
     messages?: messagesUncheckedUpdateManyWithoutUserNestedInput
     members?: chatsUncheckedUpdateManyWithoutUsersNestedInput
+    blockedUsers?: userUncheckedUpdateManyWithoutBlockedByNestedInput
+    blockedBy?: userUncheckedUpdateManyWithoutBlockedUsersNestedInput
   }
 
   export type userUpsertWithWhereUniqueWithoutMembersInput = {
@@ -5879,6 +6063,54 @@ export namespace Prisma {
     create: XOR<chatsCreateWithoutUsersInput, chatsUncheckedCreateWithoutUsersInput>
   }
 
+  export type userCreateWithoutBlockedByInput = {
+    linkId: number
+    username: string
+    messages?: messagesCreateNestedManyWithoutUserInput
+    chatHost?: chatsCreateNestedManyWithoutHostInput
+    members?: chatsCreateNestedManyWithoutUsersInput
+    blockedUsers?: userCreateNestedManyWithoutBlockedByInput
+  }
+
+  export type userUncheckedCreateWithoutBlockedByInput = {
+    userId?: number
+    linkId: number
+    username: string
+    messages?: messagesUncheckedCreateNestedManyWithoutUserInput
+    chatHost?: chatsUncheckedCreateNestedManyWithoutHostInput
+    members?: chatsUncheckedCreateNestedManyWithoutUsersInput
+    blockedUsers?: userUncheckedCreateNestedManyWithoutBlockedByInput
+  }
+
+  export type userCreateOrConnectWithoutBlockedByInput = {
+    where: userWhereUniqueInput
+    create: XOR<userCreateWithoutBlockedByInput, userUncheckedCreateWithoutBlockedByInput>
+  }
+
+  export type userCreateWithoutBlockedUsersInput = {
+    linkId: number
+    username: string
+    messages?: messagesCreateNestedManyWithoutUserInput
+    chatHost?: chatsCreateNestedManyWithoutHostInput
+    members?: chatsCreateNestedManyWithoutUsersInput
+    blockedBy?: userCreateNestedManyWithoutBlockedUsersInput
+  }
+
+  export type userUncheckedCreateWithoutBlockedUsersInput = {
+    userId?: number
+    linkId: number
+    username: string
+    messages?: messagesUncheckedCreateNestedManyWithoutUserInput
+    chatHost?: chatsUncheckedCreateNestedManyWithoutHostInput
+    members?: chatsUncheckedCreateNestedManyWithoutUsersInput
+    blockedBy?: userUncheckedCreateNestedManyWithoutBlockedUsersInput
+  }
+
+  export type userCreateOrConnectWithoutBlockedUsersInput = {
+    where: userWhereUniqueInput
+    create: XOR<userCreateWithoutBlockedUsersInput, userUncheckedCreateWithoutBlockedUsersInput>
+  }
+
   export type messagesUpsertWithWhereUniqueWithoutUserInput = {
     where: messagesWhereUniqueInput
     update: XOR<messagesUpdateWithoutUserInput, messagesUncheckedUpdateWithoutUserInput>
@@ -5937,6 +6169,38 @@ export namespace Prisma {
     data: XOR<chatsUpdateManyMutationInput, chatsUncheckedUpdateManyWithoutUsersInput>
   }
 
+  export type userUpsertWithWhereUniqueWithoutBlockedByInput = {
+    where: userWhereUniqueInput
+    update: XOR<userUpdateWithoutBlockedByInput, userUncheckedUpdateWithoutBlockedByInput>
+    create: XOR<userCreateWithoutBlockedByInput, userUncheckedCreateWithoutBlockedByInput>
+  }
+
+  export type userUpdateWithWhereUniqueWithoutBlockedByInput = {
+    where: userWhereUniqueInput
+    data: XOR<userUpdateWithoutBlockedByInput, userUncheckedUpdateWithoutBlockedByInput>
+  }
+
+  export type userUpdateManyWithWhereWithoutBlockedByInput = {
+    where: userScalarWhereInput
+    data: XOR<userUpdateManyMutationInput, userUncheckedUpdateManyWithoutBlockedByInput>
+  }
+
+  export type userUpsertWithWhereUniqueWithoutBlockedUsersInput = {
+    where: userWhereUniqueInput
+    update: XOR<userUpdateWithoutBlockedUsersInput, userUncheckedUpdateWithoutBlockedUsersInput>
+    create: XOR<userCreateWithoutBlockedUsersInput, userUncheckedCreateWithoutBlockedUsersInput>
+  }
+
+  export type userUpdateWithWhereUniqueWithoutBlockedUsersInput = {
+    where: userWhereUniqueInput
+    data: XOR<userUpdateWithoutBlockedUsersInput, userUncheckedUpdateWithoutBlockedUsersInput>
+  }
+
+  export type userUpdateManyWithWhereWithoutBlockedUsersInput = {
+    where: userScalarWhereInput
+    data: XOR<userUpdateManyMutationInput, userUncheckedUpdateManyWithoutBlockedUsersInput>
+  }
+
   export type messagesCreateManyChatInput = {
     id?: number
     userId: number
@@ -5949,6 +6213,8 @@ export namespace Prisma {
     username?: StringFieldUpdateOperationsInput | string
     messages?: messagesUpdateManyWithoutUserNestedInput
     chatHost?: chatsUpdateManyWithoutHostNestedInput
+    blockedUsers?: userUpdateManyWithoutBlockedByNestedInput
+    blockedBy?: userUpdateManyWithoutBlockedUsersNestedInput
   }
 
   export type userUncheckedUpdateWithoutMembersInput = {
@@ -5957,6 +6223,8 @@ export namespace Prisma {
     username?: StringFieldUpdateOperationsInput | string
     messages?: messagesUncheckedUpdateManyWithoutUserNestedInput
     chatHost?: chatsUncheckedUpdateManyWithoutHostNestedInput
+    blockedUsers?: userUncheckedUpdateManyWithoutBlockedByNestedInput
+    blockedBy?: userUncheckedUpdateManyWithoutBlockedUsersNestedInput
   }
 
   export type userUncheckedUpdateManyWithoutMembersInput = {
@@ -6059,6 +6327,56 @@ export namespace Prisma {
     hostId?: IntFieldUpdateOperationsInput | number
     name?: StringFieldUpdateOperationsInput | string
     lastAccessed?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type userUpdateWithoutBlockedByInput = {
+    linkId?: IntFieldUpdateOperationsInput | number
+    username?: StringFieldUpdateOperationsInput | string
+    messages?: messagesUpdateManyWithoutUserNestedInput
+    chatHost?: chatsUpdateManyWithoutHostNestedInput
+    members?: chatsUpdateManyWithoutUsersNestedInput
+    blockedUsers?: userUpdateManyWithoutBlockedByNestedInput
+  }
+
+  export type userUncheckedUpdateWithoutBlockedByInput = {
+    userId?: IntFieldUpdateOperationsInput | number
+    linkId?: IntFieldUpdateOperationsInput | number
+    username?: StringFieldUpdateOperationsInput | string
+    messages?: messagesUncheckedUpdateManyWithoutUserNestedInput
+    chatHost?: chatsUncheckedUpdateManyWithoutHostNestedInput
+    members?: chatsUncheckedUpdateManyWithoutUsersNestedInput
+    blockedUsers?: userUncheckedUpdateManyWithoutBlockedByNestedInput
+  }
+
+  export type userUncheckedUpdateManyWithoutBlockedByInput = {
+    userId?: IntFieldUpdateOperationsInput | number
+    linkId?: IntFieldUpdateOperationsInput | number
+    username?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type userUpdateWithoutBlockedUsersInput = {
+    linkId?: IntFieldUpdateOperationsInput | number
+    username?: StringFieldUpdateOperationsInput | string
+    messages?: messagesUpdateManyWithoutUserNestedInput
+    chatHost?: chatsUpdateManyWithoutHostNestedInput
+    members?: chatsUpdateManyWithoutUsersNestedInput
+    blockedBy?: userUpdateManyWithoutBlockedUsersNestedInput
+  }
+
+  export type userUncheckedUpdateWithoutBlockedUsersInput = {
+    userId?: IntFieldUpdateOperationsInput | number
+    linkId?: IntFieldUpdateOperationsInput | number
+    username?: StringFieldUpdateOperationsInput | string
+    messages?: messagesUncheckedUpdateManyWithoutUserNestedInput
+    chatHost?: chatsUncheckedUpdateManyWithoutHostNestedInput
+    members?: chatsUncheckedUpdateManyWithoutUsersNestedInput
+    blockedBy?: userUncheckedUpdateManyWithoutBlockedUsersNestedInput
+  }
+
+  export type userUncheckedUpdateManyWithoutBlockedUsersInput = {
+    userId?: IntFieldUpdateOperationsInput | number
+    linkId?: IntFieldUpdateOperationsInput | number
+    username?: StringFieldUpdateOperationsInput | string
   }
 
 

@@ -3,6 +3,7 @@ import type { FastifyInstance } from "fastify";
 import { createChat, deletemessages, handleMessage } from "../dataFunction/chat";
 import { userChatList, userList, listChatMessage } from "../dataFunction/chat";
 import { deletemessage, searchMessage, searchChat } from "../dataFunction/chat";
+import { blockUser, FreeUser } from "../dataFunction/chat";
 
 import { PrismaClient as chatPrismaClient } from "../prisma/generate/chat";
 const chatPrisma = new chatPrismaClient();
@@ -141,6 +142,32 @@ export async function chatEndpoint(fastify: FastifyInstance) {
 		if (!srcMess) return reply.status(400).send({ error: "no data for research provided" });
 		try {
 			await searchMessage(srcMess.toString());
+		} catch (err) {
+			return reply
+				.status(500)
+				.send({ error: err + " Internal server error" });
+		}
+	});
+
+	// Endpoint POST ricercare i messaggi
+	fastify.post("/block-user", async (request, reply) => {
+		const { users } = request.body as { users: number[] };
+		if (!users) return reply.status(400).send({ error: "no data for block provided" });
+		try {
+			await blockUser(users);
+		} catch (err) {
+			return reply
+				.status(500)
+				.send({ error: err + " Internal server error" });
+		}
+	});
+
+	// Endpoint POST ricercare i messaggi
+	fastify.post("/free-user", async (request, reply) => {
+		const { users } = request.body as { users: number[] };
+		if (!users) return reply.status(400).send({ error: "no data for free provided" });
+		try {
+			await FreeUser(users);
 		} catch (err) {
 			return reply
 				.status(500)

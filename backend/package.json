@@ -11,7 +11,7 @@
 		"migrate": "npx prisma migrate dev --name init --schema=./database/prisma/chat.prisma && npx prisma migrate dev --name init --schema=./database/prisma/user.prisma",
 		"generate": "npx prisma generate --schema=./database/prisma/chat.prisma && npx prisma generate --schema=./database/prisma/user.prisma && npx prisma generate --schema=./database/prisma/profile.prisma",
 		"push": "npx prisma db push --schema=./database/prisma/user.prisma --force-reset && npx prisma db push --schema=./database/prisma/chat.prisma --force-reset && npx prisma db push --schema=./database/prisma/profile.prisma --force-reset",
-		"delete": "npx ts-node ./database/dataUtils/deleteUser.ts",
+		"delete": "npx ts-node ./database/databaseUsage/deleteUser.ts",
 		"show-account": "npx ts-node ./database/databaseUsage/showAccount.ts",
 		"show-user": "npx ts-node ./database/databaseUsage/showUser.ts",
 		"studio_user": "npx prisma studio --schema=./database/prisma/user.prisma",
@@ -20,10 +20,12 @@
 	"dependencies": {
 		"@fastify/cors": "^11.0.1",
 		"@fastify/websocket": "^11.1.0",
-		"@prisma/client": "^6.10.1",
+		"@prisma/client": "^6.11.0",
+		"bcrypt": "^6.0.0",
 		"fastify": "^5.4.0"
 	},
 	"devDependencies": {
+		"@types/bcrypt": "^5.0.2",
 		"@types/node": "^24.0.3",
 		"@types/ws": "^8.18.1",
 		"prisma": "^6.10.1",

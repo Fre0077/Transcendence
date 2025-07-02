@@ -35,10 +35,12 @@ model chats {
 }
 
 model user {
-  userId   Int        @id @default(autoincrement())
-  linkId   Int        @unique
-  messages messages[]
-  chatHost chats[]    @relation("host")
-  members  chats[]    @relation("members")
-  username String     @unique
+  userId       Int        @id @default(autoincrement())
+  linkId       Int        @unique
+  messages     messages[]
+  chatHost     chats[]    @relation("host")
+  members      chats[]    @relation("members")
+  blockedUsers user[]     @relation("BlockedUsers")
+  blockedBy    user[]     @relation("BlockedUsers")
+  username     String     @unique
 }
