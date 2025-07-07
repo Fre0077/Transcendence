@@ -127,12 +127,18 @@ exports.Prisma.ScoreScalarFieldEnum = {
 exports.Prisma.PlayerScalarFieldEnum = {
   playerid: 'playerid',
   username: 'username',
-  bios: 'bios'
+  bios: 'bios',
+  image: 'image'
 };
 
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
+};
+
+exports.Prisma.NullsOrder = {
+  first: 'first',
+  last: 'last'
 };
 
 

@@ -1,10 +1,11 @@
 import type { FastifyInstance } from "fastify";
 import { changeUsername, changeEmail, changePassword } from "../dataFunction/profile";
+import { changeProfileImage } from "../dataFunction/profile";
 
 import { PrismaClient as profilePrismaClient } from "../prisma/generate/profile";
 const profilePrisma = new profilePrismaClient();
 
-import { changeProfile } from "../../classes/classes"
+import { changeProfile, ProfileImage } from "../../classes/classes"
 
 export async function profileEndpoint(fastify: FastifyInstance) {
 	// Endpoint POST per cambiare lo username
@@ -45,6 +46,21 @@ export async function profileEndpoint(fastify: FastifyInstance) {
 		try {
 			await changePassword(userData);
 			return reply.status(201).send({ message: "email changed" });
+		} catch (err) {
+			return reply
+				.status(500)
+				.send({ error: err + " Internal server error" });
+		}
+	});
+
+	// Endpoint POST per settare l'imamgine profilo
+	fastify.post("/profile-image", async (request, reply) => {
+		const userData = request.body as ProfileImage;
+		if (!userData)
+			return reply.status(400).send({ error: "Missing profile image" });
+		try {
+			await changeProfileImage(userData);
+			return reply.status(201).send({ message: "profile image set" });
 		} catch (err) {
 			return reply
 				.status(500)

@@ -1,208 +1,265 @@
-import {
-	createButtonElement,
-	createFormElement,
-	createInputElement,
-	createSeparator,
-} from "../generals/createElements";
-import { createLoginPage } from "../login/login";
-//import { sendPostRequest } from "../generals/generalUse";
-import { userLogin } from "../classes/classes";
+import { createLoginPage } from "../login/login"
+import type { userLogin } from "../classes/classes"
+import { createButtonElement, createFormElement, createInputElement, createSeparator } from "../generals/createElements"
 
 async function handleSignUp(event?: Event): Promise<void> {
-	if (event) {
-		event.preventDefault();
-	}
+  if (event) {
+    event.preventDefault()
+  }
 
-	const surnameInput = document.getElementById(
-		"surnameInput"
-	) as HTMLInputElement;
-	const passwordInput = document.getElementById(
-		"passwordInput"
-	) as HTMLInputElement;
-	const emailInput = document.getElementById("emailInput") as HTMLInputElement;
-	const nameInput = document.getElementById("nameInput") as HTMLInputElement;
-	//const signUpButton = document.getElementById(
-	//	"signUpButton"
-	//) as HTMLButtonElement;
+  const nameInput = document.getElementById("nameInput") as HTMLInputElement
+  const surnameInput = document.getElementById("surnameInput") as HTMLInputElement
+  const emailInput = document.getElementById("emailInput") as HTMLInputElement
+  const passwordInput = document.getElementById("passwordInput") as HTMLInputElement
 
-	const user: userLogin = {
-		name: nameInput?.value.trim(),
-		surname: surnameInput?.value.trim(),
-		username: nameInput?.value.trim(),
-		password: passwordInput?.value.trim(),
-		email: emailInput?.value.trim(),
-	};
+  const user: userLogin = {
+    name: nameInput?.value.trim(),
+    surname: surnameInput?.value.trim(),
+    username: nameInput?.value.trim(),
+    password: passwordInput?.value.trim(),
+    email: emailInput?.value.trim(),
+  }
 
-	// Validate input
-	if (!user.username || !user.password || !user.email) {
-		showMessage("Please fill in all required fields", "error");
-		return;
-	}
+  // Validate input
+  if (!user.username || !user.password || !user.email) {
+    showMessage("PLEASE FILL IN ALL REQUIRED FIELDS", "error")
+    return
+  }
 
-	if (user.password.length < 6) {
-		showMessage("Password must be at least 6 characters long", "error");
-		return;
-	}
+  if (user.password.length < 6) {
+    showMessage("PASSWORD MUST BE AT LEAST 6 CHARACTERS LONG", "error")
+    return
+  }
 
-	if (!isValidEmail(user.email)) {
-		showMessage("Please enter a valid email address", "error");
-		return;
-	}
+  if (!isValidEmail(user.email)) {
+    showMessage("PLEASE ENTER A VALID EMAIL ADDRESS", "error")
+    return
+  }
 
-	// Disable button and show loading state
-	setSignUpButtonState(true, "Creating account...");
+  // Disable button and show loading state
+  setSignUpButtonState(true, "[CREATING ACCOUNT...]")
 
-	try {
-		const response = await fetch("http://localhost:3000/register", {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify(user),
-		});
+  try {
+    console.log("Attempting registration for:", user.email)
 
-		if (response.ok) {
-			showMessage(
-				"Account created successfully! Redirecting to login...",
-				"success"
-			);
-			setTimeout(() => {
-				createLoginPage();
-			}, 2000);
-		} else {
-			showMessage("Registration failed", "error");
-		}
-	} catch (error: any) {
-		console.error("Registration error:", error);
-		showMessage(
-			error.message || "Registration failed. Please try again.",
-			"error"
-		);
-	} finally {
-		setSignUpButtonState(false, "Sign Up");
-	}
+    const response = await fetch("http://localhost:3000/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(user),
+    })
+
+    if (response.ok) {
+      showMessage("ACCOUNT CREATED SUCCESSFULLY! REDIRECTING TO LOGIN...", "success")
+      setTimeout(() => {
+        // Pulisci il contenuto e ricarica la pagina di login
+        const contentDiv = document.getElementById("content")!
+        contentDiv.innerHTML = ""
+        createLoginPage()
+      }, 2000)
+    } else {
+      showMessage("REGISTRATION FAILED", "error")
+    }
+  } catch (error: any) {
+    console.error("Registration error:", error)
+    showMessage(error.message || "REGISTRATION FAILED. PLEASE TRY AGAIN.", "error")
+  } finally {
+    setSignUpButtonState(false, "[SIGN UP]")
+  }
 }
 
 function setSignUpButtonState(disabled: boolean, text: string): void {
-	const signUpButton = document.getElementById(
-		"signUpButton"
-	) as HTMLButtonElement;
-	if (signUpButton) {
-		signUpButton.disabled = disabled;
-		signUpButton.textContent = text;
-		if (disabled) {
-			signUpButton.classList.add("loading");
-		} else {
-			signUpButton.classList.remove("loading");
-		}
-	}
+  const signUpButton = document.getElementById("signUpButton") as HTMLButtonElement
+  if (signUpButton) {
+    signUpButton.disabled = disabled
+    signUpButton.textContent = text
+    if (disabled) {
+      signUpButton.classList.add("loading")
+    } else {
+      signUpButton.classList.remove("loading")
+    }
+  }
 }
 
 function showMessage(message: string, type: "success" | "error"): void {
-	// Remove any existing messages
-	const existingMessage = document.querySelector(".signup-message");
-	if (existingMessage) {
-		existingMessage.remove();
-	}
+  // Remove any existing messages
+  const existingMessage = document.querySelector(".signup-message")
+  if (existingMessage) {
+    existingMessage.remove()
+  }
 
-	// Create new message element
-	const messageDiv = document.createElement("div");
-	messageDiv.className = `signup-message ${
-		type === "success" ? "success-message" : "error-message"
-	}`;
-	messageDiv.textContent = message;
+  // Create new message element with Pip-Boy styling
+  const messageDiv = document.createElement("div")
+  messageDiv.className = `signup-message ${type === "success" ? "success-message" : "error-message"}`
 
-	// Insert message after the signup form
-	const signUpForm = document.getElementById("signUpForm");
-	if (signUpForm && signUpForm.parentNode) {
-		signUpForm.parentNode.insertBefore(messageDiv, signUpForm.nextSibling);
-	}
+  // Create message content with icon (Pip-Boy style)
+  const messageIcon = document.createElement("div")
+  messageIcon.className = "message-icon"
+  messageIcon.textContent = type === "success" ? "✓" : "⚠"
 
-	// Auto-remove error messages after 5 seconds (but keep success messages)
-	if (type === "error") {
-		setTimeout(() => {
-			if (messageDiv.parentNode) {
-				messageDiv.remove();
-			}
-		}, 5000);
-	}
+  const messageText = document.createElement("div")
+  messageText.className = "message-text"
+  messageText.textContent = message
+
+  messageDiv.appendChild(messageIcon)
+  messageDiv.appendChild(messageText)
+
+  // Insert message after the signup form
+  const signUpForm = document.getElementById("signUpForm")
+  if (signUpForm && signUpForm.parentNode) {
+    signUpForm.parentNode.insertBefore(messageDiv, signUpForm.nextSibling)
+  }
+
+  // Auto-remove error messages after 5 seconds (but keep success messages)
+  if (type === "error") {
+    setTimeout(() => {
+      if (messageDiv.parentNode) {
+        messageDiv.remove()
+      }
+    }, 5000)
+  }
 }
 
-function isValidEmail(email: String): boolean {
-	const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-	return emailRegex.test(email.toString());
+function isValidEmail(email: string): boolean {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  return emailRegex.test(email)
+}
+
+// Enhanced function to handle Enter key press
+function handleEnterKeyPress(event: KeyboardEvent): void {
+  if (event.key === "Enter") {
+    event.preventDefault()
+    console.log("Enter key pressed - attempting registration")
+    handleSignUp(event)
+  }
 }
 
 export function openSignUpForm() {
-	console.log("Sign Up Form Opened");
+  console.log("Opening Pip-Boy Registration Terminal...")
 
-	let signUpDiv = document.createElement("div");
-	signUpDiv.id = "signUpDiv";
+  // Clear content
+  const contentDiv = document.getElementById("content")!
+  contentDiv.innerHTML = ""
 
-	let signUpForm = createFormElement("signUpForm", "Create Account");
+  // Create Pip-Boy container structure
+  const pipboyContainer = document.createElement("div")
+  pipboyContainer.className = "pipboy-container"
 
-	let nameInput = createInputElement(
-		"nameInput",
-		"text",
-		"Full Name",
-		"name"
-	);
+  const pipboyScreen = document.createElement("div")
+  pipboyScreen.className = "pipboy-screen"
 
-	let surnameInput = createInputElement(
-		"surnameInput",
-		"text",
-		"surname",
-		"family-name"
-	);
+  const pipboyTerminal = document.createElement("div")
+  pipboyTerminal.className = "pipboy-terminal booting"
 
-	let emailInput = createInputElement(
-		"emailInput",
-		"email",
-		"Email Address",
-		"email"
-	);
+  // Create terminal header
+  const terminalHeader = document.createElement("div")
+  terminalHeader.className = "terminal-header"
+  terminalHeader.innerHTML = `
+    <div class="terminal-title">ROBCO INDUSTRIES UNIFIED OPERATING SYSTEM</div>
+    <div class="terminal-subtitle">NEW USER REGISTRATION MODULE</div>
+    <div class="terminal-version">-SERVER 01-</div>
+  `
 
-	let passwordInput = createInputElement(
-		"passwordInput",
-		"password",
-		"Password (min. 6 characters)",
-		"new-password"
-	);
+  // Create main signup div with Pip-Boy styling
+  const signUpDiv = document.createElement("div")
+  signUpDiv.id = "signUpDiv"
+  signUpDiv.className = "signup-container"
 
-	let signUpButton = createButtonElement(
-		"signUpButton",
-		"Sign Up",
-		handleSignUp
-	);
+  // Add status line
+  const statusLine = document.createElement("div")
+  statusLine.className = "status-line"
+  statusLine.innerHTML = `
+    <span class="status-indicator"></span>
+    <span>REGISTRATION MODULE: ACTIVE</span>
+  `
+  signUpDiv.appendChild(statusLine)
 
-	let separator = createSeparator("4px", "#07d");
+  const signUpForm = createFormElement("signUpForm", "USER REGISTRATION")
 
-	let toLoginButton = createButtonElement(
-		"toLoginButton",
-		"Back to Login",
-		() => {
-			createLoginPage();
-		}
-	);
+  const nameInput = createInputElement("nameInput", "text", "FIRST NAME", "given-name")
 
-	// Add form submission handler
-	signUpForm.addEventListener("submit", (e) => {
-		e.preventDefault();
-		handleSignUp();
-	});
+  const surnameInput = createInputElement("surnameInput", "text", "LAST NAME", "family-name")
 
-	// Append elements to form
-	signUpForm.appendChild(nameInput);
-	signUpForm.appendChild(surnameInput);
-	signUpForm.appendChild(emailInput);
-	signUpForm.appendChild(passwordInput);
-	signUpForm.appendChild(signUpButton);
+  const emailInput = createInputElement("emailInput", "email", "EMAIL ADDRESS", "email")
 
-	// Append elements to div
-	signUpDiv.appendChild(signUpForm);
-	signUpDiv.appendChild(separator);
-	signUpDiv.appendChild(toLoginButton);
+  const passwordInput = createInputElement("passwordInput", "password", "PASSWORD", "new-password")
 
-	document.getElementById("content")!.innerHTML = "";
-	document.getElementById("content")!.appendChild(signUpDiv);
+  const signUpButton = createButtonElement("signUpButton", "[SIGN UP]", handleSignUp)
 
-	console.log("Sign up form created and appended to body");
+  const separator = createSeparator("2px", "#00ff00")
+
+  const toLoginButton = createButtonElement("toLoginButton", "[BACK TO LOGIN]", () => {
+    createLoginPage()
+  })
+
+  // Add form submission handler
+  signUpForm.addEventListener("submit", (e) => {
+    e.preventDefault()
+    handleSignUp()
+  })
+
+  // Append elements to form
+  signUpForm.appendChild(nameInput)
+  signUpForm.appendChild(surnameInput)
+  signUpForm.appendChild(emailInput)
+  signUpForm.appendChild(passwordInput)
+  signUpForm.appendChild(signUpButton)
+
+  // Append elements to div
+  signUpDiv.appendChild(signUpForm)
+  signUpDiv.appendChild(separator)
+  signUpDiv.appendChild(toLoginButton)
+
+  // Create terminal footer
+  const terminalFooter = document.createElement("div")
+  terminalFooter.className = "terminal-footer"
+  terminalFooter.innerHTML = `
+    <div class="footer-line">
+      <span>VAULT-TEC REGISTRATION PROTOCOL ACTIVE</span>
+      <span class="timestamp" id="timestamp">${new Date().toLocaleTimeString()}</span>
+    </div>
+  `
+
+  // Assemble terminal
+  pipboyTerminal.appendChild(terminalHeader)
+  pipboyTerminal.appendChild(signUpDiv)
+  pipboyTerminal.appendChild(terminalFooter)
+
+  // Create screen effects
+  const scanlines = document.createElement("div")
+  scanlines.className = "scanlines"
+  const screenFlicker = document.createElement("div")
+  screenFlicker.className = "screen-flicker"
+
+  // Assemble screen
+  pipboyScreen.appendChild(pipboyTerminal)
+  pipboyScreen.appendChild(scanlines)
+  pipboyScreen.appendChild(screenFlicker)
+
+  // Assemble container
+  pipboyContainer.appendChild(pipboyScreen)
+
+  // Add to content
+  contentDiv.appendChild(pipboyContainer)
+
+  // Boot-up animation
+  setTimeout(() => {
+    pipboyTerminal.classList.remove("booting")
+    pipboyTerminal.classList.add("ready")
+  }, 800) // CAMBIATO: da 2000ms a 800ms
+
+  // Focus on first input
+  setTimeout(() => {
+    const firstInput = document.getElementById("nameInput") as HTMLInputElement
+    if (firstInput) firstInput.focus()
+  }, 900) // CAMBIATO: da 2100ms a 900ms
+
+  // Update timestamp every second
+  setInterval(() => {
+    const timestampEl = document.getElementById("timestamp")
+    if (timestampEl) {
+      timestampEl.textContent = new Date().toLocaleTimeString()
+    }
+  }, 1000)
+
+  console.log("Sign up form created and appended to body")
 }

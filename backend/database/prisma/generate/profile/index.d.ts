@@ -2095,18 +2095,21 @@ export namespace Prisma {
     playerid: number | null
     username: string | null
     bios: string | null
+    image: Uint8Array | null
   }
 
   export type PlayerMaxAggregateOutputType = {
     playerid: number | null
     username: string | null
     bios: string | null
+    image: Uint8Array | null
   }
 
   export type PlayerCountAggregateOutputType = {
     playerid: number
     username: number
     bios: number
+    image: number
     _all: number
   }
 
@@ -2123,18 +2126,21 @@ export namespace Prisma {
     playerid?: true
     username?: true
     bios?: true
+    image?: true
   }
 
   export type PlayerMaxAggregateInputType = {
     playerid?: true
     username?: true
     bios?: true
+    image?: true
   }
 
   export type PlayerCountAggregateInputType = {
     playerid?: true
     username?: true
     bios?: true
+    image?: true
     _all?: true
   }
 
@@ -2228,6 +2234,7 @@ export namespace Prisma {
     playerid: number
     username: string
     bios: string
+    image: Uint8Array | null
     _count: PlayerCountAggregateOutputType | null
     _avg: PlayerAvgAggregateOutputType | null
     _sum: PlayerSumAggregateOutputType | null
@@ -2253,6 +2260,7 @@ export namespace Prisma {
     playerid?: boolean
     username?: boolean
     bios?: boolean
+    image?: boolean
     tournament?: boolean | player$tournamentArgs<ExtArgs>
     _count?: boolean | PlayerCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["player"]>
@@ -2261,21 +2269,24 @@ export namespace Prisma {
     playerid?: boolean
     username?: boolean
     bios?: boolean
+    image?: boolean
   }, ExtArgs["result"]["player"]>
 
   export type playerSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     playerid?: boolean
     username?: boolean
     bios?: boolean
+    image?: boolean
   }, ExtArgs["result"]["player"]>
 
   export type playerSelectScalar = {
     playerid?: boolean
     username?: boolean
     bios?: boolean
+    image?: boolean
   }
 
-  export type playerOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"playerid" | "username" | "bios", ExtArgs["result"]["player"]>
+  export type playerOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"playerid" | "username" | "bios" | "image", ExtArgs["result"]["player"]>
   export type playerInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     tournament?: boolean | player$tournamentArgs<ExtArgs>
     _count?: boolean | PlayerCountOutputTypeDefaultArgs<ExtArgs>
@@ -2292,6 +2303,7 @@ export namespace Prisma {
       playerid: number
       username: string
       bios: string
+      image: Uint8Array | null
     }, ExtArgs["result"]["player"]>
     composites: {}
   }
@@ -2719,6 +2731,7 @@ export namespace Prisma {
     readonly playerid: FieldRef<"player", 'Int'>
     readonly username: FieldRef<"player", 'String'>
     readonly bios: FieldRef<"player", 'String'>
+    readonly image: FieldRef<"player", 'Bytes'>
   }
     
 
@@ -3171,7 +3184,8 @@ export namespace Prisma {
   export const PlayerScalarFieldEnum: {
     playerid: 'playerid',
     username: 'username',
-    bios: 'bios'
+    bios: 'bios',
+    image: 'image'
   };
 
   export type PlayerScalarFieldEnum = (typeof PlayerScalarFieldEnum)[keyof typeof PlayerScalarFieldEnum]
@@ -3183,6 +3197,14 @@ export namespace Prisma {
   };
 
   export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
+
+
+  export const NullsOrder: {
+    first: 'first',
+    last: 'last'
+  };
+
+  export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
 
 
   /**
@@ -3201,6 +3223,13 @@ export namespace Prisma {
    * Reference to a field of type 'String'
    */
   export type StringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'String'>
+    
+
+
+  /**
+   * Reference to a field of type 'Bytes'
+   */
+  export type BytesFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Bytes'>
     
 
 
@@ -3273,6 +3302,7 @@ export namespace Prisma {
     playerid?: IntFilter<"player"> | number
     username?: StringFilter<"player"> | string
     bios?: StringFilter<"player"> | string
+    image?: BytesNullableFilter<"player"> | Uint8Array | null
     tournament?: ScoreListRelationFilter
   }
 
@@ -3280,6 +3310,7 @@ export namespace Prisma {
     playerid?: SortOrder
     username?: SortOrder
     bios?: SortOrder
+    image?: SortOrderInput | SortOrder
     tournament?: scoreOrderByRelationAggregateInput
   }
 
@@ -3290,6 +3321,7 @@ export namespace Prisma {
     OR?: playerWhereInput[]
     NOT?: playerWhereInput | playerWhereInput[]
     bios?: StringFilter<"player"> | string
+    image?: BytesNullableFilter<"player"> | Uint8Array | null
     tournament?: ScoreListRelationFilter
   }, "playerid" | "username">
 
@@ -3297,6 +3329,7 @@ export namespace Prisma {
     playerid?: SortOrder
     username?: SortOrder
     bios?: SortOrder
+    image?: SortOrderInput | SortOrder
     _count?: playerCountOrderByAggregateInput
     _avg?: playerAvgOrderByAggregateInput
     _max?: playerMaxOrderByAggregateInput
@@ -3311,6 +3344,7 @@ export namespace Prisma {
     playerid?: IntWithAggregatesFilter<"player"> | number
     username?: StringWithAggregatesFilter<"player"> | string
     bios?: StringWithAggregatesFilter<"player"> | string
+    image?: BytesNullableWithAggregatesFilter<"player"> | Uint8Array | null
   }
 
   export type scoreCreateInput = {
@@ -3361,6 +3395,7 @@ export namespace Prisma {
   export type playerCreateInput = {
     username: string
     bios: string
+    image?: Uint8Array | null
     tournament?: scoreCreateNestedManyWithoutUserInput
   }
 
@@ -3368,12 +3403,14 @@ export namespace Prisma {
     playerid?: number
     username: string
     bios: string
+    image?: Uint8Array | null
     tournament?: scoreUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type playerUpdateInput = {
     username?: StringFieldUpdateOperationsInput | string
     bios?: StringFieldUpdateOperationsInput | string
+    image?: NullableBytesFieldUpdateOperationsInput | Uint8Array | null
     tournament?: scoreUpdateManyWithoutUserNestedInput
   }
 
@@ -3381,6 +3418,7 @@ export namespace Prisma {
     playerid?: IntFieldUpdateOperationsInput | number
     username?: StringFieldUpdateOperationsInput | string
     bios?: StringFieldUpdateOperationsInput | string
+    image?: NullableBytesFieldUpdateOperationsInput | Uint8Array | null
     tournament?: scoreUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -3388,17 +3426,20 @@ export namespace Prisma {
     playerid?: number
     username: string
     bios: string
+    image?: Uint8Array | null
   }
 
   export type playerUpdateManyMutationInput = {
     username?: StringFieldUpdateOperationsInput | string
     bios?: StringFieldUpdateOperationsInput | string
+    image?: NullableBytesFieldUpdateOperationsInput | Uint8Array | null
   }
 
   export type playerUncheckedUpdateManyInput = {
     playerid?: IntFieldUpdateOperationsInput | number
     username?: StringFieldUpdateOperationsInput | string
     bios?: StringFieldUpdateOperationsInput | string
+    image?: NullableBytesFieldUpdateOperationsInput | Uint8Array | null
   }
 
   export type IntFilter<$PrismaModel = never> = {
@@ -3495,10 +3536,22 @@ export namespace Prisma {
     _max?: NestedStringFilter<$PrismaModel>
   }
 
+  export type BytesNullableFilter<$PrismaModel = never> = {
+    equals?: Uint8Array | BytesFieldRefInput<$PrismaModel> | null
+    in?: Uint8Array[] | null
+    notIn?: Uint8Array[] | null
+    not?: NestedBytesNullableFilter<$PrismaModel> | Uint8Array | null
+  }
+
   export type ScoreListRelationFilter = {
     every?: scoreWhereInput
     some?: scoreWhereInput
     none?: scoreWhereInput
+  }
+
+  export type SortOrderInput = {
+    sort: SortOrder
+    nulls?: NullsOrder
   }
 
   export type scoreOrderByRelationAggregateInput = {
@@ -3509,6 +3562,7 @@ export namespace Prisma {
     playerid?: SortOrder
     username?: SortOrder
     bios?: SortOrder
+    image?: SortOrder
   }
 
   export type playerAvgOrderByAggregateInput = {
@@ -3519,16 +3573,28 @@ export namespace Prisma {
     playerid?: SortOrder
     username?: SortOrder
     bios?: SortOrder
+    image?: SortOrder
   }
 
   export type playerMinOrderByAggregateInput = {
     playerid?: SortOrder
     username?: SortOrder
     bios?: SortOrder
+    image?: SortOrder
   }
 
   export type playerSumOrderByAggregateInput = {
     playerid?: SortOrder
+  }
+
+  export type BytesNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Uint8Array | BytesFieldRefInput<$PrismaModel> | null
+    in?: Uint8Array[] | null
+    notIn?: Uint8Array[] | null
+    not?: NestedBytesNullableWithAggregatesFilter<$PrismaModel> | Uint8Array | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedBytesNullableFilter<$PrismaModel>
+    _max?: NestedBytesNullableFilter<$PrismaModel>
   }
 
   export type playerCreateNestedOneWithoutTournamentInput = {
@@ -3569,6 +3635,10 @@ export namespace Prisma {
     connectOrCreate?: scoreCreateOrConnectWithoutUserInput | scoreCreateOrConnectWithoutUserInput[]
     createMany?: scoreCreateManyUserInputEnvelope
     connect?: scoreWhereUniqueInput | scoreWhereUniqueInput[]
+  }
+
+  export type NullableBytesFieldUpdateOperationsInput = {
+    set?: Uint8Array | null
   }
 
   export type scoreUpdateManyWithoutUserNestedInput = {
@@ -3668,15 +3738,45 @@ export namespace Prisma {
     _max?: NestedStringFilter<$PrismaModel>
   }
 
+  export type NestedBytesNullableFilter<$PrismaModel = never> = {
+    equals?: Uint8Array | BytesFieldRefInput<$PrismaModel> | null
+    in?: Uint8Array[] | null
+    notIn?: Uint8Array[] | null
+    not?: NestedBytesNullableFilter<$PrismaModel> | Uint8Array | null
+  }
+
+  export type NestedBytesNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Uint8Array | BytesFieldRefInput<$PrismaModel> | null
+    in?: Uint8Array[] | null
+    notIn?: Uint8Array[] | null
+    not?: NestedBytesNullableWithAggregatesFilter<$PrismaModel> | Uint8Array | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedBytesNullableFilter<$PrismaModel>
+    _max?: NestedBytesNullableFilter<$PrismaModel>
+  }
+
+  export type NestedIntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | null
+    notIn?: number[] | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  }
+
   export type playerCreateWithoutTournamentInput = {
     username: string
     bios: string
+    image?: Uint8Array | null
   }
 
   export type playerUncheckedCreateWithoutTournamentInput = {
     playerid?: number
     username: string
     bios: string
+    image?: Uint8Array | null
   }
 
   export type playerCreateOrConnectWithoutTournamentInput = {
@@ -3698,12 +3798,14 @@ export namespace Prisma {
   export type playerUpdateWithoutTournamentInput = {
     username?: StringFieldUpdateOperationsInput | string
     bios?: StringFieldUpdateOperationsInput | string
+    image?: NullableBytesFieldUpdateOperationsInput | Uint8Array | null
   }
 
   export type playerUncheckedUpdateWithoutTournamentInput = {
     playerid?: IntFieldUpdateOperationsInput | number
     username?: StringFieldUpdateOperationsInput | string
     bios?: StringFieldUpdateOperationsInput | string
+    image?: NullableBytesFieldUpdateOperationsInput | Uint8Array | null
   }
 
   export type scoreCreateWithoutUserInput = {

@@ -5,7 +5,7 @@ const chatPrisma = new chatPrismaClient()
 import { PrismaClient as profilePrismaClient } from "../prisma/generate/profile";
 const profilePrisma = new profilePrismaClient();
 
-import { changeProfile } from "../../classes/classes"
+import { changeProfile, ProfileImage } from "../../classes/classes"
 import { fastify } from "../server";
 
 //cambia lo username in tutti i database
@@ -66,4 +66,20 @@ export async function changePassword(input: changeProfile): Promise<string> {
 
 	fastify.log.info(`Passowrd changed`);
 	return 'Passowrd changed'
+}
+
+export async function changeProfileImage(input: ProfileImage): Promise<string> {
+    const findPlayer = await profilePrisma.player.findUnique({ where: { playerid: input.userId } });
+    if (!findPlayer) {
+        fastify.log.info(`No user found with id ${input.userId}`);
+        throw new Error(`No user found with id ${input.userId}`);
+    }
+
+    await profilePrisma.player.update({
+        where: { playerid: input.userId },
+        data: { image: input.imageBuffer }
+    });
+
+    fastify.log.info(`Profile image updated`);
+    return 'Profile image updated';
 }

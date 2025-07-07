@@ -1,60 +1,160 @@
-{"level":30,"time":1751449684514,"pid":75334,"hostname":"PcFre007","msg":"Server listening at http://10.255.255.254:3000"}
-{"level":30,"time":1751449684514,"pid":75334,"hostname":"PcFre007","msg":"Server listening at http://127.0.0.1:3000"}
-{"level":30,"time":1751449684514,"pid":75334,"hostname":"PcFre007","msg":"Server listening at http://172.21.140.75:3000"}
-{"level":30,"time":1751465690947,"pid":118734,"hostname":"PcFre007","msg":"Server listening at http://10.255.255.254:3000"}
-{"level":30,"time":1751465690947,"pid":118734,"hostname":"PcFre007","msg":"Server listening at http://127.0.0.1:3000"}
-{"level":30,"time":1751465690947,"pid":118734,"hostname":"PcFre007","msg":"Server listening at http://172.21.140.75:3000"}
-{"level":30,"time":1751465724055,"pid":118734,"hostname":"PcFre007","reqId":"req-1","req":{"method":"OPTIONS","url":"/login","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":60006},"msg":"incoming request"}
-{"level":30,"time":1751465724058,"pid":118734,"hostname":"PcFre007","reqId":"req-1","res":{"statusCode":204},"responseTime":2.288254998624325,"msg":"request completed"}
-{"level":30,"time":1751465724058,"pid":118734,"hostname":"PcFre007","reqId":"req-2","req":{"method":"POST","url":"/login","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":60006},"msg":"incoming request"}
-{"level":30,"time":1751465724065,"pid":118734,"hostname":"PcFre007","msg":"Wrong email"}
-{"level":30,"time":1751465724066,"pid":118734,"hostname":"PcFre007","reqId":"req-2","res":{"statusCode":500},"responseTime":7.856756998226047,"msg":"request completed"}
-{"level":30,"time":1751465738629,"pid":118734,"hostname":"PcFre007","reqId":"req-3","req":{"method":"OPTIONS","url":"/register","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":60006},"msg":"incoming request"}
-{"level":30,"time":1751465738629,"pid":118734,"hostname":"PcFre007","reqId":"req-3","res":{"statusCode":204},"responseTime":0.6260090004652739,"msg":"request completed"}
-{"level":30,"time":1751465738631,"pid":118734,"hostname":"PcFre007","reqId":"req-4","req":{"method":"POST","url":"/register","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":60006},"msg":"incoming request"}
-{"level":30,"time":1751465738635,"pid":118734,"hostname":"PcFre007","msg":"The password is too short"}
-{"level":30,"time":1751465738635,"pid":118734,"hostname":"PcFre007","reqId":"req-4","res":{"statusCode":500},"responseTime":3.8497000001370907,"msg":"request completed"}
-{"level":30,"time":1751465750176,"pid":118734,"hostname":"PcFre007","reqId":"req-5","req":{"method":"OPTIONS","url":"/register","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":60006},"msg":"incoming request"}
-{"level":30,"time":1751465750176,"pid":118734,"hostname":"PcFre007","reqId":"req-5","res":{"statusCode":204},"responseTime":0.3014390002936125,"msg":"request completed"}
-{"level":30,"time":1751465750177,"pid":118734,"hostname":"PcFre007","reqId":"req-6","req":{"method":"POST","url":"/register","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":60006},"msg":"incoming request"}
-{"level":30,"time":1751465750180,"pid":118734,"hostname":"PcFre007","msg":"The password is too short"}
-{"level":30,"time":1751465750180,"pid":118734,"hostname":"PcFre007","reqId":"req-6","res":{"statusCode":500},"responseTime":3.1299649998545647,"msg":"request completed"}
-{"level":30,"time":1751465764402,"pid":118734,"hostname":"PcFre007","reqId":"req-7","req":{"method":"OPTIONS","url":"/register","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":60006},"msg":"incoming request"}
-{"level":30,"time":1751465764403,"pid":118734,"hostname":"PcFre007","reqId":"req-7","res":{"statusCode":204},"responseTime":0.36878500133752823,"msg":"request completed"}
-{"level":30,"time":1751465764404,"pid":118734,"hostname":"PcFre007","reqId":"req-8","req":{"method":"POST","url":"/register","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":60006},"msg":"incoming request"}
-{"level":30,"time":1751465764498,"pid":118734,"hostname":"PcFre007","msg":"User created"}
-{"level":30,"time":1751465764499,"pid":118734,"hostname":"PcFre007","reqId":"req-8","res":{"statusCode":201},"responseTime":94.75005100108683,"msg":"request completed"}
-{"level":30,"time":1751465775026,"pid":118734,"hostname":"PcFre007","reqId":"req-9","req":{"method":"OPTIONS","url":"/login","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":60006},"msg":"incoming request"}
-{"level":30,"time":1751465775027,"pid":118734,"hostname":"PcFre007","reqId":"req-9","res":{"statusCode":204},"responseTime":0.5198950003832579,"msg":"request completed"}
-{"level":30,"time":1751465775028,"pid":118734,"hostname":"PcFre007","reqId":"req-a","req":{"method":"POST","url":"/login","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":60006},"msg":"incoming request"}
-{"level":30,"time":1751465775071,"pid":118734,"hostname":"PcFre007","msg":"Wrong password"}
-{"level":30,"time":1751465775072,"pid":118734,"hostname":"PcFre007","reqId":"req-a","res":{"statusCode":500},"responseTime":43.56519600003958,"msg":"request completed"}
-{"level":30,"time":1751465785998,"pid":118734,"hostname":"PcFre007","reqId":"req-b","req":{"method":"OPTIONS","url":"/login","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":60006},"msg":"incoming request"}
-{"level":30,"time":1751465785999,"pid":118734,"hostname":"PcFre007","reqId":"req-b","res":{"statusCode":204},"responseTime":0.3608090002089739,"msg":"request completed"}
-{"level":30,"time":1751465786000,"pid":118734,"hostname":"PcFre007","reqId":"req-c","req":{"method":"POST","url":"/login","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":60006},"msg":"incoming request"}
-{"level":30,"time":1751465786042,"pid":118734,"hostname":"PcFre007","msg":"Wrong password"}
-{"level":30,"time":1751465786043,"pid":118734,"hostname":"PcFre007","reqId":"req-c","res":{"statusCode":500},"responseTime":43.01417800039053,"msg":"request completed"}
-{"level":30,"time":1751465861044,"pid":118734,"hostname":"PcFre007","reqId":"req-d","req":{"method":"OPTIONS","url":"/register","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":37534},"msg":"incoming request"}
-{"level":30,"time":1751465861045,"pid":118734,"hostname":"PcFre007","reqId":"req-d","res":{"statusCode":204},"responseTime":0.528711000457406,"msg":"request completed"}
-{"level":30,"time":1751465861046,"pid":118734,"hostname":"PcFre007","reqId":"req-e","req":{"method":"POST","url":"/register","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":37534},"msg":"incoming request"}
-{"level":30,"time":1751465861107,"pid":118734,"hostname":"PcFre007","msg":"User created"}
-{"level":30,"time":1751465861107,"pid":118734,"hostname":"PcFre007","reqId":"req-e","res":{"statusCode":201},"responseTime":61.0040830001235,"msg":"request completed"}
-{"level":30,"time":1751465877061,"pid":118734,"hostname":"PcFre007","reqId":"req-f","req":{"method":"OPTIONS","url":"/login","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":37534},"msg":"incoming request"}
-{"level":30,"time":1751465877061,"pid":118734,"hostname":"PcFre007","reqId":"req-f","res":{"statusCode":204},"responseTime":0.35772999934852123,"msg":"request completed"}
-{"level":30,"time":1751465877062,"pid":118734,"hostname":"PcFre007","reqId":"req-g","req":{"method":"POST","url":"/login","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":37534},"msg":"incoming request"}
-{"level":30,"time":1751465877106,"pid":118734,"hostname":"PcFre007","msg":"Wrong password"}
-{"level":30,"time":1751465877107,"pid":118734,"hostname":"PcFre007","reqId":"req-g","res":{"statusCode":500},"responseTime":44.31231500022113,"msg":"request completed"}
-{"level":30,"time":1751465961524,"pid":122387,"hostname":"PcFre007","msg":"Server listening at http://10.255.255.254:3000"}
-{"level":30,"time":1751465961524,"pid":122387,"hostname":"PcFre007","msg":"Server listening at http://127.0.0.1:3000"}
-{"level":30,"time":1751465961524,"pid":122387,"hostname":"PcFre007","msg":"Server listening at http://172.21.140.75:3000"}
-{"level":30,"time":1751465962958,"pid":122387,"hostname":"PcFre007","reqId":"req-1","req":{"method":"OPTIONS","url":"/login","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":60370},"msg":"incoming request"}
-{"level":30,"time":1751465962961,"pid":122387,"hostname":"PcFre007","reqId":"req-1","res":{"statusCode":204},"responseTime":2.6012200005352497,"msg":"request completed"}
-{"level":30,"time":1751465962962,"pid":122387,"hostname":"PcFre007","reqId":"req-2","req":{"method":"POST","url":"/login","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":60370},"msg":"incoming request"}
-{"level":30,"time":1751465963009,"pid":122387,"hostname":"PcFre007","msg":"Login success"}
-{"level":30,"time":1751465963010,"pid":122387,"hostname":"PcFre007","reqId":"req-2","res":{"statusCode":201},"responseTime":48.74978999979794,"msg":"request completed"}
-{"level":30,"time":1751465965801,"pid":122387,"hostname":"PcFre007","reqId":"req-3","req":{"method":"POST","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":60370},"msg":"incoming request"}
-{"level":30,"time":1751465965802,"pid":122387,"hostname":"PcFre007","reqId":"req-3","msg":"Route POST:/chat-list not found"}
-{"level":30,"time":1751465965802,"pid":122387,"hostname":"PcFre007","reqId":"req-3","res":{"statusCode":404},"responseTime":0.6759489998221397,"msg":"request completed"}
-{"level":30,"time":1751472413123,"pid":122387,"hostname":"PcFre007","reqId":"req-4","req":{"method":"POST","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":57704},"msg":"incoming request"}
-{"level":30,"time":1751472413123,"pid":122387,"hostname":"PcFre007","reqId":"req-4","msg":"Route POST:/chat-list not found"}
-{"level":30,"time":1751472413124,"pid":122387,"hostname":"PcFre007","reqId":"req-4","res":{"statusCode":404},"responseTime":1.171509001404047,"msg":"request completed"}
+{"level":30,"time":1751537008160,"pid":65656,"hostname":"PcFre007","msg":"Server listening at http://10.255.255.254:3000"}
+{"level":30,"time":1751537008160,"pid":65656,"hostname":"PcFre007","msg":"Server listening at http://127.0.0.1:3000"}
+{"level":30,"time":1751537008160,"pid":65656,"hostname":"PcFre007","msg":"Server listening at http://172.21.140.75:3000"}
+{"level":30,"time":1751537013521,"pid":65656,"hostname":"PcFre007","reqId":"req-1","req":{"method":"OPTIONS","url":"/register","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":59178},"msg":"incoming request"}
+{"level":30,"time":1751537013524,"pid":65656,"hostname":"PcFre007","reqId":"req-1","res":{"statusCode":204},"responseTime":3.1379049997776747,"msg":"request completed"}
+{"level":30,"time":1751537013525,"pid":65656,"hostname":"PcFre007","reqId":"req-2","req":{"method":"POST","url":"/register","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":59178},"msg":"incoming request"}
+{"level":30,"time":1751537013640,"pid":65656,"hostname":"PcFre007","msg":"User created"}
+{"level":30,"time":1751537013641,"pid":65656,"hostname":"PcFre007","reqId":"req-2","res":{"statusCode":201},"responseTime":115.73037100024521,"msg":"request completed"}
+{"level":30,"time":1751537030359,"pid":65656,"hostname":"PcFre007","reqId":"req-3","req":{"method":"OPTIONS","url":"/login","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":59178},"msg":"incoming request"}
+{"level":30,"time":1751537030360,"pid":65656,"hostname":"PcFre007","reqId":"req-3","res":{"statusCode":204},"responseTime":0.3757179994136095,"msg":"request completed"}
+{"level":30,"time":1751537030361,"pid":65656,"hostname":"PcFre007","reqId":"req-4","req":{"method":"POST","url":"/login","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":59178},"msg":"incoming request"}
+{"level":30,"time":1751537030405,"pid":65656,"hostname":"PcFre007","msg":"Login success"}
+{"level":30,"time":1751537030406,"pid":65656,"hostname":"PcFre007","reqId":"req-4","res":{"statusCode":201},"responseTime":44.89873499982059,"msg":"request completed"}
+{"level":30,"time":1751537033751,"pid":65656,"hostname":"PcFre007","reqId":"req-5","req":{"method":"POST","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":59178},"msg":"incoming request"}
+{"level":30,"time":1751537033752,"pid":65656,"hostname":"PcFre007","reqId":"req-5","msg":"Route POST:/chat-list not found"}
+{"level":30,"time":1751537033752,"pid":65656,"hostname":"PcFre007","reqId":"req-5","res":{"statusCode":404},"responseTime":0.9108760003000498,"msg":"request completed"}
+{"level":30,"time":1751540296622,"pid":65656,"hostname":"PcFre007","reqId":"req-6","req":{"method":"OPTIONS","url":"/login","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":45228},"msg":"incoming request"}
+{"level":30,"time":1751540296626,"pid":65656,"hostname":"PcFre007","reqId":"req-6","res":{"statusCode":204},"responseTime":2.871618999168277,"msg":"request completed"}
+{"level":30,"time":1751540296627,"pid":65656,"hostname":"PcFre007","reqId":"req-7","req":{"method":"POST","url":"/login","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":45228},"msg":"incoming request"}
+{"level":30,"time":1751540296682,"pid":65656,"hostname":"PcFre007","msg":"Login success"}
+{"level":30,"time":1751540296683,"pid":65656,"hostname":"PcFre007","reqId":"req-7","res":{"statusCode":201},"responseTime":55.76250400021672,"msg":"request completed"}
+{"level":30,"time":1751543164923,"pid":65656,"hostname":"PcFre007","reqId":"req-8","req":{"method":"OPTIONS","url":"/login","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":39630},"msg":"incoming request"}
+{"level":30,"time":1751543164926,"pid":65656,"hostname":"PcFre007","reqId":"req-8","res":{"statusCode":204},"responseTime":1.875824000686407,"msg":"request completed"}
+{"level":30,"time":1751543164928,"pid":65656,"hostname":"PcFre007","reqId":"req-9","req":{"method":"POST","url":"/login","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":39630},"msg":"incoming request"}
+{"level":30,"time":1751543164981,"pid":65656,"hostname":"PcFre007","msg":"Login success"}
+{"level":30,"time":1751543164982,"pid":65656,"hostname":"PcFre007","reqId":"req-9","res":{"statusCode":201},"responseTime":54.12664199993014,"msg":"request completed"}
+{"level":30,"time":1751543171113,"pid":65656,"hostname":"PcFre007","reqId":"req-a","req":{"method":"POST","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":39630},"msg":"incoming request"}
+{"level":30,"time":1751543171114,"pid":65656,"hostname":"PcFre007","reqId":"req-a","msg":"Route POST:/chat-list not found"}
+{"level":30,"time":1751543171115,"pid":65656,"hostname":"PcFre007","reqId":"req-a","res":{"statusCode":404},"responseTime":1.9794549997895956,"msg":"request completed"}
+{"level":30,"time":1751543293569,"pid":104277,"hostname":"PcFre007","msg":"Server listening at http://10.255.255.254:3000"}
+{"level":30,"time":1751543293569,"pid":104277,"hostname":"PcFre007","msg":"Server listening at http://127.0.0.1:3000"}
+{"level":30,"time":1751543293569,"pid":104277,"hostname":"PcFre007","msg":"Server listening at http://172.21.140.75:3000"}
+{"level":30,"time":1751543301953,"pid":104277,"hostname":"PcFre007","reqId":"req-1","req":{"method":"OPTIONS","url":"/login","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":34746},"msg":"incoming request"}
+{"level":30,"time":1751543301955,"pid":104277,"hostname":"PcFre007","reqId":"req-1","res":{"statusCode":204},"responseTime":2.398504000157118,"msg":"request completed"}
+{"level":30,"time":1751543301956,"pid":104277,"hostname":"PcFre007","reqId":"req-2","req":{"method":"POST","url":"/login","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":34746},"msg":"incoming request"}
+{"level":30,"time":1751543302008,"pid":104277,"hostname":"PcFre007","msg":"Login success"}
+{"level":30,"time":1751543302009,"pid":104277,"hostname":"PcFre007","reqId":"req-2","res":{"statusCode":201},"responseTime":52.6892119999975,"msg":"request completed"}
+{"level":30,"time":1751545288888,"pid":104277,"hostname":"PcFre007","reqId":"req-3","req":{"method":"OPTIONS","url":"/login","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":49316},"msg":"incoming request"}
+{"level":30,"time":1751545288891,"pid":104277,"hostname":"PcFre007","reqId":"req-3","res":{"statusCode":204},"responseTime":1.606062000617385,"msg":"request completed"}
+{"level":30,"time":1751545288892,"pid":104277,"hostname":"PcFre007","reqId":"req-4","req":{"method":"POST","url":"/login","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":49316},"msg":"incoming request"}
+{"level":30,"time":1751545288946,"pid":104277,"hostname":"PcFre007","msg":"Login success"}
+{"level":30,"time":1751545288947,"pid":104277,"hostname":"PcFre007","reqId":"req-4","res":{"statusCode":201},"responseTime":55.287928000092506,"msg":"request completed"}
+{"level":30,"time":1751548330245,"pid":104277,"hostname":"PcFre007","reqId":"req-5","req":{"method":"POST","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":42342},"msg":"incoming request"}
+{"level":30,"time":1751548330253,"pid":104277,"hostname":"PcFre007","reqId":"req-5","msg":"Route POST:/chat-list not found"}
+{"level":30,"time":1751548330256,"pid":104277,"hostname":"PcFre007","reqId":"req-5","res":{"statusCode":404},"responseTime":8.567019000649452,"msg":"request completed"}
+{"level":30,"time":1751548344545,"pid":104277,"hostname":"PcFre007","reqId":"req-6","req":{"method":"OPTIONS","url":"/login","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":42342},"msg":"incoming request"}
+{"level":30,"time":1751548344546,"pid":104277,"hostname":"PcFre007","reqId":"req-6","res":{"statusCode":204},"responseTime":1.0819760002195835,"msg":"request completed"}
+{"level":30,"time":1751548344547,"pid":104277,"hostname":"PcFre007","reqId":"req-7","req":{"method":"POST","url":"/login","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":42342},"msg":"incoming request"}
+{"level":30,"time":1751548344615,"pid":104277,"hostname":"PcFre007","msg":"Login success"}
+{"level":30,"time":1751548344616,"pid":104277,"hostname":"PcFre007","reqId":"req-7","res":{"statusCode":201},"responseTime":68.32004800066352,"msg":"request completed"}
+{"level":30,"time":1751548454497,"pid":104277,"hostname":"PcFre007","reqId":"req-8","req":{"method":"POST","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":38526},"msg":"incoming request"}
+{"level":30,"time":1751548454497,"pid":104277,"hostname":"PcFre007","reqId":"req-8","msg":"Route POST:/chat-list not found"}
+{"level":30,"time":1751548454498,"pid":104277,"hostname":"PcFre007","reqId":"req-8","res":{"statusCode":404},"responseTime":0.8598349988460541,"msg":"request completed"}
+{"level":30,"time":1751548705514,"pid":104277,"hostname":"PcFre007","reqId":"req-9","req":{"method":"POST","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":58968},"msg":"incoming request"}
+{"level":30,"time":1751548705515,"pid":104277,"hostname":"PcFre007","reqId":"req-9","msg":"Route POST:/chat-list not found"}
+{"level":30,"time":1751548705516,"pid":104277,"hostname":"PcFre007","reqId":"req-9","res":{"statusCode":404},"responseTime":1.6681580021977425,"msg":"request completed"}
+{"level":30,"time":1751548756714,"pid":104277,"hostname":"PcFre007","reqId":"req-a","req":{"method":"OPTIONS","url":"/user-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":58968},"msg":"incoming request"}
+{"level":30,"time":1751548756715,"pid":104277,"hostname":"PcFre007","reqId":"req-a","res":{"statusCode":204},"responseTime":0.7617079988121986,"msg":"request completed"}
+{"level":30,"time":1751548756716,"pid":104277,"hostname":"PcFre007","reqId":"req-b","req":{"method":"POST","url":"/user-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":58968},"msg":"incoming request"}
+{"level":30,"time":1751548756771,"pid":104277,"hostname":"PcFre007","msg":"User list returned"}
+{"level":30,"time":1751548756771,"pid":104277,"hostname":"PcFre007","reqId":"req-b","res":{"statusCode":201},"responseTime":54.943578999489546,"msg":"request completed"}
+{"level":30,"time":1751548944805,"pid":104277,"hostname":"PcFre007","reqId":"req-c","req":{"method":"POST","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":55848},"msg":"incoming request"}
+{"level":30,"time":1751548944806,"pid":104277,"hostname":"PcFre007","reqId":"req-c","msg":"Route POST:/chat-list not found"}
+{"level":30,"time":1751548944807,"pid":104277,"hostname":"PcFre007","reqId":"req-c","res":{"statusCode":404},"responseTime":1.5075009986758232,"msg":"request completed"}
+{"level":30,"time":1751548948197,"pid":104277,"hostname":"PcFre007","reqId":"req-d","req":{"method":"POST","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":55848},"msg":"incoming request"}
+{"level":30,"time":1751548948198,"pid":104277,"hostname":"PcFre007","reqId":"req-d","msg":"Route POST:/chat-list not found"}
+{"level":30,"time":1751548948199,"pid":104277,"hostname":"PcFre007","reqId":"req-d","res":{"statusCode":404},"responseTime":1.883042000234127,"msg":"request completed"}
+{"level":30,"time":1751548969335,"pid":104277,"hostname":"PcFre007","reqId":"req-e","req":{"method":"POST","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":55848},"msg":"incoming request"}
+{"level":30,"time":1751548969336,"pid":104277,"hostname":"PcFre007","reqId":"req-e","msg":"Route POST:/chat-list not found"}
+{"level":30,"time":1751548969337,"pid":104277,"hostname":"PcFre007","reqId":"req-e","res":{"statusCode":404},"responseTime":1.7950079999864101,"msg":"request completed"}
+{"level":30,"time":1751548985200,"pid":104277,"hostname":"PcFre007","reqId":"req-f","req":{"method":"POST","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":55848},"msg":"incoming request"}
+{"level":30,"time":1751548985201,"pid":104277,"hostname":"PcFre007","reqId":"req-f","msg":"Route POST:/chat-list not found"}
+{"level":30,"time":1751548985202,"pid":104277,"hostname":"PcFre007","reqId":"req-f","res":{"statusCode":404},"responseTime":1.0677530020475388,"msg":"request completed"}
+{"level":30,"time":1751549260804,"pid":104277,"hostname":"PcFre007","reqId":"req-g","req":{"method":"POST","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":44070},"msg":"incoming request"}
+{"level":30,"time":1751549260805,"pid":104277,"hostname":"PcFre007","reqId":"req-g","msg":"Route POST:/chat-list not found"}
+{"level":30,"time":1751549260805,"pid":104277,"hostname":"PcFre007","reqId":"req-g","res":{"statusCode":404},"responseTime":1.1108410023152828,"msg":"request completed"}
+{"level":30,"time":1751549732892,"pid":104277,"hostname":"PcFre007","reqId":"req-h","req":{"method":"POST","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":54432},"msg":"incoming request"}
+{"level":30,"time":1751549732892,"pid":104277,"hostname":"PcFre007","reqId":"req-h","msg":"Route POST:/chat-list not found"}
+{"level":30,"time":1751549732893,"pid":104277,"hostname":"PcFre007","reqId":"req-h","res":{"statusCode":404},"responseTime":1.0819060020148754,"msg":"request completed"}
+{"level":30,"time":1751549735274,"pid":104277,"hostname":"PcFre007","reqId":"req-i","req":{"method":"POST","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":54432},"msg":"incoming request"}
+{"level":30,"time":1751549735275,"pid":104277,"hostname":"PcFre007","reqId":"req-i","msg":"Route POST:/chat-list not found"}
+{"level":30,"time":1751549735275,"pid":104277,"hostname":"PcFre007","reqId":"req-i","res":{"statusCode":404},"responseTime":0.6432610005140305,"msg":"request completed"}
+{"level":30,"time":1751550105694,"pid":104277,"hostname":"PcFre007","reqId":"req-j","req":{"method":"POST","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":56350},"msg":"incoming request"}
+{"level":30,"time":1751550105694,"pid":104277,"hostname":"PcFre007","reqId":"req-j","msg":"Route POST:/chat-list not found"}
+{"level":30,"time":1751550105695,"pid":104277,"hostname":"PcFre007","reqId":"req-j","res":{"statusCode":404},"responseTime":0.9224539995193481,"msg":"request completed"}
+{"level":30,"time":1751550155462,"pid":104277,"hostname":"PcFre007","reqId":"req-k","req":{"method":"POST","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":56350},"msg":"incoming request"}
+{"level":30,"time":1751550155463,"pid":104277,"hostname":"PcFre007","reqId":"req-k","msg":"Route POST:/chat-list not found"}
+{"level":30,"time":1751550155463,"pid":104277,"hostname":"PcFre007","reqId":"req-k","res":{"statusCode":404},"responseTime":1.2342080026865005,"msg":"request completed"}
+{"level":30,"time":1751550184298,"pid":104277,"hostname":"PcFre007","reqId":"req-l","req":{"method":"POST","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":56350},"msg":"incoming request"}
+{"level":30,"time":1751550184299,"pid":104277,"hostname":"PcFre007","reqId":"req-l","msg":"Route POST:/chat-list not found"}
+{"level":30,"time":1751550184299,"pid":104277,"hostname":"PcFre007","reqId":"req-l","res":{"statusCode":404},"responseTime":0.7480599991977215,"msg":"request completed"}
+{"level":30,"time":1751550198148,"pid":104277,"hostname":"PcFre007","reqId":"req-m","req":{"method":"POST","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":56350},"msg":"incoming request"}
+{"level":30,"time":1751550198148,"pid":104277,"hostname":"PcFre007","reqId":"req-m","msg":"Route POST:/chat-list not found"}
+{"level":30,"time":1751550198149,"pid":104277,"hostname":"PcFre007","reqId":"req-m","res":{"statusCode":404},"responseTime":0.7328999973833561,"msg":"request completed"}
+{"level":30,"time":1751550210546,"pid":104277,"hostname":"PcFre007","reqId":"req-n","req":{"method":"OPTIONS","url":"/user-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":56350},"msg":"incoming request"}
+{"level":30,"time":1751550210547,"pid":104277,"hostname":"PcFre007","reqId":"req-n","res":{"statusCode":204},"responseTime":0.4449959993362427,"msg":"request completed"}
+{"level":30,"time":1751550210548,"pid":104277,"hostname":"PcFre007","reqId":"req-o","req":{"method":"POST","url":"/user-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":56350},"msg":"incoming request"}
+{"level":30,"time":1751550210553,"pid":104277,"hostname":"PcFre007","msg":"User list returned"}
+{"level":30,"time":1751550210553,"pid":104277,"hostname":"PcFre007","reqId":"req-o","res":{"statusCode":201},"responseTime":5.12737400084734,"msg":"request completed"}
+{"level":30,"time":1751550561282,"pid":104277,"hostname":"PcFre007","reqId":"req-p","req":{"method":"OPTIONS","url":"/login","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":58166},"msg":"incoming request"}
+{"level":30,"time":1751550561282,"pid":104277,"hostname":"PcFre007","reqId":"req-p","res":{"statusCode":204},"responseTime":0.32308999821543694,"msg":"request completed"}
+{"level":30,"time":1751550561284,"pid":104277,"hostname":"PcFre007","reqId":"req-q","req":{"method":"POST","url":"/login","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":58166},"msg":"incoming request"}
+{"level":30,"time":1751550561363,"pid":104277,"hostname":"PcFre007","msg":"Login success"}
+{"level":30,"time":1751550561363,"pid":104277,"hostname":"PcFre007","reqId":"req-q","res":{"statusCode":201},"responseTime":79.68753200024366,"msg":"request completed"}
+{"level":30,"time":1751550727889,"pid":104277,"hostname":"PcFre007","reqId":"req-r","req":{"method":"POST","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":49668},"msg":"incoming request"}
+{"level":30,"time":1751550727890,"pid":104277,"hostname":"PcFre007","reqId":"req-r","msg":"Route POST:/chat-list not found"}
+{"level":30,"time":1751550727890,"pid":104277,"hostname":"PcFre007","reqId":"req-r","res":{"statusCode":404},"responseTime":0.5073879994452,"msg":"request completed"}
+{"level":30,"time":1751550841956,"pid":104277,"hostname":"PcFre007","reqId":"req-s","req":{"method":"OPTIONS","url":"/login","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":40744},"msg":"incoming request"}
+{"level":30,"time":1751550841956,"pid":104277,"hostname":"PcFre007","reqId":"req-s","res":{"statusCode":204},"responseTime":0.6737890020012856,"msg":"request completed"}
+{"level":30,"time":1751550841957,"pid":104277,"hostname":"PcFre007","reqId":"req-t","req":{"method":"POST","url":"/login","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":40744},"msg":"incoming request"}
+{"level":30,"time":1751550842002,"pid":104277,"hostname":"PcFre007","msg":"Login success"}
+{"level":30,"time":1751550842003,"pid":104277,"hostname":"PcFre007","reqId":"req-t","res":{"statusCode":201},"responseTime":45.07881800085306,"msg":"request completed"}
+{"level":30,"time":1751551350293,"pid":104277,"hostname":"PcFre007","reqId":"req-u","req":{"method":"POST","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":59470},"msg":"incoming request"}
+{"level":30,"time":1751551350294,"pid":104277,"hostname":"PcFre007","reqId":"req-u","msg":"Route POST:/chat-list not found"}
+{"level":30,"time":1751551350294,"pid":104277,"hostname":"PcFre007","reqId":"req-u","res":{"statusCode":404},"responseTime":0.6735280007123947,"msg":"request completed"}
+{"level":30,"time":1751620179943,"pid":18640,"hostname":"PcFre007","msg":"Server listening at http://10.255.255.254:3000"}
+{"level":30,"time":1751620179943,"pid":18640,"hostname":"PcFre007","msg":"Server listening at http://127.0.0.1:3000"}
+{"level":30,"time":1751620179943,"pid":18640,"hostname":"PcFre007","msg":"Server listening at http://172.21.140.75:3000"}
+{"level":30,"time":1751620232539,"pid":18640,"hostname":"PcFre007","reqId":"req-1","req":{"method":"OPTIONS","url":"/register","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":48566},"msg":"incoming request"}
+{"level":30,"time":1751620232542,"pid":18640,"hostname":"PcFre007","reqId":"req-1","res":{"statusCode":204},"responseTime":2.4069400001317263,"msg":"request completed"}
+{"level":30,"time":1751620232542,"pid":18640,"hostname":"PcFre007","reqId":"req-2","req":{"method":"POST","url":"/register","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":48566},"msg":"incoming request"}
+{"level":30,"time":1751620232549,"pid":18640,"hostname":"PcFre007","msg":"The password is too short"}
+{"level":30,"time":1751620232550,"pid":18640,"hostname":"PcFre007","reqId":"req-2","res":{"statusCode":500},"responseTime":7.439403999829665,"msg":"request completed"}
+{"level":30,"time":1751620243786,"pid":18640,"hostname":"PcFre007","reqId":"req-3","req":{"method":"OPTIONS","url":"/register","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":48566},"msg":"incoming request"}
+{"level":30,"time":1751620243786,"pid":18640,"hostname":"PcFre007","reqId":"req-3","res":{"statusCode":204},"responseTime":0.33860399993136525,"msg":"request completed"}
+{"level":30,"time":1751620243787,"pid":18640,"hostname":"PcFre007","reqId":"req-4","req":{"method":"POST","url":"/register","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":48566},"msg":"incoming request"}
+{"level":30,"time":1751620243850,"pid":18640,"hostname":"PcFre007","msg":"User created"}
+{"level":30,"time":1751620243850,"pid":18640,"hostname":"PcFre007","reqId":"req-4","res":{"statusCode":201},"responseTime":63.476655000122264,"msg":"request completed"}
+{"level":30,"time":1751620253201,"pid":18640,"hostname":"PcFre007","reqId":"req-5","req":{"method":"OPTIONS","url":"/login","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":48566},"msg":"incoming request"}
+{"level":30,"time":1751620253202,"pid":18640,"hostname":"PcFre007","reqId":"req-5","res":{"statusCode":204},"responseTime":0.3815960001666099,"msg":"request completed"}
+{"level":30,"time":1751620253203,"pid":18640,"hostname":"PcFre007","reqId":"req-6","req":{"method":"POST","url":"/login","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":48566},"msg":"incoming request"}
+{"level":30,"time":1751620253246,"pid":18640,"hostname":"PcFre007","msg":"Login success"}
+{"level":30,"time":1751620253246,"pid":18640,"hostname":"PcFre007","reqId":"req-6","res":{"statusCode":201},"responseTime":43.26924000005238,"msg":"request completed"}
+{"level":30,"time":1751620262299,"pid":18640,"hostname":"PcFre007","reqId":"req-7","req":{"method":"POST","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":48566},"msg":"incoming request"}
+{"level":30,"time":1751620262300,"pid":18640,"hostname":"PcFre007","reqId":"req-7","msg":"Route POST:/chat-list not found"}
+{"level":30,"time":1751620262300,"pid":18640,"hostname":"PcFre007","reqId":"req-7","res":{"statusCode":404},"responseTime":0.7677360000088811,"msg":"request completed"}
+{"level":30,"time":1751620268097,"pid":18640,"hostname":"PcFre007","reqId":"req-8","req":{"method":"OPTIONS","url":"/user-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":48566},"msg":"incoming request"}
+{"level":30,"time":1751620268097,"pid":18640,"hostname":"PcFre007","reqId":"req-8","res":{"statusCode":204},"responseTime":0.30423999996855855,"msg":"request completed"}
+{"level":30,"time":1751620268098,"pid":18640,"hostname":"PcFre007","reqId":"req-9","req":{"method":"POST","url":"/user-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":48566},"msg":"incoming request"}
+{"level":30,"time":1751620268101,"pid":18640,"hostname":"PcFre007","msg":"User list returned"}
+{"level":30,"time":1751620268101,"pid":18640,"hostname":"PcFre007","reqId":"req-9","res":{"statusCode":201},"responseTime":2.8318110001273453,"msg":"request completed"}
+{"level":30,"time":1751620292513,"pid":18640,"hostname":"PcFre007","reqId":"req-a","req":{"method":"POST","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":48566},"msg":"incoming request"}
+{"level":30,"time":1751620292514,"pid":18640,"hostname":"PcFre007","reqId":"req-a","msg":"Route POST:/chat-list not found"}
+{"level":30,"time":1751620292514,"pid":18640,"hostname":"PcFre007","reqId":"req-a","res":{"statusCode":404},"responseTime":0.6757910000160336,"msg":"request completed"}
+{"level":30,"time":1751626663190,"pid":1779,"hostname":"PcFre007","msg":"Server listening at http://10.255.255.254:3000"}
+{"level":30,"time":1751626663190,"pid":1779,"hostname":"PcFre007","msg":"Server listening at http://127.0.0.1:3000"}
+{"level":30,"time":1751626663190,"pid":1779,"hostname":"PcFre007","msg":"Server listening at http://172.21.140.75:3000"}
+{"level":30,"time":1751626694095,"pid":1779,"hostname":"PcFre007","reqId":"req-1","req":{"method":"OPTIONS","url":"/register","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":58244},"msg":"incoming request"}
+{"level":30,"time":1751626694103,"pid":1779,"hostname":"PcFre007","reqId":"req-1","res":{"statusCode":204},"responseTime":7.281254000001354,"msg":"request completed"}
+{"level":30,"time":1751626694104,"pid":1779,"hostname":"PcFre007","reqId":"req-2","req":{"method":"POST","url":"/register","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":58244},"msg":"incoming request"}
+{"level":30,"time":1751626694340,"pid":1779,"hostname":"PcFre007","msg":"User created"}
+{"level":30,"time":1751626694342,"pid":1779,"hostname":"PcFre007","reqId":"req-2","res":{"statusCode":201},"responseTime":238.31124300000374,"msg":"request completed"}
+{"level":30,"time":1751626722823,"pid":1779,"hostname":"PcFre007","reqId":"req-3","req":{"method":"OPTIONS","url":"/login","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":58244},"msg":"incoming request"}
+{"level":30,"time":1751626722824,"pid":1779,"hostname":"PcFre007","reqId":"req-3","res":{"statusCode":204},"responseTime":0.4291830000001937,"msg":"request completed"}
+{"level":30,"time":1751626722825,"pid":1779,"hostname":"PcFre007","reqId":"req-4","req":{"method":"POST","url":"/login","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":58244},"msg":"incoming request"}
+{"level":30,"time":1751626722892,"pid":1779,"hostname":"PcFre007","msg":"Login success"}
+{"level":30,"time":1751626722893,"pid":1779,"hostname":"PcFre007","reqId":"req-4","res":{"statusCode":201},"responseTime":67.8486050000065,"msg":"request completed"}
+{"level":30,"time":1751626730946,"pid":1779,"hostname":"PcFre007","reqId":"req-5","req":{"method":"POST","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":58244},"msg":"incoming request"}
+{"level":30,"time":1751626730947,"pid":1779,"hostname":"PcFre007","reqId":"req-5","msg":"Route POST:/chat-list not found"}
+{"level":30,"time":1751626730948,"pid":1779,"hostname":"PcFre007","reqId":"req-5","res":{"statusCode":404},"responseTime":1.564368999999715,"msg":"request completed"}
