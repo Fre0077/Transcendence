@@ -125,7 +125,7 @@ async function createNewChat() {
 
     const label = document.createElement("label")
     label.htmlFor = `member-${user.linkId || user.id}`
-    label.innerText = `> ${user.name.toUpperCase()}`
+    label.innerText = `> ${user.username.toUpperCase()}`
     label.className = "pipboy-checkbox-label"
 
     listItem.appendChild(checkbox)

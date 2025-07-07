@@ -56,7 +56,7 @@ body {
 
 .pipboy-terminal.booting {
   opacity: 0;
-  animation: pipboyBootSequence 2.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards, screenFlicker 2.5s ease-out;
+  animation: pipboyBootSequence 2.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
 
 .pipboy-terminal.ready {
@@ -313,36 +313,6 @@ body {
   }
 }
 
-/* NUOVO: Effetto di flickering aggiuntivo */
-
-@keyframes screenFlicker {
-  0%,
-  5%,
-  10%,
-  15%,
-  20%,
-  25%,
-  30%,
-  35% {
-    box-shadow: inset 0 0 20px rgba(0, 255, 0, 0.1), 0 0 20px rgba(0, 255, 0, 0.3);
-  }
-  2%,
-  7%,
-  12%,
-  17%,
-  22%,
-  27%,
-  32% {
-    box-shadow: inset 0 0 30px rgba(0, 255, 0, 0.2), 0 0 30px rgba(0, 255, 0, 0.6);
-  }
-  40% {
-    box-shadow: inset 0 0 20px rgba(0, 255, 0, 0.1), 0 0 20px rgba(0, 255, 0, 0.4);
-  }
-  100% {
-    box-shadow: inset 0 0 20px rgba(0, 255, 0, 0.1), 0 0 20px rgba(0, 255, 0, 0.5);
-  }
-}
-
 /* Terminal header */
 .terminal-header {
   text-align: center;
@@ -356,7 +326,8 @@ body {
   font-size: 18px;
   font-weight: bold;
   margin-bottom: 5px;
-  text-shadow: 0 0 10px #00ff00;
+  /*text-shadow: 0 0 10px #00ff00;*/
+  animation: pulse 2s infinite;
 }
 
 .terminal-subtitle {
@@ -372,7 +343,7 @@ body {
 
 /* Login container - MODIFICATO per non includere il footer */
 .login-container {
-  flex: 0 0 auto; /* CAMBIATO: non più flex: 1 */
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -388,10 +359,12 @@ body {
   flex-shrink: 0;
 }
 
+/*FREPOINT*/
+
 .login-title {
   font-size: 20px;
   margin-bottom: 15px;
-  text-shadow: 0 0 15px #00ff00;
+  /*text-shadow: 0 0 15px #00ff00;*/
   animation: pulse 2s infinite;
 }
 
@@ -447,7 +420,7 @@ body {
   display: block;
   margin-bottom: 8px;
   font-size: 14px;
-  text-shadow: 0 0 5px #00ff00;
+  /*text-shadow: 0 0 5px #00ff00;*/
 }
 
 .pipboy-input {
@@ -461,7 +434,7 @@ body {
   border-radius: 0;
   outline: none;
   transition: all 0.3s ease;
-  text-shadow: 0 0 5px #00ff00;
+  /*text-shadow: 0 0 5px #00ff00;*/
 }
 
 .pipboy-input:focus {
@@ -522,7 +495,7 @@ body {
 .pipboy-button:hover:not(:disabled) {
   background: rgba(0, 255, 0, 0.1) !important;
   box-shadow: 0 0 15px #00ff00 !important;
-  text-shadow: 0 0 10px #00ff00 !important;
+  /*text-shadow: 0 0 10px #00ff00 !important;*/
 }
 
 .pipboy-button:active:not(:disabled) {
@@ -533,6 +506,8 @@ body {
   border-width: 3px !important;
   font-weight: bold !important;
 }
+
+/*FREPOINT*/
 
 .pipboy-button.loading {
   animation: loading 1s infinite;
@@ -573,7 +548,7 @@ body {
 #googleButton:hover {
   background: rgba(0, 255, 0, 0.1) !important;
   box-shadow: 0 0 15px #00ff00 !important;
-  text-shadow: 0 0 10px #00ff00 !important;
+  /*text-shadow: 0 0 10px #00ff00 !important;*/
 }
 
 /* Separator */
@@ -698,6 +673,8 @@ body {
   pointer-events: none;
   z-index: 1000;
 }
+
+/*FREPOINT*/
 
 .screen-flicker {
   position: absolute;

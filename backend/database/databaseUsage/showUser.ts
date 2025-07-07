@@ -11,7 +11,7 @@ async function showAllUsers() {
         users.forEach(user => {
             console.log("UserId:", user.userId);
             console.log("LinkId:", user.linkId);
-            console.log("Name:", user.name);
+            console.log("Name:", user.username);
             console.log("-----");
         });
     } catch (error) {
