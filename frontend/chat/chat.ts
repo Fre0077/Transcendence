@@ -131,13 +131,13 @@ async function createNewChat() {
 		
 		let checkbox = document.createElement("input");
 		checkbox.type = "checkbox";
-		checkbox.value = user.name;
+		checkbox.value = user.username;
 		checkbox.id = `member-${user.linkId || user.id}`;
 		checkbox.style.marginRight = "8px";
 		
 		let label = document.createElement("label");
 		label.htmlFor = `member-${user.linkId || user.id}`;
-		label.innerText = user.name;
+		label.innerText = user.username;
 		label.style.cursor = "pointer";
 
 		listItem.appendChild(checkbox);

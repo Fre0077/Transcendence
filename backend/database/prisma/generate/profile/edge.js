@@ -123,7 +123,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/home/fre007/42/Transcendence/backend/database/prisma/generate/profile",
+      "value": "/home/borgo/miei_file/42core/Transcendence/backend/database/prisma/generate/profile",
       "fromEnvVar": null
     },
     "config": {
@@ -132,12 +132,12 @@ const config = {
     "binaryTargets": [
       {
         "fromEnvVar": null,
-        "value": "debian-openssl-3.0.x",
+        "value": "debian-openssl-1.1.x",
         "native": true
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/home/fre007/42/Transcendence/backend/database/prisma/profile.prisma",
+    "sourceFilePath": "/home/borgo/miei_file/42core/Transcendence/backend/database/prisma/profile.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
@@ -150,6 +150,7 @@ const config = {
     "dbprofile"
   ],
   "activeProvider": "sqlite",
+  "postinstall": false,
   "inlineDatasources": {
     "dbprofile": {
       "url": {
