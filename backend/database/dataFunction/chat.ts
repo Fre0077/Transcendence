@@ -6,58 +6,56 @@ import { fastify } from "../server";
 
 //aggiunta del messaggio al database
 export async function handleMessage(input: newMessage): Promise<string> {
-	if (input.message.toString().trim() === '') {
-		fastify.log.info('No message text provided');
-		throw new Error('No message text provided');
-	}
+    if (input.message.toString().trim() === '') {
+        fastify.log.info('No message text provided');
+        throw new Error('No message text provided');
+    }
 
-	// ricerca dello user e della chat
-	const findUser = await chatPrisma.user.findUnique({ where: { linkId: input.userId }, include: { blockedUsers: true, blockedBy: true } });
-	if (!findUser) {
-		fastify.log.info(`user with ID ${input.userId} does not exist`);
-		throw new Error(`user with ID ${input.userId} does not exist`);
-	}
-	const findChat = await chatPrisma.chats.findUnique({ where: { chatId: input.chatId }, include: { users: true, host: true } });
-	if (!findChat) {
-		fastify.log.info(`chat with ID ${input.chatId} does not exist`);
-		throw new Error(`chat with ID ${input.chatId} does not exist`);
-	}
+    const findUser = await chatPrisma.user.findUnique({ where: { linkId: input.userId }, include: { blockedUsers: true, blockedBy: true } });
+    if (!findUser) {
+        fastify.log.info(`user with ID ${input.userId} does not exist`);
+        throw new Error(`user with ID ${input.userId} does not exist`);
+    }
+    const findChat = await chatPrisma.chats.findUnique({ where: { chatId: input.chatId }, include: { users: true, host: true } });
+    if (!findChat) {
+        fastify.log.info(`chat with ID ${input.chatId} does not exist`);
+        throw new Error(`chat with ID ${input.chatId} does not exist`);
+    }
 
-	// Trova tutti gli userId partecipanti alla chat (escludendo chi invia)
-	const otherUserIds = findChat.users
-		.filter(u => u.linkId !== input.userId)
-		.map(u => u.userId);
-	if (findChat.host && findChat.host.linkId !== input.userId) {
-		otherUserIds.push(findChat.host.userId);
-	}
+    // Trova tutti gli userId partecipanti alla chat (escludendo chi invia)
+    const otherUsers = findChat.users.filter(u => u.linkId !== input.userId);
+    if (findChat.host && findChat.host.linkId !== input.userId) {
+        otherUsers.push(findChat.host);
+    }
 
-	// Controlla se uno degli altri utenti ha bloccato chi invia, o viceversa
-	for (const otherUserId of otherUserIds) {
-		// L'utente che invia ha bloccato l'altro?
-		if (findUser.blockedUsers.some(u => u.userId === otherUserId)) {
-			fastify.log.info(`User ${input.userId} has blocked user ${otherUserId}`);
-			throw new Error(`You have blocked a participant in this chat`);
-		}
-		// L'altro ha bloccato chi invia?
-		const otherUser = await chatPrisma.user.findUnique({ where: { userId: otherUserId }, include: { blockedUsers: true } });
-		if (otherUser && otherUser.blockedUsers.some(u => u.userId === findUser.userId)) {
-			fastify.log.info(`User ${otherUserId} has blocked user ${input.userId}`);
-			throw new Error(`You are blocked by a participant in this chat`);
-		}
-	}
+    // Se la chat è privata (2 utenti)
+    if (otherUsers.length === 1) {
+        const otherUser = otherUsers[0];
+        // Chi invia ha bloccato l'altro?
+        if (findUser.blockedUsers.some(u => u.userId === otherUser.userId)) {
+            fastify.log.info(`Hai bloccato utente ${otherUser.username}`);
+            return `Hai bloccato utente ${otherUser.username}`;
+        }
+        // L'altro ha bloccato chi invia?
+        const otherUserFull = await chatPrisma.user.findUnique({ where: { userId: otherUser.userId }, include: { blockedUsers: true } });
+        if (otherUserFull && otherUserFull.blockedUsers.some(u => u.userId === findUser.userId)) {
+            fastify.log.info(`Utente ${otherUser.username} ti ha bloccato`);
+            return `Utente ${otherUser.username} ti ha bloccato`;
+        }
+    }
 
-	//creazione del nuovo messaggio
-	await chatPrisma.messages.create({
-		data: {
-			chat: { connect: { chatId: findChat.chatId } },
-			user: { connect: { linkId: findUser.linkId } },
-			message: input.message.toString(),
-			date: new Date()
-		}
-	});
+    // Se gruppo (>2 utenti) o nessun blocco, salva normalmente
+    await chatPrisma.messages.create({
+        data: {
+            chat: { connect: { chatId: findChat.chatId } },
+            user: { connect: { linkId: findUser.linkId } },
+            message: input.message.toString(),
+            date: new Date()
+        }
+    });
 
-	fastify.log.info('Message saved');
-	return 'Messaggio salvato.'
+    fastify.log.info('Message saved');
+    return 'Messaggio salvato.'
 }
 
 //ricerca tutti i messaggi apperteneti ad una chat
