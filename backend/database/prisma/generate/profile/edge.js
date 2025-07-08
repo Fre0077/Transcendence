@@ -129,7 +129,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/home/fre007/42/Transcendence/backend/database/prisma/generate/profile",
+      "value": "/home/alborghi/Desktop/Transcendence/backend/database/prisma/generate/profile",
       "fromEnvVar": null
     },
     "config": {
@@ -143,7 +143,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/home/fre007/42/Transcendence/backend/database/prisma/profile.prisma",
+    "sourceFilePath": "/home/alborghi/Desktop/Transcendence/backend/database/prisma/profile.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {

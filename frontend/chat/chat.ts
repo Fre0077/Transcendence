@@ -1,4 +1,4 @@
-import type { newChat } from "../classes/classes"
+import type { newChat, newMessage } from "../classes/classes"
 
 function searchChat(event?: Event) {
   event?.preventDefault()
@@ -22,6 +22,47 @@ async function getUserList(): Promise<Array<{ id: number; linkId: number; name: 
   return []
 }
 
+async function getChats(): Promise<Array<{ chatId: number; name: string }>> {
+  const userId = getUserId()
+  if (userId === -1) return []
+
+  return new Promise((resolve, reject) => {
+    const ws = new WebSocket("ws://localhost:3000/chat-list")
+    
+    ws.onopen = () => {
+      ws.send(userId.toString())
+    }
+    
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data)
+        if (data.error) {
+          console.error("WebSocket error:", data.error)
+          resolve([])
+        } else {
+          const chats = JSON.parse(data.chats)
+          console.log("Received chats:", chats)
+          resolve(chats)
+        }
+        ws.close()
+      } catch (error) {
+        console.error("Error parsing WebSocket response:", error)
+        resolve([])
+        ws.close()
+      }
+    }
+    
+    ws.onerror = (error) => {
+      console.error("WebSocket error:", error)
+      resolve([])
+    }
+    
+    ws.onclose = () => {
+      // Connection closed
+    }
+  })
+}
+
 async function createChat(chatData: newChat) {
   try {
     const response = await fetch("http://localhost:3000/new-chat", {
@@ -32,114 +73,20 @@ async function createChat(chatData: newChat) {
 
     if (response.ok) {
       const data = await response.json()
-      createChatPage()
       console.log("Chat created successfully:", data)
+      // Refresh the chat page to show the new chat
+      createChatPage()
     } else {
       const errorData = await response.json()
-      console.error("Error creating chat:", errorData)
+      console.error("Error creating chat:", errorData.error)
+      alert("Error creating chat: " + errorData.error)
+      throw new Error(errorData.error)
     }
   } catch (error) {
     console.error("Network error while creating chat:", error)
     alert("Network error while creating chat.")
+    throw error
   }
-}
-
-async function createNewChat() {
-  const popup = document.createElement("div")
-  popup.id = "newChatPopup"
-  popup.className = "pipboy-popup"
-
-  const usersList: Array<{ id: number; linkId: number; name: string }> = await getUserList()
-  console.log("Users List:", usersList)
-
-  if (!Array.isArray(usersList) || usersList.length === 0) {
-    alert("No users found to create a chat with.")
-    return
-  }
-
-  const popupContent = document.createElement("div")
-  popupContent.id = "newChatContent"
-  popupContent.className = "pipboy-popup-content"
-  popupContent.innerHTML = `
-        <div class="popup-header">
-            <div class="popup-title">CREATE NEW COMMUNICATION CHANNEL</div>
-            <div class="popup-status">
-                <span class="status-indicator"></span>
-                <span>READY</span>
-            </div>
-        </div>
-        <form id="newChatForm" class="pipboy-form">
-            <div class="input-group">
-                <label for="chatName" class="pipboy-label">CHANNEL NAME:</label>
-                <input type="text" id="chatName" name="chatName" class="pipboy-input" required>
-            </div>
-            <div class="input-group">
-                <label class="pipboy-label">SELECT MEMBERS:</label>
-                <ul id="membersList" class="members-list"></ul>
-            </div>
-            <div class="button-group">
-                <button type="submit" id="submitButton" class="pipboy-button primary">CREATE CHANNEL</button>
-                <button type="button" id="closePopup" class="pipboy-button">CANCEL</button>
-            </div>
-        </form>
-    `
-
-  popup.appendChild(popupContent)
-
-  const submitButton = popupContent.querySelector("#submitButton") as HTMLButtonElement
-  submitButton.addEventListener("click", (event) => {
-    event.preventDefault()
-    const chatName = (popupContent.querySelector("#chatName") as HTMLInputElement).value
-
-    const selectedMembers: string[] = []
-    const checkboxes = popupContent.querySelectorAll('input[type="checkbox"]:checked') as NodeListOf<HTMLInputElement>
-    checkboxes.forEach((checkbox) => {
-      selectedMembers.push(checkbox.value)
-    })
-
-    const newChatData: newChat = {
-      host: getUsername(),
-      chatName: chatName,
-      members: selectedMembers,
-    }
-
-    createChat(newChatData)
-    document.body.removeChild(popup)
-  })
-
-  const closeButton = popupContent.querySelector("#closePopup") as HTMLButtonElement
-  closeButton.addEventListener("click", () => {
-    document.body.removeChild(popup)
-  })
-
-  const membersList = popupContent.querySelector("#membersList") as HTMLUListElement
-  usersList.forEach((user) => {
-    const listItem = document.createElement("li")
-    listItem.className = "member-item"
-
-    const checkbox = document.createElement("input")
-    checkbox.type = "checkbox"
-    checkbox.value = user.name
-    checkbox.id = `member-${user.linkId || user.id}`
-    checkbox.className = "pipboy-checkbox"
-
-    const label = document.createElement("label")
-    label.htmlFor = `member-${user.linkId || user.id}`
-    label.innerText = `> ${user.username.toUpperCase()}`
-    label.className = "pipboy-checkbox-label"
-
-    listItem.appendChild(checkbox)
-    listItem.appendChild(label)
-    membersList.appendChild(listItem)
-  })
-
-  popup.addEventListener("click", (event) => {
-    if (event.target === popup) {
-      document.body.removeChild(popup)
-    }
-  })
-
-  document.body.appendChild(popup)
 }
 
 export function getUsername(): string {
@@ -150,23 +97,12 @@ export function getUsername(): string {
   return username
 }
 
-async function getChats() {
-  const username = getUsername()
-  if (!username) return []
-
-  const response = await fetch("http://localhost:3000/chat-list", {
-    method: "POST",
-    headers: { "Content-Type": "text/plain" },
-    body: username,
-  })
-
-  if (response.ok) {
-    const data = JSON.parse(await response.text())
-    const chats = JSON.parse(data.chats)
-    console.log(chats)
-    return chats
-  }
-  return []
+export function getUserId(): number {
+  const userSession = sessionStorage.getItem("userSession")
+  if (!userSession) return -1
+  const userId = JSON.parse(userSession)["id"]
+  console.log(userId)
+  return userId
 }
 
 function createHeaderDiv() {
@@ -214,8 +150,45 @@ function createHeaderDiv() {
   return headerDiv
 }
 
-async function openChat(chat: { id: number; name: string }) {
-  // Implementation for opening a chat
+async function openChat(chat: { chatId: number; name: string }) {
+  const ws = new WebSocket("ws://localhost:3000/index-message")
+  // [ chatId, index, userId ]
+  const toSend = {
+    message: [chat.chatId, 0, getUserId()]
+  }
+
+  ws.onopen = () => {
+    ws.send(JSON.stringify(toSend))
+    }
+  
+  ws.onmessage = (event) => {
+    const data = JSON.parse(event.data)
+    console.log("WebSocket message received:", data)
+    let messagesDiv = document.getElementById("messages") as HTMLDivElement
+    // get the reply (a string ) as an array of data
+    let messages = JSON.parse(data.reply)
+    console.log("Messages:", messages, messages.length, typeof messages)
+    
+    // Clear existing messages when loading a chat
+    messagesDiv.innerHTML = ""
+    
+    for (let i = 0; i < messages.length; i++) {
+      const message = messages[i]
+      const messageDiv = document.createElement("div")
+      messageDiv.className = "message-item"
+      
+      // Handle the actual data structure: userId instead of userName, date instead of timestamp
+      const userName = message.userName || `User ${message.userId}` // Fallback if userName not available
+      const timestamp = message.timestamp || message.date // Use date if timestamp not available
+      
+      messageDiv.innerHTML = `
+                <div class="message-user">${userName}:</div>
+                <div class="message-text">${message.message}</div>
+                <div class="message-timestamp">${new Date(timestamp).toLocaleTimeString()}</div>
+            `
+      messagesDiv.appendChild(messageDiv)
+    }
+  }
 }
 
 async function createChatsDiv() {
@@ -226,7 +199,7 @@ async function createChatsDiv() {
   const headerDiv = createHeaderDiv()
   chatsDiv.appendChild(headerDiv)
 
-  const chatsList: Array<{ id: number; name: string }> = await getChats()
+  const chatsList: Array<{ chatId: number; name: string }> = await getChats()
 
   const chatsContainer = document.createElement("div")
   chatsContainer.className = "chats-container"
@@ -238,6 +211,7 @@ async function createChatsDiv() {
             <div class="chat-name">> ${chat.name.toUpperCase()}</div>
             <div class="chat-status">ACTIVE</div>
         `
+    chatDiv.dataset.chatId = chat.chatId.toString()
     chatDiv.addEventListener("click", async () => {
       // Remove active class from all items
       document.querySelectorAll(".chat-item").forEach((item) => item.classList.remove("active"))
@@ -259,6 +233,44 @@ async function createChatsDiv() {
   chatsDiv.appendChild(newChatButton)
 
   return chatsDiv
+}
+
+function sendMessage(event: Event, chat: HTMLDivElement) {
+  event.preventDefault()
+  const messageInput = document.getElementById("messageInput") as HTMLInputElement
+  const message = messageInput.value
+  if (!message) return
+
+  let chatId = chat.dataset.chatId
+  if (!chatId) {
+    console.error("Chat ID not found")
+    return
+  }
+
+  let data: newMessage = {
+    message: message,
+    chatId: parseInt(chatId),
+    userId: getUserId(),
+  }
+
+  fetch("http://localhost:3000/chat-message", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Network response was not ok")
+      }
+      return response.json()
+    })
+    .then((data) => {
+      console.log("Message sent successfully:", data)
+      // Optionally, you can update the chat UI here to show the new message
+    })
+    .catch((error) => {
+      console.error("Error sending message:", error)
+    })
 }
 
 function createCurrentChatDiv() {
@@ -292,11 +304,12 @@ function createCurrentChatDiv() {
 
   const sendButton = document.createElement("button")
   sendButton.id = "sendButton"
-  sendButton.className = "pipboy-button"
   sendButton.innerText = "SEND"
   sendButton.addEventListener("click", (event) => {
     event?.preventDefault()
-    console.log("Send button clicked")
+    let chat = document.querySelector(".chat-item.active") as HTMLDivElement
+    sendMessage(event, chat)
+    messageInput.value = "" // Clear input after sending
   })
 
   messageInputForm.appendChild(messageInput)
@@ -399,4 +412,106 @@ export async function createChatPage() {
       timestampEl.textContent = new Date().toLocaleTimeString()
     }
   }, 1000)
+}
+
+async function createNewChat() {
+  const popup = document.createElement("div")
+  popup.id = "newChatPopup"
+  popup.className = "pipboy-popup"
+
+  const usersList: Array<{ id: number; linkId: number; name: string }> = await getUserList()
+  console.log("Users List:", usersList)
+
+  if (!Array.isArray(usersList) || usersList.length === 0) {
+    alert("No users found to create a chat with.")
+    return
+  }
+
+  const popupContent = document.createElement("div")
+  popupContent.id = "newChatContent"
+  popupContent.className = "pipboy-popup-content"
+  popupContent.innerHTML = `
+        <div class="popup-header">
+            <div class="popup-title">CREATE NEW COMMUNICATION CHANNEL</div>
+            <div class="popup-status">
+                <span class="status-indicator"></span>
+                <span>READY</span>
+            </div>
+        </div>
+        <form id="newChatForm" class="pipboy-form">
+            <div class="input-group">
+                <label for="chatName" class="pipboy-label">CHANNEL NAME:</label>
+                <input type="text" id="chatName" name="chatName" class="pipboy-input" required>
+            </div>
+            <div class="input-group">
+                <label class="pipboy-label">SELECT MEMBERS:</label>
+                <ul id="membersList" class="members-list"></ul>
+            </div>
+            <div class="button-group">
+                <button type="submit" id="submitButton" class="pipboy-button primary">CREATE CHANNEL</button>
+                <button type="button" id="closePopup" class="pipboy-button">CANCEL</button>
+            </div>
+        </form>
+    `
+
+  popup.appendChild(popupContent)
+
+  const submitButton = popupContent.querySelector("#submitButton") as HTMLButtonElement
+  submitButton.addEventListener("click", async (event) => {
+    event.preventDefault()
+    const chatName = (popupContent.querySelector("#chatName") as HTMLInputElement).value
+
+    const selectedMembers: string[] = []
+    const checkboxes = popupContent.querySelectorAll('input[type="checkbox"]:checked') as NodeListOf<HTMLInputElement>
+    checkboxes.forEach((checkbox) => {
+      selectedMembers.push(checkbox.value)
+    })
+
+    const newChatData: newChat = {
+      host: getUsername(),
+      chatName: chatName,
+      members: selectedMembers,
+    }
+
+    try {
+      await createChat(newChatData)
+      document.body.removeChild(popup)
+    } catch (error) {
+      console.error("Failed to create chat:", error)
+    }
+  })
+
+  const closeButton = popupContent.querySelector("#closePopup") as HTMLButtonElement
+  closeButton.addEventListener("click", () => {
+    document.body.removeChild(popup)
+  })
+
+  const membersList = popupContent.querySelector("#membersList") as HTMLUListElement
+  usersList.forEach((user) => {
+    const listItem = document.createElement("li")
+    listItem.className = "member-item"
+
+    const checkbox = document.createElement("input")
+    checkbox.type = "checkbox"
+    checkbox.value = user.username
+    checkbox.id = `member-${user.linkId || user.id}`
+    checkbox.className = "pipboy-checkbox"
+
+    const label = document.createElement("label")
+    label.htmlFor = `member-${user.linkId || user.id}`
+    label.innerText = `> ${user.username.toUpperCase()}`
+    label.className = "pipboy-checkbox-label"
+
+    listItem.appendChild(checkbox)
+    listItem.appendChild(label)
+    membersList.appendChild(listItem)
+  })
+
+  popup.addEventListener("click", (event) => {
+    if (event.target === popup) {
+      document.body.removeChild(popup)
+    }
+  })
+
+  document.body.appendChild(popup)
 }

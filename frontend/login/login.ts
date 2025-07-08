@@ -39,10 +39,13 @@ async function loginFunction(event?: Event): Promise<void> {
 
     if (response.ok) {
       const data = await response.json()
+      let data_json = JSON.parse(data.message)
       sessionStorage.setItem(
         "userSession",
         JSON.stringify({
-          username: data.message,
+          username: data_json.username,
+          email: data_json.email,
+          id: data_json.id
         }),
       )
       showMessage("LOGIN SUCCESSFUL! ACCESSING SYSTEM...", "success")
