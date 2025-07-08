@@ -43,34 +43,34 @@ export async function chatEndpoint(fastify: FastifyInstance) {
 
 	// Endpoint WebSocket per ottenere la lista delle chat di uno user
 	fastify.get("/chat-list", { websocket: true }, (connection: any, req) => {
-		connection.socket.on('message', async (rawMessage: RawData) => {
+		connection.on('message', async (rawMessage: RawData) => {
 			try {
 				const userId = Number(rawMessage.toString());
 				if (isNaN(userId)) {
-					connection.socket.send(JSON.stringify({ error: "Invalid userId" }));
+					connection.send(JSON.stringify({ error: "Invalid userId" }));
 					return;
 				}
 				const output = await userChatList(userId);
-				connection.socket.send(JSON.stringify({ chats: output }));
+				connection.send(JSON.stringify({ chats: output }));
 			} catch (err) {
-				connection.socket.send(JSON.stringify({ error: err + " Internal server error" }));
+				connection.send(JSON.stringify({ error: err + " Internal server error" }));
 			}
 		});
 	});
 
 	// Endpoint WebSocket per ottenere gli ultimi 100 messaggi a partire da un certo indice
 	fastify.get("/index-message", { websocket: true }, (connection: any, req) => {
-		connection.socket.on('message', async (rawMessage: RawData) => {
+		connection.on('message', async (rawMessage: RawData) => {
 			try {
 				const { message } = JSON.parse(rawMessage.toString()) as { message?: number[] };
 				if (!message || !Array.isArray(message)) {
-					connection.socket.send(JSON.stringify({ error: "Invalid index array provided" }));
+					connection.send(JSON.stringify({ error: "Invalid index array provided" }));
 					return;
 				}
 				const output = await listChatMessage(message);
-				connection.socket.send(JSON.stringify({ reply: output }));
+				connection.send(JSON.stringify({ reply: output }));
 			} catch (err) {
-				connection.socket.send(JSON.stringify({ error: err + " Internal server error" }));
+				connection.send(JSON.stringify({ error: err + " Internal server error" }));
 			}
 		});
 	});

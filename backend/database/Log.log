@@ -1,37 +1,196 @@
-{"level":30,"time":1751890030515,"pid":57112,"hostname":"PcFre007","msg":"Server listening at http://10.255.255.254:3000"}
-{"level":30,"time":1751890030515,"pid":57112,"hostname":"PcFre007","msg":"Server listening at http://127.0.0.1:3000"}
-{"level":30,"time":1751890030515,"pid":57112,"hostname":"PcFre007","msg":"Server listening at http://172.21.140.75:3000"}
-{"level":30,"time":1751890090820,"pid":57112,"hostname":"PcFre007","reqId":"req-1","req":{"method":"OPTIONS","url":"/user-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":52802},"msg":"incoming request"}
-{"level":30,"time":1751890090827,"pid":57112,"hostname":"PcFre007","reqId":"req-1","res":{"statusCode":204},"responseTime":6.98730400018394,"msg":"request completed"}
-{"level":30,"time":1751890090829,"pid":57112,"hostname":"PcFre007","reqId":"req-2","req":{"method":"POST","url":"/user-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":52802},"msg":"incoming request"}
-{"level":30,"time":1751890090893,"pid":57112,"hostname":"PcFre007","msg":"User list returned"}
-{"level":30,"time":1751890090895,"pid":57112,"hostname":"PcFre007","reqId":"req-2","res":{"statusCode":201},"responseTime":66.07764900010079,"msg":"request completed"}
-{"level":30,"time":1751890228213,"pid":57112,"hostname":"PcFre007","reqId":"req-3","req":{"method":"OPTIONS","url":"/user-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":40896},"msg":"incoming request"}
-{"level":30,"time":1751890228214,"pid":57112,"hostname":"PcFre007","reqId":"req-3","res":{"statusCode":204},"responseTime":0.4208909999579191,"msg":"request completed"}
-{"level":30,"time":1751890228216,"pid":57112,"hostname":"PcFre007","reqId":"req-4","req":{"method":"POST","url":"/user-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":40896},"msg":"incoming request"}
-{"level":30,"time":1751890228247,"pid":57112,"hostname":"PcFre007","msg":"User list returned"}
-{"level":30,"time":1751890228247,"pid":57112,"hostname":"PcFre007","reqId":"req-4","res":{"statusCode":201},"responseTime":31.207888999953866,"msg":"request completed"}
-{"level":30,"time":1751890231296,"pid":57112,"hostname":"PcFre007","reqId":"req-5","req":{"method":"POST","url":"/user-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":40896},"msg":"incoming request"}
-{"level":30,"time":1751890231298,"pid":57112,"hostname":"PcFre007","msg":"User list returned"}
-{"level":30,"time":1751890231299,"pid":57112,"hostname":"PcFre007","reqId":"req-5","res":{"statusCode":201},"responseTime":2.3647639993578196,"msg":"request completed"}
-{"level":30,"time":1751890231891,"pid":57112,"hostname":"PcFre007","reqId":"req-6","req":{"method":"POST","url":"/user-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":40896},"msg":"incoming request"}
-{"level":30,"time":1751890231892,"pid":57112,"hostname":"PcFre007","msg":"User list returned"}
-{"level":30,"time":1751890231893,"pid":57112,"hostname":"PcFre007","reqId":"req-6","res":{"statusCode":201},"responseTime":1.76352300029248,"msg":"request completed"}
-{"level":30,"time":1751890270904,"pid":57112,"hostname":"PcFre007","reqId":"req-7","req":{"method":"POST","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":40896},"msg":"incoming request"}
-{"level":30,"time":1751890270906,"pid":57112,"hostname":"PcFre007","reqId":"req-7","msg":"Route POST:/chat-list not found"}
-{"level":30,"time":1751890270907,"pid":57112,"hostname":"PcFre007","reqId":"req-7","res":{"statusCode":404},"responseTime":2.0826610000804067,"msg":"request completed"}
-{"level":30,"time":1751890286250,"pid":57112,"hostname":"PcFre007","reqId":"req-8","req":{"method":"OPTIONS","url":"/user-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":40896},"msg":"incoming request"}
-{"level":30,"time":1751890286251,"pid":57112,"hostname":"PcFre007","reqId":"req-8","res":{"statusCode":204},"responseTime":0.7187769999727607,"msg":"request completed"}
-{"level":30,"time":1751890286252,"pid":57112,"hostname":"PcFre007","reqId":"req-9","req":{"method":"POST","url":"/user-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":40896},"msg":"incoming request"}
-{"level":30,"time":1751890286254,"pid":57112,"hostname":"PcFre007","msg":"User list returned"}
-{"level":30,"time":1751890286254,"pid":57112,"hostname":"PcFre007","reqId":"req-9","res":{"statusCode":201},"responseTime":2.591083999723196,"msg":"request completed"}
-{"level":30,"time":1751890379665,"pid":57112,"hostname":"PcFre007","reqId":"req-a","req":{"method":"OPTIONS","url":"/new-chat","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":42374},"msg":"incoming request"}
-{"level":30,"time":1751890379666,"pid":57112,"hostname":"PcFre007","reqId":"req-a","res":{"statusCode":204},"responseTime":0.8638329999521375,"msg":"request completed"}
-{"level":30,"time":1751890379667,"pid":57112,"hostname":"PcFre007","reqId":"req-b","req":{"method":"POST","url":"/new-chat","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":42374},"msg":"incoming request"}
-{"level":30,"time":1751890379673,"pid":57112,"hostname":"PcFre007","msg":"Member user \"undefined\" does not exist"}
-{"level":30,"time":1751890379674,"pid":57112,"hostname":"PcFre007","reqId":"req-b","res":{"statusCode":500},"responseTime":6.232547000050545,"msg":"request completed"}
-{"level":30,"time":1751890381547,"pid":57112,"hostname":"PcFre007","reqId":"req-c","req":{"method":"OPTIONS","url":"/user-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":42374},"msg":"incoming request"}
-{"level":30,"time":1751890381548,"pid":57112,"hostname":"PcFre007","reqId":"req-c","res":{"statusCode":204},"responseTime":0.7161100003868341,"msg":"request completed"}
-{"level":30,"time":1751890381550,"pid":57112,"hostname":"PcFre007","reqId":"req-d","req":{"method":"POST","url":"/user-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":42374},"msg":"incoming request"}
-{"level":30,"time":1751890381551,"pid":57112,"hostname":"PcFre007","msg":"User list returned"}
-{"level":30,"time":1751890381552,"pid":57112,"hostname":"PcFre007","reqId":"req-d","res":{"statusCode":201},"responseTime":1.873038999736309,"msg":"request completed"}
+{"level":30,"time":1751986265088,"pid":44448,"hostname":"Borgo","msg":"Server listening at http://127.0.0.1:3000"}
+{"level":30,"time":1751986265088,"pid":44448,"hostname":"Borgo","msg":"Server listening at http://10.0.2.15:3000"}
+{"level":30,"time":1751986279858,"pid":44448,"hostname":"Borgo","reqId":"req-1","req":{"method":"OPTIONS","url":"/login","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":47488},"msg":"incoming request"}
+{"level":30,"time":1751986279868,"pid":44448,"hostname":"Borgo","reqId":"req-1","res":{"statusCode":204},"responseTime":9.435502999462187,"msg":"request completed"}
+{"level":30,"time":1751986279870,"pid":44448,"hostname":"Borgo","reqId":"req-2","req":{"method":"POST","url":"/login","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":47488},"msg":"incoming request"}
+{"level":30,"time":1751986279940,"pid":44448,"hostname":"Borgo","msg":"Login success"}
+{"level":30,"time":1751986279946,"pid":44448,"hostname":"Borgo","reqId":"req-2","res":{"statusCode":201},"responseTime":75.8594410000369,"msg":"request completed"}
+{"level":30,"time":1751986282963,"pid":44448,"hostname":"Borgo","reqId":"req-3","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":47494},"msg":"incoming request"}
+{"level":30,"time":1751986282980,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986338059,"pid":44448,"hostname":"Borgo","reqId":"req-4","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":51226},"msg":"incoming request"}
+{"level":30,"time":1751986338068,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986341210,"pid":44448,"hostname":"Borgo","reqId":"req-5","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":51240},"msg":"incoming request"}
+{"level":30,"time":1751986341220,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986349011,"pid":44448,"hostname":"Borgo","reqId":"req-6","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":51762},"msg":"incoming request"}
+{"level":30,"time":1751986349017,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986352322,"pid":44448,"hostname":"Borgo","reqId":"req-7","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":51770},"msg":"incoming request"}
+{"level":30,"time":1751986352344,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986355549,"pid":44448,"hostname":"Borgo","reqId":"req-8","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":42538},"msg":"incoming request"}
+{"level":30,"time":1751986355561,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986368716,"pid":44448,"hostname":"Borgo","reqId":"req-9","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":39032},"msg":"incoming request"}
+{"level":30,"time":1751986368728,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986373144,"pid":44448,"hostname":"Borgo","reqId":"req-a","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":39042},"msg":"incoming request"}
+{"level":30,"time":1751986373155,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986375790,"pid":44448,"hostname":"Borgo","reqId":"req-b","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":41822},"msg":"incoming request"}
+{"level":30,"time":1751986375804,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986382999,"pid":44448,"hostname":"Borgo","reqId":"req-c","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":41828},"msg":"incoming request"}
+{"level":30,"time":1751986383018,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986397849,"pid":44448,"hostname":"Borgo","reqId":"req-d","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":46058},"msg":"incoming request"}
+{"level":30,"time":1751986397853,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986401582,"pid":44448,"hostname":"Borgo","reqId":"req-e","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":46064},"msg":"incoming request"}
+{"level":30,"time":1751986401587,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986404985,"pid":44448,"hostname":"Borgo","reqId":"req-f","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":46074},"msg":"incoming request"}
+{"level":30,"time":1751986404995,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986433163,"pid":44448,"hostname":"Borgo","reqId":"req-g","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":57112},"msg":"incoming request"}
+{"level":30,"time":1751986433175,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986439571,"pid":44448,"hostname":"Borgo","reqId":"req-h","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":39174},"msg":"incoming request"}
+{"level":30,"time":1751986439580,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986458334,"pid":44448,"hostname":"Borgo","reqId":"req-i","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":58814},"msg":"incoming request"}
+{"level":30,"time":1751986458355,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986514376,"pid":44448,"hostname":"Borgo","reqId":"req-j","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":54488},"msg":"incoming request"}
+{"level":30,"time":1751986514386,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986517709,"pid":44448,"hostname":"Borgo","reqId":"req-k","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":59380},"msg":"incoming request"}
+{"level":30,"time":1751986517717,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986519191,"pid":44448,"hostname":"Borgo","reqId":"req-l","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":59394},"msg":"incoming request"}
+{"level":30,"time":1751986519206,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986525631,"pid":44448,"hostname":"Borgo","reqId":"req-m","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":41482},"msg":"incoming request"}
+{"level":30,"time":1751986525648,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986532027,"pid":44448,"hostname":"Borgo","reqId":"req-n","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":41486},"msg":"incoming request"}
+{"level":30,"time":1751986532044,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986535105,"pid":44448,"hostname":"Borgo","reqId":"req-o","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":41500},"msg":"incoming request"}
+{"level":30,"time":1751986535111,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986542561,"pid":44448,"hostname":"Borgo","reqId":"req-p","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":34716},"msg":"incoming request"}
+{"level":30,"time":1751986542574,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986554755,"pid":44448,"hostname":"Borgo","reqId":"req-q","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":51510},"msg":"incoming request"}
+{"level":30,"time":1751986554773,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986559861,"pid":44448,"hostname":"Borgo","reqId":"req-r","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":35096},"msg":"incoming request"}
+{"level":30,"time":1751986559878,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986575248,"pid":44448,"hostname":"Borgo","reqId":"req-s","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":51612},"msg":"incoming request"}
+{"level":30,"time":1751986575283,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986582943,"pid":44448,"hostname":"Borgo","reqId":"req-t","req":{"method":"GET","url":"/index-message","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":51614},"msg":"incoming request"}
+{"level":30,"time":1751986613184,"pid":44448,"hostname":"Borgo","reqId":"req-u","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":37636},"msg":"incoming request"}
+{"level":30,"time":1751986613205,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986616650,"pid":44448,"hostname":"Borgo","reqId":"req-v","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":45830},"msg":"incoming request"}
+{"level":30,"time":1751986616682,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986619124,"pid":44448,"hostname":"Borgo","reqId":"req-w","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":45844},"msg":"incoming request"}
+{"level":30,"time":1751986619168,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986620369,"pid":44448,"hostname":"Borgo","reqId":"req-x","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":45848},"msg":"incoming request"}
+{"level":30,"time":1751986620386,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986623395,"pid":44448,"hostname":"Borgo","reqId":"req-y","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":45850},"msg":"incoming request"}
+{"level":30,"time":1751986623418,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986625215,"pid":44448,"hostname":"Borgo","reqId":"req-z","req":{"method":"GET","url":"/index-message","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":58348},"msg":"incoming request"}
+{"level":30,"time":1751986625243,"pid":44448,"hostname":"Borgo","msg":"Message list returned"}
+{"level":30,"time":1751986643683,"pid":44448,"hostname":"Borgo","reqId":"req-10","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":40316},"msg":"incoming request"}
+{"level":30,"time":1751986643730,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986646598,"pid":44448,"hostname":"Borgo","reqId":"req-11","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":35810},"msg":"incoming request"}
+{"level":30,"time":1751986646637,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986648402,"pid":44448,"hostname":"Borgo","reqId":"req-12","req":{"method":"GET","url":"/index-message","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":35826},"msg":"incoming request"}
+{"level":30,"time":1751986648417,"pid":44448,"hostname":"Borgo","msg":"Message list returned"}
+{"level":30,"time":1751986655486,"pid":44448,"hostname":"Borgo","reqId":"req-13","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":45086},"msg":"incoming request"}
+{"level":30,"time":1751986655511,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986656983,"pid":44448,"hostname":"Borgo","reqId":"req-14","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":45092},"msg":"incoming request"}
+{"level":30,"time":1751986657012,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986659771,"pid":44448,"hostname":"Borgo","reqId":"req-15","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":45096},"msg":"incoming request"}
+{"level":30,"time":1751986659785,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986663191,"pid":44448,"hostname":"Borgo","reqId":"req-16","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":45110},"msg":"incoming request"}
+{"level":30,"time":1751986663239,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986668416,"pid":44448,"hostname":"Borgo","reqId":"req-17","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":56130},"msg":"incoming request"}
+{"level":30,"time":1751986668444,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986679664,"pid":44448,"hostname":"Borgo","reqId":"req-18","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":51254},"msg":"incoming request"}
+{"level":30,"time":1751986679693,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986684372,"pid":44448,"hostname":"Borgo","reqId":"req-19","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":51266},"msg":"incoming request"}
+{"level":30,"time":1751986684377,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986686945,"pid":44448,"hostname":"Borgo","reqId":"req-1a","req":{"method":"GET","url":"/index-message","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":48088},"msg":"incoming request"}
+{"level":30,"time":1751986686954,"pid":44448,"hostname":"Borgo","msg":"Message list returned"}
+{"level":30,"time":1751986688693,"pid":44448,"hostname":"Borgo","reqId":"req-1b","req":{"method":"GET","url":"/index-message","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":48098},"msg":"incoming request"}
+{"level":30,"time":1751986688707,"pid":44448,"hostname":"Borgo","msg":"Message list returned"}
+{"level":30,"time":1751986715866,"pid":44448,"hostname":"Borgo","reqId":"req-1c","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":48394},"msg":"incoming request"}
+{"level":30,"time":1751986715911,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986722552,"pid":44448,"hostname":"Borgo","reqId":"req-1d","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":48400},"msg":"incoming request"}
+{"level":30,"time":1751986722576,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986724996,"pid":44448,"hostname":"Borgo","reqId":"req-1e","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":48402},"msg":"incoming request"}
+{"level":30,"time":1751986725009,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986727167,"pid":44448,"hostname":"Borgo","reqId":"req-1f","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":59062},"msg":"incoming request"}
+{"level":30,"time":1751986727172,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986733106,"pid":44448,"hostname":"Borgo","reqId":"req-1g","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":59070},"msg":"incoming request"}
+{"level":30,"time":1751986733128,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986758854,"pid":44448,"hostname":"Borgo","reqId":"req-1h","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":55510},"msg":"incoming request"}
+{"level":30,"time":1751986758878,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986762107,"pid":44448,"hostname":"Borgo","reqId":"req-1i","req":{"method":"GET","url":"/index-message","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":55520},"msg":"incoming request"}
+{"level":30,"time":1751986762130,"pid":44448,"hostname":"Borgo","msg":"Message list returned"}
+{"level":30,"time":1751986776031,"pid":44448,"hostname":"Borgo","reqId":"req-1j","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":56032},"msg":"incoming request"}
+{"level":30,"time":1751986776067,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986777355,"pid":44448,"hostname":"Borgo","reqId":"req-1k","req":{"method":"GET","url":"/index-message","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":56040},"msg":"incoming request"}
+{"level":30,"time":1751986777365,"pid":44448,"hostname":"Borgo","msg":"Message list returned"}
+{"level":30,"time":1751986793949,"pid":44448,"hostname":"Borgo","reqId":"req-1l","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":44180},"msg":"incoming request"}
+{"level":30,"time":1751986793982,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986796429,"pid":44448,"hostname":"Borgo","reqId":"req-1m","req":{"method":"GET","url":"/index-message","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":46326},"msg":"incoming request"}
+{"level":30,"time":1751986796455,"pid":44448,"hostname":"Borgo","msg":"Message list returned"}
+{"level":30,"time":1751986810223,"pid":44448,"hostname":"Borgo","reqId":"req-1n","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":56734},"msg":"incoming request"}
+{"level":30,"time":1751986810228,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986816181,"pid":44448,"hostname":"Borgo","reqId":"req-1o","req":{"method":"GET","url":"/index-message","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":37108},"msg":"incoming request"}
+{"level":30,"time":1751986816209,"pid":44448,"hostname":"Borgo","msg":"Message list returned"}
+{"level":30,"time":1751986855542,"pid":44448,"hostname":"Borgo","reqId":"req-1p","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":33350},"msg":"incoming request"}
+{"level":30,"time":1751986855575,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986857014,"pid":44448,"hostname":"Borgo","reqId":"req-1q","req":{"method":"GET","url":"/index-message","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":33362},"msg":"incoming request"}
+{"level":30,"time":1751986857052,"pid":44448,"hostname":"Borgo","msg":"Message list returned"}
+{"level":30,"time":1751986875788,"pid":44448,"hostname":"Borgo","reqId":"req-1r","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":48906},"msg":"incoming request"}
+{"level":30,"time":1751986875824,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986877866,"pid":44448,"hostname":"Borgo","reqId":"req-1s","req":{"method":"GET","url":"/index-message","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":48920},"msg":"incoming request"}
+{"level":30,"time":1751986877895,"pid":44448,"hostname":"Borgo","msg":"Message list returned"}
+{"level":30,"time":1751986933541,"pid":44448,"hostname":"Borgo","reqId":"req-1t","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":60400},"msg":"incoming request"}
+{"level":30,"time":1751986933560,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986936069,"pid":44448,"hostname":"Borgo","reqId":"req-1u","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":36542},"msg":"incoming request"}
+{"level":30,"time":1751986936089,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986947705,"pid":44448,"hostname":"Borgo","reqId":"req-1v","req":{"method":"GET","url":"/index-message","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":51292},"msg":"incoming request"}
+{"level":30,"time":1751986947729,"pid":44448,"hostname":"Borgo","msg":"Message list returned"}
+{"level":30,"time":1751986966921,"pid":44448,"hostname":"Borgo","reqId":"req-1w","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":50162},"msg":"incoming request"}
+{"level":30,"time":1751986966956,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986970112,"pid":44448,"hostname":"Borgo","reqId":"req-1x","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":50176},"msg":"incoming request"}
+{"level":30,"time":1751986970128,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986971851,"pid":44448,"hostname":"Borgo","reqId":"req-1y","req":{"method":"GET","url":"/index-message","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":50186},"msg":"incoming request"}
+{"level":30,"time":1751986971889,"pid":44448,"hostname":"Borgo","msg":"Message list returned"}
+{"level":30,"time":1751986992449,"pid":44448,"hostname":"Borgo","reqId":"req-1z","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":45334},"msg":"incoming request"}
+{"level":30,"time":1751986992468,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751986995538,"pid":44448,"hostname":"Borgo","reqId":"req-20","req":{"method":"GET","url":"/index-message","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":39416},"msg":"incoming request"}
+{"level":30,"time":1751986995565,"pid":44448,"hostname":"Borgo","msg":"Message list returned"}
+{"level":30,"time":1751986996546,"pid":44448,"hostname":"Borgo","reqId":"req-21","req":{"method":"GET","url":"/index-message","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":39422},"msg":"incoming request"}
+{"level":30,"time":1751986996565,"pid":44448,"hostname":"Borgo","msg":"Message list returned"}
+{"level":30,"time":1751986997841,"pid":44448,"hostname":"Borgo","reqId":"req-22","req":{"method":"GET","url":"/index-message","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":39438},"msg":"incoming request"}
+{"level":30,"time":1751986997862,"pid":44448,"hostname":"Borgo","msg":"Message list returned"}
+{"level":30,"time":1751987017827,"pid":44448,"hostname":"Borgo","reqId":"req-23","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":50756},"msg":"incoming request"}
+{"level":30,"time":1751987017849,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751987018916,"pid":44448,"hostname":"Borgo","reqId":"req-24","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":50762},"msg":"incoming request"}
+{"level":30,"time":1751987018938,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751987024493,"pid":44448,"hostname":"Borgo","reqId":"req-25","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":50776},"msg":"incoming request"}
+{"level":30,"time":1751987024529,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751987031028,"pid":44448,"hostname":"Borgo","reqId":"req-26","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":46030},"msg":"incoming request"}
+{"level":30,"time":1751987031059,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751987037064,"pid":44448,"hostname":"Borgo","reqId":"req-27","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":59638},"msg":"incoming request"}
+{"level":30,"time":1751987037091,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751987043036,"pid":44448,"hostname":"Borgo","reqId":"req-28","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":59650},"msg":"incoming request"}
+{"level":30,"time":1751987043071,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751987045845,"pid":44448,"hostname":"Borgo","reqId":"req-29","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":38822},"msg":"incoming request"}
+{"level":30,"time":1751987045873,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751987050899,"pid":44448,"hostname":"Borgo","reqId":"req-2a","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":38824},"msg":"incoming request"}
+{"level":30,"time":1751987050914,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751987053482,"pid":44448,"hostname":"Borgo","reqId":"req-2b","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":38826},"msg":"incoming request"}
+{"level":30,"time":1751987053501,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751987058039,"pid":44448,"hostname":"Borgo","reqId":"req-2c","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":51236},"msg":"incoming request"}
+{"level":30,"time":1751987058054,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751987059388,"pid":44448,"hostname":"Borgo","reqId":"req-2d","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":51244},"msg":"incoming request"}
+{"level":30,"time":1751987059411,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751987061603,"pid":44448,"hostname":"Borgo","reqId":"req-2e","req":{"method":"GET","url":"/index-message","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":51254},"msg":"incoming request"}
+{"level":30,"time":1751987061616,"pid":44448,"hostname":"Borgo","msg":"Message list returned"}
+{"level":30,"time":1751987078490,"pid":44448,"hostname":"Borgo","reqId":"req-2f","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":38286},"msg":"incoming request"}
+{"level":30,"time":1751987078523,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751987080494,"pid":44448,"hostname":"Borgo","reqId":"req-2g","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":38288},"msg":"incoming request"}
+{"level":30,"time":1751987080515,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751987087657,"pid":44448,"hostname":"Borgo","reqId":"req-2h","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":42070},"msg":"incoming request"}
+{"level":30,"time":1751987087674,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751987094979,"pid":44448,"hostname":"Borgo","reqId":"req-2i","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":42072},"msg":"incoming request"}
+{"level":30,"time":1751987094998,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751987096302,"pid":44448,"hostname":"Borgo","reqId":"req-2j","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":55920},"msg":"incoming request"}
+{"level":30,"time":1751987096335,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751987098319,"pid":44448,"hostname":"Borgo","reqId":"req-2k","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":55934},"msg":"incoming request"}
+{"level":30,"time":1751987098341,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751987100177,"pid":44448,"hostname":"Borgo","reqId":"req-2l","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":55946},"msg":"incoming request"}
+{"level":30,"time":1751987100204,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751987114466,"pid":44448,"hostname":"Borgo","reqId":"req-2m","req":{"method":"GET","url":"/chat-list","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":35294},"msg":"incoming request"}
+{"level":30,"time":1751987114498,"pid":44448,"hostname":"Borgo","msg":"Chat list returned"}
+{"level":30,"time":1751987116386,"pid":44448,"hostname":"Borgo","reqId":"req-2n","req":{"method":"GET","url":"/index-message","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":55086},"msg":"incoming request"}
+{"level":30,"time":1751987116424,"pid":44448,"hostname":"Borgo","msg":"Message list returned"}
+{"level":30,"time":1751987124380,"pid":44448,"hostname":"Borgo","reqId":"req-2o","req":{"method":"OPTIONS","url":"/chat-message","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":55092},"msg":"incoming request"}
+{"level":30,"time":1751987124381,"pid":44448,"hostname":"Borgo","reqId":"req-2o","res":{"statusCode":204},"responseTime":0.8812100002542138,"msg":"request completed"}
+{"level":30,"time":1751987124383,"pid":44448,"hostname":"Borgo","reqId":"req-2p","req":{"method":"POST","url":"/chat-message","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":55092},"msg":"incoming request"}
+{"level":30,"time":1751987124419,"pid":44448,"hostname":"Borgo","reqId":"req-2p","res":{"statusCode":500},"responseTime":35.672209000214934,"msg":"request completed"}

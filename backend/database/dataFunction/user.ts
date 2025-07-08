@@ -6,6 +6,7 @@ const chatPrisma = new chatPrismaClient()
 
 import { userLogin } from "../../classes/classes"
 import { fastify } from "../server";
+import { stringify } from 'querystring';
 
 //aggiunge user al databse
 export async function createUser(input: userLogin): Promise<string> {	
@@ -76,5 +77,9 @@ export async function loginUser(input:  userLogin): Promise<string> {
     }
 
 	fastify.log.info(`Login success`);
-	return account.username
+	return JSON.stringify({
+		id: account.id,
+		username: account.username,
+		email: account.email
+	});
 }
