@@ -22,7 +22,9 @@ export class ChatWidget {
 		chatWidget.id = 'ChatWidget';
 		chatWidget.innerHTML = /* html */ `
 			<div class="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-purple-600/50 to-pink-600/50 border-b border-white/10">
-				<h3 class="text-white font-semibold">CHATS</h3>
+				<a href="/chats" data-link class="text-sm">
+					<h3 class="text-white font-semibold">CHATS</h3>
+				</a>
 				<button class="text-white/70 hover:text-white transition" onClick="document.getElementById('ChatWidget').remove()">×</button>
 			</div>
 			<div class="p-4 space-y-3 max-h-64 overflow-y-auto">

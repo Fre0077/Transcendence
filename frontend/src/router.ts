@@ -1,5 +1,6 @@
 import { load404Page } from "./pages/errors/404";
 import { load500Page } from "./pages/errors/500";
+import { ChatsPage } from "./pages/protected/chats/chats";
 import { loadGamePage } from "./pages/protected/game/game";
 import { loadHomePage } from "./pages/protected/home/home";
 import { loadProfilePage } from "./pages/protected/profile/profile";
@@ -289,6 +290,15 @@ const routes: RouteConfig[] = [
       return document.createElement('div');
     },
     meta: { title: 'Edit Profile - ft_transcendence', requiresAuth: true, requires2FA: true },
+  },
+  {
+    path: '/chats',
+    name: 'chats',
+    component: () => {
+      const chatsPage = new ChatsPage();
+      return chatsPage.loadChatsPage();
+    },
+    meta: { title: 'Chats - ft_transcendence', requiresAuth: true, requires2FA: true },
   },
   {
     path: '/game',
