@@ -1,8 +1,0 @@
-frontend/node_modules
-backend/node_modules
-frontend/dist
-frontend/accounts.json
-.editorconfig
-.vscode
-.devcontainer
-appunti.c
