@@ -1,10 +1,8 @@
-Ciao Mondo
-It's were we push when everything is good
+Transcendence
 ---------------------------------------------------------------------------------------
-Before doing anything install everything:
-  npm i
 
-After that enter in backend directory and run:
-  npm run dev
+Use make to build and enter here to test frontend:
+  http://localhost:3000/home
+use make clean
 
-To test the actual frontend part
+sidecar
