@@ -84,11 +84,17 @@
 const	playerStep: number = 0.01;
 // const ballSpeed: number = 1;
 
+/* #todo player collision, different bounce based on
+which part of the paddle was hit.
+Point counter?
+Randomize the start
+Start when pressing space */
+
 export class Game {
 	// private started: boolean;
 	private ball: number[];
-	// private ballSpeed: number;
-	private ballVel: number[];
+	private ballSpeed: number;
+	private ballAngle: number;	/* 0 -> 2PI */
 	private player1: number;
 	private player2: number;
 	private player1Up: boolean;
@@ -100,8 +106,8 @@ export class Game {
 	constructor() {
 		// this.started = false;
 		this.ball = [0.5, 0.5];
-		// this.ballSpeed = 0.02;
-		this.ballVel = [0.01, 0.01]; //#todo randomize?
+		this.ballSpeed = 0.01;
+		this.ballAngle = Math.PI / 3; //#todo randomize?
 		this.player1 = 0.5;
 		this.player2 = 0.5;
 		this.player1Up = false;
@@ -110,17 +116,13 @@ export class Game {
 		this.player2Down = false;
 	}
 
-	private bounce(axis:string, angle:number) {
-		if (axis === 'x')
-		{
-			this.ballVel[0] = this.ballVel[0] * Math.sin(angle) * -1;
-			// this.ballVel[1] = this.ballVel[1] * Math.sin(angle);
-		}
-		else if (axis === 'y')
-		{
-			// this.ballVel[0] = this.ballVel[0] * Math.sin(angle);
-			this.ballVel[1] = this.ballVel[1] * Math.sin(angle) * -1;
-		}
+	private bounce(axis:string) {
+		if (axis === 'x') this.ballAngle = Math.PI - this.ballAngle;
+		else if (axis === 'y') this.ballAngle = this.ballAngle * -1;
+
+		// clamp angle
+		// if (this.ballAngle < 0) this.ballAngle = 2 * Math.PI + this.ballAngle;
+		// else if (this.ballAngle > 2 * Math.PI) this.ballAngle = this.ballAngle - 2 * Math.PI;
 	}
 
 	// Input handling
@@ -168,17 +170,17 @@ export class Game {
 			this.player2 = Math.max(0, Math.min(1, this.player2));
 
 			// Move ball
-			this.ball[0] = this.ball[0] + this.ballVel[0];
-			this.ball[1] = this.ball[1] + this.ballVel[1];
+			this.ball[0] = this.ball[0] + this.ballSpeed * Math.cos(this.ballAngle);
+			this.ball[1] = this.ball[1] + this.ballSpeed * Math.sin(this.ballAngle);
 
 			// bounce ball
-			if (this.ball[1] < 0) {this.ball[1] == 0; this.bounce('y', 90);}
-			if (this.ball[1] > 1) {this.ball[1] == 1; this.bounce('y', 90);}
+			if (this.ball[1] < 0) {/* this.ball[1] == 0; */ this.bounce('y');}
+			if (this.ball[1] > 1) {/* this.ball[1] == 1; */ this.bounce('y');}
 
-			if (this.ball[0] < 0) {this.ball[0] == 0; this.bounce('x', 90);}
-			if (this.ball[0] > 1) {this.ball[0] == 1; this.bounce('x', 90);}
+			if (this.ball[0] < 0) {/* this.ball[0] == 0; */ this.bounce('x');}
+			if (this.ball[0] > 1) {/* this.ball[0] == 1; */ this.bounce('x');}
 
-			console.log(this.ball);
+			// console.log(this.ball);
 
 		}, tickInterval);
 	}
@@ -187,21 +189,3 @@ export class Game {
 		if (this.gameLoopInterval) clearInterval(this.gameLoopInterval);
 	}
 }
-
-
-
-// class Person {
-// 	private readonly name: string;
-  
-// 	public constructor(name: string) {
-// 	  // name cannot be changed after this initial definition, which has to be either at its declaration or in the constructor.
-// 	  this.name = name;
-// 	}
-  
-// 	public getName(): string {
-// 	  return this.name;
-// 	}
-//   }
-  
-//   const person = new Person("Jane");
-//   console.log(person.getName());

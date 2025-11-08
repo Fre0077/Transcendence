@@ -8,7 +8,7 @@
   </style>
 </head>
 <body>
-  <canvas id="game" width="800" height="600"></canvas>
+  <canvas id="game" width="600" height="600"></canvas>
   <script>
     const canvas = document.getElementById("game");
     const ctx = canvas.getContext("2d");
@@ -45,6 +45,7 @@
     document.addEventListener("keydown", (e) => {
       if (e.key === "w") socket.send("W_PRESS\n");
       if (e.key === "s") socket.send("S_PRESS\n");
+      if (e.key === " ") socket.send("SPACE_PRESS\n");
     });
 
     document.addEventListener("keyup", (e) => {

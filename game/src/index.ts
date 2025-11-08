@@ -143,26 +143,28 @@ wss.on("connection", (ws) => {
 
   //-----
   const game = new Game();
-  game.start();
 
   ws.on("message", (message) => {
     const msg = message.toString().trim();
 
-	// Local player1
+    // start game
+    if (msg === "SPACE_PRESS") game.start();
+
+    // Local player1
     if (msg === "W_PRESS") game.press(1, "Up");
     if (msg === "S_PRESS") game.press(1, "Down");
     if (msg === "W_RELEASE") game.release(1, "Up");
     if (msg === "S_RELEASE") game.release(1, "Down");
 
-	// Local player2
-	if (msg === "I_PRESS") game.press(2, "Up");
+    // Local player2
+    if (msg === "I_PRESS") game.press(2, "Up");
     if (msg === "K_PRESS") game.press(2, "Down");
     if (msg === "I_RELEASE") game.release(2, "Up");
     if (msg === "K_RELEASE") game.release(2, "Down");
   });
 
   ws.on('close', () => {
-	game.stop();
+	  game.stop();
   });
 
   setInterval(() => {
