@@ -1,0 +1,173 @@
+// import fs from 'fs';
+
+
+/* ----------------------------- */
+import { hey } from "./helper.js";
+
+import yo from "./helper.cjs";
+
+console.log(hey);
+console.log(yo);
+/* ----------------------------- */
+
+// import http from 'http';
+
+// const server = http.createServer((req, res) => {
+// 	console.log(req);
+// 	res.writeHead(200, { Connection: 'close' });
+//     res.end(`
+//       <html>
+//         <head></head>
+//         <body>
+//           <form method="POST" enctype="multipart/form-data">
+//             <input type="file" name="filefield"><br />
+//             <input type="text" name="textfield"><br />
+//             <input type="submit">
+//           </form>
+//         </body>
+//       </html>`);
+// });
+
+// server.listen(3030, () => {
+// 	console.log('Listening for requests');
+// })
+
+// import net from 'net';
+// // import { Console } from "console";
+
+// import { Game } from './game.js';
+
+// let game = new Game();
+
+// const server = net.createServer(function(socket) {
+// 	socket.write('Echo server\r\n');
+// 	game.launchGame();
+
+// 	socket.on('data', (data) =>
+// 	{
+// 		console.log(`Just received ${socket.bytesRead} bytes: '${data}'`);
+// 		console.log(`GAMESTATE:\n${game.getGameStateJSON()}`);
+
+// 		// process input
+// 		if (data.toString() === 'W_PRESS\n')
+// 		{
+// 			console.log("moving up");
+// 			game.press(1, 'Up');
+// 		}
+// 		if (data.toString() === 'S_PRESS\n')
+// 		{
+// 			console.log("moving down");
+// 			game.press(1, 'Down');
+// 		}
+// 	});
+
+
+// 	// socket.pipe(socket);
+// });
+
+// server.on('listening', (socket) => {
+// 	console.log('Game Starting ...');
+// 	// sending gamestate to the frontend
+// 	while (true) {
+// 		socket.write(game.getGameStateJSON());
+// 	}
+
+// 	// // process movement
+// 	// if (p1Up === true) {player1Coord -= 0.1;}
+// 	// if (p1Down === true) {player1Coord += 0.1;}
+
+// 	// socket.write(getGameStateJSON());
+// 	console.log('Listening');
+// })
+
+// server.on('connection', () => {
+// 	console.log('New Connection');
+// });
+
+// server.listen(1337, '127.0.0.1');
+
+
+// import net from 'net';
+// import { Game } from './game.js';
+
+// const game = new Game();
+
+// const server = net.createServer((socket) => {
+// 	console.log('New connection');
+
+// 	socket.write('Connected to Game Server\r\n');
+// 	game.start();
+// 	console.log('Game launched');
+
+// 	// Handle incoming data
+// 	socket.on('data', (data) => {
+// 		const msg = data.toString().trim();
+
+// 		if (msg === 'W_PRESS') {
+// 			game.press(1, 'Up');
+// 		} else if (msg === 'S_PRESS') {
+// 			game.press(1, 'Down');
+// 		}
+
+// 		console.log(`Received: ${msg}`);
+// 	});
+
+// 	// Send game state periodically (e.g. 60 times per second)
+// 	const interval = setInterval(() => {
+// 		const state = game.getGameStateJSON();
+// 		socket.write(state + '\n');
+// 	}, 1000 / 60);
+
+// 	// Cleanup when client disconnects
+// 	socket.on('close', () => {
+// 		clearInterval(interval);
+// 		game.stop();
+// 		console.log('Client disconnected');
+// 	});
+// });
+
+// server.listen(1337, '127.0.0.1', () => {
+// console.log('Game server listening on port 1337');
+// });
+
+
+// CHATGPT
+
+import { WebSocketServer } from "ws";
+import { Game } from "./game.js";
+
+const wss = new WebSocketServer({ port: 1337 });
+
+wss.on("connection", (ws) => {
+  console.log("New WebSocket connection");
+
+  //-----
+  const game = new Game();
+  game.start();
+
+  ws.on("message", (message) => {
+    const msg = message.toString().trim();
+
+	// Local player1
+    if (msg === "W_PRESS") game.press(1, "Up");
+    if (msg === "S_PRESS") game.press(1, "Down");
+    if (msg === "W_RELEASE") game.release(1, "Up");
+    if (msg === "S_RELEASE") game.release(1, "Down");
+
+	// Local player2
+	if (msg === "I_PRESS") game.press(2, "Up");
+    if (msg === "K_PRESS") game.press(2, "Down");
+    if (msg === "I_RELEASE") game.release(2, "Up");
+    if (msg === "K_RELEASE") game.release(2, "Down");
+  });
+
+  ws.on('close', () => {
+	game.stop();
+  });
+
+  setInterval(() => {
+    ws.send(game.getGameStateJSON());
+  }, 1000 / 60);
+});
+
+console.log("WebSocket Game Server running on ws://localhost:1337");
