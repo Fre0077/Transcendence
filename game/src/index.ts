@@ -1,175 +1,180 @@
-// import fs from 'fs';
 
+/* ---- Tutorial example ---- */
+// import Fastify from 'fastify';
 
-/* ----------------------------- */
-import { hey } from "./helper.js";
-
-import yo from "./helper.cjs";
-
-console.log(hey);
-console.log(yo);
-/* ----------------------------- */
-
-// import http from 'http';
-
-// const server = http.createServer((req, res) => {
-// 	console.log(req);
-// 	res.writeHead(200, { Connection: 'close' });
-//     res.end(`
-//       <html>
-//         <head></head>
-//         <body>
-//           <form method="POST" enctype="multipart/form-data">
-//             <input type="file" name="filefield"><br />
-//             <input type="text" name="textfield"><br />
-//             <input type="submit">
-//           </form>
-//         </body>
-//       </html>`);
+// const fastify = Fastify({ 
+//     logger: true 
 // });
 
-// server.listen(3030, () => {
-// 	console.log('Listening for requests');
-// })
-
-// import net from 'net';
-// // import { Console } from "console";
-
-// import { Game } from './game.js';
-
-// let game = new Game();
-
-// const server = net.createServer(function(socket) {
-// 	socket.write('Echo server\r\n');
-// 	game.launchGame();
-
-// 	socket.on('data', (data) =>
-// 	{
-// 		console.log(`Just received ${socket.bytesRead} bytes: '${data}'`);
-// 		console.log(`GAMESTATE:\n${game.getGameStateJSON()}`);
-
-// 		// process input
-// 		if (data.toString() === 'W_PRESS\n')
-// 		{
-// 			console.log("moving up");
-// 			game.press(1, 'Up');
-// 		}
-// 		if (data.toString() === 'S_PRESS\n')
-// 		{
-// 			console.log("moving down");
-// 			game.press(1, 'Down');
-// 		}
-// 	});
-
-
-// 	// socket.pipe(socket);
+// await fastify.register(import('@fastify/static'), {
+//     root: new URL('../public', import.meta.url).pathname
 // });
 
-// server.on('listening', (socket) => {
-// 	console.log('Game Starting ...');
-// 	// sending gamestate to the frontend
-// 	while (true) {
-// 		socket.write(game.getGameStateJSON());
-// 	}
+// // Register WebSocket plugin
+// await fastify.register(import('@fastify/websocket'));
 
-// 	// // process movement
-// 	// if (p1Up === true) {player1Coord -= 0.1;}
-// 	// if (p1Down === true) {player1Coord += 0.1;}
-
-// 	// socket.write(getGameStateJSON());
-// 	console.log('Listening');
-// })
-
-// server.on('connection', () => {
-// 	console.log('New Connection');
+// fastify.get('/', async (request, reply) => {
+//     request; // ignore
+//     return reply.sendFile('index.html');
 // });
 
-// server.listen(1337, '127.0.0.1');
+// // WebSocket route handler
+// fastify.register(async function (fastify) {
+//     fastify.get('/websocket', { websocket: true }, (connection, request) => {
 
+//         request;    //ignore
 
-// import net from 'net';
-// import { Game } from './game.js';
+//         // Logging the connection
+//         const clientIP = request.socket.remoteAddress;
+//         console.log(`Client connected from ${clientIP}`);
 
-// const game = new Game();
+//         // Send welcome message
+//         connection.send('Connected to Fastify WebSocket server!');
 
-// const server = net.createServer((socket) => {
-// 	console.log('New connection');
+//         // Handle incoming messages
+//         connection.on('message', message => {
+//             try {
+//                 const text = message.toString();
+//                 console.log(`Received from ${clientIP}:`, text);
 
-// 	socket.write('Connected to Game Server\r\n');
-// 	game.start();
-// 	console.log('Game launched');
+//                 // Check if connection is still open before sending
+//                 if (connection.readyState === connection.OPEN) {
+//                     connection.send(`Echo: ${text}`);
+//                 }
+//             } catch (error) {
+//                 console.error('Error processing message:', error);
+//             }
+//         });
 
-// 	// Handle incoming data
-// 	socket.on('data', (data) => {
-// 		const msg = data.toString().trim();
+//         // Handle WebSocket errors
+//         connection.on('error', (error) => {
+//             console.error(`WebSocket error for ${clientIP}:`, error);
+//         });
 
-// 		if (msg === 'W_PRESS') {
-// 			game.press(1, 'Up');
-// 		} else if (msg === 'S_PRESS') {
-// 			game.press(1, 'Down');
-// 		}
-
-// 		console.log(`Received: ${msg}`);
-// 	});
-
-// 	// Send game state periodically (e.g. 60 times per second)
-// 	const interval = setInterval(() => {
-// 		const state = game.getGameStateJSON();
-// 		socket.write(state + '\n');
-// 	}, 1000 / 60);
-
-// 	// Cleanup when client disconnects
-// 	socket.on('close', () => {
-// 		clearInterval(interval);
-// 		game.stop();
-// 		console.log('Client disconnected');
-// 	});
+//         // Handle connection close
+//         connection.on('close', (code, reason) => {
+//             console.log(`Client ${clientIP} disconnected - Code: ${code}, Reason: ${reason?.toString() || 'none'}`);
+//         });
+//     });
 // });
 
-// server.listen(1337, '127.0.0.1', () => {
-// console.log('Game server listening on port 1337');
-// });
+// const PORT = Number(process.env.PORT) || 3000;
+
+// const start = async () => {
+//     try {
+//         await fastify.listen({ port: PORT, host: '0.0.0.0' });
+//         console.log(`Server running on http://localhost:${PORT}`);
+//     } catch (err) {
+//         fastify.log.error(err);
+//         process.exit(1);
+//     }
+// };
+
+// start();
+
+/* ------------------------- */
+/* ------------------------- */
+/* ------------------------- */
 
 
-// CHATGPT
-
-import { WebSocketServer } from "ws";
+import Fastify from 'fastify';
 import { Game } from "./game.js";
 
-const wss = new WebSocketServer({ port: 1337 });
+const FPS:number = 60;
+const PORT = Number(process.env.PORT) || 3000;
 
-wss.on("connection", (ws) => {
-  console.log("New WebSocket connection");
-
-  //-----
-  const game = new Game();
-
-  ws.on("message", (message) => {
-    const msg = message.toString().trim();
-
-    // start game
-    if (msg === "SPACE_PRESS") game.start();
-
-    // Local player1
-    if (msg === "W_PRESS") game.press(1, "Up");
-    if (msg === "S_PRESS") game.press(1, "Down");
-    if (msg === "W_RELEASE") game.release(1, "Up");
-    if (msg === "S_RELEASE") game.release(1, "Down");
-
-    // Local player2
-    if (msg === "I_PRESS") game.press(2, "Up");
-    if (msg === "K_PRESS") game.press(2, "Down");
-    if (msg === "I_RELEASE") game.release(2, "Up");
-    if (msg === "K_RELEASE") game.release(2, "Down");
-  });
-
-  ws.on('close', () => {
-	  game.stop();
-  });
-
-  setInterval(() => {
-    ws.send(game.getGameStateJSON());
-  }, 1000 / 60);
+const fastify = Fastify({ 
+    logger: false //too much stuff... 
 });
 
-console.log("WebSocket Game Server running on ws://localhost:1337");
+await fastify.register(import('@fastify/static'), {
+    root: new URL('../public', import.meta.url).pathname
+});
+
+// Register WebSocket plugin
+await fastify.register(import('@fastify/websocket'));
+
+fastify.get('/', async (request, reply) => {
+    request; // ignore
+    return reply.sendFile('fastify_frontend.html');
+});
+
+// WebSocket route handler
+fastify.register(async function (fastify) {
+    fastify.get('/websocket', { websocket: true }, (connection, request) => {
+
+        // Logging the connection
+        const clientIP = request.socket.remoteAddress;
+        console.log(`Client connected from ${clientIP}`);
+
+        //-----
+        const game = new Game()
+        game.start();
+
+        // Send welcome message
+        connection.send('Connected to Fastify WebSocket server!');
+
+        // Handle incoming messages
+        connection.on('message', message => {
+            try {
+                const text = message.toString();
+                console.log(`Received from ${clientIP}:`, text);
+
+                // start game
+                if (text === "SPACE_PRESS") game.launch();
+
+                // Local player1
+                if (text === "W_PRESS") game.press(1, "Up");
+                if (text === "S_PRESS") game.press(1, "Down");
+                if (text === "W_RELEASE") game.release(1, "Up");
+                if (text === "S_RELEASE") game.release(1, "Down");
+
+                // Local player2
+                if (text === "I_PRESS") game.press(2, "Up");
+                if (text === "K_PRESS") game.press(2, "Down");
+                if (text === "I_RELEASE") game.release(2, "Up");
+                if (text === "K_RELEASE") game.release(2, "Down");
+
+            } catch (error) {
+                console.error('Error processing message:', error);
+            }
+        });
+
+        // Handle WebSocket errors
+        connection.on('error', (error) => {
+            console.error(`WebSocket error for ${clientIP}:`, error);
+        });
+
+        // Handle connection close
+        connection.on('close', (code, reason) => {
+            game.stop();
+            console.log(`Client ${clientIP} disconnected - Code: ${code}, Reason: ${reason?.toString() || 'none'}`);
+        });
+
+        // send gamestate to frontend
+        setInterval(() => {
+            if (connection.readyState === connection.OPEN) {
+                connection.send(game.getGameStateJSON());
+            }
+        }, 1000 / FPS);	// FPS (delay in ms)
+
+        connection.on('open', () => {
+            console.log('new cconnectuin open');
+             
+        });
+    });
+});
+
+/* ---- start server ---- */
+
+const start = async () => {
+    try {
+        await fastify.listen({ port: PORT, host: '0.0.0.0' });
+        console.log(`Server running on http://localhost:${PORT}`);
+    } catch (err) {
+        fastify.log.error(err);
+        process.exit(1);
+    }
+};
+
+start();

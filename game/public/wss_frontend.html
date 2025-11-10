@@ -45,20 +45,14 @@
     document.addEventListener("keydown", (e) => {
       if (e.key === "w") socket.send("W_PRESS\n");
       if (e.key === "s") socket.send("S_PRESS\n");
+      if (e.key === "i") socket.send("I_PRESS\n");
+      if (e.key === "k") socket.send("K_PRESS\n");
       if (e.key === " ") socket.send("SPACE_PRESS\n");
     });
 
     document.addEventListener("keyup", (e) => {
       if (e.key === "w") socket.send("W_RELEASE\n");
       if (e.key === "s") socket.send("S_RELEASE\n");
-    });
-
-	document.addEventListener("keydown", (e) => {
-      if (e.key === "i") socket.send("I_PRESS\n");
-      if (e.key === "k") socket.send("K_PRESS\n");
-    });
-
-    document.addEventListener("keyup", (e) => {
       if (e.key === "i") socket.send("I_RELEASE\n");
       if (e.key === "k") socket.send("K_RELEASE\n");
     });

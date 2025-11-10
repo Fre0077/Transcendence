@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Pong Client</title>
+  <style>
+    canvas { background: #000; display: block; margin: 0 auto; }
+  </style>
+</head>
+<body>
+  <canvas id="game" width="600" height="600"></canvas>
+  <script>
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+
+    // 👇 Update the WebSocket URL to match your Fastify route
+    // For example, if your Fastify route is fastify.get('/ws', { websocket: true }, ...)
+    const socket = new WebSocket(`ws://${window.location.host}/websocket`);
+
+    socket.addEventListener("open", () => {
+      console.log("Connected to Fastify WebSocket server");
+    });
+
+    socket.addEventListener("message", (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        drawGame(data);
+      } catch (err) {
+        console.error("Bad JSON:", event.data);
+      }
+    });
+
+    function drawGame(state) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const paddleHeight = 100;
+      const paddleWidth = 10;
+      const ballSize = 10;
+
+      // Ball
+      ctx.fillStyle = "white";
+      ctx.fillRect(state.ball[0] * canvas.width, state.ball[1] * canvas.height, ballSize, ballSize);
+
+      // Player 1
+      ctx.fillRect(20, state.player1 * canvas.height - paddleHeight / 2, paddleWidth, paddleHeight);
+
+      // Player 2
+      ctx.fillRect(canvas.width - 30, state.player2 * canvas.height - paddleHeight / 2, paddleWidth, paddleHeight);
+    }
+
+    document.addEventListener("keydown", (e) => {
+      switch (e.key) {
+        case "w": socket.send("W_PRESS"); break;
+        case "s": socket.send("S_PRESS"); break;
+        case "i": socket.send("I_PRESS"); break;
+        case "k": socket.send("K_PRESS"); break;
+        case " ": socket.send("SPACE_PRESS"); break;
+      }
+    });
+
+    document.addEventListener("keyup", (e) => {
+      switch (e.key) {
+        case "w": socket.send("W_RELEASE"); break;
+        case "s": socket.send("S_RELEASE"); break;
+        case "i": socket.send("I_RELEASE"); break;
+        case "k": socket.send("K_RELEASE"); break;
+      }
+    });
+  </script>
+</body>
+</html>

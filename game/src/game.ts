@@ -79,9 +79,8 @@
 // 	}
 // }
 
-// game.ts
-
-const	playerStep: number = 0.01;
+const	playerStep: number = 0.01;			// how mucch the player moves each game tick
+// const	playerOffset: number = 20 / 600;	// distance from the border
 // const ballSpeed: number = 1;
 
 /* #todo player collision, different bounce based on
@@ -91,26 +90,27 @@ Randomize the start
 Start when pressing space */
 
 export class Game {
-	// private started: boolean;
-	private ball: number[];
-	private ballSpeed: number;
-	private ballAngle: number;	/* 0 -> 2PI */
-	private player1: number;
-	private player2: number;
-	private player1Up: boolean;
-	private player1Down: boolean;
-	private player2Up: boolean;
-	private player2Down: boolean;
-	private gameLoopInterval?: NodeJS.Timeout;
+	private moveBall: boolean;		/* should the ball move? */
+
+	private ball: number[];			/* coordinates (x,y) of the ball */
+	private ballSpeed: number;		/* module of the peed */
+	private ballAngle: number;		/* angle on which the ball is moving (clamped 0 -> 2PI) */
+	private player1: number;		/* Y-Coordinate of player1 (0 -> 1) */
+	private player2: number;		/* Y-Coordinate of player2 (0 -> 1) */
+	private player1Up: boolean;		/* is player1 pressing the UP key? */
+	private player1Down: boolean;	/* is player1 pressing the DOWN key? */
+	private player2Up: boolean;		/* is player2 pressing the UP key? */
+	private player2Down: boolean;	/* is player2 pressing the DOWN key? */
+	private gameLoopInterval?: NodeJS.Timeout;	/* :D */
 
 	constructor() {
-		// this.started = false;
-		this.ball = [0.5, 0.5];
-		this.ballSpeed = 0.01;
+		this.moveBall = false;		// ball not moving
+		this.ball = [0.5, 0.5];		// ball in the middle
+		this.ballSpeed = 0.01;		// arbitrary speed
 		this.ballAngle = Math.PI / 3; //#todo randomize?
-		this.player1 = 0.5;
-		this.player2 = 0.5;
-		this.player1Up = false;
+		this.player1 = 0.5;			// player1 in the middle
+		this.player2 = 0.5;			// player2 in the middle
+		this.player1Up = false;		// Noone is moving...
 		this.player1Down = false;
 		this.player2Up = false;
 		this.player2Down = false;
@@ -121,8 +121,8 @@ export class Game {
 		else if (axis === 'y') this.ballAngle = this.ballAngle * -1;
 
 		// clamp angle
-		// if (this.ballAngle < 0) this.ballAngle = 2 * Math.PI + this.ballAngle;
-		// else if (this.ballAngle > 2 * Math.PI) this.ballAngle = this.ballAngle - 2 * Math.PI;
+		if (this.ballAngle < 0) this.ballAngle = 2 * Math.PI + this.ballAngle;
+		else if (this.ballAngle > 2 * Math.PI) this.ballAngle = this.ballAngle - 2 * Math.PI;
 	}
 
 	// Input handling
@@ -144,6 +144,12 @@ export class Game {
 			if (direction === 'Up') this.player2Up = false;
 			if (direction === 'Down') this.player2Down = false;
 		}
+	}
+
+	// start the ball
+	public launch() {
+		this.moveBall = true;
+		// eventually randomply initialize the ball angle
 	}
 
 	public getGameStateJSON(): string {
@@ -169,18 +175,17 @@ export class Game {
 			this.player1 = Math.max(0, Math.min(1, this.player1));
 			this.player2 = Math.max(0, Math.min(1, this.player2));
 
-			// Move ball
-			this.ball[0] = this.ball[0] + this.ballSpeed * Math.cos(this.ballAngle);
-			this.ball[1] = this.ball[1] + this.ballSpeed * Math.sin(this.ballAngle);
+			if (this.moveBall === true) {
+				// Move ball
+				this.ball[0] = this.ball[0] + this.ballSpeed * Math.cos(this.ballAngle);
+				this.ball[1] = this.ball[1] + this.ballSpeed * Math.sin(this.ballAngle);
 
-			// bounce ball
-			if (this.ball[1] < 0) {/* this.ball[1] == 0; */ this.bounce('y');}
-			if (this.ball[1] > 1) {/* this.ball[1] == 1; */ this.bounce('y');}
+				// bounce ball
+				if (this.ball[1] < 0 || this.ball[1] > 1) this.bounce('y');
+				if (this.ball[0] < 0 || this.ball[0] > 1) this.bounce('x');
 
-			if (this.ball[0] < 0) {/* this.ball[0] == 0; */ this.bounce('x');}
-			if (this.ball[0] > 1) {/* this.ball[0] == 1; */ this.bounce('x');}
-
-			// console.log(this.ball);
+				// console.log(this.ball);
+			}
 
 		}, tickInterval);
 	}
