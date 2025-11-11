@@ -4,7 +4,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev" : "node dist",
+    "dev": "node dist",
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -14,13 +14,11 @@
   "description": "",
   "devDependencies": {
     "@types/node": "^24.10.0",
-    "@types/ws": "^8.18.1",
     "typescript": "^5.9.3"
   },
   "dependencies": {
     "@fastify/static": "^8.3.0",
     "@fastify/websocket": "^11.2.0",
-    "fastify": "^5.6.2",
-    "ws": "^8.18.3"
+    "fastify": "^5.6.2"
   }
 }
