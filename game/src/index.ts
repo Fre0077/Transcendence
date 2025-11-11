@@ -41,7 +41,7 @@ fastify.register(async function (fastify) {
 
         // Send welcome message
         connection.send('Connected to Fastify WebSocket server!');
-        // connection.send(game.getPaddingSettingsJSON());          // jsut padding data se vuoi @aleborghi
+        // connection.send(game.getPaddingSettingsJSON());          // just padding data se vuoi @aleborghi
 
         // Handle incoming messages
         connection.on('message', message => {

@@ -1,4 +1,5 @@
 to install:
+	npm install typescript --save-dev
 	npm install fastify @fastify/websocket @fastify/static
 
 to build:
