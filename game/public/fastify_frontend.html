@@ -8,8 +8,13 @@
   </style>
 </head>
 <body>
+  <div id="scoreboard", align="center">
+    P1 : P2
+  </div>
   <canvas id="game" width="600" height="600"></canvas>
   <script>
+    const scoreboard = document.getElementById("scoreboard"); // me :D
+    
     const canvas = document.getElementById("game");
     const ctx = canvas.getContext("2d");
 
@@ -36,6 +41,9 @@
       const paddleHeight = 100;
       const paddleWidth = 10;
       const ballSize = 10;
+
+      // Score
+      scoreboard.innerHTML = `${state.score[0]} : ${state.score[1]}`;
 
       // Ball
       ctx.fillStyle = "white";

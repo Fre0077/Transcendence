@@ -79,18 +79,28 @@
 // 	}
 // }
 
-const	playerStep: number = 0.01;			// how mucch the player moves each game tick
-// const	playerOffset: number = 20 / 600;	// distance from the border
-// const ballSpeed: number = 1;
+import { randIntT } from './random.js'
 
-/* #todo player collision, different bounce based on
-which part of the paddle was hit.
-Point counter?
-Randomize the start
-Start when pressing space */
+const	playerStep: number = 0.01;		// how mucch the player moves each game tick
+
+const	paddleHeigth: number = 0.1;	// long side
+const	paddleWidth: number = 0.01		// short side
+const	paddleOffset: number = 0.05;	// distance from the border
+
+/* #todo
+	bugfix: ball enters the paddle from above
+
+	player collision (DONE)
+	different bounce based on which part of the paddle was hit (DONE)
+	Point counter? (DONE)
+	Randomize the start (DONE)
+	Start when pressing space (DONE)
+*/
 
 export class Game {
 	private matchStart: boolean;	/* should the ball move? */
+	private score:number[];			/* player's score */
+	private lastScored:number;		/* the last player that scored (either 1 or 2) */
 
 	// ball variables
 	private ball: number[];			/* coordinates (x,y) of the ball */
@@ -109,6 +119,8 @@ export class Game {
 
 	constructor() {
 		this.matchStart = false;		// ball not moving
+		this.lastScored = 0;			// default
+		this.score = [0, 0];			// match score to 0;
 		this.ball = [0.5, 0.5];			// ball in the middle
 		this.ballSpeed = 0.01;			// arbitrary speed
 		this.ballAngle = 0; 			// arbitrary angle
@@ -120,16 +132,48 @@ export class Game {
 		this.player2Down = false;
 	}
 
-	/* the ball hit an object!, change the angle of the ball based
-	 on the direction which the surface is facing when hitting the ball. */
-	private bounce(axis:string) {
-		if (axis === 'x') this.ballAngle = Math.PI - this.ballAngle;
-		else if (axis === 'y') this.ballAngle = this.ballAngle * -1;
-
-		// clamp angle
-		if (this.ballAngle < 0) this.ballAngle = 2 * Math.PI + this.ballAngle;
-		else if (this.ballAngle > 2 * Math.PI) this.ballAngle = this.ballAngle - 2 * Math.PI;
+	/* ----------------------------------------------------------------- */
+	// @aleborghi qui' viene formattato il gamestate per il frontend.
+	public getGameStateJSON(): string {
+		const state = {
+			score: this.score,		/* score of the match [player1, player2] */
+			ball: this.ball,		/* array of 2 coordinates [X, Y] */
+			player1: this.player1,	/* single Y coordinate */
+			player2: this.player2,	/* single Y coordinate */
+			paddle: [				/* paddle size for both players: [player1, player2] */
+				{
+					heigth: paddleHeigth,
+					width: paddleWidth,
+					offset: paddleOffset
+				},
+				{
+					heigth: paddleHeigth,
+					width: paddleWidth,
+					offset: paddleOffset
+				}
+			]
+		};
+		return JSON.stringify(state);
 	}
+
+	// If you just want the paddle stats
+	public getPaddleSettingsJSON(): string {
+		const paddle = [				/* paddle size for both players: [player1, player2] */
+			{
+				heigth: paddleHeigth,
+				width: paddleWidth,
+				offset: paddleOffset
+			},
+			{
+				heigth: paddleHeigth,
+				width: paddleWidth,
+				offset: paddleOffset
+			}
+		];
+		return JSON.stringify(paddle);
+	}
+	/* ----------------------------------------------------------------- */
+
 
 	// Input handling
 	public press(player: number, direction: string) {
@@ -151,21 +195,57 @@ export class Game {
 			if (direction === 'Down') this.player2Down = false;
 		}
 	}
+	
+
+	//----------------
+	/* GAME MECHANICS */
+	
+	/* the ball hit an object!, change the angle of the ball based
+	 on the direction which the surface is facing when hitting the ball. */
+	private bounce(axis:string) {
+		if (axis === 'x') this.ballAngle = Math.PI - this.ballAngle;
+		else if (axis === 'y') this.ballAngle = this.ballAngle * -1;
+
+		// clamp angle
+		if (this.ballAngle < 0) this.ballAngle = 2 * Math.PI + this.ballAngle;
+		else if (this.ballAngle > 2 * Math.PI) this.ballAngle = this.ballAngle - 2 * Math.PI;
+	}
+
+	// bring the gamestate back to the start not affecting the score
+	private reset() {
+		this.matchStart = false;
+		// this.score = [0, 0];			// not resetting the score
+		// this.lastScored = 0;			// not resetting lastScored
+		this.ball = [0.5, 0.5];
+		this.ballSpeed = 0.01;
+		this.ballAngle = 0;
+		this.player1 = 0.5;
+		this.player2 = 0.5;
+		this.player1Up = false;
+		this.player1Down = false;
+		this.player2Up = false;
+		this.player2Down = false;
+	}
 
 	// starts the ball
 	public launch() {
 		this.matchStart = true;
-		this.ballAngle = Math.PI / 3; 	//#todo randomize?
-		// eventually randomply initialize the ball angle
+
+		// randomize ball direction
+		this.ballAngle = Math.PI / (randIntT(10) + 4);
+		if (randIntT(2) === 0) {this.ballAngle *= -1;}
+
+		// which player the ball goes to?
+		if (this.lastScored === 1) {this.ballAngle += Math.PI;}
+		if (this.lastScored === 2) {/* do nothing */;}
+
+		console.log(`launching ball with angle ${this.ballAngle}`);
 	}
 
-	// @aleborghi qui' viene formattato il gamestate per il frontend.
-	public getGameStateJSON(): string {
-		const state = { ball: this.ball, player1: this.player1, player2: this.player2 };
-		return JSON.stringify(state);
-	}
 
-	// Non-blocking game loop
+
+	//-----------------------
+	// Non-blocking GAME LOOP
 	public start(tickRate = 60) {
 		const tickInterval = 1000 / tickRate;
 
@@ -180,8 +260,8 @@ export class Game {
 			if (this.player2Down) this.player2 += playerStep;
 
 			// Clamp players positions
-			this.player1 = Math.max(0, Math.min(1, this.player1));
-			this.player2 = Math.max(0, Math.min(1, this.player2));
+			this.player1 = Math.max(0 + paddleHeigth, Math.min(1 - paddleHeigth, this.player1));
+			this.player2 = Math.max(0 + paddleHeigth, Math.min(1 - paddleHeigth, this.player2));
 
 			if (this.matchStart === true) {
 				// Move ball
@@ -190,7 +270,46 @@ export class Game {
 
 				// bounce ball
 				if (this.ball[1] < 0 || this.ball[1] > 1) this.bounce('y');
-				if (this.ball[0] < 0 || this.ball[0] > 1) this.bounce('x');
+
+
+				// check for pad collision
+
+				// Player1
+				if (this.ball[0] < 0 + paddleOffset + paddleWidth
+					&& this.ball[0] > 0 + paddleOffset - paddleWidth)
+				{
+					if (this.ball[1] > this.player1 - paddleHeigth
+						&& this.ball[1] < this.player1 + paddleHeigth)
+					{
+						this.bounce('x');
+					}
+				}	// Player2
+				else if (this.ball[0] < 1 - paddleOffset + paddleWidth
+					&& this.ball[0] > 1 - paddleOffset - paddleWidth)
+				{
+					if (this.ball[1] > this.player2 - paddleHeigth
+						&& this.ball[1] < this.player2 + paddleHeigth)
+					{
+						this.bounce('x');
+					}
+				}
+
+				// if the ball reached th border
+				if (this.ball[0] <= -0.1)
+				{
+					// player2 scored a point
+					this.score[1] += 1;
+					this.lastScored = 2;
+					this.reset();
+				}
+				if (this.ball[0] >= 1.1)
+				{
+					// player1 scored a point
+					this.score[0] += 1;
+					this.lastScored = 1;
+					this.reset();
+				}
+				
 
 				// console.log(this.ball);
 			}
