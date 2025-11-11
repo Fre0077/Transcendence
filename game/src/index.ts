@@ -1,77 +1,3 @@
-
-/* ---- Tutorial example ---- */
-// import Fastify from 'fastify';
-
-// const fastify = Fastify({ 
-//     logger: true 
-// });
-
-// await fastify.register(import('@fastify/static'), {
-//     root: new URL('../public', import.meta.url).pathname
-// });
-
-// // Register WebSocket plugin
-// await fastify.register(import('@fastify/websocket'));
-
-// fastify.get('/', async (request, reply) => {
-//     request; // ignore
-//     return reply.sendFile('index.html');
-// });
-
-// // WebSocket route handler
-// fastify.register(async function (fastify) {
-//     fastify.get('/websocket', { websocket: true }, (connection, request) => {
-
-//         request;    //ignore
-
-//         // Logging the connection
-//         const clientIP = request.socket.remoteAddress;
-//         console.log(`Client connected from ${clientIP}`);
-
-//         // Send welcome message
-//         connection.send('Connected to Fastify WebSocket server!');
-
-//         // Handle incoming messages
-//         connection.on('message', message => {
-//             try {
-//                 const text = message.toString();
-//                 console.log(`Received from ${clientIP}:`, text);
-
-//                 // Check if connection is still open before sending
-//                 if (connection.readyState === connection.OPEN) {
-//                     connection.send(`Echo: ${text}`);
-//                 }
-//             } catch (error) {
-//                 console.error('Error processing message:', error);
-//             }
-//         });
-
-//         // Handle WebSocket errors
-//         connection.on('error', (error) => {
-//             console.error(`WebSocket error for ${clientIP}:`, error);
-//         });
-
-//         // Handle connection close
-//         connection.on('close', (code, reason) => {
-//             console.log(`Client ${clientIP} disconnected - Code: ${code}, Reason: ${reason?.toString() || 'none'}`);
-//         });
-//     });
-// });
-
-// const PORT = Number(process.env.PORT) || 3000;
-
-// const start = async () => {
-//     try {
-//         await fastify.listen({ port: PORT, host: '0.0.0.0' });
-//         console.log(`Server running on http://localhost:${PORT}`);
-//     } catch (err) {
-//         fastify.log.error(err);
-//         process.exit(1);
-//     }
-// };
-
-// start();
-
 /* ------------------------- */
 /* ------------------------- */
 /* ------------------------- */
@@ -87,6 +13,7 @@ const fastify = Fastify({
     logger: false //too much stuff... 
 });
 
+// fetching test html
 await fastify.register(import('@fastify/static'), {
     root: new URL('../public', import.meta.url).pathname
 });
@@ -94,6 +21,7 @@ await fastify.register(import('@fastify/static'), {
 // Register WebSocket plugin
 await fastify.register(import('@fastify/websocket'));
 
+// serving test html
 fastify.get('/', async (request, reply) => {
     request; // ignore
     return reply.sendFile('fastify_frontend.html');
@@ -107,7 +35,7 @@ fastify.register(async function (fastify) {
         const clientIP = request.socket.remoteAddress;
         console.log(`Client connected from ${clientIP}`);
 
-        //-----
+        //----- Initializing an insance of 'Game' for each connection
         const game = new Game()
         game.start();
 
@@ -117,10 +45,11 @@ fastify.register(async function (fastify) {
         // Handle incoming messages
         connection.on('message', message => {
             try {
-                const text = message.toString();
+                // Format and log message
+                const text = message.toString().trim();
                 console.log(`Received from ${clientIP}:`, text);
 
-                // start game
+                // start the match
                 if (text === "SPACE_PRESS") game.launch();
 
                 // Local player1
@@ -151,17 +80,13 @@ fastify.register(async function (fastify) {
             console.log(`Client ${clientIP} disconnected - Code: ${code}, Reason: ${reason?.toString() || 'none'}`);
         });
 
-        // send gamestate to frontend
+        // send gamestate to frontend 'FPS' times per second
         setInterval(() => {
             if (connection.readyState === connection.OPEN) {
                 connection.send(game.getGameStateJSON());
             }
         }, 1000 / FPS);	// FPS (delay in ms)
 
-        connection.on('open', () => {
-            console.log('new cconnectuin open');
-             
-        });
     });
 });
 
@@ -177,4 +102,6 @@ const start = async () => {
     }
 };
 
+
+// entrypoint
 start();

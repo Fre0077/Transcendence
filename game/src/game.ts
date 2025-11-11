@@ -90,32 +90,38 @@ Randomize the start
 Start when pressing space */
 
 export class Game {
-	private moveBall: boolean;		/* should the ball move? */
+	private matchStart: boolean;	/* should the ball move? */
 
+	// ball variables
 	private ball: number[];			/* coordinates (x,y) of the ball */
 	private ballSpeed: number;		/* module of the peed */
 	private ballAngle: number;		/* angle on which the ball is moving (clamped 0 -> 2PI) */
+
+	// players variables
 	private player1: number;		/* Y-Coordinate of player1 (0 -> 1) */
 	private player2: number;		/* Y-Coordinate of player2 (0 -> 1) */
 	private player1Up: boolean;		/* is player1 pressing the UP key? */
 	private player1Down: boolean;	/* is player1 pressing the DOWN key? */
 	private player2Up: boolean;		/* is player2 pressing the UP key? */
 	private player2Down: boolean;	/* is player2 pressing the DOWN key? */
+
 	private gameLoopInterval?: NodeJS.Timeout;	/* :D */
 
 	constructor() {
-		this.moveBall = false;		// ball not moving
-		this.ball = [0.5, 0.5];		// ball in the middle
-		this.ballSpeed = 0.01;		// arbitrary speed
-		this.ballAngle = Math.PI / 3; //#todo randomize?
-		this.player1 = 0.5;			// player1 in the middle
-		this.player2 = 0.5;			// player2 in the middle
-		this.player1Up = false;		// Noone is moving...
+		this.matchStart = false;		// ball not moving
+		this.ball = [0.5, 0.5];			// ball in the middle
+		this.ballSpeed = 0.01;			// arbitrary speed
+		this.ballAngle = 0; 			// arbitrary angle
+		this.player1 = 0.5;				// player1 in the middle
+		this.player2 = 0.5;				// player2 in the middle
+		this.player1Up = false;			// Noone is moving...
 		this.player1Down = false;
 		this.player2Up = false;
 		this.player2Down = false;
 	}
 
+	/* the ball hit an object!, change the angle of the ball based
+	 on the direction which the surface is facing when hitting the ball. */
 	private bounce(axis:string) {
 		if (axis === 'x') this.ballAngle = Math.PI - this.ballAngle;
 		else if (axis === 'y') this.ballAngle = this.ballAngle * -1;
@@ -146,18 +152,20 @@ export class Game {
 		}
 	}
 
-	// start the ball
+	// starts the ball
 	public launch() {
-		this.moveBall = true;
+		this.matchStart = true;
+		this.ballAngle = Math.PI / 3; 	//#todo randomize?
 		// eventually randomply initialize the ball angle
 	}
 
+	// @aleborghi qui' viene formattato il gamestate per il frontend.
 	public getGameStateJSON(): string {
 		const state = { ball: this.ball, player1: this.player1, player2: this.player2 };
 		return JSON.stringify(state);
 	}
 
-	// ✅ Non-blocking game loop
+	// Non-blocking game loop
 	public start(tickRate = 60) {
 		const tickInterval = 1000 / tickRate;
 
@@ -171,11 +179,11 @@ export class Game {
 			if (this.player2Up) this.player2 -= playerStep;
 			if (this.player2Down) this.player2 += playerStep;
 
-			// Clamp positions
+			// Clamp players positions
 			this.player1 = Math.max(0, Math.min(1, this.player1));
 			this.player2 = Math.max(0, Math.min(1, this.player2));
 
-			if (this.moveBall === true) {
+			if (this.matchStart === true) {
 				// Move ball
 				this.ball[0] = this.ball[0] + this.ballSpeed * Math.cos(this.ballAngle);
 				this.ball[1] = this.ball[1] + this.ballSpeed * Math.sin(this.ballAngle);
