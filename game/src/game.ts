@@ -101,7 +101,9 @@ const	paddleHeight_2: number = paddleHeight / 2;
 */
 
 export class Game {
-	private setStart: boolean;		/* should the ball move? */
+	private timeout:number			/* number of ms the game should halt */
+
+	private roundStart: boolean;	/* should the ball move? */
 	private score:number[];			/* player's score */
 	private lastScored:number;		/* the last player that scored (either 1 or 2) */
 	private winScore:number;		/* score a player must reach to win */
@@ -125,9 +127,11 @@ export class Game {
 	/* ======================== CONSTRUCTORS ======================== */
 	// keep this the same as the default constructor
 	private init() {
+		this.timeout = 60;				// 1 sec of timeout
+
 		this.winner = 0;				// noone won just yet
 		this.winScore = 3;				// Bo5
-		this.setStart = false;			// ball not moving
+		this.roundStart = false;			// ball not moving
 		this.lastScored = 0;			// default
 		this.score = [0, 0];			// match score to 0;
 
@@ -145,9 +149,11 @@ export class Game {
 
 	// the constructor expliccitly wants the variables initialized
 	constructor() {
+		this.timeout = 60;				// 1 sec of timeout
+	
 		this.winner = 0;				// noone won just yet
 		this.winScore = 3;				// Bo5
-		this.setStart = false;			// ball not moving
+		this.roundStart = false;			// ball not moving
 		this.lastScored = 0;			// default
 		this.score = [0, 0];			// match score to 0;
 		
@@ -266,9 +272,11 @@ export class Game {
 
 	// bring the gamestate back to the start not affecting the score
 	private ballInTheMiddle() {
+		this.timeout = 180;				// 3 sec of timeout
+	
 		// this.winner = 0;				// not resetting the winner
 		// this.winScore = 3;			// not resetting the format
-		this.setStart = false;
+		this.roundStart = false;
 		// this.score = [0, 0];			// not resetting the score
 		// this.lastScored = 0;			// not resetting lastScored
 		this.ball = [0.5, 0.5];
@@ -306,10 +314,10 @@ export class Game {
 	// starts the ball
 	public launch() {
 		// don't double launch
-		if (this.setStart === true) return;
+		if (this.roundStart === true) return;
 	
 		// tell the game loop that the ball needs to move
-		this.setStart = true;
+		this.roundStart = true;
 
 		// randomize ball direction
 		this.ballAngle = Math.PI / (randIntT(10) + 4);
@@ -332,6 +340,7 @@ export class Game {
 		if (this.gameLoopInterval) clearInterval(this.gameLoopInterval);
 
 		this.gameLoopInterval = setInterval(() => {
+			if (this.timeout > 0) {this.timeout--; return;}
 			// Move players
 			if (this.player1Up) this.player1 -= playerStep;
 			if (this.player1Down) this.player1 += playerStep;
@@ -342,7 +351,7 @@ export class Game {
 			this.player1 = Math.max(0 + paddleHeight_2, Math.min(1 - paddleHeight_2, this.player1));
 			this.player2 = Math.max(0 + paddleHeight_2, Math.min(1 - paddleHeight_2, this.player2));
 
-			if (this.setStart === true) {
+			if (this.roundStart === true) {
 				
 				/* --- PAD COLLISION --- */
 				const newPos:number[] = [

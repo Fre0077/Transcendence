@@ -10,7 +10,7 @@ const FPS:number = 60;
 const PORT = Number(process.env.PORT) || 3002;
 
 const fastify = Fastify({ 
-    logger: true //too much stuff... 
+    logger: false //too much stuff... 
 });
 
 // fetching test html
