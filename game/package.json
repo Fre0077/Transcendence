@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "node dist",
     "build": "tsc",
+    "start": "tsx src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -15,6 +16,7 @@
   "devDependencies": {
     "@types/node": "^24.10.0",
     "@types/ws": "^8.18.1",
+    "tsx": "^4.20.6",
     "typescript": "^5.9.3"
   },
   "dependencies": {

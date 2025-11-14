@@ -7,10 +7,10 @@ import Fastify from 'fastify';
 import { Game } from "./game.js";
 
 const FPS:number = 60;
-const PORT = Number(process.env.PORT) || 3000;
+const PORT = Number(process.env.PORT) || 3002;
 
 const fastify = Fastify({ 
-    logger: false //too much stuff... 
+    logger: true //too much stuff... 
 });
 
 // fetching test html

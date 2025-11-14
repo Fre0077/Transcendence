@@ -13,7 +13,7 @@ export function loadGamePage(): HTMLElement {
 		<p class="text-white/70 mb-12">Select a game mode to start playing!</p>
 
 		<div class="flex flex-row gap-8 w-full max-w-4xl items-center justify-center">
-			<a href="/game/quick-match" class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-600/30 to-pink-600/30 p-8 border border-white/10 hover:border-purple-400/50 transition-all hover:scale-105">
+			<a href="/game/local" class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-600/30 to-pink-600/30 p-8 border border-white/10 hover:border-purple-400/50 transition-all hover:scale-105">
 				<div class="relative z-10">
 					<div class="text-6xl mb-4">🕹️</div>
 					<h3 class="text-2xl font-bold text-white mb-2">Local Match</h3>
