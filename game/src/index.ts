@@ -7,10 +7,10 @@ import Fastify from 'fastify';
 import { Game } from "./game.js";
 
 const FPS:number = 60;
-const PORT = Number(process.env.PORT) || 3000;
+const PORT = Number(process.env.PORT) || 3002;
 
 const fastify = Fastify({ 
-    logger: false //too much stuff... 
+    logger: true //too much stuff... 
 });
 
 // fetching test html
@@ -41,7 +41,7 @@ fastify.register(async function (fastify) {
 
         // Send welcome message
         connection.send('Connected to Fastify WebSocket server!');
-        // connection.send(game.getPaddingSettingsJSON());          // jsut padding data se vuoi @aleborghi
+        // connection.send(game.getPaddingSettingsJSON());          // just padding data se vuoi @aleborghi
 
         // Handle incoming messages
         connection.on('message', message => {

@@ -2,6 +2,7 @@ import { load404Page } from "./pages/errors/404";
 import { load500Page } from "./pages/errors/500";
 import { ChatsPage } from "./pages/protected/chats/chats";
 import { loadGamePage } from "./pages/protected/game/game";
+import { loadLocalGamePage } from "./pages/protected/game/localGame";
 import { loadHomePage } from "./pages/protected/home/home";
 import { loadProfilePage } from "./pages/protected/profile/profile";
 import { loadLoginPage } from "./pages/public/login/login";
@@ -308,6 +309,14 @@ const routes: RouteConfig[] = [
     },
     meta: { title: 'Game Lobby - ft_transcendence', requiresAuth: true, requires2FA: true },
   },
+	{
+		path: '/game/local',
+		name: 'local-game',
+		component: () => {
+			return loadLocalGamePage();
+		},
+		meta: { title: 'Local Game - ft_transcendence', requiresAuth: true, requires2FA: true },
+	},
   {
     // TODO: Implement game match page
     path: '/game/:matchId',

@@ -1,19 +1,22 @@
 {
   "name": "game",
   "version": "1.0.0",
+  "description": "Backend for Pong with TypeScript and Fastify",
   "main": "index.js",
   "type": "module",
   "scripts": {
     "dev": "node dist",
     "build": "tsc",
+    "start": "tsx src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
   "devDependencies": {
     "@types/node": "^24.10.0",
+    "@types/ws": "^8.18.1",
+    "tsx": "^4.20.6",
     "typescript": "^5.9.3"
   },
   "dependencies": {
