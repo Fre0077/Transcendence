@@ -83,13 +83,16 @@ import { randIntT } from './random.js'
 
 const	playerStep: number = 0.01;		// how mucch the player moves each game tick
 
-const	paddleHeigth: number = 0.1;	// long side
-const	paddleWidth: number = 0.01		// short side
+const	paddleHeight: number = 0.3;		// long side
+const	paddleWidth: number = 0.02		// short side
 const	paddleOffset: number = 0.05;	// distance from the border
 
-/* #todo
-	bugfix: ball enters the paddle from above
+const	paddleHeight_2: number = paddleHeight / 2;
 
+/* #todo
+	change angle bases on player movement
+
+	bugfix: ball enters the paddle from above (DONE)
 	player collision (DONE)
 	different bounce based on which part of the paddle was hit (DONE)
 	Point counter? (DONE)
@@ -98,9 +101,11 @@ const	paddleOffset: number = 0.05;	// distance from the border
 */
 
 export class Game {
-	private matchStart: boolean;	/* should the ball move? */
+	private setStart: boolean;		/* should the ball move? */
 	private score:number[];			/* player's score */
 	private lastScored:number;		/* the last player that scored (either 1 or 2) */
+	private winScore:number;		/* score a player must reach to win */
+	private winner:number;			/* who won the match? match ongoing: 0, player1: 1, player2: 2 */
 
 	// ball variables
 	private ball: number[];			/* coordinates (x,y) of the ball */
@@ -117,13 +122,39 @@ export class Game {
 
 	private gameLoopInterval?: NodeJS.Timeout;	/* :D */
 
-	constructor() {
-		this.matchStart = false;		// ball not moving
+	/* ======================== CONSTRUCTORS ======================== */
+	// keep this the same as the default constructor
+	private init() {
+		this.winner = 0;				// noone won just yet
+		this.winScore = 3;				// Bo5
+		this.setStart = false;			// ball not moving
 		this.lastScored = 0;			// default
 		this.score = [0, 0];			// match score to 0;
+
 		this.ball = [0.5, 0.5];			// ball in the middle
 		this.ballSpeed = 0.01;			// arbitrary speed
 		this.ballAngle = 0; 			// arbitrary angle
+
+		this.player1 = 0.5;				// player1 in the middle
+		this.player2 = 0.5;				// player2 in the middle
+		this.player1Up = false;			// Noone is moving...
+		this.player1Down = false;
+		this.player2Up = false;
+		this.player2Down = false;
+	}
+
+	// the constructor expliccitly wants the variables initialized
+	constructor() {
+		this.winner = 0;				// noone won just yet
+		this.winScore = 3;				// Bo5
+		this.setStart = false;			// ball not moving
+		this.lastScored = 0;			// default
+		this.score = [0, 0];			// match score to 0;
+		
+		this.ball = [0.5, 0.5];			// ball in the middle
+		this.ballSpeed = 0.01;			// arbitrary speed
+		this.ballAngle = 0; 			// arbitrary angle
+
 		this.player1 = 0.5;				// player1 in the middle
 		this.player2 = 0.5;				// player2 in the middle
 		this.player1Up = false;			// Noone is moving...
@@ -137,19 +168,19 @@ export class Game {
 	public getGameStateJSON(): string {
 		const state = {
 			score: this.score,		/* score of the match [player1, player2] */
-			ball: this.ball,		/* array of 2 coordinates [X, Y] */
-			player1: this.player1,	/* single Y coordinate */
-			player2: this.player2,	/* single Y coordinate */
+			ball: this.ball,		/* array of 2 coordinates [X, Y] of the CENTER of the ball */
+			player1: this.player1,	/* single Y coordinate of the CENTER of the paddle*/
+			player2: this.player2,	/* single Y coordinate of the CENTER of the paddle*/
 			paddle: [				/* paddle size for both players: [player1, player2] */
 				{
-					heigth: paddleHeigth,
+					height: paddleHeight,
 					width: paddleWidth,
-					offset: paddleOffset
+					offset: paddleOffset	/* single X coordinate of the CENTER of the paddle */
 				},
 				{
-					heigth: paddleHeigth,
+					height: paddleHeight,
 					width: paddleWidth,
-					offset: paddleOffset
+					offset: paddleOffset	/* single X coordinate of the CENTER of the paddle (could need a readjustment for player2*/
 				}
 			]
 		};
@@ -160,20 +191,31 @@ export class Game {
 	public getPaddleSettingsJSON(): string {
 		const paddle = [				/* paddle size for both players: [player1, player2] */
 			{
-				heigth: paddleHeigth,
+				height: paddleHeight,
 				width: paddleWidth,
 				offset: paddleOffset
 			},
 			{
-				heigth: paddleHeigth,
+				height: paddleHeight,
 				width: paddleWidth,
 				offset: paddleOffset
 			}
 		];
 		return JSON.stringify(paddle);
 	}
+
+	// returns 0 (or false) if the game is ongoing, 1 if player1 won, 2 if player2 won
+	public end(): number {
+		return this.winner;
+	}
 	/* ----------------------------------------------------------------- */
 
+	/* ======================== PUBLIC INPUT METHODS ======================== */
+
+	/* sets the score a player must reach to win the game */
+	public setFormat(format:number) {
+		this.winScore = format;
+	}
 
 	// Input handling
 	public press(player: number, direction: string) {
@@ -195,7 +237,6 @@ export class Game {
 			if (direction === 'Down') this.player2Down = false;
 		}
 	}
-	
 
 	//----------------
 	/* GAME MECHANICS */
@@ -211,37 +252,75 @@ export class Game {
 		else if (this.ballAngle > 2 * Math.PI) this.ballAngle = this.ballAngle - 2 * Math.PI;
 	}
 
+	// concord == -1, 0, 1
+	// speed needs to be adjusted but it kinda workds
+	// speeds is from 0 to 1. 1 max intensity, 0 no intensity
+	// private dynamicBounce(axis:string, speed:number, concord:number) {
+	// 	if (axis === 'x') this.ballAngle = Math.PI - this.ballAngle + concord * (this.ballAngle * speed / 4);
+	// 	else if (axis === 'y') this.ballAngle = this.ballAngle * -1;
+
+	// 	// clamp angle
+	// 	if (this.ballAngle < 0) this.ballAngle = 2 * Math.PI + this.ballAngle;
+	// 	else if (this.ballAngle > 2 * Math.PI) this.ballAngle = this.ballAngle - 2 * Math.PI;
+	// }
+
 	// bring the gamestate back to the start not affecting the score
-	private reset() {
-		this.matchStart = false;
+	private ballInTheMiddle() {
+		// this.winner = 0;				// not resetting the winner
+		// this.winScore = 3;			// not resetting the format
+		this.setStart = false;
 		// this.score = [0, 0];			// not resetting the score
 		// this.lastScored = 0;			// not resetting lastScored
 		this.ball = [0.5, 0.5];
 		this.ballSpeed = 0.01;
 		this.ballAngle = 0;
+
 		this.player1 = 0.5;
 		this.player2 = 0.5;
 		this.player1Up = false;
 		this.player1Down = false;
 		this.player2Up = false;
 		this.player2Down = false;
+
+		if (this.score[0] === this.winScore)
+		{
+			// this.matchOver = true;
+			this.winner = 1;
+			this.stop();
+		}
+		else if (this.score[1] === this.winScore)
+		{
+			this.winner = 2;
+			this.stop();
+		}
+	}
+
+	/* ======================== PUBLIC GAMEPLAY METHODS ======================== */
+
+	// reset the game to the beginning
+	public reset() {
+		this.init();
+		this.start();
 	}
 
 	// starts the ball
 	public launch() {
-		this.matchStart = true;
+		// don't double launch
+		if (this.setStart === true) return;
+	
+		// tell the game loop that the ball needs to move
+		this.setStart = true;
 
 		// randomize ball direction
 		this.ballAngle = Math.PI / (randIntT(10) + 4);
 		if (randIntT(2) === 0) {this.ballAngle *= -1;}
 
 		// which player the ball goes to?
-		if (this.lastScored === 1) {this.ballAngle += Math.PI;}
-		if (this.lastScored === 2) {/* do nothing */;}
+		if (this.lastScored === 2) {this.ballAngle += Math.PI;}
+		if (this.lastScored === 1) {/* do nothing */;}
 
 		console.log(`launching ball with angle ${this.ballAngle}`);
 	}
-
 
 
 	//-----------------------
@@ -260,57 +339,66 @@ export class Game {
 			if (this.player2Down) this.player2 += playerStep;
 
 			// Clamp players positions
-			this.player1 = Math.max(0 + paddleHeigth, Math.min(1 - paddleHeigth, this.player1));
-			this.player2 = Math.max(0 + paddleHeigth, Math.min(1 - paddleHeigth, this.player2));
+			this.player1 = Math.max(0 + paddleHeight_2, Math.min(1 - paddleHeight_2, this.player1));
+			this.player2 = Math.max(0 + paddleHeight_2, Math.min(1 - paddleHeight_2, this.player2));
 
-			if (this.matchStart === true) {
-				// Move ball
-				this.ball[0] = this.ball[0] + this.ballSpeed * Math.cos(this.ballAngle);
-				this.ball[1] = this.ball[1] + this.ballSpeed * Math.sin(this.ballAngle);
+			if (this.setStart === true) {
+				
+				/* --- PAD COLLISION --- */
+				const newPos:number[] = [
+					this.ball[0] + this.ballSpeed * Math.cos(this.ballAngle),
+					this.ball[1] + this.ballSpeed * Math.sin(this.ballAngle)
+				];
 
-				// bounce ball
-				if (this.ball[1] < 0 || this.ball[1] > 1) this.bounce('y');
+				// point of collision with the ball
+				const collision:number = paddleOffset + paddleWidth;
 
-
-				// check for pad collision
-
-				// Player1
-				if (this.ball[0] < 0 + paddleOffset + paddleWidth
-					&& this.ball[0] > 0 + paddleOffset - paddleWidth)
+				// player1
+				if (this.ball[0] > collision
+					&& newPos[0] < collision)
 				{
-					if (this.ball[1] > this.player1 - paddleHeigth
-						&& this.ball[1] < this.player1 + paddleHeigth)
+					if (newPos[1] > this.player1 - paddleHeight_2
+						&& newPos[1] < this.player1 + paddleHeight_2)
 					{
 						this.bounce('x');
+						this.ballSpeed += 0.001;
 					}
-				}	// Player2
-				else if (this.ball[0] < 1 - paddleOffset + paddleWidth
-					&& this.ball[0] > 1 - paddleOffset - paddleWidth)
+				}
+				// player2
+				else if (this.ball[0] < 1 - (collision)
+					&& newPos[0] > 1 - (collision))
 				{
-					if (this.ball[1] > this.player2 - paddleHeigth
-						&& this.ball[1] < this.player2 + paddleHeigth)
+					if (newPos[1] > this.player2 - paddleHeight_2
+						&& newPos[1] < this.player2 + paddleHeight_2)
 					{
 						this.bounce('x');
+						this.ballSpeed += 0.001;
 					}
 				}
 
+				// Move ball
+				this.ball = newPos;
+
+				// bounce ball on top/bottom of screen
+				if (this.ball[1] < 0 || this.ball[1] > 1) this.bounce('y');
+
+				/* --- END of MATCH --- */
 				// if the ball reached th border
 				if (this.ball[0] <= -0.1)
 				{
 					// player2 scored a point
 					this.score[1] += 1;
 					this.lastScored = 2;
-					this.reset();
+					this.ballInTheMiddle();
 				}
-				if (this.ball[0] >= 1.1)
+				else if (this.ball[0] >= 1.1)
 				{
 					// player1 scored a point
 					this.score[0] += 1;
 					this.lastScored = 1;
-					this.reset();
+					this.ballInTheMiddle();
 				}
 				
-
 				// console.log(this.ball);
 			}
 

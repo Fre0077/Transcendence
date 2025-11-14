@@ -51,19 +51,20 @@ fastify.register(async function (fastify) {
                 console.log(`Received from ${clientIP}:`, text);
 
                 // start the match
-                if (text === "SPACE_PRESS") game.launch();
+                if (text === "START_PRESS") game.launch();
+                if (text === "RESET_PRESS") game.reset();
 
                 // Local player1
-                if (text === "W_PRESS") game.press(1, "Up");
-                if (text === "S_PRESS") game.press(1, "Down");
-                if (text === "W_RELEASE") game.release(1, "Up");
-                if (text === "S_RELEASE") game.release(1, "Down");
+                if (text === "P1UP_PRESS") game.press(1, "Up");
+                if (text === "P1DW_PRESS") game.press(1, "Down");
+                if (text === "P1UP_RELEASE") game.release(1, "Up");
+                if (text === "P1DW_RELEASE") game.release(1, "Down");
 
                 // Local player2
-                if (text === "I_PRESS") game.press(2, "Up");
-                if (text === "K_PRESS") game.press(2, "Down");
-                if (text === "I_RELEASE") game.release(2, "Up");
-                if (text === "K_RELEASE") game.release(2, "Down");
+                if (text === "P2UP_PRESS") game.press(2, "Up");
+                if (text === "P2DW_PRESS") game.press(2, "Down");
+                if (text === "P2UP_RELEASE") game.release(2, "Up");
+                if (text === "P2DW_RELEASE") game.release(2, "Down");
 
             } catch (error) {
                 console.error('Error processing message:', error);
@@ -87,6 +88,12 @@ fastify.register(async function (fastify) {
                 connection.send(game.getGameStateJSON());
             }
         }, 1000 / FPS);	// FPS (delay in ms)
+
+        // let winner = game.end();
+        // if (winner !== 0) {
+        //     if (winner === 1) connection.send('Player 1 Won!!! Congrats');
+        //     else if (winner === 2) connection.send('Player 2 Won!!! Yippye');
+        // }
 
     });
 });

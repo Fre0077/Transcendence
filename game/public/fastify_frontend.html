@@ -38,40 +38,67 @@
     function drawGame(state) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      const paddleHeight = 100;
-      const paddleWidth = 10;
+      const paddleHeight = canvas.height * state.paddle[0].height;
+      const paddleWidth = canvas.width * state.paddle[0].width;
+      const paddleOffset = canvas.width * state.paddle[0].offset;
       const ballSize = 10;
+
+      // console.log(`pH: ${paddleHeight}, pW: ${paddleWidth}, pO: ${paddleOffset}`);
 
       // Score
       scoreboard.innerHTML = `${state.score[0]} : ${state.score[1]}`;
 
-      // Ball
       ctx.fillStyle = "white";
-      ctx.fillRect(state.ball[0] * canvas.width, state.ball[1] * canvas.height, ballSize, ballSize);
+
+      // Midline
+      ctx.fillRect(
+        canvas.width / 2,
+        0,
+        2,
+        canvas.height,
+      );
+
+      // Ball
+      ctx.fillRect(
+        state.ball[0] * canvas.width - (ballSize / 2),
+        state.ball[1] * canvas.height - (ballSize / 2),
+        ballSize,
+        ballSize);
 
       // Player 1
-      ctx.fillRect(20, state.player1 * canvas.height - paddleHeight / 2, paddleWidth, paddleHeight);
+      ctx.fillRect(
+        paddleOffset,
+        (state.player1 * canvas.height) - (paddleHeight / 2),
+        paddleWidth,
+        paddleHeight);
 
       // Player 2
-      ctx.fillRect(canvas.width - 30, state.player2 * canvas.height - paddleHeight / 2, paddleWidth, paddleHeight);
+      ctx.fillRect(
+        canvas.width - paddleOffset - 10,
+        (state.player2 * canvas.height) - (paddleHeight / 2),
+        paddleWidth,
+        paddleHeight);
     }
 
     document.addEventListener("keydown", (e) => {
+      if (e.repeat) return; // ignore held-down repeat events
+
       switch (e.key) {
-        case "w": socket.send("W_PRESS"); break;
-        case "s": socket.send("S_PRESS"); break;
-        case "i": socket.send("I_PRESS"); break;
-        case "k": socket.send("K_PRESS"); break;
-        case " ": socket.send("SPACE_PRESS"); break;
+        case "f": socket.send("P1UP_PRESS"); break;
+        case "v": socket.send("P1DW_PRESS"); break;
+        case "j": socket.send("P2UP_PRESS"); break;
+        case "n": socket.send("P2DW_PRESS"); break;
+        case " ": socket.send("START_PRESS"); break;
+        case "r": socket.send("RESET_PRESS"); break;
       }
     });
 
     document.addEventListener("keyup", (e) => {
       switch (e.key) {
-        case "w": socket.send("W_RELEASE"); break;
-        case "s": socket.send("S_RELEASE"); break;
-        case "i": socket.send("I_RELEASE"); break;
-        case "k": socket.send("K_RELEASE"); break;
+        case "f": socket.send("P1UP_RELEASE"); break;
+        case "v": socket.send("P1DW_RELEASE"); break;
+        case "j": socket.send("P2UP_RELEASE"); break;
+        case "n": socket.send("P2DW_RELEASE"); break;
       }
     });
   </script>
