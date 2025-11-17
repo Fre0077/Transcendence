@@ -12,8 +12,10 @@
     P1 : P2
   </div>
   <canvas id="game" width="600" height="600"></canvas>
+  <div id="serverLog", align="center">serverLog</div>
   <script>
     const scoreboard = document.getElementById("scoreboard"); // me :D
+    const serverLog = document.getElementById("serverLog");       // also me :)
     
     const canvas = document.getElementById("game");
     const ctx = canvas.getContext("2d");
@@ -24,6 +26,7 @@
 
     socket.addEventListener("open", () => {
       console.log("Connected to Fastify WebSocket server");
+      socket.send(JSON.stringify({ method: 'JOIN', value: 'myReallyCoolLobby' }));  // lobby code
     });
 
     socket.addEventListener("message", (event) => {
@@ -32,6 +35,7 @@
         drawGame(data);
       } catch (err) {
         console.error("Bad JSON:", event.data);
+        serverLog.innerHTML = `${event.data}`;      
       }
     });
 
@@ -84,21 +88,21 @@
       if (e.repeat) return; // ignore held-down repeat events
 
       switch (e.key) {
-        case "f": socket.send("P1UP_PRESS"); break;
-        case "v": socket.send("P1DW_PRESS"); break;
-        case "j": socket.send("P2UP_PRESS"); break;
-        case "n": socket.send("P2DW_PRESS"); break;
-        case " ": socket.send("START_PRESS"); break;
-        case "r": socket.send("RESET_PRESS"); break;
+        case "f": socket.send(JSON.stringify({ method: 'MOVE', value: 'P1UP_PRESS'})); break;
+        case "v": socket.send(JSON.stringify({ method: 'MOVE', value: 'P1DW_PRESS'})); break;
+        case "j": socket.send(JSON.stringify({ method: 'MOVE', value: 'P2UP_PRESS'})); break;
+        case "n": socket.send(JSON.stringify({ method: 'MOVE', value: 'P2DW_PRESS'})); break;
+        case " ": socket.send(JSON.stringify({ method: 'MOVE', value: 'START_PRESS'})); break;
+        case "r": socket.send(JSON.stringify({ method: 'MOVE', value: 'RESET_PRESS'})); break;
       }
     });
 
     document.addEventListener("keyup", (e) => {
       switch (e.key) {
-        case "f": socket.send("P1UP_RELEASE"); break;
-        case "v": socket.send("P1DW_RELEASE"); break;
-        case "j": socket.send("P2UP_RELEASE"); break;
-        case "n": socket.send("P2DW_RELEASE"); break;
+        case "f": socket.send(JSON.stringify({ method: 'MOVE', value: 'P1UP_RELEASE'})); break;
+        case "v": socket.send(JSON.stringify({ method: 'MOVE', value: 'P1DW_RELEASE'})); break;
+        case "j": socket.send(JSON.stringify({ method: 'MOVE', value: 'P2UP_RELEASE'})); break;
+        case "n": socket.send(JSON.stringify({ method: 'MOVE', value: 'P2DW_RELEASE'})); break;
       }
     });
   </script>

@@ -1,6 +1,7 @@
 to install:
 	npm install typescript --save-dev
 	npm install fastify @fastify/websocket @fastify/static
+	npm install uuid #remove after link with user database
 
 to build:
 	npm run build
