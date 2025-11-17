@@ -14,7 +14,7 @@ TOMMI:
 3. Le paddle arrivano in cima adesso :)
 4. Nel gamestate adesso c'e' ancche lo score
 
-new:
+NEW:
 5. Nel gamestate adesso ci sono anche le stat delle singole paddle (anche se per ora sono le stesse per entrrambe)
 6. Nota per i dati del gamestate:
 	- le coordinate dei player sono le Y del CENTRO dei paddle.
