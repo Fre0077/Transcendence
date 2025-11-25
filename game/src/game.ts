@@ -79,6 +79,86 @@
 // 	}
 // }
 
+//----------------
+/* GAME MECHANICS */
+
+/* the ball hit an object!, change the angle of the ball based
+	 on the direction which the surface is facing when hitting the ball. */
+// function bounce_90_deg(axis:string, angle:number) : number {
+// 	if (axis === 'x') 
+// 	else if (axis === 'y') angle = angle * -1;
+
+// 	// clamp angle
+// 	if (angle < 0) angle = 2 * Math.PI + angle;
+// 	else if (angle > 2 * Math.PI) angle = angle - 2 * Math.PI;
+
+// 	return angle;
+// }
+
+/* ------------------- Ball Class ------------------- */
+/* all data relative to the ball */
+
+class Ball
+{
+	public pos:number[];			/* coordinates (x,y) of the ball */
+	public angle:number;			/* angle on which the ball is moving (clamped 0 -> 2PI) */
+	public speed:number;			/* module of the peed */
+
+	constructor () {
+		this.angle = 0;
+		this.pos = [0.5, 0.5];
+		this.speed = 0.01;
+	}
+
+	// resets the parameters to the default ones
+	public reset() {
+		this.angle = 0;
+		this.pos = [0.5, 0.5];
+		this.speed = 0.01;
+	}
+
+	// this function bounces ann object that changes the X
+	// component of the ball's direction
+	// @offsetDeg is the angle we want to add to a perfect reflection
+	public bounceX(offsetDeg:number = 0) {
+
+		// convert offset to radians
+		const delta = offsetDeg * (Math.PI / 180);
+
+		// perfect reflection off vertical wall
+		const perfectReflection = Math.PI - this.angle;
+	
+		// apply your custom offset
+		this.angle = perfectReflection + delta;
+		this.clampAngle();
+	}
+
+	public bounceY(offsetDeg:number = 0) {
+
+		// convert offset to radians
+		const delta = offsetDeg * (Math.PI / 180);
+
+		// perfect reflection off vertical wall
+		const perfectReflection = -this.angle;
+
+		// apply your custom offset
+		this.angle = perfectReflection + delta;
+		this.clampAngle();
+	}
+
+	private clampAngle() {
+		if (this.angle < 0) this.angle = 2 * Math.PI + this.angle;
+		else if (this.angle > 2 * Math.PI) this.angle = this.angle - 2 * Math.PI;
+	}
+}
+
+
+/* -------------------------------------------------- */
+/* ------------------- Game Class ------------------- */
+/* -------------------------------------------------- */
+
+
+
 import { randIntT } from './random.js'
 
 const	playerStep: number = 0.01;		// how mucch the player moves each game tick
@@ -100,9 +180,11 @@ const	paddleHeight_2: number = paddleHeight / 2;
 	Start when pressing space (DONE)
 */
 
-export class Game {
+export class Game
+{
 	private timeout:number			/* number of ms the game should halt */
 
+	// match variables
 	private roundStart: boolean;	/* should the ball move? */
 	private score:number[];			/* player's score */
 	private lastScored:number;		/* the last player that scored (either 1 or 2) */
@@ -110,9 +192,10 @@ export class Game {
 	private winner:number;			/* who won the match? match ongoing: 0, player1: 1, player2: 2 */
 
 	// ball variables
-	private ball: number[];			/* coordinates (x,y) of the ball */
-	private ballSpeed: number;		/* module of the peed */
-	private ballAngle: number;		/* angle on which the ball is moving (clamped 0 -> 2PI) */
+	// private ball: number[];			/* coordinates (x,y) of the ball */
+	// private ballSpeed: number;		/* module of the peed */
+	// private ballAngle: number;		/* angle on which the ball is moving (clamped 0 -> 2PI) */
+	private ball:Ball;
 
 	// players variables
 	private player1: number;		/* Y-Coordinate of player1 (0 -> 1) */
@@ -135,9 +218,10 @@ export class Game {
 		this.lastScored = 0;			// default
 		this.score = [0, 0];			// match score to 0;
 
-		this.ball = [0.5, 0.5];			// ball in the middle
-		this.ballSpeed = 0.01;			// arbitrary speed
-		this.ballAngle = 0; 			// arbitrary angle
+		// this.ball = [0.5, 0.5];			// ball in the middle
+		// this.ballSpeed = 0.01;			// arbitrary speed
+		// this.ballAngle = 0; 			// arbitrary angle
+		this.ball = new Ball();
 
 		this.player1 = 0.5;				// player1 in the middle
 		this.player2 = 0.5;				// player2 in the middle
@@ -157,9 +241,10 @@ export class Game {
 		this.lastScored = 0;			// default
 		this.score = [0, 0];			// match score to 0;
 		
-		this.ball = [0.5, 0.5];			// ball in the middle
-		this.ballSpeed = 0.01;			// arbitrary speed
-		this.ballAngle = 0; 			// arbitrary angle
+		// this.ball = [0.5, 0.5];			// ball in the middle
+		// this.ballSpeed = 0.01;			// arbitrary speed
+		// this.ballAngle = 0; 			// arbitrary angle
+		this.ball = new Ball();
 
 		this.player1 = 0.5;				// player1 in the middle
 		this.player2 = 0.5;				// player2 in the middle
@@ -174,7 +259,7 @@ export class Game {
 	public getGameStateJSON(): string {
 		const state = {
 			score: this.score,		/* score of the match [player1, player2] */
-			ball: this.ball,		/* array of 2 coordinates [X, Y] of the CENTER of the ball */
+			ball: this.ball.pos,	/* array of 2 coordinates [X, Y] of the CENTER of the ball */
 			player1: this.player1,	/* single Y coordinate of the CENTER of the paddle*/
 			player2: this.player2,	/* single Y coordinate of the CENTER of the paddle*/
 			paddle: [				/* paddle size for both players: [player1, player2] */
@@ -244,19 +329,77 @@ export class Game {
 		}
 	}
 
-	//----------------
-	/* GAME MECHANICS */
-	
-	/* the ball hit an object!, change the angle of the ball based
-	 on the direction which the surface is facing when hitting the ball. */
-	private bounce(axis:string) {
-		if (axis === 'x') this.ballAngle = Math.PI - this.ballAngle;
-		else if (axis === 'y') this.ballAngle = this.ballAngle * -1;
 
-		// clamp angle
-		if (this.ballAngle < 0) this.ballAngle = 2 * Math.PI + this.ballAngle;
-		else if (this.ballAngle > 2 * Math.PI) this.ballAngle = this.ballAngle - 2 * Math.PI;
+
+
+	
+
+	/* -------------------------------------------------------- */
+	/* -------------------------------------------------------- */
+	/* 					CORE GAME MECHANIC					    */
+	/* -------------------------------------------------------- */
+	/* -------------------------------------------------------- */
+
+
+	private moveBall()
+	{
+		/* --- BALL MOVEMENT --- */
+		const newPos:number[] = [
+			this.ball.pos[0] + this.ball.speed * Math.cos(this.ball.angle),
+			this.ball.pos[1] + this.ball.speed * Math.sin(this.ball.angle)
+		];
+		
+		/* --- PAD COLLISION --- */
+		// point of collision with the ball
+		const collision:number = paddleOffset + paddleWidth;
+
+		// player1
+		if (this.ball.pos[0] > collision
+			&& newPos[0] < collision)
+		{
+			// approximation since the real collision point is where the
+			// oldpos-newpos line intersect the collision line
+			if (newPos[1] > this.player1 - paddleHeight_2
+				&& newPos[1] < this.player1 + paddleHeight_2)
+			{
+				// this.ball.angle = bounce_90_deg('x', this.ball.angle);
+				this.ball.bounceX();
+				this.ball.speed += 0.001;
+				this.ball.pos[0] = collision/*  + this.ball.speed */;
+			}
+			else	// let the ball move
+			{
+				this.ball.pos[0] = newPos[0];
+			}
+		}
+		// player2
+		else if (this.ball.pos[0] < (1 - collision)
+			&& newPos[0] > (1 - collision))
+		{
+			if (newPos[1] > this.player2 - paddleHeight_2
+				&& newPos[1] < this.player2 + paddleHeight_2)
+			{
+				// this.ball.angle = bounce_90_deg('x', this.ball.angle);
+				this.ball.bounceX();
+				this.ball.speed += 0.001;
+				this.ball.pos[0] = 1 - collision/*  - this.ball.speed */;
+			}
+			else	// let the ball move
+			{
+				this.ball.pos[0] = newPos[0];
+			}
+		}
+		else {this.ball.pos[0] = newPos[0];}
+		// Move ball
+
+		// this.ball.pos[0] = newPos[0];
+		this.ball.pos[1] = newPos[1];
+
+		// bounce ball on top/bottom of screen
+		if (this.ball.pos[1] < 0 || this.ball.pos[1] > 1) {this.ball.bounceY();}
 	}
+
+
 
 	// concord == -1, 0, 1
 	// speed needs to be adjusted but it kinda workds
@@ -270,6 +413,17 @@ export class Game {
 	// 	else if (this.ballAngle > 2 * Math.PI) this.ballAngle = this.ballAngle - 2 * Math.PI;
 	// }
 
+
+
+
+
+
+
+
+
+
+
+
 	// bring the gamestate back to the start not affecting the score
 	private ballInTheMiddle() {
 		this.timeout = 180;				// 3 sec of timeout
@@ -279,9 +433,11 @@ export class Game {
 		this.roundStart = false;
 		// this.score = [0, 0];			// not resetting the score
 		// this.lastScored = 0;			// not resetting lastScored
-		this.ball = [0.5, 0.5];
-		this.ballSpeed = 0.01;
-		this.ballAngle = 0;
+
+		// this.ball = [0.5, 0.5];
+		// this.ballSpeed = 0.01;
+		// this.ballAngle = 0;
+		this.ball.reset();
 
 		this.player1 = 0.5;
 		this.player2 = 0.5;
@@ -320,14 +476,14 @@ export class Game {
 		this.roundStart = true;
 
 		// randomize ball direction
-		this.ballAngle = Math.PI / (randIntT(10) + 4);
-		if (randIntT(2) === 0) {this.ballAngle *= -1;}
+		// this.ball.angle = Math.PI / (randIntT(10) + 4);
+		if (randIntT(2) === 0) {this.ball.angle *= -1;}
 
 		// which player the ball goes to?
-		if (this.lastScored === 2) {this.ballAngle += Math.PI;}
+		if (this.lastScored === 2) {this.ball.angle += Math.PI;}
 		if (this.lastScored === 1) {/* do nothing */;}
 
-		console.log(`launching ball with angle ${this.ballAngle}`);
+		console.log(`launching ball with angle ${this.ball.angle}`);
 	}
 
 
@@ -336,7 +492,7 @@ export class Game {
 	public start(tickRate = 60) {
 		const tickInterval = 1000 / tickRate;
 
-		// Prevent multiple loops
+		// Prevent multiple loops 
 		if (this.gameLoopInterval) clearInterval(this.gameLoopInterval);
 
 		this.gameLoopInterval = setInterval(() => {
@@ -353,54 +509,19 @@ export class Game {
 
 			if (this.roundStart === true) {
 				
-				/* --- PAD COLLISION --- */
-				const newPos:number[] = [
-					this.ball[0] + this.ballSpeed * Math.cos(this.ballAngle),
-					this.ball[1] + this.ballSpeed * Math.sin(this.ballAngle)
-				];
-
-				// point of collision with the ball
-				const collision:number = paddleOffset + paddleWidth;
-
-				// player1
-				if (this.ball[0] > collision
-					&& newPos[0] < collision)
-				{
-					if (newPos[1] > this.player1 - paddleHeight_2
-						&& newPos[1] < this.player1 + paddleHeight_2)
-					{
-						this.bounce('x');
-						this.ballSpeed += 0.001;
-					}
-				}
-				// player2
-				else if (this.ball[0] < 1 - (collision)
-					&& newPos[0] > 1 - (collision))
-				{
-					if (newPos[1] > this.player2 - paddleHeight_2
-						&& newPos[1] < this.player2 + paddleHeight_2)
-					{
-						this.bounce('x');
-						this.ballSpeed += 0.001;
-					}
-				}
-
-				// Move ball
-				this.ball = newPos;
-
-				// bounce ball on top/bottom of screen
-				if (this.ball[1] < 0 || this.ball[1] > 1) this.bounce('y');
+				/* --- BALL MOVEMENT --- */
+				this.moveBall();
 
 				/* --- END of MATCH --- */
-				// if the ball reached th border
-				if (this.ball[0] <= -0.1)
+				// if the ball reached the border
+				if (this.ball.pos[0] <= -0.1)
 				{
 					// player2 scored a point
 					this.score[1] += 1;
 					this.lastScored = 2;
 					this.ballInTheMiddle();
 				}
-				else if (this.ball[0] >= 1.1)
+				else if (this.ball.pos[0] >= 1.1)
 				{
 					// player1 scored a point
 					this.score[0] += 1;
