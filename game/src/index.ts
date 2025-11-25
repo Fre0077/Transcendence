@@ -115,13 +115,14 @@ fastify.register(async function (fastify) {
             if (connection.readyState === connection.OPEN) {
                 connection.send(game.getGameStateJSON());
             }
-        }, 1000 / FPS);	// FPS (delay in ms)
 
-        // let winner = game.end();
-        // if (winner !== 0) {
-        //     if (winner === 1) connection.send('Player 1 Won!!! Congrats');
-        //     else if (winner === 2) connection.send('Player 2 Won!!! Yippye');
-        // }
+            // send winner message  #todo single message not spamming
+            // let winner = game.end();
+            // if (winner !== 0) {
+            //     if (winner === 1) connection.send('Player 1 Won!!! Congrats');
+            //     else if (winner === 2) connection.send('Player 2 Won!!! Yippye');
+            // }
+        }, 1000 / FPS);	// FPS (delay in ms)
 
     });
 });

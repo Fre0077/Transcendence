@@ -1,83 +1,15 @@
+/* README
+	Basic functioning:
+	0. set data (format, directions, ...)
 
-// const GameInterface = {
-// 	ball: [0, 0],
-// 	player1: 0,
-// 	player2: 0,
-// 	player1Up: false,
-// 	player1Down: false,
-// 	player2Up: false,
-// 	player2Down: false,
-// 	// launchGame: function() { },
-// 	// getGameStateJSON: function () { },
-// }
+	--- PUBLIC GAMEPLAY METHODS --- (bottom of the file)
+	1. start(): to enable player input and ball movement
+	2. launch(): to start the round (the ball moves)
+	(optional) reset(): restart as if no round was played
+	3. stop(): stop processing player inputs and ball movement
 
-// const playerStep: number = 0.1;
+*/
 
-// export class Game {
-// 	private ball: number[];
-// 	private player1: number;
-// 	private player2: number;
-// 	private player1Up: boolean;
-// 	private player1Down: boolean;
-// 	private player2Up: boolean;
-// 	private player2Down: boolean;
-
-// 	public constructor() {
-// 		this.ball = [0.5, 0.5];
-// 		this.player1 = 0.5;
-// 		this.player2 = 0.5;
-// 		this.player1Up = false;
-// 		this.player1Down = false;
-// 		this.player2Up = false;
-// 		this.player2Down = false;
-// 	}
-
-// 	// Input handling
-// 	public press(player:number, direction:string) {
-// 		if (player === 1) {
-// 			if (direction === 'Up') {this.player1Up = true;}
-// 			if (direction === 'Down') {this.player1Down = true;}
-// 		}
-// 		else if (player === 2) {
-// 			if (direction === 'Up') {this.player2Up = true;}
-// 			if (direction === 'Down') {this.player2Down = true;}
-// 		}
-// 	}
-
-// 	public release(player:number, direction:string) {
-// 		if (player === 1) {
-// 			if (direction === 'Up') {this.player1Up = false;}
-// 			if (direction === 'Down') {this.player1Down = false;}
-// 		}
-// 		else if (player === 2) {
-// 			if (direction === 'Up') {this.player2Up = false;}
-// 			if (direction === 'Down') {this.player2Down = false;}
-// 		}
-// 	}
-
-// 	// Gamestat to pass to froontend
-// 	public getGameStateJSON(): string {
-// 		const state = {ball: this.ball, player1: this.player1, player2: this.player2};
-// 		return JSON.stringify(state);
-// 	}
-	
-// 	// game processing
-// 	public async launchGame() {
-// 		while (true)
-// 		{
-// 			// move the players
-// 			if (this.player1Up === true) {this.player1 -= playerStep;}
-// 			if (this.player1Down === true) {this.player1 += playerStep;}
-// 			if (this.player2Up === true) {this.player2 -= playerStep;}
-// 			if (this.player2Down === true) {this.player2 += playerStep;}
-// 			// confine to the border
-// 			if (this.player1 < 0) {this.player1 = 0;}
-// 			if (this.player1 > 1) {this.player1 = 1;}
-// 			if (this.player2 < 0) {this.player2 = 0;}
-// 			if (this.player2 > 1) {this.player2 = 1;}
-// 		}
-// 	}
-// }
 
 //----------------
 /* GAME MECHANICS */
@@ -94,6 +26,20 @@
 
 // 	return angle;
 // }
+
+// array of number angles between +PI / 4 and -PI / 4
+function randomAngle(N:number = 1) : number[]
+{
+	let arr:number[] = [];
+
+	for (let i = 0; i < N; ++i) {
+		let angle:number = Math.PI / (randIntT(10) + 4);	// rangle between Pi / 4 and Pi / 14
+		if (randIntT(2) === 0) {angle *= -1;}
+		arr.push(angle);
+	}
+	return arr;
+}
+
 
 /* ------------------- Ball Class ------------------- */
 /* all data relative to the ball */
@@ -146,6 +92,7 @@ class Ball
 		this.clampAngle();
 	}
 
+	// clamp angle between 0 -> 2PI
 	private clampAngle() {
 		if (this.angle < 0) this.angle = 2 * Math.PI + this.angle;
 		else if (this.angle > 2 * Math.PI) this.angle = this.angle - 2 * Math.PI;
@@ -182,20 +129,19 @@ const	paddleHeight_2: number = paddleHeight / 2;
 
 export class Game
 {
-	private timeout:number			/* number of ms the game should halt */
+	private timeout:number			/* number of ms the game should halt between rouds */
 
 	// match variables
+	private round:number			/* number of round (0 - > target * 2 - 1) */
 	private roundStart: boolean;	/* should the ball move? */
 	private score:number[];			/* player's score */
 	private lastScored:number;		/* the last player that scored (either 1 or 2) */
-	private winScore:number;		/* score a player must reach to win */
+	private targetScore:number;		/* score a player must reach to win */
 	private winner:number;			/* who won the match? match ongoing: 0, player1: 1, player2: 2 */
 
 	// ball variables
-	// private ball: number[];			/* coordinates (x,y) of the ball */
-	// private ballSpeed: number;		/* module of the peed */
-	// private ballAngle: number;		/* angle on which the ball is moving (clamped 0 -> 2PI) */
 	private ball:Ball;
+	private directions:number[];	/* array of launch directions (length = targetScore * 2 - 1) */
 
 	// players variables
 	private player1: number;		/* Y-Coordinate of player1 (0 -> 1) */
@@ -208,43 +154,19 @@ export class Game
 	private gameLoopInterval?: NodeJS.Timeout;	/* :D */
 
 	/* ======================== CONSTRUCTORS ======================== */
-	// keep this the same as the default constructor
-	private init() {
-		this.timeout = 60;				// 1 sec of timeout
-
-		this.winner = 0;				// noone won just yet
-		this.winScore = 3;				// Bo5
-		this.roundStart = false;			// ball not moving
-		this.lastScored = 0;			// default
-		this.score = [0, 0];			// match score to 0;
-
-		// this.ball = [0.5, 0.5];			// ball in the middle
-		// this.ballSpeed = 0.01;			// arbitrary speed
-		// this.ballAngle = 0; 			// arbitrary angle
-		this.ball = new Ball();
-
-		this.player1 = 0.5;				// player1 in the middle
-		this.player2 = 0.5;				// player2 in the middle
-		this.player1Up = false;			// Noone is moving...
-		this.player1Down = false;
-		this.player2Up = false;
-		this.player2Down = false;
-	}
-
 	// the constructor expliccitly wants the variables initialized
 	constructor() {
 		this.timeout = 60;				// 1 sec of timeout
 	
-		this.winner = 0;				// noone won just yet
-		this.winScore = 3;				// Bo5
+		this.round = 0;					// start at round 0
 		this.roundStart = false;			// ball not moving
-		this.lastScored = 0;			// default
 		this.score = [0, 0];			// match score to 0;
+		this.lastScored = 0;			// default
+		this.targetScore = 3;				// Bo5
+		this.winner = 0;				// noone won just yet
 		
-		// this.ball = [0.5, 0.5];			// ball in the middle
-		// this.ballSpeed = 0.01;			// arbitrary speed
-		// this.ballAngle = 0; 			// arbitrary angle
 		this.ball = new Ball();
+		this.directions = randomAngle((this.targetScore * 2) - 1);
 
 		this.player1 = 0.5;				// player1 in the middle
 		this.player2 = 0.5;				// player2 in the middle
@@ -254,7 +176,21 @@ export class Game
 		this.player2Down = false;
 	}
 
+
+
+
 	/* ----------------------------------------------------------------- */
+	/*		PUBLIC FUNCTIONS	PUBLIC FUNCTIONS	PUBLIC FUNCTIONS	 */
+	/*		PUBLIC FUNCTIONS	PUBLIC FUNCTIONS	PUBLIC FUNCTIONS	 */
+	/*		PUBLIC FUNCTIONS	PUBLIC FUNCTIONS	PUBLIC FUNCTIONS	 */
+	/* ----------------------------------------------------------------- */
+
+
+
+	/* ----------------------------------------------------------------- */
+	/* 								GET DATA							 */
+	/* ----------------------------------------------------------------- */
+
 	// @aleborghi qui' viene formattato il gamestate per il frontend.
 	public getGameStateJSON(): string {
 		const state = {
@@ -299,13 +235,33 @@ export class Game
 	public end(): number {
 		return this.winner;
 	}
-	/* ----------------------------------------------------------------- */
 
-	/* ======================== PUBLIC INPUT METHODS ======================== */
+	/* ----------------------------------------------------------------- */
+	/* 								SET DATA							 */
+	/* ----------------------------------------------------------------- */
 
 	/* sets the score a player must reach to win the game */
 	public setFormat(format:number) {
-		this.winScore = format;
+		if (format <= 0) {console.log(`Error: Invalid format ${format}`);}	// #todo send to the frontend
+		else {this.targetScore = format;}
+	}
+
+	/* set the launch directions for the match */
+	public setDirections(dirs:number[]) {
+		if (dirs.length != (this.targetScore * 2) - 1)
+		{
+			console.log(`Error: Invalid directions number: ${dirs.length}, expected: ${(this.targetScore * 2) - 1}`);
+			return ;		// #todo send to the frontend
+		}
+		for (let i = 0; i < dirs.length; ++i) {
+			if (Math.abs(dirs[i]) > Math.PI / 4
+			|| Math.abs(dirs[i]) < 0)
+			{
+				console.log(`Error: Invalid direction value: ${Math.abs(dirs[i])}, expected: 0 < value < PI / 4`);
+				return ;	// #todo send to the frontend
+			}
+		}
+		this.directions = dirs;
 	}
 
 	// Input handling
@@ -331,7 +287,13 @@ export class Game
 
 
 
-
+	/* ------------------------------------------------------------ */
+	/* 		-----	-----	||	\		/	 ^	---------	-----	*/
+	/* 		|	 |  |    |  ||   \     /   /   \    |       |       */
+	/*      |----   |----   ||    \   /   /_____\   |       -----   */
+	/*      |       |    \  ||     \ /   /       \  |       |       */
+	/*      |       |     \ ||      v   /         \ |       -----   */
+	/* ------------------------------------------------------------ */
 	
 
 	/* -------------------------------------------------------- */
@@ -428,42 +390,65 @@ export class Game
 	private ballInTheMiddle() {
 		this.timeout = 180;				// 3 sec of timeout
 	
-		// this.winner = 0;				// not resetting the winner
-		// this.winScore = 3;			// not resetting the format
-		this.roundStart = false;
-		// this.score = [0, 0];			// not resetting the score
-		// this.lastScored = 0;			// not resetting lastScored
+		this.round += 1;				// go to next round
+		this.roundStart = false;		// round not started
+		this.ball.reset();				// reset ball to default state
 
-		// this.ball = [0.5, 0.5];
-		// this.ballSpeed = 0.01;
-		// this.ballAngle = 0;
-		this.ball.reset();
-
-		this.player1 = 0.5;
+		this.player1 = 0.5;				// reset player to default state
 		this.player2 = 0.5;
 		this.player1Up = false;
 		this.player1Down = false;
 		this.player2Up = false;
 		this.player2Down = false;
 
-		if (this.score[0] === this.winScore)
+		if (this.score[0] === this.targetScore)
 		{
-			// this.matchOver = true;
 			this.winner = 1;
 			this.stop();
 		}
-		else if (this.score[1] === this.winScore)
+		else if (this.score[1] === this.targetScore)
 		{
 			this.winner = 2;
 			this.stop();
 		}
 	}
 
+
+
+
+
+	/* ========================================================================= */
 	/* ======================== PUBLIC GAMEPLAY METHODS ======================== */
+	/* ========================================================================= */
+
+
+
+
 
 	// reset the game to the beginning
 	public reset() {
-		this.init();
+
+		/* ! ! ! KEEP THIS THE SAME AS THE CONSTRUCTOR ! ! ! */
+		this.timeout = 60;				// 1 sec of timeout
+	
+		this.round = 0;					// start at round 0
+		this.roundStart = false;			// ball not moving
+		this.score = [0, 0];			// match score to 0;
+		this.lastScored = 0;			// default
+		this.targetScore = 3;				// Bo5
+		this.winner = 0;				// noone won just yet
+		
+		this.ball = new Ball();
+		this.directions = randomAngle((this.targetScore * 2) - 1);
+
+		this.player1 = 0.5;				// player1 in the middle
+		this.player2 = 0.5;				// player2 in the middle
+		this.player1Up = false;			// Noone is moving...
+		this.player1Down = false;
+		this.player2Up = false;
+		this.player2Down = false;
+		
+		// start the game again
 		this.start();
 	}
 
@@ -476,8 +461,7 @@ export class Game
 		this.roundStart = true;
 
 		// randomize ball direction
-		// this.ball.angle = Math.PI / (randIntT(10) + 4);
-		if (randIntT(2) === 0) {this.ball.angle *= -1;}
+		this.ball.angle = this.directions[this.round];
 
 		// which player the ball goes to?
 		if (this.lastScored === 2) {this.ball.angle += Math.PI;}
