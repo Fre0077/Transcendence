@@ -44,6 +44,21 @@ export class Lobby {
 		this.ID = code;
 	}
 
+	// sets the format of the lobby
+	public setFormat(format:number) {
+		if (format <= 0) {
+			console.log(`Error: invalid format`);
+			return ;
+		}
+		this.format = format;
+	}
+
+	// return true if the lobby is full, false if it isn't... duh?
+	public full() : boolean {
+		if (this.playerID.length === this.size) return true;
+		else return false
+	}
+
 	// returns the gamestate of the Game object
 	public getGameStateJSON() : string {
 		return this.game.getGameStateJSON();
@@ -62,8 +77,17 @@ export class Lobby {
 
 	// function to join the lobby, syntax: 'playerID'
 	public join(playerID:string) {
+
+		// check if lobby is full
 		if (this.playerID.length === this.size) {
 			console.log('The lobby is full'); // #todo sendo to the frontend
+			return ;
+		}
+
+
+		// check if player already in
+		if (this.playerID.find(p => p === playerID)) {
+			console.log('Player already joined'); // #todo sendo to the frontend
 			return ;
 		}
 
@@ -77,6 +101,8 @@ export class Lobby {
 
 	// a player left the lobby
 	public leave(playerID:string) {
+		if (playerID === null) {return ;}
+
 		const index = this.playerID.indexOf(playerID);
 		if (index !== -1) {
 			this.playerID.splice(index, 1);
@@ -86,6 +112,7 @@ export class Lobby {
 			console.log(`${playerID} left the lobby...`); // #todo send to frontend
 		}
 
+		// close the lobby if the last player left
 		if (this.playerID.length === 0) this.close();
 
 	}

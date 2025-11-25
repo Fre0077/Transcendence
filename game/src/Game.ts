@@ -474,6 +474,9 @@ export class Game
 	//-----------------------
 	// Non-blocking GAME LOOP
 	public start(tickRate = 60) {
+
+		console.log(`Starting game with format ${this.targetScore}`);
+
 		const tickInterval = 1000 / tickRate;
 
 		// Prevent multiple loops 

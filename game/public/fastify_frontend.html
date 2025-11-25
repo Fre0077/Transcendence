@@ -4,40 +4,135 @@
   <meta charset="UTF-8" />
   <title>Pong Client</title>
   <style>
-    canvas { background: #000; display: block; margin: 0 auto; }
+    canvas { background: #000; display: none; margin: 20px auto; }
+    #ui { text-align: center; margin-top: 20px; }
+    #lobbyCode { margin-top: 10px; font-weight: bold; }
   </style>
 </head>
 <body>
-  <div id="scoreboard", align="center">
+  <div id="ui">
+    <button id="btnCreate">Create Lobby</button>
+    <br/><br/>
+
+    <input id="joinInput" placeholder="Lobby code or ANY" />
+    <button id="btnJoin">Join Lobby</button>
+
+    <div id="lobbyCode"></div>
+    <div id="serverLog">Waiting...</div>
+  </div>
+
+  <div id="scoreboard" align="center" style="display:none;">
     P1 : P2
   </div>
+
   <canvas id="game" width="600" height="600"></canvas>
-  <div id="serverLog", align="center">serverLog</div>
+
   <script>
-    const scoreboard = document.getElementById("scoreboard"); // me :D
-    const serverLog = document.getElementById("serverLog");       // also me :)
-    
+    const scoreboard = document.getElementById("scoreboard");
+    const serverLog = document.getElementById("serverLog");
+    const lobbyCodeDiv = document.getElementById("lobbyCode");
+
+    const joinInput = document.getElementById("joinInput");
+    const btnCreate = document.getElementById("btnCreate");
+    const btnJoin = document.getElementById("btnJoin");
+
     const canvas = document.getElementById("game");
     const ctx = canvas.getContext("2d");
 
-    // 👇 Update the WebSocket URL to match your Fastify route
-    // For example, if your Fastify route is fastify.get('/ws', { websocket: true }, ...)
     const socket = new WebSocket(`ws://${window.location.host}/websocket`);
 
+    let lobbyCode = null;
+
+
+	/* STARTUP PROCEDURE for FRONTEND @aleborghi */
+      /*
+      first you create a lobby,
+      the backend will send the ID of the lobby created:
+	  { method: 'CREATE_REPLY', status: 'success', value: '<lobbyID>' }
+
+      the second send is to join the lobby that was created,
+      if 'value' is set to 'ANY', the first lobby with an empty slot will be joined.
+	  the backend will send a reply:
+	  { method: 'JOIN_REPLY', status: 'success', value: '<lobbyID>' }
+	  if the join failed because the <lobbyID> was not found or no lobby were yet created
+	  (ANY case), the status will be set to 'failure' */
+
+    /* -------------------------
+       UI BUTTON HANDLERS
+    -------------------------- */
+
+    btnCreate.onclick = () => {
+      socket.send(JSON.stringify({ method: "CREATE", format: 2 }));
+      serverLog.innerText = "Creating lobby...";
+    };
+
+    btnJoin.onclick = () => {
+      const code = joinInput.value.trim() || "ANY";
+      socket.send(JSON.stringify({ method: "JOIN", value: code }));
+      serverLog.innerText = `Joining lobby: ${code}...`;
+    };
+
+    /* -------------------------
+       WEBSOCKET EVENTS
+    -------------------------- */
+
     socket.addEventListener("open", () => {
-      console.log("Connected to Fastify WebSocket server");
-      socket.send(JSON.stringify({ method: 'JOIN', value: 'myReallyCoolLobby' }));  // lobby code
+      console.log("Connected to server");
+      serverLog.innerText = "Connected.";
     });
 
     socket.addEventListener("message", (event) => {
       try {
         const data = JSON.parse(event.data);
-        drawGame(data);
+
+        /* -------------
+           LOBBY CREATION
+        -------------- */
+        if (data.method === "CREATE_REPLY") {
+          lobbyCode = data.value;
+		  if (data.status === 'success')
+          	lobbyCodeDiv.innerText = `Lobby created! Code: ${lobbyCode}`;
+		  else if (data.status === 'failure')
+		    lobbyCodeDiv.innerText = `Failed to create the Lobby\n${lobbyCode}`;
+
+          return;
+        }
+
+        /* ---------
+           LOBBY JOIN
+        ---------- */
+        if (data.method === "JOIN_REPLY") {
+		  if (data.status === 'success')
+          	lobbyCodeDiv.innerText = `Joined lobby ${data.value}`;
+		  else if (data.status === 'failure')
+		    lobbyCodeDiv.innerText = `Failed to join ${data.value}`;
+          return;
+        }
+
+        /* --------------
+           GAME STATE
+        --------------- */
+        if (data.paddle && data.ball && data.score) {
+          canvas.style.display = "block";
+          scoreboard.style.display = "block";
+          drawGame(data);
+          return;
+        }
+
+        /* ----------------------
+           OTHER SERVER MESSAGES
+        ----------------------- */
+        serverLog.innerText = event.data;
+
       } catch (err) {
         console.error("Bad JSON:", event.data);
-        serverLog.innerHTML = `${event.data}`;      
+        serverLog.innerText = event.data;
       }
     });
+
+    /* -------------------------
+       DRAW GAME
+    -------------------------- */
 
     function drawGame(state) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -47,62 +142,59 @@
       const paddleOffset = canvas.width * state.paddle[0].offset;
       const ballSize = 10;
 
-      // console.log(`pH: ${paddleHeight}, pW: ${paddleWidth}, pO: ${paddleOffset}`);
-
-      // Score
       scoreboard.innerHTML = `${state.score[0]} : ${state.score[1]}`;
-
       ctx.fillStyle = "white";
 
       // Midline
-      ctx.fillRect(
-        canvas.width / 2,
-        0,
-        2,
-        canvas.height,
-      );
+      ctx.fillRect(canvas.width / 2, 0, 2, canvas.height);
 
       // Ball
       ctx.fillRect(
-        state.ball[0] * canvas.width - (ballSize / 2),
-        state.ball[1] * canvas.height - (ballSize / 2),
+        state.ball[0] * canvas.width - ballSize / 2,
+        state.ball[1] * canvas.height - ballSize / 2,
         ballSize,
-        ballSize);
+        ballSize
+      );
 
       // Player 1
       ctx.fillRect(
         paddleOffset,
-        (state.player1 * canvas.height) - (paddleHeight / 2),
+        state.player1 * canvas.height - paddleHeight / 2,
         paddleWidth,
-        paddleHeight);
+        paddleHeight
+      );
 
       // Player 2
       ctx.fillRect(
-        canvas.width - paddleOffset - 10,
-        (state.player2 * canvas.height) - (paddleHeight / 2),
+        canvas.width - paddleOffset - paddleWidth,
+        state.player2 * canvas.height - paddleHeight / 2,
         paddleWidth,
-        paddleHeight);
+        paddleHeight
+      );
     }
 
-    document.addEventListener("keydown", (e) => {
-      if (e.repeat) return; // ignore held-down repeat events
+    /* -------------------------
+       KEYBOARD INPUT
+    -------------------------- */
 
+    document.addEventListener("keydown", (e) => {
+      if (e.repeat) return;
       switch (e.key) {
-        case "f": socket.send(JSON.stringify({ method: 'MOVE', value: 'P1UP_PRESS'})); break;
-        case "v": socket.send(JSON.stringify({ method: 'MOVE', value: 'P1DW_PRESS'})); break;
-        case "j": socket.send(JSON.stringify({ method: 'MOVE', value: 'P2UP_PRESS'})); break;
-        case "n": socket.send(JSON.stringify({ method: 'MOVE', value: 'P2DW_PRESS'})); break;
-        case " ": socket.send(JSON.stringify({ method: 'MOVE', value: 'START_PRESS'})); break;
-        case "r": socket.send(JSON.stringify({ method: 'MOVE', value: 'RESET_PRESS'})); break;
+        case "f": socket.send(JSON.stringify({ method: "MOVE", value: "P1UP_PRESS" })); break;
+        case "v": socket.send(JSON.stringify({ method: "MOVE", value: "P1DW_PRESS" })); break;
+        case "j": socket.send(JSON.stringify({ method: "MOVE", value: "P2UP_PRESS" })); break;
+        case "n": socket.send(JSON.stringify({ method: "MOVE", value: "P2DW_PRESS" })); break;
+        case " ": socket.send(JSON.stringify({ method: "MOVE", value: "START_PRESS" })); break;
+        case "r": socket.send(JSON.stringify({ method: "MOVE", value: "RESET_PRESS" })); break;
       }
     });
 
     document.addEventListener("keyup", (e) => {
       switch (e.key) {
-        case "f": socket.send(JSON.stringify({ method: 'MOVE', value: 'P1UP_RELEASE'})); break;
-        case "v": socket.send(JSON.stringify({ method: 'MOVE', value: 'P1DW_RELEASE'})); break;
-        case "j": socket.send(JSON.stringify({ method: 'MOVE', value: 'P2UP_RELEASE'})); break;
-        case "n": socket.send(JSON.stringify({ method: 'MOVE', value: 'P2DW_RELEASE'})); break;
+        case "f": socket.send(JSON.stringify({ method: "MOVE", value: "P1UP_RELEASE" })); break;
+        case "v": socket.send(JSON.stringify({ method: "MOVE", value: "P1DW_RELEASE" })); break;
+        case "j": socket.send(JSON.stringify({ method: "MOVE", value: "P2UP_RELEASE" })); break;
+        case "n": socket.send(JSON.stringify({ method: "MOVE", value: "P2DW_RELEASE" })); break;
       }
     });
   </script>
