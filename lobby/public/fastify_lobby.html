@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Pong Client</title>
+  <style>
+    canvas { background: #000; display: none; margin: 20px auto; }
+    #ui { text-align: center; margin-top: 20px; }
+    #lobbyCode { margin-top: 10px; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <div id="playerID">playerID</div>
+  <div id="ui">
+    <button id="btnCreate">Create Lobby</button>
+    <br/><br/>
+
+    <input id="joinInput" placeholder="Lobby code or ANY" />
+    <button id="btnJoin">Join Lobby</button>
+	<br/><br/>
+
+	<button id="btnStart">Start Game</button>
+	<br/><br/>
+
+    <div id="lobbyCode"></div>
+    <div id="serverLog">Waiting...</div>
+  </div>
+  <div id="players">
+	players
+  </div>
+
+  <script>
+
+	// Ask the user for their player ID
+	let playerID = prompt("Enter your Player ID:", "");
+
+	// If they press cancel or type nothing, give them a default value
+	if (!playerID) {
+		playerID = "UnknownPlayer";
+	}
+
+	// Display it on the page
+	document.getElementById("playerID").innerText = playerID;
+
+    const scoreboard = document.getElementById("scoreboard");
+    const serverLog = document.getElementById("serverLog");
+    const lobbyCodeDiv = document.getElementById("lobbyCode");
+
+    const joinInput = document.getElementById("joinInput");
+    const btnCreate = document.getElementById("btnCreate");
+    const btnJoin = document.getElementById("btnJoin");
+	 const btnStart = document.getElementById("btnStart");
+
+	const playersDiv = document.getElementById("players");
+
+    const socket = new WebSocket(`ws://${window.location.host}/lobbysocket`);
+
+    let lobbyCode = null;
+
+	// visualize playerID
+	document.getElementById("playerID").innerHTML = playerID;
+
+	/* STARTUP PROCEDURE for FRONTEND @aleborghi */
+      /*
+      first you create a lobby,
+      the backend will send the ID of the lobby created:
+	  { method: 'CREATE_REPLY', status: 'success', value: '<lobbyID>' }
+
+      the second send is to join the lobby that was created,
+      if 'value' is set to 'ANY', the first lobby with an empty slot will be joined.
+	  the backend will send a reply:
+	  { method: 'JOIN_REPLY', status: 'success', value: '<lobbyID>' }
+	  if the join failed because the <lobbyID> was not found or no lobby were yet created
+	  (ANY case), the status will be set to 'failure' */
+
+    /* -------------------------
+       UI BUTTON HANDLERS
+    -------------------------- */
+
+    btnCreate.onclick = () => {
+      socket.send(JSON.stringify({ method: "CREATE", format: 2 }));
+      serverLog.innerText = "Creating lobby...";
+    };
+
+    btnJoin.onclick = () => {
+      const code = joinInput.value.trim() || "ANY";
+      socket.send(JSON.stringify({ method: "JOIN", lobbyID: code, playerID: playerID }));
+      serverLog.innerText = `Joining lobby: ${code}...`;
+    };
+
+	btnStart.onclick = () => {
+      socket.send(JSON.stringify({ method: "START" }));
+      serverLog.innerText = "Starting game...";
+    };
+
+    //-----------------------------------------------
+    // start talking with the game backend @aleborghi
+
+    let gameStarted = false;
+
+    function startGame(myGameID, myPlayerID) {
+
+      if (gameStarted === true) return ;
+      lobbyCodeDiv.innerText = `Game Started ${myGameID}`;
+
+      // open new window
+      const newWin = window.open("/game", "_blank");
+
+      newWin.onload = () => {
+        newWin.postMessage({playerID: myPlayerID, gameID: myGameID}, `http://${window.location.hostname}:3003/game`);
+      };
+      gameStarted = true;
+    }
+
+    /* -------------------------
+       WEBSOCKET EVENTS
+    -------------------------- */
+
+    socket.addEventListener("open", () => {
+      console.log("Connected to server");
+      serverLog.innerText = "Connected.";
+    });
+
+    socket.addEventListener("message", (event) => {
+      try {
+        const data = JSON.parse(event.data);
+
+        /* -------------
+           LOBBY CREATION
+        -------------- */
+        if (data.method === "CREATE_REPLY") {
+          lobbyCode = data.value;
+          if (data.status === 'success')
+            lobbyCodeDiv.innerText = `Lobby created! Code: ${lobbyCode}`;
+          else if (data.status === 'failure')
+            lobbyCodeDiv.innerText = `Failed to create the Lobby\n${lobbyCode}`;
+          return;
+        }
+
+        /* -----------
+           LOBBY JOIN
+        ------------ */
+        if (data.method === "JOIN_REPLY") {
+		      if (data.status === 'success')
+          	lobbyCodeDiv.innerText = `Joined lobby ${data.value}`;
+		      else if (data.status === 'failure')
+		        lobbyCodeDiv.innerText = `Failed to join ${data.value}`;
+          return;
+        }
+
+        /* --------------
+           LOBBY STATE
+        --------------- */
+        if (data.ID && data.players) {
+			    playersDiv.innerHTML = ""; // clear
+
+			    let html = "";
+			    for (let i = 0; i < data.players.length; i++) {
+				    html += `${data.players[i]}<br>`;
+			    }
+
+			    playersDiv.innerHTML = html;
+
+          if (data.ingame === true) {
+            startGame(data.ID, playerID);
+          }
+			    return;
+		    }
+
+		    /* -----------
+          GAME START
+        ------------ */
+        if (data.method === "START_REPLY") {
+          if (data.status === 'success') {
+              startGame(data.value, playerID);
+          }
+          else if (data.status === 'failure')
+            lobbyCodeDiv.innerText = `Failed to start game :( ${data.value}`;
+          return;
+        }
+
+        /* ----------------------
+           OTHER SERVER MESSAGES
+        ----------------------- */
+        serverLog.innerText = event.data;
+
+      } catch (err) {
+        console.error("Bad JSON:", event.data);
+        serverLog.innerText = `Bad JSON: ${event.data}`;
+      }
+    });
+
+
+  </script>
+</body>
+</html>

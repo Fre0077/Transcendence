@@ -27,14 +27,16 @@
 // 	return angle;
 // }
 
+import { randIntM } from './random.js'
+
 // array of number angles between +PI / 4 and -PI / 4
 function randomAngle(N:number = 1) : number[]
 {
 	let arr:number[] = [];
 
 	for (let i = 0; i < N; ++i) {
-		let angle:number = Math.PI / (randIntT(10) + 4);	// rangle between Pi / 4 and Pi / 14
-		if (randIntT(2) === 0) {angle *= -1;}
+		let angle:number = Math.PI / (randIntM(10) + 4);	// rangle between Pi / 4 and Pi / 14
+		if (randIntM(2) === 0) {angle *= -1;}
 		arr.push(angle);
 	}
 	return arr;
@@ -104,9 +106,6 @@ class Ball
 /* ------------------- Game Class ------------------- */
 /* -------------------------------------------------- */
 
-
-
-import { randIntT } from './random.js'
 
 const	playerStep: number = 0.01;		// how mucch the player moves each game tick
 
@@ -338,8 +337,8 @@ export class Game
 		else if (this.ball.pos[0] < (1 - collision)
 			&& newPos[0] > (1 - collision))
 		{
-			if (newPos[1] > this.player2 - paddleHeight_2
-				&& newPos[1] < this.player2 + paddleHeight_2)
+			if (newPos[1] > this.player2 - paddleHeight_2 * 2
+				&& newPos[1] < this.player2 + paddleHeight_2 * 2)
 			{
 				// this.ball.angle = bounce_90_deg('x', this.ball.angle);
 				this.ball.bounceX();

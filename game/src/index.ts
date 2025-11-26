@@ -4,79 +4,69 @@
 
 
 import Fastify from 'fastify';
-// import { Game } from "./Game.js";
-import { Lobby } from "./Lobby.js";
-import { v4 as uuidv4 } from "uuid";
+import { Game } from "./Game.js";
+// import { v4 as uuidv4 } from "uuid";
 
 const FPS:number = 60;
 const PORT = Number(process.env.PORT) || 3002;
+const BACKSOCKET:string = "gameprivsocket";
+const FRONTSOCKET:string = "gamesocket";
+
+
 
 const fastify = Fastify({ 
 	logger: false //too much stuff... 
 });
 
-// fetching test html
-await fastify.register(import('@fastify/static'), {
-	root: new URL('../public', import.meta.url).pathname
-});
-
 // Register WebSocket plugin
 await fastify.register(import('@fastify/websocket'));
 
-// serving test html
-fastify.get('/', async (request, reply) => {
-	request; // ignore
-	return reply.sendFile('fastify_frontend.html');
-});
-
-/* ------------- LOBBY ------------- */
-
-// type lobby = {
-// 	code: string,
-// 	game: Game
-// }
-
-// let lobbies: lobby[] =[];
-
-// function addLobby(code: string): Game {
-// 	const game = new Game();
-// 	lobbies.push({ code, game });
-// 	console.log(`added lobby with code '${code}'`);
-// 	return game;
-// }
-
-// function getLobby(code:string): lobby | undefined {
-// 	const lobby = lobbies.find(l => l.code === code);
-// 	if (lobby !== undefined) console.log(`found lobby with code '${code}'`);
-// 	else console.log(`lobby NOT found for code '${code}'`);
-// 	return lobby;
-// }
 /* --------------------------------- */
 
-let lobbies:Lobby[] = [];
-// let playerIDs:string[] = [];
+type player = {
+	ID: string;
+	joined: boolean;
+	position: number;
+};
 
-function createLobby() : string {
-	const lobby:Lobby = new Lobby();
-	lobbies.push(lobby);
-	return lobby.getID();
+type GameStatus = "created" | "joining" | "ongoing" | "finished";
+
+type gameEntry = {
+	ID: string;
+	players: player[];
+	game: Game;
+	status:GameStatus;
+};
+
+// array of games
+let games:gameEntry[] = [];
+
+function getGameEntry(code:string): gameEntry | undefined {
+	const gameEntry = games.find(g => g.ID === code);
+	if (gameEntry !== undefined){
+		console.log(`found game with code '${code}'`);
+		return gameEntry;
+	}
+	else
+	{
+		console.log(`game NOT found for code '${code}'`);
+		return undefined;
+	}
 }
 
-// returns the index of the lobby in the 'lobbies' array
-function getLobbyIndex(lobbyID:string) : number | undefined {
 
-	if (lobbyID === null) return undefined;
+// check if the string is a JSON obj
+function isValidObj(message:string): object | undefined {
+	let parse: unknown;
 
-	// join the first lobby with an empty space
-	if (lobbyID === 'ANY'){
-		let myLobby = lobbies.find(l => l.full() === false);
-		if (myLobby === undefined) return undefined;
-		else return lobbies.indexOf(myLobby);
+	// JSON parse
+	try {
+		parse = JSON.parse(message.toString());
+	} catch (err) {
+		return undefined;
 	}
 
-	let lobby = lobbies.find(l => l.getID() === lobbyID);
-	if (lobby === undefined) return undefined;
-	else return lobbies.indexOf(lobby);
+	return Object(parse);
 }
 
 /* ---------------------------------------------------------- */
@@ -86,7 +76,7 @@ function getLobbyIndex(lobbyID:string) : number | undefined {
 /*                                                        */
 /*                                                       */
 /*                                                      */
-/*                                                     */
+/*                      : )                            */
 /*                                                    */
 /*                                                   */
 /*                                                  */
@@ -98,150 +88,223 @@ function getLobbyIndex(lobbyID:string) : number | undefined {
 /*                                            */
 /* * * * * * * * * * * * * * * * * * * * * * */
 
-function hasMethod(obj: unknown): obj is { method: string } {
-	return (
-		obj !== null
-		&& typeof obj === "object"
-		&& "method" in obj
-	);
-}
+/* __________________________________________ */
+/* 											  */
+/* ------ BACKENT to BACKEND websocket ------ */
+/* + - + - + - + - + - + - + - + - + - + - +  */
+/* __________________________________________ */
 
-function hasValue(obj: unknown): obj is { value: string } {
-	return (
-		obj !== null
-		&& typeof obj === "object"
-		&& "value" in obj
-	);
-}
+fastify.register(async function (fastify) {
+	fastify.get(`/${BACKSOCKET}`, { websocket: true }, (connection, request) => {
 
-function hasFormat(obj: unknown): obj is { format: number } {
-	return (
-		obj !== null
-		&& typeof obj === "object"
-		&& "format" in obj
-	);
-}
+		request;
+
+		let ID:string = "empty";
+		// 
+		connection.on('message', message => {
+			/* check properies, expected:
+			{
+				ID: string,
+				status: string,
+				format: number,
+				players: string[]
+			};
+			*/
+
+			// parse message as JSON
+			let msg = isValidObj(message.toString());
+			if (msg === undefined
+				|| "ID" in msg === false
+				|| typeof msg.ID !== "string"
+				|| "format" in msg === false
+				|| typeof msg.format !== "number"
+				|| "players" in msg === false
+				|| Array.isArray(msg.players) === false)
+			{
+				console.log(`Invalid JSON ${message}`);
+				return;
+			}
+
+			console.log(`JSON form Lobby Backend ${msg}`);
+
+			// create the player list
+			const playerList: player[] = msg.players.map((id, index) => ({
+				ID: id,
+				joined: false,
+				position: index + 1
+			}));
+
+			// add the game to the array
+			games.push({
+				ID: msg.ID,
+				players: playerList,
+				game: new Game(),
+				status: "created"
+			});
+
+			// save gameID
+			ID = msg.ID;
+		});
+
+		// Handle WebSocket errors
+		connection.on('error', (error) => {
+			console.error(`WebSocket error for ${ID}:`, error);
+		});
+
+		// Handle connection close
+		connection.on('close', (code, reason) => {
+			console.log(`Client ${ID} disconnected - Code: ${code}, Reason: ${reason?.toString() || 'none'}`);
+		});
+
+		setInterval(() => {
+
+			// check if all the player joined  the game, if so start the game
+			for (let i = 0; i < games.length; ++i) {
+				let p = 0;
+				for (;p < games[i].players.length; ++p)
+					if (games[i].players[p].joined === false) break;
+				if (p === games[i].players.length		// check if game is full
+					&& games[i].status === "joining")	// check if game isn't started yet
+				{
+					games[i].status = "ongoing";
+					games[i].game.start();
+				}
+			}
+
+
+		}, 1000 );
+
+	})
+});
+
+/* --------------------------------------------- */
+/* 												 */
+/* 			FRONTEND to BACKEND WebSocket	 	 */
+/* 												 */
+/* --------------------------------------------- */
+
 
 // WebSocket route handler
 fastify.register(async function (fastify) {
-	fastify.get('/websocket', { websocket: true }, (connection, request) => {
+	fastify.get(`/${FRONTSOCKET}`, { websocket: true }, (connection, request) => {
 
-		// Logging the connection
+		// Storing the SenderIP and logging it
 		const clientIP = request.socket.remoteAddress;
 		console.log(`Client connected from ${clientIP}`);
 
-		// generate player ID (get it from frontend afterwards @aleborghi)
-		const playerID = uuidv4();
-
-		//----- finding the right game to log in
-		let lobbyIdx:number;
-		let gotLobby:boolean = false;
+		// Storing the Game and the Player
+		let kebab:gameEntry;
+		let game:Game;
+		let player:player;
+		let gotGame:boolean = false;
 
 		// Send welcome message
 		connection.send('Connected to Fastify WebSocket server!');
-		// connection.send(game.getPaddingSettingsJSON());          // just padding data se vuoi @aleborghi
 
 		// Handle incoming messages
 		connection.on('message', message => {
+			
 			// Format and log message
-			// const msg = message.toString().trim();
-
-			let msg: unknown;
-
-			// JSON parse
-			try {
-				msg = JSON.parse(message.toString());
-			} catch (err) {
-				console.log("Invalid JSON");
+			let msg = isValidObj(message.toString());
+			if (msg === undefined || "method" in msg === false) {
+				console.log(`invalid JSON message ${message}`);
 				return;
 			}
 
 			console.log(`Received from ${clientIP}:`, msg);
 
-			if (!hasMethod(msg)) {
-				console.log(`invalid JSON message ${msg}`);
-				return;
-			}
 
-
-			// log into the lobby or creates it
-			// if (text.startsWith('join:')) {
+			// Handle methods
 			switch (msg.method)
 			{
-				case 'CREATE':
+				case "JOIN":
+					/* {method: 'JOIN', gameID: <gameID>, playerID: <playerID> }
+						@gameID: the ID of the game as a string
+						@playerID: the ID of the player as a string
 
-					/* {method: 'CREATE', format: 3 }
-					@format: the number of rounds a player need to win to win the match
+						Description: Joins the game with the specified ID, if playerID is null it fails
+						Reply: { method: 'JOIN_REPLY', status: 'success/failure', value: <gameID>, comment: <comment> }
+
 					*/
 
-					//create lobby
-					let myLobbyID:string = createLobby();
-					let myLobbyIdx = getLobbyIndex(myLobbyID);
-
-					// somhow it failed
-					if (myLobbyIdx === undefined) {
-						// send lobbyID to frontend @aleborghi
-						if (connection.readyState === connection.OPEN) {
-							connection.send(JSON.stringify({ method: 'CREATE_REPLY', status: 'failure', value: 'wtf was that'}));
-						}
-						break ;
-					}
-
-					// check if the obj has format
-					if (hasFormat(msg)) {
-						lobbies[myLobbyIdx].setFormat(msg.format);
-					}
-
-					// send lobbyID to frontend @aleborghi
-					if (connection.readyState === connection.OPEN) {
-						connection.send(JSON.stringify({ method: 'CREATE_REPLY', status: 'success', value: lobbies[myLobbyIdx].getID()}));
-					}
-					break ;
-				case 'JOIN':
-
-					// check if the obj has value
-					if (!hasValue(msg)) {
-						console.log(`invalid JSON message ${msg}`);
+					// check if the obj has gameID amd playerID
+					if ("gameID" in msg === false || typeof msg.gameID !== "string"
+						|| "playerID" in msg === false || typeof msg.playerID !== "string")
+					{
+						console.log(`invalid JSON message ${message}`);
 						return;
 					}
 
-					const lobbyID:string = msg.value;
-
 					// check if lobby is created
-					let tmpLobbyIdx = getLobbyIndex(lobbyID);
+					let myGameEnrty = getGameEntry(msg.gameID);
 
-					// lobby not found
-					if (tmpLobbyIdx === undefined) {
+					// game not found
+					if (myGameEnrty === undefined) {
 						if (connection.readyState === connection.OPEN) {
-							connection.send(JSON.stringify({ method: 'JOIN_REPLY', status: 'failure', value: lobbyID}));
+							connection.send(JSON.stringify({ method: 'JOIN_REPLY', status: 'failure', value: msg.gameID, comment: "game not found"}));
 						}
 						return ;
 					}
 
-					// actually join the lobby
-					lobbyIdx = tmpLobbyIdx;
-					lobbies[lobbyIdx].join(playerID);
+					// check if the player is expected in this game
+					/* ! ! ! =============================== ! ! ! */
+					/* ! ! ! #todo ALSO ADD SESSION ID CHECK ! ! ! */
+					/* ! ! ! =============================== ! ! ! */
 
-					// send lobbyID to frontend @aleborghi
+					let myPlayer: player | undefined = myGameEnrty.players.find(p => p.ID === msg.playerID && p.joined === false);
+					if (myPlayer === undefined) {
+						if (connection.readyState === connection.OPEN) {
+							connection.send(JSON.stringify({ method: 'JOIN_REPLY', status: 'failure', value: msg.gameID, comment: 'you are not expected in this game'}));
+						}
+						return ;
+					}
+
+					// save the game enrty
+					kebab = myGameEnrty;
+					// save the idx of the game for this socket connection
+					game = kebab.game;
+					// update entry status
+					kebab.status = "joining";
+
+					// save player for this connection
+					player = myPlayer
+					// update player status
+					player.joined = true;
+
+					// send successful join to frontend
 					if (connection.readyState === connection.OPEN) {
-						connection.send(JSON.stringify({ method: 'JOIN_REPLY', status: 'success', value: lobbies[lobbyIdx].getID()}));
+						connection.send(JSON.stringify({ method: 'JOIN_REPLY', status: 'success', value: myGameEnrty.ID}));
 					}
 
 					// start receiving inputs
-					gotLobby = true;
+					gotGame = true;
 					break ;
 
-				case 'MOVE':
-					// check if the obj has value
-					if (!hasValue(msg)) {
-						console.log(`invalid JSON message ${msg}`);
-						return;
-					}
-			
-					// ignore other inputs if game not found yet
-					if (gotLobby === false) return;
+				case "MOVE":
 
-					lobbies[lobbyIdx].send(playerID, msg.value);
+					// ignore other inputs if game not found yet
+					if (gotGame === false) return ;
+
+					// check if the game is started
+					if (kebab.status !== "ongoing") {
+						console.log(`The game ${kebab.ID} is still '${kebab.status}'`);
+						return ;
+					}
+
+					// check if the obj has value
+					if ("value" in msg === false || typeof msg.value !== "string") {
+						console.log(`invalid JSON message ${message}`);
+						return ;
+					}
+
+					// process sent input
+					if (msg.value == "UP_PRESS") game.press(player.position, "Up");
+					else if (msg.value == "DW_PRESS") game.press(player.position, "Down");
+					else if (msg.value == "UP_RELEASE") game.release(player.position, "Up");
+					else if (msg.value == "DW_RELEASE") game.release(player.position, "Down");
+					else if (msg.value == "START_PRESS") game.launch();
+					else if (msg.value == "RESET_PRESS") game.reset();
+
 					break ;
 				
 				default:
@@ -256,17 +319,17 @@ fastify.register(async function (fastify) {
 
 		// Handle connection close
 		connection.on('close', (code, reason) => {
-			if (gotLobby === true) lobbies[lobbyIdx].leave(playerID);
+			if (gotGame === true) player.joined = false;
 			console.log(`Client ${clientIP} disconnected - Code: ${code}, Reason: ${reason?.toString() || 'none'}`);
 		});
 
 		// send gamestate to frontend 'FPS' times per second
 		setInterval(() => {
 			// Don't send gamestate if the game isn't found
-			if (gotLobby === false) return;
+			if (gotGame === false) return;
 	
 			if (connection.readyState === connection.OPEN) {
-				connection.send(lobbies[lobbyIdx].getGameStateJSON());
+				connection.send(game.getGameStateJSON());
 			}
 
 			// send winner message 
