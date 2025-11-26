@@ -79,19 +79,24 @@ function getLobbyIndex(lobbyID:string) : number | undefined {
 	else return lobbies.indexOf(lobby);
 }
 
-// function getLobby(code:string): Lobby {
-// 	let lobby = lobbies.find(l => l.getID() === code);
-// 	if (lobby !== undefined) console.log(`found lobby with code '${code}'`);
-// 	else {
-// 		console.log(`lobby NOT found for code '${code}'\nGenerating new Lobby ...`);
-// 		lobby = new Lobby();
-// 		if (lobbies.find(l => l.getID() === code)) {/* keep the automatically generated code */}
-// 		else {lobby.setID(code);}					/* set the custom one */
-// 		lobbies.push(lobby);
-// 	}
-
-// 	return lobby;
-// }
+/* ---------------------------------------------------------- */
+/*                                                           */
+/*                                                          */
+/*                                                         */
+/*                                                        */
+/*                                                       */
+/*                                                      */
+/*                                                     */
+/*                                                    */
+/*                                                   */
+/*                                                  */
+/*                                                 */
+/*                                                */
+/*                                               */
+/*                                              */
+/*                                             */
+/*                                            */
+/* * * * * * * * * * * * * * * * * * * * * * */
 
 function hasMethod(obj: unknown): obj is { method: string } {
 	return (
