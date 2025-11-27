@@ -154,14 +154,14 @@ export class Game
 
 	/* ======================== CONSTRUCTORS ======================== */
 	// the constructor expliccitly wants the variables initialized
-	constructor() {
+	constructor(format:number = 3) {
 		this.timeout = 60;				// 1 sec of timeout
 	
 		this.round = 0;					// start at round 0
 		this.roundStart = false;			// ball not moving
 		this.score = [0, 0];			// match score to 0;
 		this.lastScored = 0;			// default
-		this.targetScore = 3;				// Bo5
+		this.targetScore = format;				// Bo5
 		this.winner = 0;				// noone won just yet
 		
 		this.ball = new Ball();
@@ -337,8 +337,8 @@ export class Game
 		else if (this.ball.pos[0] < (1 - collision)
 			&& newPos[0] > (1 - collision))
 		{
-			if (newPos[1] > this.player2 - paddleHeight_2 * 2
-				&& newPos[1] < this.player2 + paddleHeight_2 * 2)
+			if (newPos[1] > this.player2 - paddleHeight_2
+				&& newPos[1] < this.player2 + paddleHeight_2)
 			{
 				// this.ball.angle = bounce_90_deg('x', this.ball.angle);
 				this.ball.bounceX();

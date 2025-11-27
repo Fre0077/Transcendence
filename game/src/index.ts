@@ -139,7 +139,7 @@ fastify.register(async function (fastify) {
 			games.push({
 				ID: msg.ID,
 				players: playerList,
-				game: new Game(),
+				game: new Game(msg.format),
 				status: "created"
 			});
 
