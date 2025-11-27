@@ -71,6 +71,23 @@ export class Lobby {
 		return JSON.stringify(state);
 	}
 
+
+	/* ! ! ! IMPORTANT ! ! ! */
+	/* THIS MUST BE THE SAME AS FUCKING EVERYTIHNGH ELSE T.T
+	gameDetails in 'game/src/index.ts'
+	addGameInputSchema in 'shared-trpc/src/trpc.ts' */
+	public getGameDetails() {
+		// const status:string = (this.ingame) ? "playing" : "creating";
+		const state = {
+			ID: this.gameID,
+			// ingame: this.ingame,
+			format: this.format,
+			players: this.playerID
+		};
+
+		return state;
+	}
+
 	/* ---------------------------------------------- */
 
 	// return true if the lobby is full, false if it isn't... duh?
@@ -80,8 +97,11 @@ export class Lobby {
 	}
 
 	// startup procedure if we reached the number of players
-	public launch(callback: (state: string, ID:string) => void) {
-		if (this.ingame === true) {return ;}
+	public launch(callback: (state: object, ID:string) => void) {
+		if (this.ingame === true) {
+			console.log('Lobby already started');
+			return ;
+		}
 
 		if (this.playerID.length !== this.size) {
 			console.log('Not enough players!');	// #todo send to frontend
@@ -93,7 +113,15 @@ export class Lobby {
 		this.gameID = uuidv4();
 		this.ingame = true;
 
-		callback(this.getLobbyStateJSON(), this.gameID); // call when finished
+		callback(this.getGameDetails(), this.gameID); // call when finished
+	}
+
+	// reset the lobby
+	public reset() {
+		if (this.ingame == false) {return ;}
+
+		this.gameID = "empty";
+		this.ingame = false;
 	}
 
 	// cleanup procedure if no player in lobby

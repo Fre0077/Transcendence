@@ -1,0 +1,23 @@
+
+{
+  "name": "shared-trpc",
+  "version": "1.0.2",
+  "main": "dist/trpc.js",
+  "types": "dist/trpc.d.ts",
+  "type": "module",
+  "scripts": {
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "@trpc/client": "^11.7.2",
+    "@trpc/server": "^11.7.2",
+    "zod": "^4.1.13",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@trpc/client": "^11.7.2",
+    "@trpc/server": "^11.7.2",
+    "zod": "^4.1.13"
+  }
+}

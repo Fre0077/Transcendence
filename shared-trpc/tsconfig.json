@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",                // modern JS
+    "module": "nodenext",                // output ES modules for import/export
+    "moduleResolution": "nodenext",
+    "declaration": true,               // generate .d.ts types
+    "outDir": "dist",                  // compiled JS goes here
+    "rootDir": "src",                  // source files
+
+    /* Linting */
+    "strict": true,                     // strict type checking
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "esModuleInterop": true,           // safer interop with CommonJS if needed
+    "skipLibCheck": true               // faster build, ignore type checks in node_modules
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}

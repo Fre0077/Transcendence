@@ -163,7 +163,8 @@
 
           if (data.ingame === true) {
             startGame(data.ID, playerID);
-          }
+          } else if (data.ingame === false)
+            gameStarted = false;
 			    return;
 		    }
 

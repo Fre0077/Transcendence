@@ -10,6 +10,10 @@ to install:
 	npm install fastify ws @fastify/websocket @fastify/static
 	npm install uuid #remove after link with user database
 
+	npm install @trpc/server @trpc/client
+
+	npm install ../shared-trpc
+
 to build:
 	npm run build
 

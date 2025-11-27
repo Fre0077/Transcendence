@@ -21,7 +21,12 @@
   },
   "dependencies": {
     "@fastify/websocket": "^11.2.0",
+    "@myorg/shared-trpc": "file:../shared-trpc",
+    "@trpc/client": "^11.7.2",
+    "@trpc/server": "^11.7.2",
     "fastify": "^5.6.2",
-    "uuid": "^13.0.0"
+    "shared-trpc": "file:../shared-trpc",
+    "uuid": "^13.0.0",
+    "zod": "^4.1.13"
   }
 }
