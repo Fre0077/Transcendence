@@ -125,7 +125,8 @@ fastify.register(async function (fastify) {
 				return;
 			}
 
-			console.log(`JSON form Lobby Backend ${msg}`);
+			// logging
+			console.log(`Received Lobby Backend:`, msg);
 
 			// create the player list
 			const playerList: player[] = msg.players.map((id, index) => ({

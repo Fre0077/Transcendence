@@ -142,13 +142,13 @@ fastify.register(async function (fastify) {
 						Reply: { method: 'CREATE_REPLY', status: 'success/failure', value: <lobbyID> }
 					*/
 
-
 					//create lobby
 					lobby = createLobby();
 
 
 					// check if the obj has format
 					if ("format" in msg && typeof msg.format === "number" ) {
+						console.log(`Setting format ${msg.format}`);
 						lobby.setFormat(msg.format);
 					}
 
