@@ -8,6 +8,7 @@ to init: (no needed in docker)
 to install:
 	npm install typescript --save-dev
 	npm install fastify ws @fastify/websocket @fastify/static
+	npm install uuid
 
 	npm install @trpc/server @trpc/client
 

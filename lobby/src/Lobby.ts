@@ -4,13 +4,6 @@
 
 import { v4 as uuidv4 } from "uuid";
 
-// type Cmd = {
-// 	code: string;
-// 	func: () => void;
-// };
-
-// harcoded functionalities
-// const hardcoded:string[] = ['START_PRESS', 'RESET_PRESS'];
 
 export class Lobby {
 	// lobby specs
@@ -23,16 +16,17 @@ export class Lobby {
 	private lobbyID:string;
 	private gameID:string;
 
-	private playerID:string[];	// unique identifier for each player, sent at th beginning of every move. NOTE: the ID is generated when the websocket is connected
+	private players:string[];	// unique identifier for each player, sent at th beginning of every move. NOTE: the ID is generated when the websocket is connected
 	
 	constructor() {
 		this.size = 2;				// 2 player
 		this.format = 3;			// Bo5
 
-		this.ingame = false;
 		this.lobbyID = uuidv4();	// #todo lobby code generator. for now fixed code
+		this.players = [];
+
+		this.ingame = false;
 		this.gameID = "empty";
-		this.playerID = [];
 	}
 
 	// getter of ID
@@ -65,24 +59,18 @@ export class Lobby {
 			ID: this.gameID,
 			ingame: this.ingame,
 			format: this.format,
-			players: this.playerID
+			players: this.players
 		};
 
 		return JSON.stringify(state);
 	}
 
-
-	/* ! ! ! IMPORTANT ! ! ! */
-	/* THIS MUST BE THE SAME AS FUCKING EVERYTIHNGH ELSE T.T
-	gameDetails in 'game/src/index.ts'
-	addGameInputSchema in 'shared-trpc/src/trpc.ts' */
 	public getGameDetails() {
 		// const status:string = (this.ingame) ? "playing" : "creating";
 		const state = {
 			ID: this.gameID,
-			// ingame: this.ingame,
 			format: this.format,
-			players: this.playerID
+			players: this.players
 		};
 
 		return state;
@@ -92,28 +80,54 @@ export class Lobby {
 
 	// return true if the lobby is full, false if it isn't... duh?
 	public full() : boolean {
-		if (this.playerID.length === this.size) return true;
+		if (this.players.length === this.size) return true;
 		else return false
 	}
 
+	// return true if the eempty is full, false if it isn't... are you dumb?
+	public empty(): boolean {
+		if (this.players.length === 0) return true;
+		else return false;
+	}
+
 	// startup procedure if we reached the number of players
-	public launch(callback: (state: object, ID:string) => void) {
+	public launch(callback: (ID:string, format:number, players:string[]) => boolean): { status: "success" | "failure", reply: string, ID?: string } {
 		if (this.ingame === true) {
-			console.log('Lobby already started');
-			return ;
+			console.log("Lobby already started");
+			return {
+				status: "failure",
+				reply: "Lobby already started"
+			};
 		}
 
-		if (this.playerID.length !== this.size) {
+		if (this.players.length !== this.size) {
 			console.log('Not enough players!');	// #todo send to frontend
-			return ;
+			return {
+				status: "failure",
+				reply: "Not enough players"
+			};
 		}
 		console.log(`Starting lobby ${this.lobbyID} ...`);
 
 		/* ! ! ! CREATING GAME ID ! ! ! */
 		this.gameID = uuidv4();
+
+		if (callback(this.gameID, this.format, this.players) === false) {
+			this.gameID = "empty";
+			return {
+				status: "failure",
+				reply: "Failed to create game"
+			};
+		}
+
+		// YEA BOYY
 		this.ingame = true;
 
-		callback(this.getGameDetails(), this.gameID); // call when finished
+		return {
+			status: "success",
+			reply: "Game started succcessfuly",
+			ID: this.gameID,
+		};
 	}
 
 	// reset the lobby
@@ -136,20 +150,20 @@ export class Lobby {
 		if (this.ingame === true) {return ;}
 
 		// check if lobby is full
-		if (this.playerID.length === this.size) {
+		if (this.players.length === this.size) {
 			console.log('The lobby is full'); // #todo sendo to the frontend
 			return ;
 		}
 
 
 		// check if player already in
-		if (this.playerID.find(p => p === outPlayerID)) {
+		if (this.players.find(p => p === outPlayerID)) {
 			console.log('Player already joined'); // #todo sendo to the frontend
 			return ;
 		}
 
 		// add player
-		this.playerID.push(outPlayerID);
+		this.players.push(outPlayerID);
 	}
 
 	// a player left the lobby
@@ -157,9 +171,9 @@ export class Lobby {
 		if (this.ingame === true) {return ;}
 		if (playerID === null) {return ;}
 
-		const index = this.playerID.indexOf(playerID);
+		const index = this.players.indexOf(playerID);
 		if (index !== -1) {
-			this.playerID.splice(index, 1);
+			this.players.splice(index, 1);
 
 			// game mechanics
 			// this.game.stop();
@@ -167,7 +181,7 @@ export class Lobby {
 		}
 
 		// close the lobby if the last player left
-		if (this.playerID.length === 0) this.close();
+		if (this.players.length === 0) this.close();
 
 	}
 

@@ -6,25 +6,20 @@
 import Fastify from 'fastify';
 import { Game } from "./Game.js";
 
-// my type definitions
-import { player, gameEntry } from './gameObjs.js'
-
 // tRPC stuff
-// client
-import { createTRPCProxyClient, httpBatchLink } from '@trpc/client';
-
 // server
 import { fastifyTRPCPlugin } from '@trpc/server/adapters/fastify';
-import type { lobbyRouter } from 'shared-trpc';
 import { gameRouter } from 'shared-trpc';
-
+// client
+import { getLobbyService } from './trpc.js';
 
 // reply METHODS
-import { JOIN } from './JOIN.js'
+import { JOIN } from './METHODS.js'
 
 const FPS:number = 60;
 const PORT = Number(process.env.PORT) || 3002;
 const LOBBY_PORT = Number(process.env.LOBBY_PORT) || 3003;
+const LOBBY_URL = `http://localhost:${LOBBY_PORT}`;
 
 
 /* -------- LOAD ELEMENTS -------- */
@@ -44,63 +39,44 @@ await fastify.register(fastifyTRPCPlugin, {
 // Health-check endpoint
 fastify.get("/health", async () => ({ status: "ok" }));
 
-/* --------------------------------- */
-
-
-
 
 // TRPC Client
-const lobbyService = createTRPCProxyClient<typeof lobbyRouter>({
-  links: [
-	httpBatchLink({
-	  url: `http://localhost:${LOBBY_PORT}/trpc`,
-	  async fetch(url, options) {
-		try {
-		  const res = await fetch(url, options);
-		  if (!res.ok) {
-			console.error('tRPC server responded with status', res.status);
-		  }
-		  return res;
-		} catch (err) {
-		  console.error('tRPC network error: server unreachable', err);
-		  throw err; // important to rethrow
-		}
-	  },
-	}),
-  ],
-});
+const lobbyService = getLobbyService(`${LOBBY_URL}/trpc`);
 
+/* --------------------------------- */
 
+/* --------------- GAME DB --------------- */
+
+export type player = {
+	ID: string;
+	joined: boolean;
+	left:boolean;
+	position: number;
+};
+
+type GameStatus = "created" | "joining" | "ongoing" | "finished";
+
+export type GameEntry = {
+	ID: string;
+	players: player[];
+	game: Game;
+	status:GameStatus;
+};
 
 // array of games
-let games:gameEntry[] = [];
+let games:GameEntry[] = [];
 
-export function getGameEntry(code:string): gameEntry | undefined {
-	const gameEntry = games.find(g => g.ID === code);
-	if (gameEntry !== undefined){
+export function getGameEntry(code:string): GameEntry | undefined {
+	const GameEntry = games.find(g => g.ID === code);
+	if (GameEntry !== undefined){
 		console.log(`found game with code '${code}'`);
-		return gameEntry;
+		return GameEntry;
 	}
 	else
 	{
 		console.log(`game NOT found for code '${code}'`);
 		return undefined;
 	}
-}
-
-
-// check if the string is a JSON obj
-function isValidObj(message:string): object | undefined {
-	let parse: unknown;
-
-	// JSON parse
-	try {
-		parse = JSON.parse(message.toString());
-	} catch (err) {
-		return undefined;
-	}
-
-	return Object(parse);
 }
 
 /* ---------------------------------------------------------- */
@@ -124,7 +100,7 @@ function isValidObj(message:string): object | undefined {
 
 /* __________________________________________ */
 /* 											  */
-/* ----------- BACKENT to BACKEND  ----------- */
+/* ----------- BACKENT to BACKEND  ---------- */
 /* + - + - + - + - + - + - + - + - + - + - +  */
 /* __________________________________________ */
 
@@ -135,7 +111,7 @@ type gameDetails = {
 };
 
 // add a game to the game list
-export function addGame(details:gameDetails) {
+function addGame(details:gameDetails) {
 
 	// logging
 	console.log(`Adding game ${details.ID}`);
@@ -164,6 +140,30 @@ export function addGame(details:gameDetails) {
 /* 												 */
 /* --------------------------------------------- */
 
+// check if the string is a JSON obj with the 'method' property
+function isValidObj(message:string): { method: string } | undefined {
+	let parse: unknown;
+
+	// JSON parse
+	try {
+		parse = JSON.parse(message.toString());
+	} catch (err) {
+		return undefined;
+	}
+
+	const obj:{ method: string } = Object(parse);
+
+	// check 'method' property
+	if (obj === undefined
+		|| !("method" in obj)
+		|| typeof obj.method !== "string")
+	{
+		console.log(`invalid JSON message ${message}`);
+		return undefined;
+	}
+
+	return obj;
+}
 
 // WebSocket route handler
 fastify.register(async function (fastify) {
@@ -174,9 +174,8 @@ fastify.register(async function (fastify) {
 		console.log(`Client connected from ${clientIP}`);
 
 		// Storing the Game and the Player
-		let kebab:gameEntry;
+		let entry:GameEntry | undefined = undefined;
 		let player:player;
-		let gotGame:boolean = false;
 
 		// Send welcome message
 		connection.send('Connected to Fastify WebSocket server!');
@@ -186,7 +185,7 @@ fastify.register(async function (fastify) {
 			
 			// Format and log message
 			let msg = isValidObj(message.toString());
-			if (msg === undefined || "method" in msg === false) {
+			if (msg === undefined) {
 				console.log(`invalid JSON message ${message}`);
 				return;
 			}
@@ -202,26 +201,12 @@ fastify.register(async function (fastify) {
 					// process JOIN request
 					let ret = JOIN(msg);
 
-					// type check
-					if (!("error" in ret) || typeof ret.error !== "boolean"
-						|| !("reply" in ret )|| typeof ret.reply !== "string") {
-						console.log("should never happen, if it happened, you're cooked.");
-						break ;
-					}
-
 					// successful JOIN
-					if (ret.error === false)
+					if (ret.status === "success")
 					{
-						if (!("player" in ret) || !("entry" in ret)) {
-							console.log("should never happen pt.2, if it happened, you're cooked.");
-							break ;
-						}
-
 						// store variables
 						player = ret.player as player; 
-						kebab = ret.entry as gameEntry;
-
-						gotGame = true;
+						entry = ret.entry as GameEntry;
 					}
 
 					// send reply to frontend
@@ -233,11 +218,11 @@ fastify.register(async function (fastify) {
 				case "MOVE":
 
 					// ignore other inputs if game not found yet
-					if (gotGame === false) return ;
+					if (entry === undefined) return ;
 
 					// check if the game is started
-					if (kebab.status !== "ongoing") {
-						console.log(`The game ${kebab.ID} is still '${kebab.status}'`);
+					if (entry.status !== "ongoing") {
+						console.log(`The game ${entry.ID} is still '${entry.status}'`);
 						return ;
 					}
 
@@ -248,12 +233,12 @@ fastify.register(async function (fastify) {
 					}
 
 					// process sent input
-					if (msg.value == "UP_PRESS") kebab.game.press(player.position, "Up");
-					else if (msg.value == "DW_PRESS") kebab.game.press(player.position, "Down");
-					else if (msg.value == "UP_RELEASE") kebab.game.release(player.position, "Up");
-					else if (msg.value == "DW_RELEASE") kebab.game.release(player.position, "Down");
-					else if (msg.value == "START_PRESS") kebab.game.launch();
-					else if (msg.value == "RESET_PRESS") kebab.game.reset();
+					if (msg.value == "UP_PRESS") entry.game.press(player.position, "Up");
+					else if (msg.value == "DW_PRESS") entry.game.press(player.position, "Down");
+					else if (msg.value == "UP_RELEASE") entry.game.release(player.position, "Up");
+					else if (msg.value == "DW_RELEASE") entry.game.release(player.position, "Down");
+					else if (msg.value == "START_PRESS") entry.game.launch();
+					else if (msg.value == "RESET_PRESS") entry.game.reset();
 
 					break ;
 				
@@ -269,7 +254,7 @@ fastify.register(async function (fastify) {
 
 		// Handle connection close
 		connection.on('close', (code, reason) => {
-			if (gotGame === true) {
+			if (entry !== undefined) {
 				player.joined = false;
 				player.left = true;
 			}
@@ -279,21 +264,11 @@ fastify.register(async function (fastify) {
 		// send gamestate to frontend 'FPS' times per second
 		setInterval(() => {
 			// Don't send gamestate if the game isn't found
-			if (gotGame === false) return;
+			if (entry === undefined) return;
 	
 			if (connection.readyState === connection.OPEN) {
-				connection.send(kebab.game.getGameStateJSON());
+				connection.send(entry.game.getGameStateJSON());
 			}
-
-			// send winner message 
-			// #todo single message not spamming
-
-            // let winner = game.end();
-            // if (winner !== 0) {
-            //     if (winner === 1) connection.send('Player 1 Won!!! Congrats');
-            //     else if (winner === 2) connection.send('Player 2 Won!!! Yippye');
-            // }
-
 
 		}, 1000 / FPS);	// FPS (delay in ms)
 
@@ -302,44 +277,12 @@ fastify.register(async function (fastify) {
 
 /* ============== GAME STARTER ============ */
 
-function allJoined(entry:gameEntry): boolean {
-
-	if (entry === undefined) {return false};
-	if (entry.status !== "joining") {return false;}
-
-	let j = 0;
-	while (j < entry.players.length && entry.players[j].joined === true)
-		++j;
-
-	return j === entry.players.length;
-}
-
-function allLeft(entry:gameEntry): boolean {
-
-	if (entry === undefined) {return false};
-
-	let j = 0;
-	while (j < entry.players.length && entry.players[j].left === true)
-		++j;
-
-	return j === entry.players.length;
-}
-
 /* ---- start server ---- */
+
+import { StatusChecker } from './StatusChecker.js';
 
 const start = async () => {
 	try {
-
-		/* #todo da metter dopo il server launch */
-		// check game server health
-		// if (await checkServerHealth("http://localhost:3002") === true) {
-		// 	const res = await gameService.hello.query({ name: 'Alice' });
-		// 	console.log(res); // { message: "Hello Alice!" }
-		// } else {
-		// 	console.log('Shutting down ...');
-		// 	throw "Game server offile";
-		// }
-
 		await fastify.listen({ port: PORT, host: '0.0.0.0' });
 		console.log(`Server running on http://localhost:${PORT}`);
 	} catch (err) {
@@ -347,29 +290,13 @@ const start = async () => {
 		process.exit(1);
 	}
 
-	// Lobby handler
+	// Games handler
 	setInterval(() => {
-		// check if all the player joined  the game, if so start the game
-		for (let i = 0; i < games.length; ++i) {
-
-			if (allJoined(games[i]) === true)	// check if game isn't started yet
-			{
-				console.log(`Starting game ${games[i].ID} ...`);
-				games[i].status = "ongoing";
-				games[i].game.start();
-			}
-			else if (allLeft(games[i]) === true)
-			{
-				console.log(`Closing game ${games[i].ID} ...`)
-				games[i].status = "finished";
-				games[i].game.stop();
-				lobbyService.endGame.mutate(games[i].ID);
-				games.splice(games.indexOf(games[i]), 1);
-			}
-		}
+		// check the status of the games, if needed removes them from the array
+		// and sends notification to the lobby service
+		StatusChecker(games, lobbyService, LOBBY_URL);
 	}, 1000);
 };
-
 
 // entrypoint
 start();

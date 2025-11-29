@@ -31,16 +31,29 @@
 
   <script>
 
-	// Ask the user for their player ID
-	let playerID = prompt("Enter your Player ID:", "");
+    let playerID, lobbyID;
+  
+    try {
+      const data = JSON.parse(sessionStorage.getItem("sesData"));
 
-	// If they press cancel or type nothing, give them a default value
-	if (!playerID) {
-		playerID = "UnknownPlayer";
-	}
+        // YOINK the data
+        playerID = data.playerID;
+        lobbyID = data.lobbyID;
 
-	// Display it on the page
-	document.getElementById("playerID").innerText = playerID;
+    } catch (err) {
+      console.log("Error whil parsing session data:", err);
+
+      // Ask the user for their player ID
+      playerID = prompt("Enter your Player ID:", "");
+      
+      // If they press cancel or type nothing, give them a default value
+      if (!playerID) {
+        playerID = "UnknownPlayer";
+      }
+    }
+
+    // Display it on the page
+    document.getElementById("playerID").innerText = playerID;
 
     const scoreboard = document.getElementById("scoreboard");
     const serverLog = document.getElementById("serverLog");
@@ -49,16 +62,14 @@
     const joinInput = document.getElementById("joinInput");
     const btnCreate = document.getElementById("btnCreate");
     const btnJoin = document.getElementById("btnJoin");
-	 const btnStart = document.getElementById("btnStart");
+	  const btnStart = document.getElementById("btnStart");
 
-	const playersDiv = document.getElementById("players");
+	  const playersDiv = document.getElementById("players");
 
     const socket = new WebSocket(`ws://${window.location.host}/lobbysocket`);
 
-    let lobbyCode = null;
-
-	// visualize playerID
-	document.getElementById("playerID").innerHTML = playerID;
+    // visualize playerID
+    document.getElementById("playerID").innerHTML = playerID;
 
 	/* STARTUP PROCEDURE for FRONTEND @aleborghi */
       /*
@@ -78,7 +89,7 @@
     -------------------------- */
 
     btnCreate.onclick = () => {
-      socket.send(JSON.stringify({ method: "CREATE", format: 2 }));
+      socket.send(JSON.stringify({ method: "CREATE", playerID: playerID, format: 2 }));
       serverLog.innerText = "Creating lobby...";
     };
 
@@ -104,11 +115,18 @@
       lobbyCodeDiv.innerText = `Game Started ${myGameID}`;
 
       // open new window
-      const newWin = window.open("/game", "_blank");
+      sessionStorage.setItem("sesData", JSON.stringify({
+        gameID: myGameID,
+        playerID: myPlayerID,
+        lobbyID: lobbyID
+      }));
 
-      newWin.onload = () => {
-        newWin.postMessage({playerID: myPlayerID, gameID: myGameID}, `http://${window.location.hostname}:3003/game`);
-      };
+      window.location.href = "/game";  // same window
+      
+      // const newWin = window.open("/game", "_blank");
+      // newWin.onload = () => {
+      //   newWin.postMessage({playerID: myPlayerID, gameID: myGameID}, `http://${window.location.hostname}:3003/game`);
+      // };
       gameStarted = true;
     }
 
@@ -119,21 +137,27 @@
     socket.addEventListener("open", () => {
       console.log("Connected to server");
       serverLog.innerText = "Connected.";
+
+      if (lobbyID !== undefined) {
+        socket.send(JSON.stringify({ method: "JOIN", lobbyID: lobbyID, playerID: playerID }));
+        serverLog.innerText = `Joining lobby: ${code}...`;
+      }
     });
 
     socket.addEventListener("message", (event) => {
       try {
         const data = JSON.parse(event.data);
 
-        /* -------------
+        /* ---------------
            LOBBY CREATION
-        -------------- */
+        ----------------- */
         if (data.method === "CREATE_REPLY") {
-          lobbyCode = data.value;
-          if (data.status === 'success')
-            lobbyCodeDiv.innerText = `Lobby created! Code: ${lobbyCode}`;
+          if (data.status === 'success') {
+            lobbyID = data.value;
+            lobbyCodeDiv.innerText = `Lobby created! Code: ${lobbyID}`;
+          }
           else if (data.status === 'failure')
-            lobbyCodeDiv.innerText = `Failed to create the Lobby\n${lobbyCode}`;
+            lobbyCodeDiv.innerText = `Failed to create the Lobby\n${data.comment}`;
           return;
         }
 
@@ -144,7 +168,7 @@
 		      if (data.status === 'success')
           	lobbyCodeDiv.innerText = `Joined lobby ${data.value}`;
 		      else if (data.status === 'failure')
-		        lobbyCodeDiv.innerText = `Failed to join ${data.value}`;
+		        lobbyCodeDiv.innerText = `Failed to join ${data.value}:\n${data.comment}`;
           return;
         }
 
@@ -176,7 +200,7 @@
               startGame(data.value, playerID);
           }
           else if (data.status === 'failure')
-            lobbyCodeDiv.innerText = `Failed to start game :( ${data.value}`;
+            lobbyCodeDiv.innerText = `Failed to start game: ${data.comment}`;
           return;
         }
 

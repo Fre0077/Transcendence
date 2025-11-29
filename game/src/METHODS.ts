@@ -1,4 +1,4 @@
-import { player, gameEntry } from './gameObjs.js'
+import type { player, GameEntry } from './index.js'
 
 import { getGameEntry } from './index.js'
 
@@ -11,40 +11,34 @@ import { getGameEntry } from './index.js'
 
 */
 
-type joinReply = {
-	method: 'JOIN_REPLY',
-	status: 'failure' | 'success',
-	value?: string,
-	comment?: string
-}
-
-const defaultReply:joinReply = {
-	method: 'JOIN_REPLY',
-	status: 'failure',
-}
-
-type joinReturn = {
-	error:boolean,
+type JoinReturn = {
+	status: "success" | "failure",
 	reply:string,
 	player?:player,
-	entry?:gameEntry
+	entry?:GameEntry
 }
 
-export function JOIN(msg:object): joinReturn {
+export function JOIN(msg:object): JoinReturn {
 	// check if the obj has gameID amd playerID
 	if (!("gameID" in msg)  || typeof msg.gameID !== "string"
 		|| !("playerID" in msg) || typeof msg.playerID !== "string")
 	{
 		console.log('invalid JSON message:', msg);
-		return {error: true, reply: JSON.stringify({ ...defaultReply, comment: "invalid JSON"})};
+		return {
+			status: "failure",
+			reply: JSON.stringify({ method: 'JOIN_REPLY', status: "failure", comment: "invalid JSON"})
+		};
 	}
 
 	// check if game is in array
-	let myGameEnrty:gameEntry | undefined = getGameEntry(msg.gameID);
+	let myGameEnrty:GameEntry | undefined = getGameEntry(msg.gameID);
 
 	// game not found
 	if (myGameEnrty === undefined) {
-		return {error: true, reply: JSON.stringify({ ...defaultReply, value: msg.gameID, comment: "game not found"})};
+		return {
+			status: "failure",
+			reply: JSON.stringify({ method: 'JOIN_REPLY', status: "failure", value: msg.gameID, comment: "game not found"})
+		};
 	}
 
 	// check if the player is expected in this game
@@ -54,7 +48,10 @@ export function JOIN(msg:object): joinReturn {
 
 	let myPlayer: player | undefined = myGameEnrty.players.find(p => p.ID === msg.playerID && p.joined === false);
 	if (myPlayer === undefined) {
-		return {error: true, reply: JSON.stringify({ ...defaultReply, value: msg.gameID, comment: "you are not expected in this game"})};
+		return {
+			status: "failure",
+			reply: JSON.stringify({ method: 'JOIN_REPLY', status: "failure", value: msg.gameID, comment: "you are not expected in this game"})
+		};
 	}
 
 	// update entry status
@@ -65,8 +62,8 @@ export function JOIN(msg:object): joinReturn {
 	
 	// send successful join to frontend
 	return {
-		error: false,
-		reply: JSON.stringify({ ...defaultReply, status: 'success', value: myGameEnrty.ID}),
+		status: "success",
+		reply: JSON.stringify({ method: 'JOIN_REPLY', status: "success", value: myGameEnrty.ID}),
 		player: myPlayer,
 		entry: myGameEnrty
 	};

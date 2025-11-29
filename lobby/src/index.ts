@@ -7,26 +7,23 @@ import Fastify from 'fastify';
 // import { Game } from "./Game.js";
 import { Lobby } from "./Lobby.js";
 
-// tRPC stuff
-// client
-import { createTRPCProxyClient, httpBatchLink } from '@trpc/client';
+import { CREATE, JOIN, START } from './METHODS.js';
+// import type { CreateReturn } from './METHODS.js';
 
+// tRPC stuff
 // server
 import { fastifyTRPCPlugin } from '@trpc/server/adapters/fastify';
-import type { GameRouter } from 'shared-trpc';
 import { lobbyRouter } from 'shared-trpc';
+// client
+import { getGameService } from './trpc.js';
 
 // constants
 const PORT = Number(process.env.PORT) || 3003;
-const GAME_PORT = Number(process.env.LOBBY_PORT) || 3002;
+const GAME_PORT = Number(process.env.GAME_PORT) || 3002;
+const GAME_URL = `http://localhost:${GAME_PORT}`;
 
 
-// don't exit silently plsss
-// process.on("unhandledRejection", (reason) => {
-//     console.error("UNHANDLED REJECTION:", reason);
-// });
-
-
+/* -------- LOAD ELEMENTS -------- */
 const fastify = Fastify({ 
 	logger: false //too much stuff... 
 });
@@ -37,11 +34,13 @@ await fastify.register(import('@fastify/websocket'));
 // Health-check endpoint (server-side)
 fastify.get("/health", async () => ({ status: "ok" }));
 
-// Register tRPC plugin
+// Register tRPC plugin (server side)
 await fastify.register(fastifyTRPCPlugin, {
 	prefix: '/trpc',
 	trpcOptions: { router: lobbyRouter, createContext: () => ({ func: gameIsFinished }) },
 });
+
+
 
 
 
@@ -68,81 +67,23 @@ fastify.get('/game', async (request, reply) => {
 
 
 
+
 // TRPC Client
-const gameService = createTRPCProxyClient<GameRouter>({
-  links: [
-	httpBatchLink({
-	  url: `http://localhost:${GAME_PORT}/trpc`,
-	  async fetch(url, options) {
-		try {
-		  const res = await fetch(url, options);
-		  if (!res.ok) {
-			console.error('tRPC server responded with status', res.status);
-		  }
-		  return res;
-		} catch (err) {
-		  console.error('tRPC network error: server unreachable', err);
-		  throw err; // important to rethrow
-		}
-	  },
-	}),
-  ],
-});
-
-// console.log("client status:", client.hello.query({name: 'tommi'}));
-
-/* HELPERS */
-
-// check if the string is a JSON obj
-function isValidObj(message:string): object | undefined {
-	let parse: unknown;
-
-	// JSON parse
-	try {
-		parse = JSON.parse(message.toString());
-	} catch (err) {
-		return undefined;
-	}
-
-	return Object(parse);
-}
-
-// Health checker
-async function checkServerHealth(url:string) {
-
-	// console.log(`checking '${url}' health ...`);
-
-	if (url === undefined || url === null) {
-		console.log('invalid URL');
-		return false;
-	}
-
-	const health = await fetch(`${url}/health`)
-		.then(r => r.json())
-		.catch(() => null);
-
-	if (!health?.status) {
-		console.log(`Server '${url}' offline`);
-		return false;
-	}
-
-	console.log(`Server '${url}' online`);
-	return true;
-}
+const gameService = getGameService(`${GAME_URL}/trpc`);
 
 
-/* --------------- LOBBY --------------- */
+/* --------------- LOBBY DB --------------- */
 
 let lobbies:Lobby[] = [];	// lobby array
 
-function createLobby(): Lobby {
+export function createLobby(): Lobby {
 	const lobby:Lobby = new Lobby();
 	lobbies.push(lobby);
 	return lobby;
 }
 
-// // returns the index of the lobby in the 'lobbies' array
-function getLobby(lobbyID:string): Lobby | undefined {
+// returns the lobby in the 'lobbies' array
+export function getLobby(lobbyID:string): Lobby | undefined {
 
 	if (lobbyID === null) return undefined;
 
@@ -161,7 +102,7 @@ function getLobby(lobbyID:string): Lobby | undefined {
 	else return myLobby;
 }
 
-/* backend to backend */
+/* ---------- backend to backend ----------- */
 
 function gameIsFinished(gameID:string) {
 	let lobby = lobbies.find(l => l.getGameDetails().ID === gameID);
@@ -175,6 +116,33 @@ function gameIsFinished(gameID:string) {
 /* --------------------------------------- */
 
 
+/* HELPERS */
+
+// check if the string is a JSON obj
+function isValidObj(message:string): { method: string } | undefined {
+	let parse: unknown;
+
+	// JSON parse
+	try {
+		parse = JSON.parse(message.toString());
+	} catch (err) {
+		return undefined;
+	}
+
+	const obj:{ method: string } = Object(parse);
+
+	// check 'method' property
+	if (obj === undefined
+		|| !("method" in obj)
+		|| typeof obj.method !== "string")
+	{
+		console.log(`invalid JSON message ${message}`);
+		return undefined;
+	}
+
+	return obj;
+}
+
 // WebSocket route handler
 fastify.register(async function (fastify) {
 	fastify.get('/lobbysocket', { websocket: true }, (connection, request) => {
@@ -184,11 +152,11 @@ fastify.register(async function (fastify) {
 		console.log(`Client connected from ${clientIP}`);
 
 		// generate player ID (get it from frontend afterwards @aleborghi)
-		let playerID:string;	// as of now saved nly on JOIN requests
+		let playerID:string | undefined = undefined;;	// as of now saved only on JOIN requests
 
 		//----- finding the right lobby to log in
-		let lobby:Lobby;
-		let gotLobby:boolean = false;
+		let lobby:Lobby | undefined = undefined;
+		// let gotLobby:boolean = false;
 
 		// Send welcome message
 		connection.send('Connected to Fastify WebSocket server!');
@@ -198,10 +166,7 @@ fastify.register(async function (fastify) {
 			
 			// Format and log message
 			let msg = isValidObj(message.toString());
-			if (msg === undefined
-				|| "method" in msg === false
-				|| typeof msg.method !== "string")
-			{
+			if (msg === undefined) {
 				console.log(`invalid JSON message ${msg}`);
 				return;
 			}
@@ -213,28 +178,28 @@ fastify.register(async function (fastify) {
 			switch (msg.method)
 			{
 				case "CREATE":
-					/* {method: 'CREATE', format: 3 }
+					/* {method: 'CREATE', playerID: <playerID>, format: <format> }
 						@format: the number of rounds a player need to win to win the match
 					
 						Description: Creates a lobby, if 'format' is a valid format the lobby inherits that format.
 						Reply: { method: 'CREATE_REPLY', status: 'success/failure', value: <lobbyID> }
+						NOTE: automatically JOIN the lobby after a CREATE request
 					*/
+					let cret = CREATE(msg, lobby);
 
-					//create lobby
-					lobby = createLobby();
-
-
-					// check if the obj has format
-					if ("format" in msg && typeof msg.format === "number" ) {
-						console.log(`Setting format ${msg.format}`);
-						lobby.setFormat(msg.format);
+					// welp...
+					if (cret.status == "success") {
+						// save variables
+						lobby = cret.lobby;
+						playerID = cret.playerID;
 					}
 
-					// send lobbyID to frontend @aleborghi
+					// send reply
 					if (connection.readyState === connection.OPEN) {
-						connection.send(JSON.stringify({ method: 'CREATE_REPLY', status: 'success', value: lobby.getID()}));
+						connection.send(cret.reply);
 					}
 					break ;
+
 				case "JOIN":
 					/* {method: 'JOIN', lobbyID: <lobbyID>, playerID: <playerID> }
 						@lobbyID: the ID of the lobby as a string
@@ -244,40 +209,19 @@ fastify.register(async function (fastify) {
 						Reply: { method: 'JOIN_REPLY', status: 'success/failure', value: <lobbyID>, comment: <comment> }
 
 					*/
+					let jret = JOIN(msg, lobby);
 
-					// check if the obj has lobbyID and playerID
-					if ("lobbyID" in msg === false || typeof msg.lobbyID !== "string"
-						|| "playerID" in msg === false || typeof msg.playerID !== "string")
-					{
-						console.log(`invalid JSON message ${msg}`);
-						return;
+					// welp...
+					if (jret.status == "success") {
+						// save variables
+						lobby = jret.lobby;
+						playerID = jret.playerID;
 					}
-
-					// save playerID
-					playerID = msg.playerID;
 					
-					// check if lobby is created
-					let tmpLobby = getLobby(msg.lobbyID);
-
-					// lobby not found
-					if (tmpLobby === undefined) {
-						if (connection.readyState === connection.OPEN) {
-							connection.send(JSON.stringify({ method: 'JOIN_REPLY', status: 'failure', value: msg.lobbyID, comment: "Lobby not found"}));
-						}
-						return ;
-					}
-
-					// actually join the lobby
-					lobby = tmpLobby;
-					lobby.join(playerID);
-
-					// send lobbyID to frontend @aleborghi
+					// send reply
 					if (connection.readyState === connection.OPEN) {
-						connection.send(JSON.stringify({ method: 'JOIN_REPLY', status: 'success', value: msg.lobbyID, comment: `Lobby ${lobby.getID()} joined successfully!`}));
+						connection.send(jret.reply);
 					}
-
-					// start receiving inputs
-					gotLobby = true;
 					break ;
 				
 				case "START":
@@ -291,54 +235,26 @@ fastify.register(async function (fastify) {
 						Reply (success): { method: 'START_REPLY', status: 'success', comment: <comment>, value: <gameID> }
 
 					*/
-
-					// check if you joined a lobby
-					if (gotLobby === false) {
-						if (connection.readyState === connection.OPEN) {
-							connection.send(JSON.stringify({ method: 'START_REPLY', status: 'failure', comment: "Join a lobby before starting the game dumass" }));
-						}
-						return;
-					}
-				
-					// check if lobby is full
-					if (!lobby.full()) {
-						if (connection.readyState === connection.OPEN) {
-							connection.send(JSON.stringify({ method: 'START_REPLY', status: 'failure', comment: "The lobby isnt full, cannot start game" }));
-						}
-						return;
-					}
-
-					// set the lobby as in game
-					lobby.launch((state:object, ID:string) => {
-
-						// Send the game details to the Game backend
-						try {
-							if ("ID" in state === false || typeof state.ID !== "string"
-								|| "format" in state === false || typeof state.format !== "number"
-								|| "players" in state === false || Array.isArray(state.players) === false)
-								throw "Invalid game details";
-
-							// call the createGame rule in the router
-							gameService.createGame.mutate({
-								ID: state.ID,
-								format: state.format,
-								players: state.players
-							});
-
-						} catch (err) {
-							console.log('Error creating game:', err);
-						}
-
-						// send game started reply
-						if (connection.readyState === connection.OPEN) {
-							connection.send(JSON.stringify({ method: 'START_REPLY', status: 'success', value: ID, comment: `The lobby ${lobby.getID()} is now in game`}));
-						}
-					});
+					START(lobby, gameService, GAME_URL)
+						.then((value) => {
+							// send reply
+							if (connection.readyState === connection.OPEN) {
+								connection.send(value.reply);
+							}
+						})
+						.catch((error) => {
+							console.error('START Promise rejected with error: ' + error);
+						});
 
 					break ;
 				
 				default:
 					console.log(`Unhandled method ${msg.method}`);
+
+					// error reply
+					if (connection.readyState === connection.OPEN) {
+						connection.send(JSON.stringify({ method: `${msg.method}_REPLY`, status: 'failure', comment: `Unhandled method ${msg.method}`}));
+					}
 			}
 		});
 
@@ -349,7 +265,8 @@ fastify.register(async function (fastify) {
 
 		// Handle connection close
 		connection.on('close', (code:number, reason:string) => {
-			if (gotLobby === true) lobby.leave(playerID);
+			if (lobby !== undefined && playerID !== undefined)
+				lobby.leave(playerID);
 			console.log(`Client ${clientIP} disconnected - Code: ${code}, Reason: ${reason?.toString() || 'none'}`);
 		});
 
@@ -357,7 +274,7 @@ fastify.register(async function (fastify) {
 		// send lobby state to frontend once per second
 		setInterval(() => {
 			// Don't send gamestate if the game isn't found
-			if (gotLobby === false) return;
+			if (lobby === undefined) return;
 	
 			if (connection.readyState === connection.OPEN) {
 				// send lobby state
@@ -371,28 +288,25 @@ fastify.register(async function (fastify) {
 
 /* ---- start server ---- */
 
+import { StatusChecker } from './StatusChecker.js';
+
 const start = async () => {
 	try {
-
-		// check game server health
-		if (await checkServerHealth("http://localhost:3002") === true) {
-			const res = await gameService.hello.query({ name: 'Alice' });
-			console.log(res); // { message: "Hello Alice!" }
-		} else {
-			console.log('Shutting down ...');
-			throw "Game server offile";
-		}
-
-	// start fastify server
-	await fastify.listen({ port: PORT, host: '0.0.0.0' });
-	console.log(`Server running on http://localhost:${PORT}`);
+		// start fastify server
+		await fastify.listen({ port: PORT, host: '0.0.0.0' });
+		console.log(`Server running on http://localhost:${PORT}`);
 
 	} catch (err) {
 		fastify.log.error(err);
 		process.exit(1);
 	}
-};
 
+	// Games handler
+	setInterval(() => {
+		// check the status of the lobbies, if needed removes them from the array
+		StatusChecker(lobbies);
+	}, 1000);
+};
 
 // entrypoint
 start();
