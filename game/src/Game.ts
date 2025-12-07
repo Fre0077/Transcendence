@@ -158,10 +158,10 @@ export class Game
 		this.timeout = 60;				// 1 sec of timeout
 	
 		this.round = 0;					// start at round 0
-		this.roundStart = false;			// ball not moving
+		this.roundStart = false;		// ball not moving
 		this.score = [0, 0];			// match score to 0;
 		this.lastScored = 0;			// default
-		this.targetScore = format;				// Bo5
+		this.targetScore = format;		// Bo5
 		this.winner = 0;				// noone won just yet
 		
 		this.ball = new Ball();
@@ -206,9 +206,10 @@ export class Game
 				{
 					height: paddleHeight,
 					width: paddleWidth,
-					offset: paddleOffset	/* single X coordinate of the CENTER of the paddle (could need a readjustment for player2*/
+					offset: paddleOffset	/* single X coordinate of the CENTER of the paddle (could need a readjustment for player2) */
 				}
-			]
+			],
+			timeout: this.timeout
 		};
 		return JSON.stringify(state);
 	}
@@ -239,11 +240,11 @@ export class Game
 	/* 								SET DATA							 */
 	/* ----------------------------------------------------------------- */
 
-	/* sets the score a player must reach to win the game */
-	public setFormat(format:number) {
-		if (format <= 0) {console.log(`Error: Invalid format ${format}`);}	// #todo send to the frontend
-		else {this.targetScore = format;}
-	}
+	// /* sets the score a player must reach to win the game */
+	// public setFormat(format:number) {
+	// 	if (format <= 0) {console.log(`Error: Invalid format ${format}`);}	// #todo send to the frontend
+	// 	else {this.targetScore = format;}
+	// }
 
 	/* set the launch directions for the match */
 	public setDirections(dirs:number[]) {
@@ -256,7 +257,7 @@ export class Game
 			if (Math.abs(dirs[i]) > Math.PI / 4
 			|| Math.abs(dirs[i]) < 0)
 			{
-				console.log(`Error: Invalid direction value: ${Math.abs(dirs[i])}, expected: 0 < value < PI / 4`);
+				console.log(`Error: Invalid direction value: ${Math.abs(dirs[i])}, expected: 0 < |value| < PI / 4`);
 				return ;	// #todo send to the frontend
 			}
 		}
@@ -454,7 +455,7 @@ export class Game
 	// starts the ball
 	public launch() {
 		// don't double launch
-		if (this.roundStart === true) return;
+		if (this.roundStart === true || this.timeout !== 0) return;
 	
 		// tell the game loop that the ball needs to move
 		this.roundStart = true;

@@ -1,27 +1,6 @@
 import type { GameEntry } from "./index.js";
 
-// Health checker
-async function checkServiceHealth(url:string) {
-
-	// console.log(`checking '${url}' health ...`);
-
-	if (url === undefined || url === null) {
-		console.log('invalid URL');
-		return false;
-	}
-
-	const health = await fetch(`${url}/health`)
-		.then(r => r.json())
-		.catch(() => null);
-
-	if (!health?.status) {
-		console.log(`Server '${url}' offline`);
-		return false;
-	}
-
-	console.log(`Server '${url}' online`);
-	return true;
-}
+import { safeTRPC, saveGameIntoMatchHistory } from "./index.js";
 
 function allJoined(entry:GameEntry): boolean {
 
@@ -46,7 +25,7 @@ function allLeft(entry:GameEntry): boolean {
 	return j === entry.players.length;
 }
 
-export function StatusChecker(games:GameEntry[], lobbyService:any, url:string)
+export function StatusChecker(games:GameEntry[])
 {
 	for (let i = 0; i < games.length; ++i) {
 
@@ -64,17 +43,16 @@ export function StatusChecker(games:GameEntry[], lobbyService:any, url:string)
 			games[i].status = "finished";
 			games[i].game.stop();
 
-			// check if lobby backend is alive
-			checkServiceHealth(url)
-				.then((value) => {
-					// tell to lobby backend
-					if (value === true) lobbyService.endGame.mutate(games[i].ID);
-					// remove from array
-					games.splice(games.indexOf(games[i]), 1);
-				})
-				.catch((err) => {
-					console.log("StatusChecker Promise error:", err);
-				});
+			// check if lobby backend is alive ...
+			// ... and tell to lobby backend
+			safeTRPC(games[i].ID);
+			
+			// #todo send to DB
+			saveGameIntoMatchHistory();
+
+			// remove from array
+			games.splice(games.indexOf(games[i]), 1);
+			console.log(`Removing game ${games[i].ID} ...`);
 		}
 	}
 }

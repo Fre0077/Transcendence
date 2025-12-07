@@ -4,95 +4,104 @@
 
 import { v4 as uuidv4 } from "uuid";
 
+type Player = {
+	ID:string,
+	status: "connected" | "disconnected" | "ingame" | "joining"
+}
 
 export class Lobby {
 	// lobby specs
-	private size:number;		// number of players
-	private format:number;		// target score for the winner
+	private _size:number;		// number of players
+	private _format:number;		// target score for the winner
 
-	private ingame:boolean;		// are the player playing?
+	private _ingame:boolean;		// are the player playing?
 
 	// lobby's unique codes
-	private lobbyID:string;
-	private gameID:string;
+	private readonly _ID:string;
+	private _gameID:string;
 
-	private players:string[];	// unique identifier for each player, sent at th beginning of every move. NOTE: the ID is generated when the websocket is connected
+	private _players:Player[];	// unique identifier for each player, sent at th beginning of every move. NOTE: the ID is generated when the websocket is connected
 	
 	constructor() {
-		this.size = 2;				// 2 player
-		this.format = 3;			// Bo5
+		this._size = 2;				// 2 player
+		this._format = 3;			// Bo5
 
-		this.lobbyID = uuidv4();	// #todo lobby code generator. for now fixed code
-		this.players = [];
+		this._ID = uuidv4();	// #todo lobby code generator. for now fixed code
+		this._players = [];
 
-		this.ingame = false;
-		this.gameID = "empty";
+		this._ingame = false;
+		this._gameID = "empty";
 	}
 
 	// getter of ID
-	public getID() : string {
-		return this.lobbyID;
+	public get ID():string {
+		return this._ID;
 	}
 
 	// getter of ingame
-	public isInGame(): boolean {
-		return this.ingame;
+	public get ingame(): boolean {
+		return this._ingame;
+	}
+
+	// getter of ingame
+	public get players(): Player[] {
+		return this._players;
 	}
 
 	// sets the format of the lobby
 	public setFormat(format:number) {
-		if (this.ingame === true) {return ;}
+		if (this._ingame === true) {return ;}
 
 		if (format <= 0) {
 			console.log(`Error: invalid format`);
 			return ;
 		}
-		this.format = format;
+		this._format = format;
 	}
 
 	/* ---------------------------------------------- */
 	// data to send to the GAME module
 
 	public getLobbyStateJSON(): string {
-		// const status:string = (this.ingame) ? "playing" : "creating";
+		// const status:string = (this._ingame) ? "playing" : "creating";
 		const state = {
-			ID: this.gameID,
-			ingame: this.ingame,
-			format: this.format,
-			players: this.players
+			ID: this._ID,
+			gameID: this._gameID,
+			ingame: this._ingame,
+			format: this._format,
+			players: this._players
 		};
 
 		return JSON.stringify(state);
 	}
 
 	public getGameDetails() {
-		// const status:string = (this.ingame) ? "playing" : "creating";
-		const state = {
-			ID: this.gameID,
-			format: this.format,
-			players: this.players
+		const details = {
+			ID: this._gameID,
+			format: this._format,
+			players: this._players
 		};
 
-		return state;
+		return details;
 	}
 
 	/* ---------------------------------------------- */
 
 	// return true if the lobby is full, false if it isn't... duh?
-	public full() : boolean {
-		if (this.players.length === this.size) return true;
+	public full(): boolean {
+		if (this._players.length === this._size) return true;
 		else return false
 	}
 
-	// return true if the eempty is full, false if it isn't... are you dumb?
+	// return true if the empty is full, false if it isn't... are you dumb?
 	public empty(): boolean {
-		if (this.players.length === 0) return true;
+		if (this._players.length === 0) return true;
 		else return false;
 	}
 
 	// startup procedure if we reached the number of players
 	public launch(callback: (ID:string, format:number, players:string[]) => boolean): { status: "success" | "failure", reply: string, ID?: string } {
-		if (this.ingame === true) {
+		if (this._ingame === true) {
 			console.log("Lobby already started");
 			return {
 				status: "failure",
@@ -100,20 +109,20 @@ export class Lobby {
 			};
 		}
 
-		if (this.players.length !== this.size) {
+		if (this._players.length !== this._size) {
 			console.log('Not enough players!');	// #todo send to frontend
 			return {
 				status: "failure",
 				reply: "Not enough players"
 			};
 		}
-		console.log(`Starting lobby ${this.lobbyID} ...`);
+		console.log(`Starting lobby ${this._ID} ...`);
 
 		/* ! ! ! CREATING GAME ID ! ! ! */
-		this.gameID = uuidv4();
+		this._gameID = uuidv4();
 
-		if (callback(this.gameID, this.format, this.players) === false) {
-			this.gameID = "empty";
+		if (callback(this._gameID, this._format, this._players.map(p => p.ID)) === false) {
+			this._gameID = "empty";
 			return {
 				status: "failure",
 				reply: "Failed to create game"
@@ -121,67 +130,93 @@ export class Lobby {
 		}
 
 		// YEA BOYY
-		this.ingame = true;
+		this._ingame = true;
 
+		// set all player to ingame
+		for (let i = 0; i < this._players.length; ++i) {
+			this._players[i].status = "ingame";
+		}
+
+		// successful return
 		return {
 			status: "success",
 			reply: "Game started succcessfuly",
-			ID: this.gameID,
+			ID: this._gameID,
 		};
 	}
 
 	// reset the lobby
 	public reset() {
-		if (this.ingame == false) {return ;}
+		if (this._ingame == false) {return ;}
 
-		this.gameID = "empty";
-		this.ingame = false;
+		// no game linked to lobby
+		this._gameID = "empty";
+		this._ingame = false;
+
+		// all the players are expected to reconnect
+		for (let i = 0; i < this._players.length; ++i) {
+			this._players[i].status = "joining";
+		}
 	}
 
 	// cleanup procedure if no player in lobby
 	private close() {
-		if (this.ingame === true) {return ;}
+		if (this._ingame === true) {return ;}
 
-		console.log(`Closing lobby ${this.lobbyID} ...`);
+		console.log(`Closing lobby ${this._ID} ...`);
 	}
 
 	// function to join the lobby, syntax: 'playerID'
-	public join(outPlayerID:string) {
-		if (this.ingame === true) {return ;}
+	public join(outPlayerID:string): boolean {
+		if (this._ingame === true) {return false;}
 
-		// check if lobby is full
-		if (this.players.length === this.size) {
-			console.log('The lobby is full'); // #todo sendo to the frontend
-			return ;
+		const target = this._players.find(p => p.ID === outPlayerID);
+		// check if player already in
+		if (target !== undefined) {
+			if (target.status !== "connected") {
+				target.status = "connected";
+				return true;
+			}
+			else {
+				console.log('Player already joined');
+				return false;
+			}
 		}
 
-
-		// check if player already in
-		if (this.players.find(p => p === outPlayerID)) {
-			console.log('Player already joined'); // #todo sendo to the frontend
-			return ;
+		// check if lobby is full
+		if (this._players.length === this._size) {
+			console.log('The lobby is full');
+			return false;
 		}
 
 		// add player
-		this.players.push(outPlayerID);
+		this._players.push({ ID: outPlayerID, status: "connected" });
+
+		return true;
 	}
 
 	// a player left the lobby
 	public leave(playerID:string) {
-		if (this.ingame === true) {return ;}
+		if (this._ingame === true) {return ;}
 		if (playerID === null) {return ;}
 
-		const index = this.players.indexOf(playerID);
+		const player = this._players.find(p => p.ID === playerID);
+		if (player === undefined) {
+			console.log(`player '${playerID}' not in the lobby`);
+			return ;
+		}
+
+		const index = this._players.indexOf(player);
 		if (index !== -1) {
-			this.players.splice(index, 1);
+			this._players.splice(index, 1);
 
 			// game mechanics
-			// this.game.stop();
+			// this._game.stop();
 			console.log(`${playerID} left the lobby...`); // #todo send to frontend
 		}
 
 		// close the lobby if the last player left
-		if (this.players.length === 0) this.close();
+		if (this._players.length === 0) this.close();
 
 	}
 

@@ -43,6 +43,32 @@ fastify.get("/health", async () => ({ status: "ok" }));
 // TRPC Client
 const lobbyService = getLobbyService(`${LOBBY_URL}/trpc`);
 
+
+export async function safeTRPC(arg:string)
+{
+	if (LOBBY_URL === undefined || LOBBY_URL === null) {
+		console.log('invalid URL');
+		return false;
+	}
+
+	const health = await fetch(`${LOBBY_URL}/health`)
+		.then(r => r.json())
+		.catch(() => null);
+
+	if (!health?.status) {
+		console.log(`Server '${LOBBY_URL}' offline`);
+		return false;
+	}
+
+	lobbyService.endGame.mutate(arg);
+	return true;
+}
+
+// #todo with @Fre007
+export function saveGameIntoMatchHistory() {
+	console.log('#todo save data into DB with @Fre007');
+}
+
 /* --------------------------------- */
 
 /* --------------- GAME DB --------------- */
@@ -222,7 +248,7 @@ fastify.register(async function (fastify) {
 
 					// check if the game is started
 					if (entry.status !== "ongoing") {
-						console.log(`The game ${entry.ID} is still '${entry.status}'`);
+						console.log(`The game ${entry.ID} status is '${entry.status}'`);
 						return ;
 					}
 
@@ -238,12 +264,22 @@ fastify.register(async function (fastify) {
 					else if (msg.value == "UP_RELEASE") entry.game.release(player.position, "Up");
 					else if (msg.value == "DW_RELEASE") entry.game.release(player.position, "Down");
 					else if (msg.value == "START_PRESS") entry.game.launch();
-					else if (msg.value == "RESET_PRESS") entry.game.reset();
+					else if (msg.value == "RESET_PRESS") {
+						// #todo send to DB
+						saveGameIntoMatchHistory();
+
+						entry.game.reset();
+					}
 
 					break ;
 				
 				default:
 					console.log(`Unhandled method ${msg.method}`);
+
+					// error reply
+					if (connection.readyState === connection.OPEN) {
+						connection.send(JSON.stringify({ method: `${msg.method}_REPLY`, status: 'failure', comment: `Unhandled method ${msg.method}`}));
+					}
 			}
 		});
 
@@ -257,6 +293,10 @@ fastify.register(async function (fastify) {
 			if (entry !== undefined) {
 				player.joined = false;
 				player.left = true;
+				if (entry.status != "finished") {
+					safeTRPC(entry.ID);		
+					entry.status = "finished";
+				}
 			}
 			console.log(`Client ${clientIP} disconnected - Code: ${code}, Reason: ${reason?.toString() || 'none'}`);
 		});
@@ -294,7 +334,7 @@ const start = async () => {
 	setInterval(() => {
 		// check the status of the games, if needed removes them from the array
 		// and sends notification to the lobby service
-		StatusChecker(games, lobbyService, LOBBY_URL);
+		StatusChecker(games);
 	}, 1000);
 };
 

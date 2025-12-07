@@ -1,8 +1,19 @@
-/* {method: 'CREATE', plaayerID: <playerID>, format: <format> }
-	@format: the number of rounds a player need to win to win the match
+/*
+{
+	method: 'CREATE',     (mandatory)
+	playerID: <playerID>, (mandatory)
+	format: <format>      (optional)
+}
+@format: the number of rounds a player need to win to win the match
 
-	Description: Creates a lobby, if 'format' is a valid format the lobby inherits that format.
-	Reply: { method: 'CREATE_REPLY', status: 'success/failure', value: <lobbyID> }
+Description: Creates a lobby, if 'format' is a valid format the lobby inherits that format. The player automatically joins the lobby that he created
+Reply:
+{
+	method: 'CREATE_REPLY',
+	status: 'success/failure',
+	value: <lobbyID>,           (only on status === 'success')
+	comment: <reason>           (only on status === 'failure')
+}
 */
 
 import { Lobby } from './Lobby.js';
@@ -49,19 +60,31 @@ export function CREATE(msg:object, outlobby:Lobby | undefined): CreateReturn
 	// success return
 	return {
 		status: "success",
-		reply: JSON.stringify({ method: 'CREATE_REPLY', status: "success", value: lobby.getID()}),
+		reply: JSON.stringify({ method: 'CREATE_REPLY', status: "success", value: lobby.ID}),
 		playerID: msg.playerID,
 		lobby: lobby
 	};
 }
 
-/* {method: 'JOIN', lobbyID: <lobbyID>, playerID: <playerID> }
-	@lobbyID: the ID of the lobby as a string
-	@playerID: the ID of the player as a string
+/*
+:
+{
+	method: 'JOIN',       (mandatory)
+	lobbyID: <lobbyID>,   (mandatory)
+	playerID: <playerID>  (mandatory)
+}
+@lobbyID: the ID of the lobby as a string
+@playerID: the ID of the player as a string
 
-	Description: Joins a lobby with the specified ID, if playerID is null it fails
-	Reply: { method: 'JOIN_REPLY', status: 'success/failure', value: <lobbyID>, comment: <comment> }
-
+Description: Joins a lobby with the specified ID, if any of the property is missing
+or invalid or there is no lobby with the lobbyID requested, it fails.
+Reply:
+{
+	method: 'JOIN_REPLY',
+	status: 'success/failure',
+	value: <lobbyID>,           (only on status === 'success')
+	comment: <comment>          (only on status === 'failure')
+}
 */
 
 import { getLobby } from './index.js';
@@ -79,7 +102,7 @@ export function JOIN(msg:object, outlobby:Lobby | undefined): JoinReturn
 	if (outlobby !== undefined) {
 		return {
 			status: "failure",
-			reply: JSON.stringify({ method: 'CREATE_REPLY', status: "failure", comment: "already in a lobby"}),
+			reply: JSON.stringify({ method: 'JOIN_REPLY', status: "failure", comment: "already in a lobby"}),
 		}
 	}
 
@@ -106,7 +129,12 @@ export function JOIN(msg:object, outlobby:Lobby | undefined): JoinReturn
 	}
 
 	// actually join the lobby
-	lobby.join(msg.playerID);
+	if (lobby.join(msg.playerID) === false) {
+		return {
+			status: "failure",
+			reply: JSON.stringify({ method: 'JOIN_REPLY', status: 'failure', value: msg.lobbyID, comment: "Error while joining the lobby, either the lobby is full or in-game"})
+		};
+	}
 
 	// successful return
 	return {
@@ -117,14 +145,21 @@ export function JOIN(msg:object, outlobby:Lobby | undefined): JoinReturn
 	}
 }
 
-/* {method: 'START' }
-	Description: Starts the lobby. only one player will do that, than the lobby is closed and set to 'in-game'.
-					If the lobby started correctly the 'value' of the reply is set to the 'gameID' to join
-					Note: the other player will be notified that the lobby was successfully started by the 'ingame' propery of the
-					lobbyStatus that gets sent once every second
-	Reply (failure): { method: 'START_REPLY', status: 'failure', comment: <comment> }
-	Reply (success): { method: 'START_REPLY', status: 'success', comment: <comment>, value: <gameID> }
+/*
+{
+	method: 'START'
+}
 
+Description: Starts the lobby. only one player will do that, than the lobby is closed and set to 'in-game'.
+If the lobby started correctly the 'value' of the reply is set to the 'gameID' to join
+Note: the other player will be notified that the lobby was successfully started by the 'ingame' propery of the "lobbyStatus" that gets sent once every second
+Reply:
+{
+	method: 'START_REPLY',
+	status: 'success',
+	comment: <comment>,
+	value:<gameID>      (only on status === 'success')
+}
 */
 
 /* helper */

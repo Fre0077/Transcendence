@@ -180,13 +180,13 @@
 
 			    let html = "";
 			    for (let i = 0; i < data.players.length; i++) {
-				    html += `${data.players[i]}<br>`;
+				    html += `${data.players[i].ID} : ${data.players[i].status}<br>`;
 			    }
 
 			    playersDiv.innerHTML = html;
 
           if (data.ingame === true) {
-            startGame(data.ID, playerID);
+            startGame(data.gameID, playerID);
           } else if (data.ingame === false)
             gameStarted = false;
 			    return;

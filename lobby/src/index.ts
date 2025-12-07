@@ -74,11 +74,16 @@ const gameService = getGameService(`${GAME_URL}/trpc`);
 
 /* --------------- LOBBY DB --------------- */
 
-let lobbies:Lobby[] = [];	// lobby array
+export type LobbyEntry = {
+	lastCheck:number,
+	lobby:Lobby
+}
+
+let lobbies:LobbyEntry[] = [];	// lobby array
 
 export function createLobby(): Lobby {
 	const lobby:Lobby = new Lobby();
-	lobbies.push(lobby);
+	lobbies.push({ lastCheck: Date.now(), lobby: lobby});
 	return lobby;
 }
 
@@ -87,29 +92,29 @@ export function getLobby(lobbyID:string): Lobby | undefined {
 
 	if (lobbyID === null) return undefined;
 
-	let myLobby;
+	let entry;
 
 	// join the first lobby with an empty space
 	if (lobbyID === 'ANY'){
-		myLobby = lobbies.find(l => l.full() === false);
-		if (myLobby === undefined) return undefined;
-		else return myLobby;
+		entry = lobbies.find(e => e.lobby.full() === false);
+		if (entry === undefined) return undefined;
+		else return entry.lobby;
 	}
 
 	// check the specific lobby
-	myLobby = lobbies.find(l => l.getID() === lobbyID);
-	if (myLobby === undefined) return undefined;
-	else return myLobby;
+	entry = lobbies.find(e => e.lobby.ID === lobbyID);
+	if (entry === undefined) return undefined;
+	else return entry.lobby;
 }
 
 /* ---------- backend to backend ----------- */
 
 function gameIsFinished(gameID:string) {
-	let lobby = lobbies.find(l => l.getGameDetails().ID === gameID);
-	if (lobby == undefined) return;
+	let entry = lobbies.find(e => e.lobby.getGameDetails().ID === gameID);
+	if (entry == undefined) return;
 	else {
-		console.log('Resetting lobby', lobby.getID());
-		lobby.reset();
+		console.log('Resetting lobby', entry.lobby.ID);
+		entry.lobby.reset();
 	}
 }
 
@@ -178,11 +183,8 @@ fastify.register(async function (fastify) {
 			switch (msg.method)
 			{
 				case "CREATE":
-					/* {method: 'CREATE', playerID: <playerID>, format: <format> }
-						@format: the number of rounds a player need to win to win the match
-					
+					/* { method: 'CREATE', playerID: <playerID>, format: <format> }
 						Description: Creates a lobby, if 'format' is a valid format the lobby inherits that format.
-						Reply: { method: 'CREATE_REPLY', status: 'success/failure', value: <lobbyID> }
 						NOTE: automatically JOIN the lobby after a CREATE request
 					*/
 					let cret = CREATE(msg, lobby);
@@ -201,13 +203,8 @@ fastify.register(async function (fastify) {
 					break ;
 
 				case "JOIN":
-					/* {method: 'JOIN', lobbyID: <lobbyID>, playerID: <playerID> }
-						@lobbyID: the ID of the lobby as a string
-						@playerID: the ID of the player as a string
-
+					/* { method: 'JOIN', lobbyID: <lobbyID>, playerID: <playerID> }
 						Description: Joins a lobby with the specified ID, if playerID is null it fails
-						Reply: { method: 'JOIN_REPLY', status: 'success/failure', value: <lobbyID>, comment: <comment> }
-
 					*/
 					let jret = JOIN(msg, lobby);
 
@@ -225,15 +222,11 @@ fastify.register(async function (fastify) {
 					break ;
 				
 				case "START":
-					/* {method: 'START' }
-
+					/* { method: 'START' }
 						Description: Starts the lobby. only one player will do that, than the lobby is closed and set to 'in-game'.
-									 If the lobby started correctly the 'value' of the reply is set to the 'gameID' to join
-									 Note: the other player will be notified that the lobby was successfully started by the 'ingame' propery of the
-									 lobbyStatus that gets sent once every second
-						Reply (failure): { method: 'START_REPLY', status: 'failure', comment: <comment> }
-						Reply (success): { method: 'START_REPLY', status: 'success', comment: <comment>, value: <gameID> }
-
+						If the lobby started correctly the 'value' of the reply is set to the 'gameID' to join
+						Note: the other player will be notified that the lobby was successfully started by the 'ingame' propery of the
+						lobbyStatus that gets sent once every second
 					*/
 					START(lobby, gameService, GAME_URL)
 						.then((value) => {

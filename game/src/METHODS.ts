@@ -2,14 +2,23 @@ import type { player, GameEntry } from './index.js'
 
 import { getGameEntry } from './index.js'
 
-/* {method: 'JOIN', gameID: <gameID>, playerID: <playerID> }
-	@gameID: the ID of the game as a string
-	@playerID: the ID of the player as a string
+/* {
+	method: 'JOIN',       (mandatory)
+	gameID: <gameID>,     (mandatory)
+	playerID: <playerID>  (mandatory)
+}
+@gameID: the ID of the game as a string
+@playerID: the ID of the player as a string
 
-	Description: Joins the game with the specified ID, if playerID is null it fails
-	Reply: { method: 'JOIN_REPLY', status: 'success/failure', value: <gameID>, comment: <comment> }
-
-*/
+Description: Joins a game with the specified ID, if any of the property is missing
+or invalid or there is no game with the gameID requested, it fails.
+Reply:
+{
+	method: 'JOIN_REPLY',
+	status: 'success/failure',
+	value: <gameID>,
+	comment: <comment>
+} */
 
 type JoinReturn = {
 	status: "success" | "failure",
