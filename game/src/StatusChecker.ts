@@ -8,7 +8,8 @@ function allJoined(entry:GameEntry): boolean {
 	if (entry.status !== "joining") {return false;}
 
 	let j = 0;
-	while (j < entry.players.length && entry.players[j].joined === true)
+	while (j < entry.players.length
+		&& (entry.players[j].joined === true || entry.players[j].ID === "BOT"))
 		++j;
 
 	return j === entry.players.length;
@@ -19,7 +20,8 @@ function allLeft(entry:GameEntry): boolean {
 	if (entry === undefined) {return false};
 
 	let j = 0;
-	while (j < entry.players.length && entry.players[j].left === true)
+	while (j < entry.players.length
+		&& (entry.players[j].left === true || entry.players[j].ID === "BOT"))
 		++j;
 
 	return j === entry.players.length;
@@ -51,8 +53,8 @@ export function StatusChecker(games:GameEntry[])
 			saveGameIntoMatchHistory();
 
 			// remove from array
-			games.splice(games.indexOf(games[i]), 1);
 			console.log(`Removing game ${games[i].ID} ...`);
+			games.splice(games.indexOf(games[i]), 1);
 		}
 	}
 }

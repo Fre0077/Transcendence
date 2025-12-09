@@ -7,7 +7,7 @@ import Fastify from 'fastify';
 // import { Game } from "./Game.js";
 import { Lobby } from "./Lobby.js";
 
-import { CREATE, JOIN, START } from './METHODS.js';
+import { CREATE, JOIN, START, BOT } from './METHODS.js';
 // import type { CreateReturn } from './METHODS.js';
 
 // tRPC stuff
@@ -161,7 +161,7 @@ fastify.register(async function (fastify) {
 
 		//----- finding the right lobby to log in
 		let lobby:Lobby | undefined = undefined;
-		// let gotLobby:boolean = false;
+		let interval:NodeJS.Timeout;	/* :D */
 
 		// Send welcome message
 		connection.send('Connected to Fastify WebSocket server!');
@@ -221,6 +221,18 @@ fastify.register(async function (fastify) {
 					}
 					break ;
 				
+				case "BOT":
+					/* { method: 'BOT', value: <command> }
+						Description: ADDs or REMOVEs a BOT to the lobby
+					*/
+					let bret = BOT(msg, lobby);
+					
+					// send reply
+					if (connection.readyState === connection.OPEN) {
+						connection.send(bret.reply);
+					}
+					break ;
+				
 				case "START":
 					/* { method: 'START' }
 						Description: Starts the lobby. only one player will do that, than the lobby is closed and set to 'in-game'.
@@ -258,6 +270,8 @@ fastify.register(async function (fastify) {
 
 		// Handle connection close
 		connection.on('close', (code:number, reason:string) => {
+			if (interval) {clearInterval(interval)}
+			
 			if (lobby !== undefined && playerID !== undefined)
 				lobby.leave(playerID);
 			console.log(`Client ${clientIP} disconnected - Code: ${code}, Reason: ${reason?.toString() || 'none'}`);
@@ -265,13 +279,13 @@ fastify.register(async function (fastify) {
 
 
 		// send lobby state to frontend once per second
-		setInterval(() => {
+		interval = setInterval(() => {
 			// Don't send gamestate if the game isn't found
 			if (lobby === undefined) return;
 	
 			if (connection.readyState === connection.OPEN) {
 				// send lobby state
-				connection.send(lobby.getLobbyStateJSON());
+				connection.send(lobby.lobbyJSON);
 			}
 
 		}, 1000);	// (delay in ms)

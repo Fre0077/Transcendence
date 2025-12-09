@@ -109,7 +109,10 @@ Once every 60ms after a successful JOIN request you will receive the 'GameState'
 GameStateJSON:
 {
   score:number[],		  /* score of the match [player1, player2] */
-  ball:number[],	    /* array of 2 coordinates [X, Y] of the CENTER of the ball */
+  ball: {
+				pos: this.ball.pos,		/* array of 2 coordinates [X, Y] of the CENTER of the ball */
+				dir: this.ball.angle,	/* angle of the ball, used for BOT play */
+  },
   player1:number,     /* single Y coordinate of the CENTER of the paddle*/
   player2:number2,    /* single Y coordinate of the CENTER of the paddle*/
   paddle: [				    /* paddle size for both players: [player1, player2] */
@@ -173,4 +176,4 @@ Reply: NO-REPLY
 When the Game is finished or someone RESETted the game, the data regarding that game is (will be) stored in a database. 
 
 //----
-x Ale: il back-to-lobby ora funziona dalla parte del backend. quando finisci il game devi tornare alla lobby con un JOIN, pero` aspetta un attimo prima di farlo che i due backend si devono parlare
+@aleborghi: il back-to-lobby ora funziona dalla parte del backend. quando finisci il game devi tornare alla lobby con un JOIN, pero` aspetta un attimo prima di farlo che i due backend si devono parlare

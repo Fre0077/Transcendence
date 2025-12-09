@@ -17,6 +17,8 @@
 
     <input id="joinInput" placeholder="Lobby code or ANY" />
     <button id="btnJoin">Join Lobby</button>
+    <br/><br/>
+    <button id="btnAddBot">Add BOT</button><button id="btnRemBot">Rem BOT</button>
 	<br/><br/>
 
 	<button id="btnStart">Start Game</button>
@@ -64,6 +66,9 @@
     const btnJoin = document.getElementById("btnJoin");
 	  const btnStart = document.getElementById("btnStart");
 
+    const btnAddBot = document.getElementById("btnAddBot");
+    const btnRemBot = document.getElementById("btnRemBot");
+
 	  const playersDiv = document.getElementById("players");
 
     const socket = new WebSocket(`ws://${window.location.host}/lobbysocket`);
@@ -88,20 +93,34 @@
        UI BUTTON HANDLERS
     -------------------------- */
 
+    // CREATE
     btnCreate.onclick = () => {
-      socket.send(JSON.stringify({ method: "CREATE", playerID: playerID, format: 2 }));
+      socket.send(JSON.stringify({ method: "CREATE", playerID: playerID, format: 12 }));
       serverLog.innerText = "Creating lobby...";
     };
 
+    // JOIN
     btnJoin.onclick = () => {
       const code = joinInput.value.trim() || "ANY";
       socket.send(JSON.stringify({ method: "JOIN", lobbyID: code, playerID: playerID }));
       serverLog.innerText = `Joining lobby: ${code}...`;
     };
 
-	btnStart.onclick = () => {
+    // START
+	  btnStart.onclick = () => {
       socket.send(JSON.stringify({ method: "START" }));
       serverLog.innerText = "Starting game...";
+    };
+
+    // BOT
+    btnAddBot.onclick = () => {
+      socket.send(JSON.stringify({ method: "BOT", value: "ADD" }));
+      serverLog.innerText = "Adding bot...";
+    };
+
+    btnRemBot.onclick = () => {
+      socket.send(JSON.stringify({ method: "BOT", value: "REMOVE" }));
+      serverLog.innerText = "Removing bot...";
     };
 
     //-----------------------------------------------

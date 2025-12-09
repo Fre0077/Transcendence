@@ -251,3 +251,73 @@ export async function START(lobby:Lobby | undefined, gameService:any | undefined
 	};
 
 }
+
+/* do actions with bots, either ADD or REMOVE */
+export function BOT(msg:object, lobby:Lobby | undefined)
+{
+	// check if you joined a lobby
+	if (lobby === undefined) {
+		return {
+			status: "failure",
+			reply: JSON.stringify({ method: 'BOT_REPLY', status: 'failure', comment: "Join a lobby before starting the game dumass" })
+		};
+	}
+
+	// check if the obj has lobbyID and playerID
+	if ("value" in msg === false || typeof msg.value !== "string")
+	{
+		console.log(`invalid JSON message ${msg}`);
+		return {
+			status: "failure",
+			reply: JSON.stringify({method: 'BOT_REPLY', status: 'failure', comment: "invalid JSON"})
+		};
+	}
+
+	// check action expected
+	if (msg.value === "ADD")
+	{
+		// check if lobby is full
+		if (lobby.full()) {
+			return {
+				status: "failure",
+				reply: JSON.stringify({ method: 'BOT_REPLY', status: 'failure', comment: "The lobby is full, cannot add a BOT" })
+			};
+		}
+
+		// add the bot
+		lobby.join("BOT");
+
+		// successful return
+		return {
+			status: "success",
+			reply: JSON.stringify({ method: 'BOT_REPLY', status: 'success', comment: "Added BOT to the lobby" })
+		};
+	}
+	else if (msg.value === "REMOVE")
+	{
+		// check if bot in lobby
+		if (lobby.players.find(p => p.ID === "BOT") === undefined) {
+			return {
+				status: "failure",
+				reply: JSON.stringify({ method: 'BOT_REPLY', status: 'failure', comment: "No BOT in the lobby" })
+			};
+		}
+
+		// remove the bot
+		lobby.leave("BOT");
+
+		// successful return
+		return {
+			status: "success",
+			reply: JSON.stringify({ method: 'BOT_REPLY', status: 'success', comment: "Removed BOT from the lobby" })
+		};
+	}
+	else
+	{
+		// successful return
+		return {
+			status: "failure",
+			reply: JSON.stringify({ method: 'BOT_REPLY', status: 'failure', comment: "Invalid BOT action, try ADD or REMOVE" })
+		};
+	}
+}

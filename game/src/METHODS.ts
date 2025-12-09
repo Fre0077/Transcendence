@@ -51,10 +51,6 @@ export function JOIN(msg:object): JoinReturn {
 	}
 
 	// check if the player is expected in this game
-	/* ! ! ! =============================== ! ! ! */
-	/* ! ! ! #todo ALSO ADD SESSION ID CHECK ! ! ! */
-	/* ! ! ! =============================== ! ! ! */
-
 	let myPlayer: player | undefined = myGameEnrty.players.find(p => p.ID === msg.playerID && p.joined === false);
 	if (myPlayer === undefined) {
 		return {

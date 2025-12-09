@@ -62,7 +62,7 @@ export class Lobby {
 	/* ---------------------------------------------- */
 	// data to send to the GAME module
 
-	public getLobbyStateJSON(): string {
+	public get lobbyJSON(): string {
 		// const status:string = (this._ingame) ? "playing" : "creating";
 		const state = {
 			ID: this._ID,

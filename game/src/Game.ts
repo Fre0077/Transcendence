@@ -78,7 +78,7 @@ class Ball
 	
 		// apply your custom offset
 		this.angle = perfectReflection + delta;
-		this.clampAngle();
+		this.angle = Ball.clamp(this.angle);
 	}
 
 	public bounceY(offsetDeg:number = 0) {
@@ -91,13 +91,18 @@ class Ball
 
 		// apply your custom offset
 		this.angle = perfectReflection + delta;
-		this.clampAngle();
+		this.angle = Ball.clamp(this.angle);
 	}
 
-	// clamp angle between 0 -> 2PI
-	private clampAngle() {
-		if (this.angle < 0) this.angle = 2 * Math.PI + this.angle;
-		else if (this.angle > 2 * Math.PI) this.angle = this.angle - 2 * Math.PI;
+	public static clamp(angle:number): number {
+
+		console.log(`angle: ${angle}`);
+		if (angle < 0)
+			angle = (2 * Math.PI) + angle % (2 * Math.PI);
+		if (angle > (2 * Math.PI))
+			angle = angle % (2 * Math.PI) - (2 * Math.PI);
+		console.log(`clamp: ${angle}`);
+		return angle;
 	}
 }
 
@@ -105,6 +110,27 @@ class Ball
 /* -------------------------------------------------- */
 /* ------------------- Game Class ------------------- */
 /* -------------------------------------------------- */
+
+interface PaddleState {
+	height: number;
+	width: number;
+	offset: number;
+}
+
+interface BallState {
+	pos: number[];
+	angle: number;
+}
+
+interface GameState {
+	score: number[];
+	ball: BallState;
+	paddle: PaddleState[];
+	player1: number;
+	player2: number;
+	playing:boolean;
+	timeout: number;
+}
 
 
 const	playerStep: number = 0.01;		// how mucch the player moves each game tick
@@ -128,10 +154,12 @@ const	paddleHeight_2: number = paddleHeight / 2;
 
 export class Game
 {
-	private timeout:number			/* number of ms the game should halt between rouds */
+	private timeout:number;			/* number of ms the game should halt between rouds */
+	private tick:number;			/* number of in-game tick passed till the beginning of the match */
+	// private log:string;				// list of movements #todo
 
 	// match variables
-	private round:number			/* number of round (0 - > target * 2 - 1) */
+	private round:number;			/* number of round (0 - > target * 2 - 1) */
 	private roundStart: boolean;	/* should the ball move? */
 	private score:number[];			/* player's score */
 	private lastScored:number;		/* the last player that scored (either 1 or 2) */
@@ -156,6 +184,7 @@ export class Game
 	// the constructor expliccitly wants the variables initialized
 	constructor(format:number = 3) {
 		this.timeout = 60;				// 1 sec of timeout
+		this.tick = 0;					// start -> 0
 	
 		this.round = 0;					// start at round 0
 		this.roundStart = false;		// ball not moving
@@ -185,19 +214,30 @@ export class Game
 	/* ----------------------------------------------------------------- */
 
 
+	
 
 	/* ----------------------------------------------------------------- */
 	/* 								GET DATA							 */
 	/* ----------------------------------------------------------------- */
 
+	// is the ball moving?
+	public get playing(): boolean {
+		return this.roundStart
+	}
+
+	// state non JSON
 	// @aleborghi qui' viene formattato il gamestate per il frontend.
-	public getGameStateJSON(): string {
-		const state = {
-			score: this.score,		/* score of the match [player1, player2] */
-			ball: this.ball.pos,	/* array of 2 coordinates [X, Y] of the CENTER of the ball */
-			player1: this.player1,	/* single Y coordinate of the CENTER of the paddle*/
-			player2: this.player2,	/* single Y coordinate of the CENTER of the paddle*/
-			paddle: [				/* paddle size for both players: [player1, player2] */
+	public get state(): GameState
+	{
+		return {
+			score: this.score,				/* score of the match [player1, player2] */
+			ball: {
+				pos: this.ball.pos,			/* array of 2 coordinates [X, Y] of the CENTER of the ball */
+				angle: this.ball.angle,		/* angle of the ball, used for BOT play */
+			},
+			player1: this.player1,			/* single Y coordinate of the CENTER of the paddle */
+			player2: this.player2,			/* single Y coordinate of the CENTER of the paddle */
+			paddle: [						/* paddle size for both players: [player1, player2] */
 				{
 					height: paddleHeight,
 					width: paddleWidth,
@@ -209,26 +249,13 @@ export class Game
 					offset: paddleOffset	/* single X coordinate of the CENTER of the paddle (could need a readjustment for player2) */
 				}
 			],
+			playing: this.roundStart,
 			timeout: this.timeout
 		};
-		return JSON.stringify(state);
 	}
 
-	// If you just want the paddle stats
-	public getPaddleSettingsJSON(): string {
-		const paddle = [				/* paddle size for both players: [player1, player2] */
-			{
-				height: paddleHeight,
-				width: paddleWidth,
-				offset: paddleOffset
-			},
-			{
-				height: paddleHeight,
-				width: paddleWidth,
-				offset: paddleOffset
-			}
-		];
-		return JSON.stringify(paddle);
+	public get stateJSON(): string {
+		return JSON.stringify(this.state);
 	}
 
 	// returns 0 (or false) if the game is ongoing, 1 if player1 won, 2 if player2 won
@@ -430,12 +457,13 @@ export class Game
 
 		/* ! ! ! KEEP THIS THE SAME AS THE CONSTRUCTOR ! ! ! */
 		this.timeout = 60;				// 1 sec of timeout
+		this.tick = 0;
 	
 		this.round = 0;					// start at round 0
-		this.roundStart = false;			// ball not moving
+		this.roundStart = false;		// ball not moving
 		this.score = [0, 0];			// match score to 0;
 		this.lastScored = 0;			// default
-		this.targetScore = 3;				// Bo5
+		this.targetScore = 3;			// Bo5
 		this.winner = 0;				// noone won just yet
 		
 		this.ball = new Ball();
@@ -461,7 +489,7 @@ export class Game
 		this.roundStart = true;
 
 		// randomize ball direction
-		this.ball.angle = this.directions[this.round];
+		this.ball.angle = Ball.clamp(this.directions[this.round]);
 
 		// which player the ball goes to?
 		if (this.lastScored === 2) {this.ball.angle += Math.PI;}
@@ -480,6 +508,9 @@ export class Game
 		if (this.gameLoopInterval) clearInterval(this.gameLoopInterval);
 
 		this.gameLoopInterval = setInterval(() => {
+			// advance the tick
+			++this.tick;
+
 			if (this.timeout > 0) {this.timeout--; return;}
 			// Move players
 			if (this.player1Up) this.player1 -= playerStep;
