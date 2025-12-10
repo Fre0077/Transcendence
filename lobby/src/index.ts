@@ -7,7 +7,7 @@ import Fastify from 'fastify';
 // import { Game } from "./Game.js";
 import { Lobby } from "./Lobby.js";
 
-import { CREATE, JOIN, START, BOT } from './METHODS.js';
+import { CREATE, JOIN, LEAVE, START, BOT } from './METHODS.js';
 // import type { CreateReturn } from './METHODS.js';
 
 // tRPC stuff
@@ -221,6 +221,22 @@ fastify.register(async function (fastify) {
 					}
 					break ;
 				
+				case "LEAVE":
+					/* { method: 'LEAVE' } 
+						Desccription: Leaves the lobby. If not authenticated or not joined a lobby the
+						request fails 
+					*/
+					let lret = LEAVE(lobby, playerID);
+					
+					if (lret.status === "success")
+						lobby = undefined;
+
+					// send reply
+					if (connection.readyState === connection.OPEN) {
+						connection.send(lret.reply);
+					}
+					break ;
+
 				case "BOT":
 					/* { method: 'BOT', value: <command> }
 						Description: ADDs or REMOVEs a BOT to the lobby
@@ -270,10 +286,12 @@ fastify.register(async function (fastify) {
 
 		// Handle connection close
 		connection.on('close', (code:number, reason:string) => {
-			if (interval) {clearInterval(interval)}
+			if (interval) {clearInterval(interval);}
 			
-			if (lobby !== undefined && playerID !== undefined)
-				lobby.leave(playerID);
+			// leave procedure
+			LEAVE(lobby, playerID);
+
+			// logging
 			console.log(`Client ${clientIP} disconnected - Code: ${code}, Reason: ${reason?.toString() || 'none'}`);
 		});
 

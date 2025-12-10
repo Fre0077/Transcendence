@@ -15,7 +15,7 @@ import { gameRouter } from 'shared-trpc';
 import { getLobbyService } from './trpc.js';
 
 // reply METHODS
-import { JOIN } from './METHODS.js'
+import { JOIN, LEAVE } from './METHODS.js'
 
 const FPS:number = 60;
 const PORT = Number(process.env.PORT) || 3002;
@@ -66,7 +66,8 @@ export async function safeTRPC(arg:string)
 }
 
 // #todo with @Fre007
-export function saveGameIntoMatchHistory() {
+export function saveGameIntoMatchHistory()
+{
 	console.log('#todo save data into DB with @Fre007');
 }
 
@@ -81,7 +82,7 @@ export type player = {
 	position: number;
 };
 
-type GameStatus = "created" | "joining" | "ongoing" | "finished";
+type GameStatus = "created" | "joining" | "ongoing" | "paused" | "finished";
 
 export type GameEntry = {
 	ID: string;
@@ -93,7 +94,8 @@ export type GameEntry = {
 // array of games
 let games:GameEntry[] = [];
 
-export function getGameEntry(code:string): GameEntry | undefined {
+export function getGameEntry(code:string): GameEntry | undefined
+{
 	const GameEntry = games.find(g => g.ID === code);
 	if (GameEntry !== undefined){
 		console.log(`found game with code '${code}'`);
@@ -138,8 +140,8 @@ type gameDetails = {
 };
 
 // add a game to the game list
-function addGame(details:gameDetails) {
-
+function addGame(details:gameDetails)
+{
 	// logging
 	console.log(`Adding game ${details.ID}`);
 
@@ -168,7 +170,8 @@ function addGame(details:gameDetails) {
 /* --------------------------------------------- */
 
 // check if the string is a JSON obj with the 'method' property
-function isValidObj(message:string): { method: string } | undefined {
+function isValidObj(message:string): { method: string } | undefined
+{
 	let parse: unknown;
 
 	// JSON parse
@@ -228,14 +231,14 @@ fastify.register(async function (fastify) {
 				case "JOIN":
 
 					// process JOIN request
-					let ret = JOIN(msg);
+					let jret = JOIN(msg);
 
 					// successful JOIN
-					if (ret.status === "success")
+					if (jret.status === "success")
 					{
 						/* store variables */
-						player = ret.player as player; 
-						entry = ret.entry as GameEntry;
+						player = jret.player as player; 
+						entry = jret.entry as GameEntry;
 
 						/* spawn bot if necessary */
 						if (entry.players.find(p => p.ID === "BOT")) {
@@ -243,10 +246,28 @@ fastify.register(async function (fastify) {
 						}
 					}
 
+					// send reply to frontend
+					if (connection.readyState === connection.OPEN) {
+						connection.send(jret.reply);
+					}
+					break ;
+				
+				case "LEAVE":
+					// process LEAVE request
+					let lret = LEAVE(entry, player);
+
+					if (lret.status === "succcess")
+					{
+						// leave the game
+						player.joined = false;
+						player.left = true;
+						//---
+						entry = undefined;
+					}
 
 					// send reply to frontend
 					if (connection.readyState === connection.OPEN) {
-						connection.send(ret.reply);
+						connection.send(lret.reply);
 					}
 					break ;
 
@@ -301,14 +322,17 @@ fastify.register(async function (fastify) {
 		connection.on('close', (code, reason) => {
 			if (interval) {clearInterval(interval);}
 			
-			if (entry !== undefined) {
+			// leave procedure
+			let lret = LEAVE(entry, player);
+
+			if (lret.status === "success")
+			{
+				// leave the game
 				player.joined = false;
 				player.left = true;
-				if (entry.status != "finished") {
-					safeTRPC(entry.ID);		
-					entry.status = "finished";
-				}
 			}
+
+			// logging
 			console.log(`Client ${clientIP} disconnected - Code: ${code}, Reason: ${reason?.toString() || 'none'}`);
 		});
 

@@ -75,6 +75,36 @@ Reply:
   comment: <comment>          (only on status === 'failure')
 }
 
+<!-- ===== LEAVE ===== -->
+
+Request:
+{
+	method: 'LEAVE'
+} 
+Description: Leaves the lobby. If not authenticated or not joined a lobby the
+request fails
+Reply:
+{
+	method: 'LEAVE_REPLY',
+	status: 'success/failure',
+	comment: <comment>
+}
+
+<!-- ===== BOT ===== -->
+Request:
+{
+	method: 'BOT',
+	value: <action>
+}
+
+Description: ADDs or REMOVEs bots to the lobby. If you are not in a lobby the request will fail.
+Reply:
+{
+	method: 'BOT_REPLY',
+	status: 'success/failure',
+	comment: <comment>
+}
+
 <!-- ===== START ===== -->
 Request:
 {
@@ -87,7 +117,7 @@ Note: the other player will be notified that the lobby was successfully started 
 Reply:
 {
   method: 'START_REPLY',
-  status: 'success',
+  status: 'succes/failure',
   comment: <comment>,
   value:<gameID>      (only on status === 'success')
 }
@@ -154,6 +184,19 @@ Reply:
   status: 'success/failure',
   value: <gameID>,
   comment: <comment>
+}
+
+<!-- ===== LEAVE ===== -->
+{
+	method: 'LEAVE'
+}
+Description: Leaves the game. If not authenticated or not joined a game the
+request fails
+Reply:
+{
+	method: 'LEAVE_REPLY',
+	status: 'success/failure',
+	comment: <comment>
 }
 
 <!-- ===== MOVE ===== -->

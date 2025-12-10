@@ -27,7 +27,8 @@ type JoinReturn = {
 	entry?:GameEntry
 }
 
-export function JOIN(msg:object): JoinReturn {
+export function JOIN(msg:object): JoinReturn
+{
 	// check if the obj has gameID amd playerID
 	if (!("gameID" in msg)  || typeof msg.gameID !== "string"
 		|| !("playerID" in msg) || typeof msg.playerID !== "string")
@@ -71,5 +72,42 @@ export function JOIN(msg:object): JoinReturn {
 		reply: JSON.stringify({ method: 'JOIN_REPLY', status: "success", value: myGameEnrty.ID}),
 		player: myPlayer,
 		entry: myGameEnrty
+	};
+}
+/* 
+{
+	method: 'LEAVE'
+}
+Description: Leaves the game. If not authenticated or not joined a game the
+request fails
+Reply:
+{
+	method: 'LEAVE_REPLY',
+	status: 'success/failure',
+	comment: <comment>
+}
+*/
+export function LEAVE(entry:GameEntry | undefined, player:player | undefined)
+{
+	// check if in game
+	if (entry === undefined) {
+		return {
+			status: "failure",
+			reply: JSON.stringify({ method: 'LEAVE_REPLY', status: "failure", comment: "Not in a game"})
+		};
+	}
+
+	// check auth
+	if (player === undefined) {
+		return {
+			status: "failure",
+			reply: JSON.stringify({ method: 'LEAVE_REPLY', status: "failure", comment: "Not authenticated yet"})
+		};
+	}
+
+	// successfful reply
+	return {
+		status: "success",
+		reply: JSON.stringify({ method: 'LEAVE_REPLY', status: "success", comment: "Left the game"})
 	};
 }

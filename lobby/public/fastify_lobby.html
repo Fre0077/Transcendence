@@ -18,6 +18,8 @@
     <input id="joinInput" placeholder="Lobby code or ANY" />
     <button id="btnJoin">Join Lobby</button>
     <br/><br/>
+    <button id="btnLeave">Leave Lobby</button>
+    <br/><br/>
     <button id="btnAddBot">Add BOT</button><button id="btnRemBot">Rem BOT</button>
 	<br/><br/>
 
@@ -64,6 +66,7 @@
     const joinInput = document.getElementById("joinInput");
     const btnCreate = document.getElementById("btnCreate");
     const btnJoin = document.getElementById("btnJoin");
+    const btnLeave = document.getElementById("btnLeave");
 	  const btnStart = document.getElementById("btnStart");
 
     const btnAddBot = document.getElementById("btnAddBot");
@@ -104,6 +107,12 @@
       const code = joinInput.value.trim() || "ANY";
       socket.send(JSON.stringify({ method: "JOIN", lobbyID: code, playerID: playerID }));
       serverLog.innerText = `Joining lobby: ${code}...`;
+    };
+
+    // LEAVE
+    btnLeave.onclick = () => {
+      socket.send(JSON.stringify({ method: "LEAVE" }));
+      serverLog.innerText = `Leaving lobby ...`;
     };
 
     // START
@@ -188,6 +197,19 @@
           	lobbyCodeDiv.innerText = `Joined lobby ${data.value}`;
 		      else if (data.status === 'failure')
 		        lobbyCodeDiv.innerText = `Failed to join ${data.value}:\n${data.comment}`;
+          return;
+        }
+
+         /* -----------
+           LOBBY LEAVE
+        ------------ */
+        if (data.method === "LEAVE_REPLY") {
+		      if (data.status === 'success') {
+            playersDiv.innerHTML = "players"; // clear
+          	lobbyCodeDiv.innerText = `Success: ${data.comment}`;
+            lobbyID = undefined;
+          } else if (data.status === 'failure')
+		        lobbyCodeDiv.innerText = `Failure: ${data.comment}`;
           return;
         }
 

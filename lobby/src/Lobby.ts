@@ -168,13 +168,15 @@ export class Lobby {
 
 	// function to join the lobby, syntax: 'playerID'
 	public join(outPlayerID:string): boolean {
-		if (this._ingame === true) {return false;}
+		// if (this._ingame === true) {return false;}
 
 		const target = this._players.find(p => p.ID === outPlayerID);
 		// check if player already in
 		if (target !== undefined) {
-			if (target.status !== "connected") {
-				target.status = "connected";
+			if (target.status !== "connected")		// if not connected
+			{
+				if (target.status !== "ingame")		// if not ingame ...
+					target.status = "connected";	// ... set status to connected
 				return true;
 			}
 			else {

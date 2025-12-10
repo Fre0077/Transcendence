@@ -11,8 +11,10 @@ export function StatusChecker(lobbies:LobbyEntry[])
 			console.log(`Removing lobby ${lobbies[i].lobby.ID} ...`);
 			lobbies.splice(i, 1);
 		}
-
-		// update check time
-		lobbies[i].lastCheck = Date.now();
+		else
+        {
+            // update check time
+            lobbies[i].lastCheck = Date.now();
+        }
 	}
 }

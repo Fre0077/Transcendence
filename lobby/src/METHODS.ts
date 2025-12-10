@@ -67,7 +67,6 @@ export function CREATE(msg:object, outlobby:Lobby | undefined): CreateReturn
 }
 
 /*
-:
 {
 	method: 'JOIN',       (mandatory)
 	lobbyID: <lobbyID>,   (mandatory)
@@ -147,6 +146,47 @@ export function JOIN(msg:object, outlobby:Lobby | undefined): JoinReturn
 
 /*
 {
+	method: 'LEAVE'
+} 
+Description: Leaves the lobby. If not authenticated or not joined a lobby the
+request fails
+Reply:
+{
+	method: 'LEAVE_REPLY',
+	status: 'success/failure',
+	comment: <comment>
+}
+*/
+export function LEAVE(lobby:Lobby | undefined, playerID:string | undefined)
+{
+	// check if you joined a lobby
+	if (lobby === undefined) {
+		return {
+			status: "failure",
+			reply: JSON.stringify({ method: 'LEAVE_REPLY', status: 'failure', comment: "Not in a lobby" })
+		};
+	}
+
+	// check auth
+	if (playerID === undefined) {
+		return {
+			status: "failure",
+			reply: JSON.stringify({ method: 'LEAVE_REPLY', status: 'failure', comment: "Not authenticated yet" })
+		};
+	}
+
+	// leave the lobby
+	lobby.leave(playerID);
+
+	// successfule return
+	return {
+		status: "success",
+		reply: JSON.stringify({ method: 'LEAVE_REPLY', status: 'success', comment: "Left the lobby" })
+	};
+}
+
+/*
+{
 	method: 'START'
 }
 
@@ -156,7 +196,7 @@ Note: the other player will be notified that the lobby was successfully started 
 Reply:
 {
 	method: 'START_REPLY',
-	status: 'success',
+	status: 'success/failure',
 	comment: <comment>,
 	value:<gameID>      (only on status === 'success')
 }
@@ -164,7 +204,8 @@ Reply:
 
 /* helper */
 // Health checker
-async function checkServiceHealth(url:string) {
+async function checkServiceHealth(url:string)
+{
 
 	// console.log(`checking '${url}' health ...`);
 
@@ -252,7 +293,20 @@ export async function START(lobby:Lobby | undefined, gameService:any | undefined
 
 }
 
-/* do actions with bots, either ADD or REMOVE */
+/*
+{
+	method: 'BOT',
+	value: <action>
+}
+
+Description: ADDs or REMOVEs bots to the lobby. If you are not in a lobby the request will fail.
+Reply:
+{
+	method: 'BOT_REPLY',
+	status: 'success/failure',
+	comment: <comment>
+}
+*/
 export function BOT(msg:object, lobby:Lobby | undefined)
 {
 	// check if you joined a lobby
