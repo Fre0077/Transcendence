@@ -5,13 +5,12 @@
 
 import Fastify from 'fastify';
 // import { Game } from "./Game.js";
-import { Bot } from "./Bot.js";
 
 // reply METHODS
 import { LEAVE } from './METHODS.js'
 
 const FPS:number = 60;
-const PORT = Number(process.env.PORT) || 3002;
+const PORT = Number(process.env.PORT) || 3004;
 const LOBBY_PORT = Number(process.env.LOBBY_PORT) || 3003;
 const LOBBY_URL = `http://localhost:${LOBBY_PORT}`;
 
@@ -118,7 +117,6 @@ fastify.register(async function (fastify) {
 		// Storing the Game and the Player
 		let entry:GameEntry | undefined = undefined;
 		let player:Player | undefined = undefined;
-		let bot:Bot | undefined = undefined;
 		let interval:NodeJS.Timeout;	/* :D */
 
 		// Send welcome message
@@ -127,11 +125,10 @@ fastify.register(async function (fastify) {
 		// Handle incoming messages
 		connection.on('message', (message:string) => {
 			
-			const reply = interpreter(message, entry, player, bot,
-				(retEntry:GameEntry | undefined, retPlayer:Player | undefined, retBot:Bot | undefined) => {
+			const reply = interpreter(message, entry, player,
+				(retEntry:GameEntry | undefined, retPlayer:Player | undefined) => {
 					entry = retEntry;
 					player = retPlayer;
-					bot = retBot;
 				}
 			)
 			if (reply !== null && connection.readyState === connection.OPEN) {
@@ -159,26 +156,6 @@ fastify.register(async function (fastify) {
 		interval = setInterval(() => {
 			// Don't send gamestate if the game isn't found
 			if (entry === undefined) return;
-	
-			/* Spawn a Bot if needed */
-			if (bot !== undefined) {
-
-				if (entry.game.playing === true)
-				{
-					/* calculate next move */
-					const state = entry.game.state;
-					bot.play(state.ball, state.paddle[1], state.player2);
-					const move:string = bot.move;
-			
-					/* let the bot move */
-					if (move === "null") {}
-					else if (move === "UP_PRESS") entry.game.press(bot.position, "Up");
-					else if (move === "DW_PRESS") entry.game.press(bot.position, "Down");
-					else if (move === "UP_RELEASE") entry.game.release(bot.position, "Up");
-					else if (move === "DW_RELEASE") entry.game.release(bot.position, "Down");
-				}
-				else {bot.reset();}
-			}
 
 			if (connection.readyState === connection.OPEN) {
 				connection.send(entry.game.stateJSON);

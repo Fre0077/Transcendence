@@ -23,6 +23,12 @@ type Player = {
 	status: "connected" | "disconnected" | "ingame" | "joining"
 }
 
+> player statuses:
+  - "connected": the player is connected to the lobby's websocket
+  - "disconnected": the player disconnected from the lobby's websocket while the game wasn't started
+  - "ingame": the player is playing the game that the lobby is hosting and it isn't necessairly connected to the lobby's websocket
+  - "joining": the player just finished the game the lobby hosted and should be reconnecting to the lobby's websocket
+
 LobbySateJSON:
 {
   ID:string,        // ID of the lobby
@@ -32,7 +38,7 @@ LobbySateJSON:
   players:Player[]  // an array of player UUIDs and statuses
 }
 
-Note that if the 'ingame' propery is set to true the players are expected to join the game specified in gameID, since someone successfully STARTed the lobby.
+Note that if the 'ingame' propery is set to true the players can join the game specified in gameID, since someone successfully STARTed the lobby.
 
 
 Here is a brief explaination on how to use all the methods:
@@ -82,7 +88,7 @@ Request:
 	method: 'LEAVE'
 } 
 Description: Leaves the lobby. If not authenticated or not joined a lobby the
-request fails
+request fails. After a successful LEAVE request, the connection with the websocket is closed.
 Reply:
 {
 	method: 'LEAVE_REPLY',

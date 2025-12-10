@@ -16,18 +16,20 @@ Reply:
 }
 */
 
-import { Lobby } from './Lobby.js';
-import { createLobby } from './index.js';
+import { Lobby, Player } from './Lobby.js';
+import { createLobby } from './lobbyDB.js';
+import type { WebSocket } from "ws";
+
 
 type CreateReturn = {
 	status: "success" | "failure",
 	reply:string,
-	playerID?:string
+	player?:Player
 	lobby?:Lobby,
 }
 
 // lobby here is just to check if wwe joined or not
-export function CREATE(msg:object, outlobby:Lobby | undefined): CreateReturn
+export function CREATE(msg:object, outlobby:Lobby | undefined, ws:WebSocket): CreateReturn
 {
 	// check if we already in lobby
 	if (outlobby !== undefined) {
@@ -46,7 +48,7 @@ export function CREATE(msg:object, outlobby:Lobby | undefined): CreateReturn
 	}
 
 	//create lobby
-	let lobby:Lobby = createLobby();
+	let lobby:Lobby = createLobby("pong");
 
 	// check if the obj has format
 	if ("format" in msg && typeof msg.format === "number" ) {
@@ -55,13 +57,13 @@ export function CREATE(msg:object, outlobby:Lobby | undefined): CreateReturn
 	}
 
 	// join lobby
-	lobby.join(msg.playerID);
+	cleanJoinLobby(lobby.ID, msg.playerID, ws);
 
 	// success return
 	return {
 		status: "success",
 		reply: JSON.stringify({ method: 'CREATE_REPLY', status: "success", value: lobby.ID}),
-		playerID: msg.playerID,
+		player: lobby.players.find(p => p.ID === msg.playerID),
 		lobby: lobby
 	};
 }
@@ -86,16 +88,17 @@ Reply:
 }
 */
 
-import { getLobby } from './index.js';
+import { getLobby } from './lobbyDB.js';
+import { cleanJoinLobby } from './lobbyDB.js';
 
 type JoinReturn = {
 	status: "success" | "failure",
 	reply:string,
-	playerID?:string,
+	player?:Player,
 	lobby?:Lobby
 }
 
-export function JOIN(msg:object, outlobby:Lobby | undefined): JoinReturn
+export function JOIN(msg:object, outlobby:Lobby | undefined, ws:WebSocket): JoinReturn
 {
 	// check if we already in lobby
 	if (outlobby !== undefined) {
@@ -128,7 +131,7 @@ export function JOIN(msg:object, outlobby:Lobby | undefined): JoinReturn
 	}
 
 	// actually join the lobby
-	if (lobby.join(msg.playerID) === false) {
+	if (cleanJoinLobby(lobby.ID, msg.playerID, ws) === false) {
 		return {
 			status: "failure",
 			reply: JSON.stringify({ method: 'JOIN_REPLY', status: 'failure', value: msg.lobbyID, comment: "Error while joining the lobby, either the lobby is full or in-game"})
@@ -139,7 +142,7 @@ export function JOIN(msg:object, outlobby:Lobby | undefined): JoinReturn
 	return {
 		status: "success",
 		reply: JSON.stringify({ method: 'JOIN_REPLY', status: 'success', value: msg.lobbyID, comment: `Lobby ${msg.lobbyID} joined successfully!`}),
-		playerID: msg.playerID,
+		player: lobby.players.find(p => p.ID === msg.playerID),
 		lobby: lobby
 	}
 }
@@ -157,7 +160,16 @@ Reply:
 	comment: <comment>
 }
 */
-export function LEAVE(lobby:Lobby | undefined, playerID:string | undefined)
+import { cleanLeaveLobby } from './lobbyDB.js';
+
+type LeaveReply = {
+	status: "success" | "failure";
+	reply:string;
+	lobby?:Lobby | undefined;
+	player?:Player | undefined;
+}
+
+export function LEAVE(lobby:Lobby | undefined, player:Player | undefined): LeaveReply
 {
 	// check if you joined a lobby
 	if (lobby === undefined) {
@@ -168,7 +180,7 @@ export function LEAVE(lobby:Lobby | undefined, playerID:string | undefined)
 	}
 
 	// check auth
-	if (playerID === undefined) {
+	if (player === undefined) {
 		return {
 			status: "failure",
 			reply: JSON.stringify({ method: 'LEAVE_REPLY', status: 'failure', comment: "Not authenticated yet" })
@@ -176,12 +188,14 @@ export function LEAVE(lobby:Lobby | undefined, playerID:string | undefined)
 	}
 
 	// leave the lobby
-	lobby.leave(playerID);
+	cleanLeaveLobby(lobby.ID, player.ID);
 
 	// successfule return
 	return {
 		status: "success",
-		reply: JSON.stringify({ method: 'LEAVE_REPLY', status: 'success', comment: "Left the lobby" })
+		reply: JSON.stringify({ method: 'LEAVE_REPLY', status: 'success', comment: "Left the lobby" }),
+		lobby: undefined,
+		player: player
 	};
 }
 
@@ -201,9 +215,9 @@ Reply:
 	value:<gameID>      (only on status === 'success')
 }
 */
+import { lobbyBroadcast } from './lobbyDB.js';
 
-/* helper */
-// Health checker
+/* Health checker */
 async function checkServiceHealth(url:string)
 {
 
@@ -229,10 +243,7 @@ async function checkServiceHealth(url:string)
 
 type StartReturn = {
 	status: "success" | "failure",
-	reply:string,
-	format?:number,
-	gameID?:string,
-	players?:string[]
+	reply:string
 }
 
 export async function START(lobby:Lobby | undefined, gameService:any | undefined, url:string): Promise<StartReturn>
@@ -284,11 +295,16 @@ export async function START(lobby:Lobby | undefined, gameService:any | undefined
 		}
 	}
 
+	// build successful reply
+	const reply:string = JSON.stringify({ method: 'START_REPLY', status: 'success', value: ret.ID, comment: "The lobby is now in game"});
+	
+	// broadcast to everyone
+	lobbyBroadcast(lobby.ID, reply);
+
 	// send game started reply
 	return {
 		status: "success",
-		reply: JSON.stringify({ method: 'START_REPLY', status: 'success', value: ret.ID, comment: "The lobby is now in game"}),
-		gameID: ret.ID,
+		reply: reply,
 	};
 
 }

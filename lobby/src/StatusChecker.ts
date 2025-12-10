@@ -1,20 +1,21 @@
-import type { LobbyEntry } from './index.js';
+import { lobbies } from './lobbyDB.js'
 
 // removing the lobby if the players didn't come back in 1 minute after game is ended,
 // or if the lobby is straight up empty
-export function StatusChecker(lobbies:LobbyEntry[])
+export function StatusChecker()
 {
-	for (let i = 0; i < lobbies.length; ++i) {
-		if (lobbies[i].lobby.empty() === true
-			|| Date.now() - lobbies[i].lastCheck > 60000) {
-			console.log(`Removing lobby ${lobbies[i].lobby.ID} ...`);
-			lobbies.splice(i, 1);
+	lobbies.forEach((entry, idx) => {
+		if (entry.lobby.empty() === true
+			|| entry.lobby.players.find(p => p.ID !== "BOT") === undefined
+			|| Date.now() - entry.lastCheck > 60000) {
+			console.log(`Removing lobby ${entry.lobby.ID} ...`);
+			lobbies.splice(idx, 1);
 		}
-		else if (lobbies[i].lobby.players.find(p => p.status === "connected") !== undefined
-				|| lobbies[i].lobby.players.find(p => p.status === "ingame") !== undefined)
+		else if (entry.lobby.players.find(p => p.status === "connected") !== undefined
+				|| entry.lobby.players.find(p => p.status === "ingame") !== undefined)
         {
             // update check time
-            lobbies[i].lastCheck = Date.now();
+            entry.lastCheck = Date.now();
         }
-	}
+	});
 }

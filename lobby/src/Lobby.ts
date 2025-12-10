@@ -4,9 +4,16 @@
 
 import { v4 as uuidv4 } from "uuid";
 
-type Player = {
+export type Player = {
 	ID:string,
 	status: "connected" | "disconnected" | "ingame" | "joining"
+}
+
+interface LobbyState {
+	ID:string;
+	gameID:string;
+	format:number;
+	players:Player[];
 }
 
 export class Lobby {
@@ -22,8 +29,8 @@ export class Lobby {
 
 	private _players:Player[];	// unique identifier for each player, sent at th beginning of every move. NOTE: the ID is generated when the websocket is connected
 	
-	constructor() {
-		this._size = 2;				// 2 player
+	constructor(__size:number = 2) {
+		this._size = __size;				// 2 player
 		this._format = 3;			// Bo5
 
 		this._ID = uuidv4();	// #todo lobby code generator. for now fixed code
@@ -62,8 +69,7 @@ export class Lobby {
 	/* ---------------------------------------------- */
 	// data to send to the GAME module
 
-	public get lobbyJSON(): string {
-		// const status:string = (this._ingame) ? "playing" : "creating";
+	public get state(): LobbyState {
 		const state = {
 			ID: this._ID,
 			gameID: this._gameID,
@@ -72,7 +78,11 @@ export class Lobby {
 			players: this._players
 		};
 
-		return JSON.stringify(state);
+		return state;
+	}
+
+	public get stateJSON():string {
+		return JSON.stringify(this.state);
 	}
 
 	public getGameDetails() {
@@ -101,6 +111,7 @@ export class Lobby {
 
 	// startup procedure if we reached the number of players
 	public launch(callback: (ID:string, format:number, players:string[]) => boolean): { status: "success" | "failure", reply: string, ID?: string } {
+		// check if we are already in game
 		if (this._ingame === true) {
 			console.log("Lobby already started");
 			return {
@@ -109,18 +120,31 @@ export class Lobby {
 			};
 		}
 
+		// check if all the players joined
 		if (this._players.length !== this._size) {
-			console.log('Not enough players!');	// #todo send to frontend
+			console.log('Not enough players!');
 			return {
 				status: "failure",
 				reply: "Not enough players"
 			};
 		}
+
+		// check if all the players are connected
+		if (this._players.find(p => p.status !== "connected")) {
+			console.log('Not all player connected!');
+			return {
+				status: "failure",
+				reply: "Not all player connected!"
+			};
+		}
+
+		// #debug pillar
 		console.log(`Starting lobby ${this._ID} ...`);
 
 		/* ! ! ! CREATING GAME ID ! ! ! */
 		this._gameID = uuidv4();
 
+		// callback for external porpouses
 		if (callback(this._gameID, this._format, this._players.map(p => p.ID)) === false) {
 			this._gameID = "empty";
 			return {
@@ -154,9 +178,9 @@ export class Lobby {
 		this._ingame = false;
 
 		// all the players are expected to reconnect
-		for (let i = 0; i < this._players.length; ++i) {
-			this._players[i].status = "joining";
-		}
+		this._players.forEach((player) => {
+			player.status = "joining";
+		});
 	}
 
 	// cleanup procedure if no player in lobby

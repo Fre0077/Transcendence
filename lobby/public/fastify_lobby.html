@@ -7,6 +7,13 @@
     canvas { background: #000; display: none; margin: 20px auto; }
     #ui { text-align: center; margin-top: 20px; }
     #lobbyCode { margin-top: 10px; font-weight: bold; }
+    footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      padding: 10px;
+    }
   </style>
 </head>
 <body>
@@ -23,16 +30,21 @@
     <button id="btnAddBot">Add BOT</button><button id="btnRemBot">Rem BOT</button>
 	<br/><br/>
 
-	<button id="btnStart">Start Game</button>
+	<button id="btnStart">Start Game</button><button id="btnRejoin">Rejoin Game</button>
 	<br/><br/>
 
     <div id="lobbyCode"></div>
+    <div id="clientLog">Waiting...</div>
     <div id="serverLog">Waiting...</div>
   </div>
   <div id="players">
-	players
+	Players
   </div>
 
+  <footer>
+  Lobbies:<br>
+    <div id="lobbies"></div>
+  </footer>
   <script>
 
     let playerID, lobbyID;
@@ -61,6 +73,7 @@
 
     const scoreboard = document.getElementById("scoreboard");
     const serverLog = document.getElementById("serverLog");
+    const clientLog = document.getElementById("clientLog");
     const lobbyCodeDiv = document.getElementById("lobbyCode");
 
     const joinInput = document.getElementById("joinInput");
@@ -68,6 +81,7 @@
     const btnJoin = document.getElementById("btnJoin");
     const btnLeave = document.getElementById("btnLeave");
 	  const btnStart = document.getElementById("btnStart");
+    const btnRejoin = document.getElementById("btnRejoin");
 
     const btnAddBot = document.getElementById("btnAddBot");
     const btnRemBot = document.getElementById("btnRemBot");
@@ -79,68 +93,81 @@
     // visualize playerID
     document.getElementById("playerID").innerHTML = playerID;
 
-	/* STARTUP PROCEDURE for FRONTEND @aleborghi */
-      /*
+    /* STARTUP PROCEDURE for FRONTEND @aleborghi */
+    /*
       first you create a lobby,
       the backend will send the ID of the lobby created:
-	  { method: 'CREATE_REPLY', status: 'success', value: '<lobbyID>' }
+        { method: 'CREATE_REPLY', status: 'success', value: '<lobbyID>' }
 
-      the second send is to join the lobby that was created,
+      the other players will join the lobby
       if 'value' is set to 'ANY', the first lobby with an empty slot will be joined.
-	  the backend will send a reply:
-	  { method: 'JOIN_REPLY', status: 'success', value: '<lobbyID>' }
-	  if the join failed because the <lobbyID> was not found or no lobby were yet created
-	  (ANY case), the status will be set to 'failure' */
+      the backend will send a reply:
+      { method: 'JOIN_REPLY', status: 'success', value: '<lobbyID>' }
+      if the join failed because the <lobbyID> was not found or no lobby were yet created
+      (ANY case), the status will be set to 'failure'.
+
+      then the lobby can be STARTed.
+
+      When the lobby is in game the lobbyStatus.ingame value is set to true
+    */
 
     /* -------------------------
        UI BUTTON HANDLERS
     -------------------------- */
 
+    let rejoin = false;
+
     // CREATE
     btnCreate.onclick = () => {
       socket.send(JSON.stringify({ method: "CREATE", playerID: playerID, format: 12 }));
-      serverLog.innerText = "Creating lobby...";
+      clientLog.innerText = "Creating lobby...";
     };
 
     // JOIN
     btnJoin.onclick = () => {
       const code = joinInput.value.trim() || "ANY";
       socket.send(JSON.stringify({ method: "JOIN", lobbyID: code, playerID: playerID }));
-      serverLog.innerText = `Joining lobby: ${code}...`;
+      clientLog.innerText = `Joining lobby: ${code}...`;
     };
 
     // LEAVE
     btnLeave.onclick = () => {
       socket.send(JSON.stringify({ method: "LEAVE" }));
-      serverLog.innerText = `Leaving lobby ...`;
+      clientLog.innerText = `Leaving lobby ...`;
     };
 
     // START
 	  btnStart.onclick = () => {
       socket.send(JSON.stringify({ method: "START" }));
-      serverLog.innerText = "Starting game...";
+      clientLog.innerText = "Starting game...";
+    };
+
+    // REJOIN
+	  btnRejoin.onclick = () => {
+      rejoin = true;
+      clientLog.innerText = "Rejoining game...";
     };
 
     // BOT
     btnAddBot.onclick = () => {
       socket.send(JSON.stringify({ method: "BOT", value: "ADD" }));
-      serverLog.innerText = "Adding bot...";
+      clientLog.innerText = "Adding bot...";
     };
 
     btnRemBot.onclick = () => {
       socket.send(JSON.stringify({ method: "BOT", value: "REMOVE" }));
-      serverLog.innerText = "Removing bot...";
+      clientLog.innerText = "Removing bot...";
     };
 
     //-----------------------------------------------
     // start talking with the game backend @aleborghi
 
-    let gameStarted = false;
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
 
     function startGame(myGameID, myPlayerID) {
-
-      if (gameStarted === true) return ;
-      lobbyCodeDiv.innerText = `Game Started ${myGameID}`;
+      clientLog.innerText = `Game Started ${myGameID}`;
 
       // open new window
       sessionStorage.setItem("sesData", JSON.stringify({
@@ -150,12 +177,6 @@
       }));
 
       window.location.href = "/game";  // same window
-      
-      // const newWin = window.open("/game", "_blank");
-      // newWin.onload = () => {
-      //   newWin.postMessage({playerID: myPlayerID, gameID: myGameID}, `http://${window.location.hostname}:3003/game`);
-      // };
-      gameStarted = true;
     }
 
     /* -------------------------
@@ -164,16 +185,20 @@
 
     socket.addEventListener("open", () => {
       console.log("Connected to server");
-      serverLog.innerText = "Connected.";
+      clientLog.innerText = "Connected.";
 
       if (lobbyID !== undefined) {
-        socket.send(JSON.stringify({ method: "JOIN", lobbyID: lobbyID, playerID: playerID }));
-        serverLog.innerText = `Joining lobby: ${code}...`;
+        sleep(1100) // @aleborghi sleeppino quando ti riconnetti all lobby dopo la partita
+        .then(() => {
+          socket.send(JSON.stringify({ method: "JOIN", lobbyID: lobbyID, playerID: playerID }));
+          clientLog.innerText = `Joining lobby: ${lobbyID}...`;
+        });
       }
     });
 
     socket.addEventListener("message", (event) => {
       try {
+        console.log("TYPE OF MESSAGE:", typeof event.data, event.data);
         const data = JSON.parse(event.data);
 
         /* ---------------
@@ -182,10 +207,11 @@
         if (data.method === "CREATE_REPLY") {
           if (data.status === 'success') {
             lobbyID = data.value;
-            lobbyCodeDiv.innerText = `Lobby created! Code: ${lobbyID}`;
+            lobbyCodeDiv.innerHTML = lobbyID;
+            serverLog.innerText = `Lobby created! Code: ${lobbyID}`;
           }
           else if (data.status === 'failure')
-            lobbyCodeDiv.innerText = `Failed to create the Lobby\n${data.comment}`;
+            serverLog.innerText = `Failed to create the Lobby\n${data.comment}`;
           return;
         }
 
@@ -193,10 +219,12 @@
            LOBBY JOIN
         ------------ */
         if (data.method === "JOIN_REPLY") {
-		      if (data.status === 'success')
-          	lobbyCodeDiv.innerText = `Joined lobby ${data.value}`;
-		      else if (data.status === 'failure')
-		        lobbyCodeDiv.innerText = `Failed to join ${data.value}:\n${data.comment}`;
+		      if (data.status === 'success') {
+            lobbyID = data.value;
+            lobbyCodeDiv.innerHTML = lobbyID;
+          	serverLog.innerText = `Joined lobby ${data.value}`;
+          } else if (data.status === 'failure')
+		        serverLog.innerText = `Failed to join ${data.value}: ${data.comment}`;
           return;
         }
 
@@ -206,10 +234,23 @@
         if (data.method === "LEAVE_REPLY") {
 		      if (data.status === 'success') {
             playersDiv.innerHTML = "players"; // clear
-          	lobbyCodeDiv.innerText = `Success: ${data.comment}`;
+            lobbyCodeDiv.innerHTML = "";      // clear
+          	serverLog.innerText = `Success: ${data.comment}`;
             lobbyID = undefined;
           } else if (data.status === 'failure')
-		        lobbyCodeDiv.innerText = `Failure: ${data.comment}`;
+		        serverLog.innerText = `Failure: ${data.comment}`;
+          return;
+        }
+
+        /* -----------
+          GAME START
+        ------------ */
+        if (data.method === "START_REPLY") {
+          if (data.status === 'success') {
+              startGame(data.value, playerID);
+          }
+          else if (data.status === 'failure')
+            serverLog.innerText = `Failed to start game: ${data.comment}`;
           return;
         }
 
@@ -225,25 +266,13 @@
 			    }
 
 			    playersDiv.innerHTML = html;
-
-          if (data.ingame === true) {
+          if (rejoin === true)
+          {
             startGame(data.gameID, playerID);
-          } else if (data.ingame === false)
-            gameStarted = false;
+            rejoin = false;
+          }
 			    return;
 		    }
-
-		    /* -----------
-          GAME START
-        ------------ */
-        if (data.method === "START_REPLY") {
-          if (data.status === 'success') {
-              startGame(data.value, playerID);
-          }
-          else if (data.status === 'failure')
-            lobbyCodeDiv.innerText = `Failed to start game: ${data.comment}`;
-          return;
-        }
 
         /* ----------------------
            OTHER SERVER MESSAGES
@@ -251,11 +280,43 @@
         serverLog.innerText = event.data;
 
       } catch (err) {
-        console.error("Bad JSON:", event.data);
-        serverLog.innerText = `Bad JSON: ${event.data}`;
+        console.log("Error ", err);
+        console.error("ACTUAL RAW STRING:", JSON.stringify(event.data));
+        console.error("CHAR CODES:", [...event.data].map(c => c.charCodeAt(0)));
+        clientLog.innerText = `Bad JSON: ${event.data}`;
       }
     });
 
+    const lobbies = document.getElementById("lobbies");
+
+    setInterval(() => {
+      fetch(`http://${window.location.host}/lobbies`)
+        .then(res => res.text())
+        .then(text => {
+          let data;
+          try {
+            data = JSON.parse(text); 
+          } catch (err) {
+            console.error("JSON parse failed:", text);
+            return;
+          }
+
+          if (!data.states || !Array.isArray(data.states)) {
+            console.warn("Invalid /lobbies format:", data);
+            return;
+          }
+
+          let html = "";
+          for (const lobby of data.states) {
+            html += `${lobby.ID}<br>`;
+            for (const p of lobby.players)
+              html += `${p.ID} - ${p.status}<br>`;
+          }
+
+          if (lobbies) lobbies.innerHTML = html;
+        })
+        .catch(err => console.error("Fetch failed:", err));
+    }, 1000);
 
   </script>
 </body>
