@@ -4,7 +4,7 @@ import type { WebSocket } from "ws";
 
 
 // Where the Queue will listen
-const PORT = Number(process.env.PORT) || 3030;
+const PORT = Number(process.env.PORT) || 3031;
 
 /* ------- LOAD STUFF ------- */
 const fastify = Fastify({ 
@@ -40,6 +40,26 @@ fastify.get<{ Querystring: MyLobbyQuery }>(
 );
 
 
+/* ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! */
+
+// fetching test html
+await fastify.register(import('@fastify/static'), {
+	root: new URL('../public', import.meta.url).pathname
+});
+
+// serving lobby test html
+fastify.get('/', async (request, reply) => {
+	request; // ignore
+	return reply.sendFile('fastify_lobby.html');
+});
+
+// serving game test html
+fastify.get('/game', async (request, reply) => {
+	request; // ignore
+	return reply.sendFile('fastify_game.html');
+});
+
+/* ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! */
 
 
 
@@ -47,10 +67,10 @@ fastify.get<{ Querystring: MyLobbyQuery }>(
 /* ----------- LOBBY DataBase ---------- */
 let lobbies:Map<string, Lobby<WebSocket>> = new Map();
 
-export function createLobby(ID:string, size:number = 2): Lobby<WebSocket>
+export function createLobby(/* game:string,  */size:number = 2): Lobby<WebSocket>
 {
 	const lobby:Lobby<WebSocket> = new Lobby(size);
-	lobbies.set(ID, lobby);
+	lobbies.set(lobby.ID, lobby);
 	return lobby;
 }
 
@@ -138,6 +158,8 @@ fastify.register(async function (fastify) {
 	});
 });
 
+export let MQID:string;
+
 /* ------------------------------------------ */
 const start = async () => {
 	try {
@@ -145,7 +167,29 @@ const start = async () => {
 		await fastify.listen({ port: PORT, host: '0.0.0.0' });
 		console.log(`Server running on http://localhost:${PORT}`);
 
+		/* - - - FT_RABBIT SUBSCRIPTION - - - */
+		await fetch('http://localhost:3030/register')
+		.then(r => r.json())
+		.then((json) =>{
+			if ("ID" in json == false) throw "Invalid JSON";
+			MQID = json.ID;
+
+			console.log("Registered to ft_bunny with ID", MQID);
+		});
+		// catched below
+
+		await fetch(`http://localhost:3030/subscribe?queue=game&ID=${MQID}`)
+		.then(r => r.json())
+		.then((json) =>{
+			if ("status" in json == false) throw "Invalid JSON";
+			if (json.status !== 'success') throw "Unsuccessful subscription";
+
+			console.log("Subscribed to 'game' MessageQueue");
+		});
+		// catched below
+
 	} catch (err) {
+		console.log(err);
 		fastify.log.error(err);
 		process.exit(1);
 	}

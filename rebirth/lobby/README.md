@@ -127,12 +127,15 @@ to install:
 	npm install fastify ws @fastify/websocket @fastify/static
 	npm install uuid
 
+	(if not founding ws)
+	npm i --save-dev @types/ws
+
 
 to build:
 	npm run build
 
 to launch:
-	npm run dev
+	npm run start
 
 
 nice tutorial:

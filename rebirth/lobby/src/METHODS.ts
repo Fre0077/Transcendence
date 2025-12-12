@@ -33,7 +33,7 @@ export function AUTH(msg:object, outplayer:string | undefined): StandardReturn
 	if (outplayer !== undefined) {
 		return {
 			status: "failure",
-			reply: JSON.stringify({ method: 'AUTH_REPLY', status: "failure", comment: "Already authenticated"}),
+			reply: JSON.stringify({ method: 'AUTH_REPLY', status: "failure", comment: "Already authenticated"})
 		}
 	}
 
@@ -41,7 +41,7 @@ export function AUTH(msg:object, outplayer:string | undefined): StandardReturn
 	if (!("playerID" in msg) || typeof msg.playerID !== "string") {
 		return {
 			status: "failure",
-			reply: JSON.stringify({ method: 'AUTH_REPLY', status: "failure", comment: "missing playerID"}),
+			reply: JSON.stringify({ method: 'AUTH_REPLY', status: "failure", comment: "missing playerID"})
 		}
 	}
 
@@ -50,7 +50,7 @@ export function AUTH(msg:object, outplayer:string | undefined): StandardReturn
 	// success return
 	return {
 		status: "success",
-		reply: JSON.stringify({ method: 'CREATE_REPLY', status: "success", comment: "Successfully authenticated"}),
+		reply: JSON.stringify({ method: 'AUTH_REPLY', status: "success", comment: "Successfully authenticated"}),
 		player: msg.playerID,
 		lobby: undefined
 	};
@@ -82,7 +82,7 @@ export function CREATE(msg:object,
 	if (outplayer === undefined) {
 		return {
 			status: "failure",
-			reply: JSON.stringify({ method: 'CREATE_REPLY', status: "failure", comment: "Not authenticated"}),
+			reply: JSON.stringify({ method: 'CREATE_REPLY', status: "failure", comment: "Not authenticated"})
 		}
 	}
 
@@ -90,20 +90,12 @@ export function CREATE(msg:object,
 	if (outlobby !== undefined) {
 		return {
 			status: "failure",
-			reply: JSON.stringify({ method: 'CREATE_REPLY', status: "failure", comment: "already in a lobby"}),
-		}
-	}
-
-	// check for playerID
-	if (!("playerID" in msg) || typeof msg.playerID !== "string") {
-		return {
-			status: "failure",
-			reply: JSON.stringify({ method: 'CREATE_REPLY', status: "failure", comment: "missing playerID"}),
+			reply: JSON.stringify({ method: 'CREATE_REPLY', status: "failure", comment: "already in a lobby"})
 		}
 	}
 
 	//create lobby
-	const lobby:Lobby<WebSocket> = createLobby("pong");
+	const lobby:Lobby<WebSocket> = createLobby(/* "pong" */);
 
 	// check if the obj has format
 	if ("format" in msg && typeof msg.format === "number" ) {
@@ -119,7 +111,7 @@ export function CREATE(msg:object,
 		status: "success",
 		reply: JSON.stringify({ method: 'CREATE_REPLY', status: "success", value: lobby.ID}),
 		player: outplayer,
-		lobby: outlobby
+		lobby: lobby.ID
 	};
 }
 
@@ -151,7 +143,7 @@ export function JOIN(msg:object,
 	if (outplayer === undefined) {
 		return {
 			status: "failure",
-			reply: JSON.stringify({ method: 'JOIN_REPLY', status: "failure", comment: "Not authenticated"}),
+			reply: JSON.stringify({ method: 'JOIN_REPLY', status: "failure", comment: "Not authenticated"})
 		}
 	}
 
@@ -159,7 +151,7 @@ export function JOIN(msg:object,
 	if (outlobby !== undefined) {
 		return {
 			status: "failure",
-			reply: JSON.stringify({ method: 'JOIN_REPLY', status: "failure", comment: "already in a lobby"}),
+			reply: JSON.stringify({ method: 'JOIN_REPLY', status: "failure", comment: "already in a lobby"})
 		}
 	}
 
@@ -263,29 +255,31 @@ Reply:
 }
 */
 
+import { MQID } from './index.js'
+
 /* Health checker */
-async function checkServiceHealth(url:string)
-{
+// async function checkServiceHealth(url:string)
+// {
 
-	// console.log(`checking '${url}' health ...`);
+// 	// console.log(`checking '${url}' health ...`);
 
-	if (url === undefined || url === null) {
-		console.log('invalid URL');
-		return false;
-	}
+// 	if (url === undefined || url === null) {
+// 		console.log('invalid URL');
+// 		return false;
+// 	}
 
-	const health = await fetch(`${url}/health`)
-		.then(r => r.json())
-		.catch(() => null);
+// 	const health = await fetch(`${url}/health`)
+// 		.then(r => r.json())
+// 		.catch(() => null);
 
-	if (!health?.status) {
-		console.log(`Server '${url}' offline`);
-		return false;
-	}
+// 	if (!health?.status) {
+// 		console.log(`Server '${url}' offline`);
+// 		return false;
+// 	}
 
-	console.log(`Server '${url}' online`);
-	return true;
-}
+// 	console.log(`Server '${url}' online`);
+// 	return true;
+// }
 
 export async function START(outlobby:string | undefined): Promise<StandardReturn>
 {
@@ -315,36 +309,36 @@ export async function START(outlobby:string | undefined): Promise<StandardReturn
 	}
 	
 	// signal the GameService to create a Game
-	if (await checkServiceHealth('http://localhost:3031') === false) {
-		return {
-			status: "failure",
-			reply: JSON.stringify({ method: 'START_REPLY', status: 'failure', comment: "The Game service is unavailable" })
-		};
-	}
+	// if (await checkServiceHealth('http://localhost:3030') === false) {
+	// 	return {
+	// 		status: "failure",
+	// 		reply: JSON.stringify({ method: 'START_REPLY', status: 'failure', comment: "The MessageQueue service is unavailable" })
+	// 	};
+	// }
 
 	// get variables from the callback
 	let ret = lobby.launch((gameID:string, players:string[]): boolean => {
 		try {
-			fetch('http://localhost:3031', {
+			fetch('http://localhost:3030/publish', {
 				method: 'POST',
 				headers: {
 				'Accept': 'application/json',
 				'Content-Type': 'application/json'
 				},
-				body: JSON.stringify({ ID: gameID, players: players })
+				body: JSON.stringify({ ID: MQID, queue: "game", message: { ID: gameID, players: players }})
 			});
 		} catch (err) {
-			console.log("Failed to connect to Game service:", err);
+			console.log("Failed to connect to MessageQueue service:", err);
 			return false
 		}
 		return true;
 	});
 
 	// failed launch
-	if (ret == false) {
+	if (ret.status === 'failure') {
 		return {
 			status: "failure",
-			reply: JSON.stringify({ method: 'START_REPLY', status: 'failure', comment: "Failed to start the lobby" })
+			reply: JSON.stringify({ method: 'START_REPLY', status: 'failure', comment: ret.reason })
 		}
 	}
 
@@ -353,6 +347,9 @@ export async function START(outlobby:string | undefined): Promise<StandardReturn
 	
 	// broadcast to everyone
 	lobby.broadcast(reply);
+
+	// #debg
+	console.log(`Starting lobby ${lobby.ID} ...`);
 
 	// send game started reply
 	return {
@@ -382,7 +379,7 @@ export function BOT(msg:object, outlobby:string | undefined)
 	if (outlobby === undefined) {
 		return {
 			status: "failure",
-			reply: JSON.stringify({ method: 'BOT_REPLY', status: 'failure', comment: "Join a lobby before starting the game dumass" })
+			reply: JSON.stringify({ method: 'BOT_REPLY', status: 'failure', comment: "Join a lobby before adding a Bot" })
 		};
 	}
 

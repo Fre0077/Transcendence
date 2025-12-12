@@ -21,7 +21,7 @@ class Player<T extends MySocket>
 
 	constructor(__socket:T | null)
 	{
-		this._status = "disconnected";
+		this._status = "connected";
 		this._socket = __socket;
 	}
 
@@ -169,14 +169,25 @@ export class Lobby<T extends MySocket> {
 	/* ----------------------------------------------------- */
 
 	// startup procedure if we reached the number of players
-	public launch(callback: (gameID:string, players:string[]) => boolean): boolean
+	public launch(callback: (gameID:string, players:string[]) => boolean):
+		{ status: 'success' | 'failure', reason:string }
 	{
 		// is lobby full?
-		if (this.full() === false) return false;
+		if (this.full() === false) {
+			return {
+				status: 'failure',
+				reason: "Lobby not full"
+			};
+		}
 
 		// check if all the players are connected
 		this._players.forEach((player) => {
-			if (player.status !== "connected") return false;
+			if (player.status !== "connected") {
+				return {
+					status: 'failure',
+					reason: "Not all players connected"
+				};
+			}
 		});
 
 		// ! ! ! CREATING GAME ID ! ! ! 
@@ -189,7 +200,10 @@ export class Lobby<T extends MySocket> {
 		// callback for external porpouses (send to GameService)
 		if (callback(this._gameID, players) === false) {
 			this._gameID = "empty";
-			return false;
+			return {
+				status: 'failure',
+				reason: "Failed to connect to the Service"
+			};
 		}
 
 		// YEA BOYY
@@ -200,7 +214,10 @@ export class Lobby<T extends MySocket> {
 			player.away();
 		});
 
-		return true;
+		return {
+			status: 'success',
+			reason: "Lobby launched successfully"
+		};
 	}
 
 	// reset the lobby

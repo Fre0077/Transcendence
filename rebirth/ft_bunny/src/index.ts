@@ -20,10 +20,13 @@ fastify.get("/health", async () => ({ status: 'success' }));
 
 /* ============= REGISTER ============ */
 
+let IDs:Set<string> = new Set();
+
 fastify.get(
 	"/register",
 	async () => {
 		const ID = uuidv4();
+		IDs.add(ID);
 
 		return { status: 'success', ID: ID };
 	}
@@ -117,42 +120,78 @@ let mqueues:Map<string, MQueue> = new Map();
 
 function subscribe(ID:string, name:string): boolean
 {
+	/* #debug */
+	console.log(`${ID} subscribing to`, name);
+
+	// check if the ID is one of our onw generated ID
+	if (IDs.has(ID) === false) return false;
+	
+	// check if the MQ exists
 	const mq = mqueues.get(name);
 	if (mq === undefined) return false;
+
+	// perform the action
 	mq.subscribe(ID);
 	return true;
 }
 
 function leave(ID:string, name:string): boolean
 {
+	/* #debug */
+	console.log(`${ID} leaving`, name);
+
+	// check if the ID is one of our onw generated ID
+	if (IDs.has(ID) === false) return false;
+
+	// check if the MQ exists
 	const mq = mqueues.get(name);
 	if (mq === undefined) return false;
+
+	// perform the action
 	mq.leave(ID);
 	return true;
 }
 
 function publish(ID:string, name:string, message:string): boolean
 {
+	/* #debug */
+	console.log(`${ID} publishing to`, name);
+
+	// check if the ID is one of our onw generated ID
+	if (IDs.has(ID) === false) return false;
+
+	// check if the MQ exists
 	const mq = mqueues.get(name);
 	if (mq === undefined) return false;
+
+	// perform the action
 	mq.publish(ID, message);
 	return true;
 }
 
 function get(ID:string, name:string): string | undefined
 {
+	/* #debug */
+	console.log(`${ID} getting from`, name);
+
+	// check if the ID is one of our onw generated ID
+	if (IDs.has(ID) === false) return undefined;
+
+	// check if the MQ exists
 	const mq = mqueues.get(name);
 	if (mq === undefined) return undefined;
+
+	// perform the action
 	return mq.get(ID);
 }
 
 
 // clean queues
-setInterval (() => {
-	mqueues.forEach((queue, name) => {
-		if (queue.empty()) mqueues.delete(name);
-	});
-}, 1000);
+// setInterval (() => {
+// 	mqueues.forEach((queue, name) => {
+// 		if (queue.empty()) mqueues.delete(name);
+// 	});
+// }, 1000);
 
 
 
@@ -163,6 +202,9 @@ const start = async () => {
 		// start fastify server
 		await fastify.listen({ port: PORT, host: '0.0.0.0' });
 		console.log(`Server running on http://localhost:${PORT}`);
+
+		mqueues.set("test", new MQueue());
+		mqueues.set("game", new MQueue());
 
 	} catch (err) {
 		fastify.log.error(err);
