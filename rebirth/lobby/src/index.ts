@@ -27,7 +27,7 @@ interface MyLobbyQuery {
 }
 
 fastify.get<{ Querystring: MyLobbyQuery }>(
-	"/get",
+	"/my-lobby",
 	async (request) => {
 		const { ID } = request.query;
 

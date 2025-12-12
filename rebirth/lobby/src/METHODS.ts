@@ -264,7 +264,7 @@ Reply:
 */
 
 /* Health checker */
-/* async function checkServiceHealth(url:string)
+async function checkServiceHealth(url:string)
 {
 
 	// console.log(`checking '${url}' health ...`);
@@ -285,7 +285,7 @@ Reply:
 
 	console.log(`Server '${url}' online`);
 	return true;
-} */
+}
 
 export async function START(outlobby:string | undefined): Promise<StandardReturn>
 {
@@ -315,7 +315,7 @@ export async function START(outlobby:string | undefined): Promise<StandardReturn
 	}
 	
 	// signal the GameService to create a Game
-	/* if (await checkServiceHealth(url) === false) {
+	if (await checkServiceHealth('http://localhost:3031') === false) {
 		return {
 			status: "failure",
 			reply: JSON.stringify({ method: 'START_REPLY', status: 'failure', comment: "The Game service is unavailable" })
@@ -323,12 +323,15 @@ export async function START(outlobby:string | undefined): Promise<StandardReturn
 	}
 
 	// get variables from the callback
-	let ret = lobby.launch((ID:string, format:number, players:string[]): boolean => {
+	let ret = lobby.launch((gameID:string, players:string[]): boolean => {
 		try {
-			gameService.createGame.mutate({
-				ID: ID,
-				format: format,
-				players: players
+			fetch('http://localhost:3031', {
+				method: 'POST',
+				headers: {
+				'Accept': 'application/json',
+				'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ ID: gameID, players: players })
 			});
 		} catch (err) {
 			console.log("Failed to connect to Game service:", err);
@@ -338,18 +341,18 @@ export async function START(outlobby:string | undefined): Promise<StandardReturn
 	});
 
 	// failed launch
-	if (ret.status === "failure") {
+	if (ret == false) {
 		return {
 			status: "failure",
-			reply: JSON.stringify({ method: 'START_REPLY', status: 'failure', comment: ret.reply })
+			reply: JSON.stringify({ method: 'START_REPLY', status: 'failure', comment: "Failed to start the lobby" })
 		}
-	} */
+	}
 
 	// build successful reply
-	const reply:string = JSON.stringify({ method: 'START_REPLY', status: 'success', /* value: ret.ID, */ comment: "The lobby is now in game"});
+	const reply:string = JSON.stringify({ method: 'START_REPLY', status: 'success', value: lobby.gameID, comment: "The lobby is now in game"});
 	
 	// broadcast to everyone
-	lobby?.broadcast(reply);
+	lobby.broadcast(reply);
 
 	// send game started reply
 	return {

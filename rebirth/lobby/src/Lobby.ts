@@ -109,6 +109,11 @@ export class Lobby<T extends MySocket> {
 		return this._ID;
 	}
 
+	// getter of gameID
+	public get gameID():string {
+		return this._gameID;
+	}
+
 	// getter of ingame
 	public get ingame(): boolean {
 		return this._ingame;
@@ -181,7 +186,7 @@ export class Lobby<T extends MySocket> {
 		// Prepare object to send to GameService
 		const players = Array.from(this._players.keys());
 
-		// callback for external porpouses
+		// callback for external porpouses (send to GameService)
 		if (callback(this._gameID, players) === false) {
 			this._gameID = "empty";
 			return false;

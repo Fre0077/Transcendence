@@ -1,5 +1,6 @@
 import Fastify from 'fastify';
 import { MQueue } from './MQueue.js'
+import { v4 as uuidv4 } from "uuid";
 
 // Where the Queue will listen
 const PORT = Number(process.env.PORT) || 3030;
@@ -16,6 +17,17 @@ const fastify = Fastify({
 // Health-check endpoint (server-side)
 fastify.get("/health", async () => ({ status: 'success' }));
 
+
+/* ============= REGISTER ============ */
+
+fastify.get(
+	"/register",
+	async () => {
+		const ID = uuidv4();
+
+		return { status: 'success', ID: ID };
+	}
+);
 
 /* ============= SUBSRCIBE ============ */
 interface SubscribeQuery {
