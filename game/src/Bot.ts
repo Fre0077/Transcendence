@@ -55,11 +55,11 @@ export class Bot
 		// calculate hitY of the ball
 		this._exp = expectedPos(ball.pos, ball.angle, botX);
 
-		const height_2 = paddle.height / 2;
+		const height_4 = paddle.height / 4;
 
 		// stop the paddle if we reached the expected position
-		if (botpos - height_2 < this._exp
-			&& botpos + height_2 > this._exp)
+		if (botpos - height_4 < this._exp
+			&& botpos + height_4 > this._exp)
 		{
 			if (this._lastmove === "UP_PRESS")
 				this._move = "UP_RELEASE";
