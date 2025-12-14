@@ -255,31 +255,7 @@ Reply:
 }
 */
 
-import { MQID } from './index.js'
-
-/* Health checker */
-// async function checkServiceHealth(url:string)
-// {
-
-// 	// console.log(`checking '${url}' health ...`);
-
-// 	if (url === undefined || url === null) {
-// 		console.log('invalid URL');
-// 		return false;
-// 	}
-
-// 	const health = await fetch(`${url}/health`)
-// 		.then(r => r.json())
-// 		.catch(() => null);
-
-// 	if (!health?.status) {
-// 		console.log(`Server '${url}' offline`);
-// 		return false;
-// 	}
-
-// 	console.log(`Server '${url}' online`);
-// 	return true;
-// }
+import { bunnyPublish } from './bunny.js';
 
 export async function START(outlobby:string | undefined): Promise<StandardReturn>
 {
@@ -307,31 +283,11 @@ export async function START(outlobby:string | undefined): Promise<StandardReturn
 			reply: JSON.stringify({ method: 'START_REPLY', status: 'failure', comment: "The lobby isnt full, cannot start game" })
 		};
 	}
-	
-	// signal the GameService to create a Game
-	// if (await checkServiceHealth('http://localhost:3030') === false) {
-	// 	return {
-	// 		status: "failure",
-	// 		reply: JSON.stringify({ method: 'START_REPLY', status: 'failure', comment: "The MessageQueue service is unavailable" })
-	// 	};
-	// }
 
 	// get variables from the callback
-	let ret = lobby.launch((gameID:string, players:string[]): boolean => {
-		try {
-			fetch('http://localhost:3030/publish', {
-				method: 'POST',
-				headers: {
-				'Accept': 'application/json',
-				'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({ ID: MQID, queue: "game", message: { ID: gameID, players: players }})
-			});
-		} catch (err) {
-			console.log("Failed to connect to MessageQueue service:", err);
-			return false
-		}
-		return true;
+	let ret = await lobby.launch( async (gameID:string, players:string[]): Promise<boolean> => {
+		// signal the GameService to create a Game
+		return bunnyPublish('game', { ID: gameID, players: players });
 	});
 
 	// failed launch
@@ -350,6 +306,17 @@ export async function START(outlobby:string | undefined): Promise<StandardReturn
 
 	// #debg
 	console.log(`Starting lobby ${lobby.ID} ...`);
+
+	// ask bots to join the game
+	for (const id of lobby.players.keys()) {
+		if (id.startsWith('BOT')) {
+			bunnyPublish('bot', {
+				game: 'pong', 				// #todo: flexible
+				ID: lobby.gameID,
+				bot: id,
+			});
+		}
+	}
 
 	// send game started reply
 	return {
@@ -373,6 +340,8 @@ Reply:
 	comment: <comment>
 }
 */
+let botcount:number = 0;
+
 export function BOT(msg:object, outlobby:string | undefined)
 {
 	// check if you joined a lobby
@@ -414,7 +383,10 @@ export function BOT(msg:object, outlobby:string | undefined)
 		}
 
 		// add the bot
-		lobby.join("BOT", null);
+		lobby.join(`BOT-${botcount}`, null);
+
+		// next bot
+		++botcount;
 
 		// successful return
 		return {
@@ -425,15 +397,18 @@ export function BOT(msg:object, outlobby:string | undefined)
 	else if (msg.value === "REMOVE")
 	{
 		// check if bot in lobby
-		if (lobby.has("BOT") === false) {
+		if (botcount === 0) {
 			return {
 				status: "failure",
 				reply: JSON.stringify({ method: 'BOT_REPLY', status: 'failure', comment: "No BOT in the lobby" })
 			};
 		}
 
+		// back one bot
+		--botcount;
+
 		// remove the bot
-		lobby.leave("BOT");
+		lobby.leave(`BOT-${botcount}`);
 
 		// successful return
 		return {

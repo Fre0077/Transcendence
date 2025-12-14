@@ -138,5 +138,16 @@ to launch:
 	npm run start
 
 
+VARIABLES TO DEFINE in .env
+
+PORT: The port on which the server will be listening on
+MYURL: e.g. 'http://my.ip.add.res:PORT'
+BUNNYURL: The URL of the ft_bunny container (e.g. 'http://bunny.ip.add.res:BUNNYPORT)
+MYPASS: The password used to access the bunnyMQ service
+
+
+
+
+
 nice tutorial:
 https://betterstack.com/community/guides/scaling-nodejs/fastify-websockets/

@@ -64,7 +64,7 @@ Reply:
 	method: 'JOIN_REPLY',
 	status: 'success/failure',
 	value: <gameID>,
-	comment: <comment>
+	comment: <comment>		(only on status === 'failure')
 } */	
 
 import { findGame, joinGame } from './index.js';
@@ -191,7 +191,6 @@ Reply:
 }
 Only replies in case of failure
 */
-// import { saveGameIntoMatchHistory } from './index.js';
 
 export function MOVE(msg:object, outgame:string | undefined, outplayer:string | undefined): string
 {
@@ -218,7 +217,7 @@ export function MOVE(msg:object, outgame:string | undefined, outplayer:string | 
 	}
 
 	// get the game instance
-	const { game, idx } = findGame(outgame, outplayer);
+	const { game, player } = findGame(outgame, outplayer);
 
 	// check if the game is found
 	if (game === undefined) {
@@ -226,17 +225,17 @@ export function MOVE(msg:object, outgame:string | undefined, outplayer:string | 
 	}
 
 	// check if playeris found
-	if (idx === undefined) {
+	if (player === undefined) {
 		return JSON.stringify({ method: 'MOVE_REPLY', status: 'failure', comment: "somehow you got this game's ID, but you aren't in the game" })
 	}
 
 	// check if the player is found
 
 	// process sent input
-	if (msg.value == "UP_PRESS") game.press(idx, "Up");
-	else if (msg.value == "DW_PRESS") game.press(idx, "Down");
-	else if (msg.value == "UP_RELEASE") game.release(idx, "Up");
-	else if (msg.value == "DW_RELEASE") game.release(idx, "Down");
+	if (msg.value == "UP_PRESS") game.press(player.idx, "Up");
+	else if (msg.value == "DW_PRESS") game.press(player.idx, "Down");
+	else if (msg.value == "UP_RELEASE") game.release(player.idx, "Up");
+	else if (msg.value == "DW_RELEASE") game.release(player.idx, "Down");
 	else if (msg.value == "START_PRESS") game.launch();
 	else if (msg.value == "RESET_PRESS") {
 		// #todo send to DB

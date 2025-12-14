@@ -257,26 +257,6 @@
           return;
         }
 
-        /* --------------
-           LOBBY STATE
-        // --------------- */
-        // if (data.ID && data.players) {
-			  //   playersDiv.innerHTML = ""; // clear
-
-			  //   let html = "";
-			  //   for (let i = 0; i < data.players.length; i++) {
-				//     html += `${data.players[i].ID} : ${data.players[i].status}<br>`;
-			  //   }
-
-			  //   playersDiv.innerHTML = html;
-        //   if (rejoin === true)
-        //   {
-        //     startGame(data.gameID, playerID);
-        //     rejoin = false;
-        //   }
-			  //   return;
-		    // }
-
         /* ----------------------
            OTHER SERVER MESSAGES
         ----------------------- */
@@ -289,8 +269,6 @@
         clientLog.innerText = `Bad JSON: ${event.data}`;
       }
     });
-
-    const lobbies = document.getElementById("lobbies");
 
     setInterval(() => {
       if (lobbyID === undefined) return;
@@ -318,37 +296,47 @@
 				    html += `${state.players[i].ID} : ${state.players[i].status}<br>`;
 			    }
           playersDiv.innerHTML = html;
+
+          if (state.ingame === true && rejoin === true) {
+            startGame(state.gameID, playerID);
+            rejoin = false;
+          }
+
         })
         .catch(err => console.error("Fetch failed:", err));
     }, 1000);
-    // setInterval(() => {
-    //   fetch(`http://${window.location.host}/lobbies`)
-    //     .then(res => res.text())
-    //     .then(text => {
-    //       let data;
-    //       try {
-    //         data = JSON.parse(text); 
-    //       } catch (err) {
-    //         console.error("JSON parse failed:", text);
-    //         return;
-    //       }
 
-    //       if (!data.states || !Array.isArray(data.states)) {
-    //         console.warn("Invalid /lobbies format:", data);
-    //         return;
-    //       }
+    // All lobbies
+    const lobbies = document.getElementById("lobbies");
 
-    //       let html = "";
-    //       for (const lobby of data.states) {
-    //         html += `${lobby.ID}<br>`;
-    //         for (const p of lobby.players)
-    //           html += `${p.ID} - ${p.status}<br>`;
-    //       }
+    setInterval(() => {
+      fetch(`http://${window.location.host}/lobbies`)
+        .then(res => res.text())
+        .then(text => {
+          let data;
+          try {
+            data = JSON.parse(text); 
+          } catch (err) {
+            console.error("JSON parse failed:", text);
+            return;
+          }
 
-    //       if (lobbies) lobbies.innerHTML = html;
-    //     })
-    //     .catch(err => console.error("Fetch failed:", err));
-    // }, 1000);
+          if (!Array.isArray(data.states)) {
+            console.warn("Invalid /lobbies format:", data);
+            return;
+          }
+
+          let html = "";
+          for (const lobby of data.states) {
+            html += `${lobby.ID}<br>`;
+            for (const p of lobby.state.players)
+              html += `${p.ID} - ${p.status}<br>`;
+          }
+
+          if (lobbies) lobbies.innerHTML = html;
+        })
+        .catch(err => console.error("Fetch failed:", err));
+    }, 1000);
 
   </script>
 </body>

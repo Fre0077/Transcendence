@@ -10,23 +10,6 @@
 
 */
 
-
-//----------------
-/* GAME MECHANICS */
-
-/* the ball hit an object!, change the angle of the ball based
-	 on the direction which the surface is facing when hitting the ball. */
-// function bounce_90_deg(axis:string, angle:number) : number {
-// 	if (axis === 'x') 
-// 	else if (axis === 'y') angle = angle * -1;
-
-// 	// clamp angle
-// 	if (angle < 0) angle = 2 * Math.PI + angle;
-// 	else if (angle > 2 * Math.PI) angle = angle - 2 * Math.PI;
-
-// 	return angle;
-// }
-
 import { randIntM } from './random.js'
 
 // array of number angles between +PI / 4 and -PI / 4
@@ -452,12 +435,12 @@ export class Game
 
 		if (this.score[0] === this.targetScore)
 		{
-			this.winner = 1;
+			this.winner = 0;
 			this.stop();
 		}
 		else if (this.score[1] === this.targetScore)
 		{
-			this.winner = 2;
+			this.winner = 1;
 			this.stop();
 		}
 	}

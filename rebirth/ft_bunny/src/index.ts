@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 
 // Where the Queue will listen
 const PORT = Number(process.env.PORT) || 3030;
+const VERSION:string = "1.0.3";
 
 
 const fastify = Fastify({ 
@@ -15,19 +16,55 @@ const fastify = Fastify({
 /* ------------------------------------ */
 
 // Health-check endpoint (server-side)
-fastify.get("/health", async () => ({ status: 'success' }));
+fastify.get('/health', async () => ({ status: 'ok' }));
 
 
 /* ============= REGISTER ============ */
 
-let IDs:Set<string> = new Set();
+// map of IDs and users data
+let users:Map<string, { endpoint:string, password:string }> = new Map();
 
-fastify.get(
+interface RegisterQuery {
+	endp: string;
+	pwd: string;
+}
+
+fastify.get<{ Querystring: RegisterQuery }>(
 	"/register",
-	async () => {
-		const ID = uuidv4();
-		IDs.add(ID);
+	async (request) => {
+		// check if they passed the notify endpoint
+		const { endp, pwd } = request.query;
+		if (endp === undefined && pwd === undefined) return { status: 'failure', ID: undefined, reason: 'Missing \'pwd\' propery' };
 
+		// check all the users
+		if (endp !== undefined)
+		{
+			for (const [ID, { endpoint, password }] of users)
+			{
+				// if someone has same endpoint ...
+				if (endp === endpoint)
+				{
+					// ... and same passowrd
+					if (pwd === password)
+					{
+						// #debug
+						console.log('Erasing data of endpoint', endpoint);
+						// leave all the qeues
+						mqueues.forEach((mq) => {mq.leave(ID)});
+						break ;
+					}
+					// ... and different password
+					else return { status: 'failure', ID: undefined, reason: 'Wrong password for endpoint ' + endp };
+				}
+			}
+		}
+
+		// assign the ID
+		const ID = uuidv4();
+		users.set(ID, { endpoint:endp, password:pwd });
+
+		// #debug
+		console.log(`Client ${ID} successfully registered with endpoint`, endp);
 		return { status: 'success', ID: ID };
 	}
 );
@@ -124,7 +161,7 @@ function subscribe(ID:string, name:string): boolean
 	console.log(`${ID} subscribing to`, name);
 
 	// check if the ID is one of our onw generated ID
-	if (IDs.has(ID) === false) return false;
+	if (users.has(ID) === false) return false;
 	
 	// check if the MQ exists
 	const mq = mqueues.get(name);
@@ -141,7 +178,7 @@ function leave(ID:string, name:string): boolean
 	console.log(`${ID} leaving`, name);
 
 	// check if the ID is one of our onw generated ID
-	if (IDs.has(ID) === false) return false;
+	if (users.has(ID) === false) return false;
 
 	// check if the MQ exists
 	const mq = mqueues.get(name);
@@ -158,15 +195,14 @@ function publish(ID:string, name:string, message:string): boolean
 	console.log(`${ID} publishing to`, name);
 
 	// check if the ID is one of our onw generated ID
-	if (IDs.has(ID) === false) return false;
+	if (users.has(ID) === false) return false;
 
 	// check if the MQ exists
 	const mq = mqueues.get(name);
 	if (mq === undefined) return false;
 
 	// perform the action
-	mq.publish(ID, message);
-	return true;
+	return mq.publish(ID, message);
 }
 
 function get(ID:string, name:string): string | undefined
@@ -175,41 +211,96 @@ function get(ID:string, name:string): string | undefined
 	console.log(`${ID} getting from`, name);
 
 	// check if the ID is one of our onw generated ID
-	if (IDs.has(ID) === false) return undefined;
+	if (users.has(ID) === false) return undefined;
 
 	// check if the MQ exists
 	const mq = mqueues.get(name);
 	if (mq === undefined) return undefined;
 
 	// perform the action
-	return mq.get(ID);
+	return mq.get(ID)?.message;
+}
+
+// send notification if new messages are there
+function notify(mq:MQueue, name:string)
+{
+	// better MQueue
+	for (const follower of mq.queues.keys())
+	{
+		const endpoint = users.get(follower)?.endpoint
+		if (endpoint !== undefined && mq.empty(follower) === false)
+		{
+			// #debug
+			console.log('Notifying', follower);
+
+			fetch(`${endpoint}?queue=${name}`)
+			.catch((err) => console.log(err));
+		}
+	}
+
+	// Lamer MQueue
+	/* if (mq.empty() === false)
+	{
+		for (const follower of mq.followers)
+		{
+			const endpoint = users.get(follower)?.endpoint
+			if (endpoint !== undefined && follower !== mq.peek()?.sender)
+			{
+				// #debug
+				console.log('Notifying ' + follower + ' for ' + name);
+
+				fetch(`${endpoint}?queue=${name}`)
+				.catch((err) => console.log(err));
+			}
+		}
+	} */
 }
 
 
-// clean queues
-// setInterval (() => {
-// 	mqueues.forEach((queue, name) => {
-// 		if (queue.empty()) mqueues.delete(name);
-// 	});
-// }, 1000);
 
+
+
+// monitor queues
+function MonitorQueues()
+{
+	// console.log('Monitorin queues...')
+	// for each queue
+	mqueues.forEach((mq, name) => {
+		// send notifications
+		notify(mq, name);
+
+		// no mqueue delete for now
+		// if (queue.empty()) mqueues.delete(name);
+	});
+}
 
 
 
 /* ------------------------------------------ */
 const start = async () => {
 	try {
+
+		// create queues
+		mqueues.set('test', new MQueue());
+		mqueues.set('game', new MQueue());
+		mqueues.set('lobby', new MQueue());
+		mqueues.set('history', new MQueue());
+		mqueues.set('bot', new MQueue());
+
 		// start fastify server
 		await fastify.listen({ port: PORT, host: '0.0.0.0' });
-		console.log(`Server running on http://localhost:${PORT}`);
-
-		mqueues.set("test", new MQueue());
-		mqueues.set("game", new MQueue());
+		console.log(`ft_bunnyMQ version ${VERSION} running on http://localhost:${PORT}`);
 
 	} catch (err) {
 		fastify.log.error(err);
 		process.exit(1);
 	}
+
+	// routine checks
+	setInterval(() => {
+		// send notifications and shut down queues
+		MonitorQueues();
+	}, 1000);
 
 };
 

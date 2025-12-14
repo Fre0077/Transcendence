@@ -1,11 +1,19 @@
 import Fastify from 'fastify';
 import { Game } from './Game.js'
 // import type { WebSocket } from "ws";
-import { Bot } from './Bot.js'
 
 
 // Where the Queue will listen
 const PORT = Number(process.env.PORT) || 3032;
+export const BUNNYURL = process.env.BUNNYURL ?? 'http://localhost:3030';
+export const MYURL = process.env.MYURL ?? 'http://localhost:3032';
+export const MYPASS = process.env.MYPASS ?? 'password';
+
+// bunny client
+import { bunnyRegister, bunnySubscribe, bunnyGet, bunnyPublish } from './bunny.js'
+
+// service varaibles
+const TIMEOUT:number = 10;	// timeout in seconds to wait before deleeting the game
 const FPS:number = 60;
 
 /* ------- LOAD STUFF ------- */
@@ -17,7 +25,53 @@ const fastify = Fastify({
 await fastify.register(import('@fastify/websocket'));
 
 // Health-check endpoint (server-side)
-fastify.get("/health", async () => ({ status: "ok" }));
+fastify.get('/health', async () => ({ status: 'ok' }));
+
+
+
+
+/* ============= BUNNY ENDPOINT ============ */
+/* Description: this endpoint is passed to the bunnyMQ service
+upon registration. The service will perform a GET request on this
+endpoint whenever a new message is present in a subscribed queue. */
+
+interface BunnyQuery {
+	queue: string;
+	howmany: number;
+}
+
+fastify.get<{ Querystring: BunnyQuery }>(
+	"/bunny",
+	async (request) => {
+		const { queue } = request.query;
+
+		// a new message in game means new game to create
+		if (queue === 'game') {
+			const message = await bunnyGet('game');
+			const msg = Object(message);
+
+			// check if we got the gameID ad the players
+			if ("ID" in msg === false
+				|| typeof msg.ID !== "string"
+				|| "players" in msg === false
+				|| Array.isArray(msg.players) === false
+				|| !msg.players.every((p: unknown) => typeof p === "string"))
+			{
+				console.log('Invalid JSON (with successful get)', message);
+				// throw 'Invalid JSON (with successful get)';
+				return { status: 'ko' };
+			}
+
+			createGame(msg.ID, msg.players);
+		}
+		return { status: 'ok' };
+	}
+);
+
+/* ============================================== */
+
+
+
 
 
 
@@ -26,10 +80,10 @@ fastify.get("/health", async () => ({ status: "ok" }));
 type Player = {
 	ID:string;
 	idx:number;
-	status: "connected" | "disconnected";
+	status: "connected" | "disconnected" | "left";
 }
 
-let games:Map<string, {game: Game, players:Player[]}> = new Map();
+let games:Map<string, {game: Game, players:Player[], timeout:number }> = new Map();
 
 export function createGame(ID:string, playerIDs:string[]): Game
 {
@@ -37,31 +91,31 @@ export function createGame(ID:string, playerIDs:string[]): Game
 	console.log(`Creating game ${ID} ...`);
 
 	const players = Array.from(playerIDs, (playerID, idx) => ({
-		ID:playerID,
+		ID: playerID,
 		idx: idx,
-		status: "disconnected" as "connected" | "disconnected"
+		status: "disconnected" as "connected" | "disconnected" | "left"
 	}));
 
 	const game:Game = new Game();
-	games.set(ID, { game: game, players: players });
+	games.set(ID, { game: game, players: players, timeout:TIMEOUT });
 	return game;
 }
 
-export function findGame(ID:string, playerID:string | void): {game: Game | undefined, idx:number | undefined}
+export function findGame(ID:string, playerID:string | void): {game: Game | undefined, player:Player | undefined}
 {
 	// check if game is there
 	const game = games.get(ID);
-	if (game === undefined) return { game: undefined, idx: undefined };
+	if (game === undefined) return { game: undefined, player: undefined };
 
-	// check if also the player Idx is asked
-	if (!playerID) return { game: game.game, idx: undefined };
+	// check if also the player is asked
+	if (!playerID) return { game: game.game, player: undefined };
 
 	// check if player is there
 	const player = game.players.find(p => p.ID === playerID);
-	if (player === undefined) return { game: game.game, idx: undefined };
+	if (player === undefined) return { game: game.game, player: undefined };
 
-	// return the idx
-	return { game: game.game, idx: player.idx };
+	// return the player
+	return { game: game.game, player: player };
 }
 
 export function joinGame(ID:string, playerID:string): { status:"success" | "failure", reason:string }
@@ -119,7 +173,7 @@ export function leaveGame(ID:string, playerID:string): { status:"success" | "fai
 	}
 
 	// set status to disconnected
-	player.status = "disconnected";
+	player.status = "left";
 	return {
 		status: "success",
 		reason: "Player left successfully"
@@ -128,6 +182,27 @@ export function leaveGame(ID:string, playerID:string): { status:"success" | "fai
 
 export function deleteGame(ID:string)
 {
+	// check if game is present
+	const game = games.get(ID);
+	if (game === undefined) return;
+
+	// check if game is finished
+	const winner = game.game.end();
+	if (winner !== 0) bunnyPublish('history', {
+		ID: ID,
+		winner: game.players[winner],
+		players: Array.from(game.players, (ID) => {
+			ID
+		})
+	});
+
+	// send to lobby that all the players left the game
+	bunnyPublish('lobby', {
+		gameID: ID,
+		status: 'finished'
+	});
+
+	console.log(`Deleting game ${ID} ...`);
 	games.delete(ID);
 }
 
@@ -156,8 +231,6 @@ fastify.register(async function (fastify) {
 		let playerID:string | undefined = undefined;
 		// gameID
 		let gameID:string | undefined = undefined;
-		// bot instance, 1 for connection
-		let bot:Bot | undefined = undefined;
 		// bot interval
 		let interval:NodeJS.Timeout;	/* :D */
 
@@ -167,10 +240,9 @@ fastify.register(async function (fastify) {
 		// Handle incoming messages
 		connection.on('message', (message:string) => {
 			
-			interpreter(message, gameID, playerID, bot, (retGame:string | undefined, retPlayer:string | undefined, botRet:Bot | undefined) => {
+			interpreter(message, gameID, playerID, (retGame:string | undefined, retPlayer:string | undefined) => {
 				gameID = retGame;
 				playerID = retPlayer;
-				bot = botRet;
 			})
 			.then((reply) => {
 				// check if no reply needed
@@ -192,11 +264,18 @@ fastify.register(async function (fastify) {
 
 		// Handle connection close
 		connection.on('close', (code:number, reason:string) => {
-			// kill the spammer and the bot if needed
+			// kill the spammer
 			if (interval) clearInterval(interval);
 
-			// leave procedure (just leave from the connected sockets, not from the lobby)
-			if (gameID !== undefined && playerID !== undefined) leaveGame(gameID, playerID);
+			// disconnect procedure (just leave from the connected sockets, not from the lobby)
+			if (gameID !== undefined && playerID !== undefined) {
+				const { player } = findGame(gameID, playerID);
+
+				if (player !== undefined) {
+					player.status = "disconnected";
+					console.log(player);
+				}
+			}
 
 			console.log(`Client ${clientIP} disconnected - Code: ${code}, Reason: ${reason?.toString() || 'none'}`);
 		});
@@ -205,28 +284,8 @@ fastify.register(async function (fastify) {
 		interval = setInterval(() => {
 			// Don't send gamestate if the game isn't found
 			if (gameID === undefined) return;
-			const { game, idx } = findGame(gameID, "BOT");
+			const { game } = findGame(gameID);
 			if (game === undefined) return;
-	
-			/* Spawn a Bot if needed */
-			if (bot !== undefined && idx !== undefined) {
-		
-				if (game.playing === true)
-				{
-					/* calculate next move */
-					const state = game.state;
-					bot.play(state.ball, state.paddle[1]);
-					const move:string = bot.move;
-			
-					/* let the bot move */
-					if (move === "null") {}
-					else if (move === "UP_PRESS") game.press(idx, "Up");
-					else if (move === "DW_PRESS") game.press(idx, "Down");
-					else if (move === "UP_RELEASE") game.release(idx, "Up");
-					else if (move === "DW_RELEASE") game.release(idx, "Down");
-				}
-				else {bot.reset();}
-			}
 
 			if (connection.readyState === connection.OPEN) {
 				connection.send(game.stateJSON);
@@ -237,35 +296,67 @@ fastify.register(async function (fastify) {
 	});
 });
 
-export let MQID:string;
+
+/* =============== GamesManager =============== */
+
+function GamesManager()
+{
+	// check for games to delete
+	/* a game should be deleted if:
+		- All players left
+		- No player joined (timeout)
+		- All player disconnected (timeout)
+		If a game is finished a messagge should be sent
+		to the Lobby and Match History services */
+	games.forEach((game, id) => {
+
+		// for convenience
+		const { players } = game;
+
+		// #debug
+		if (game.timeout !== TIMEOUT) console.log(id, game.timeout);
+
+		// check if all players left
+		if (players.find(p => p.status !== "left") === undefined) {
+			deleteGame(id);
+			return ;
+		}
+
+		// check if at leas one player is connected
+		if (players.find(p => p.status === "connected") !== undefined)
+			game.timeout = TIMEOUT;
+		else {
+			game.timeout -= 1;
+		}
+
+		// if timeout is passed, delete the game
+		if (game.timeout === 0) {
+			deleteGame(id);
+		}
+	});
+}
+
+/* ============================================= */
 
 /* ------------------------------------------ */
+
+import { VERSION } from './bunny.js';
+
 const start = async () => {
 	try {
+
+		// register to bunny service
+		if (await bunnyRegister() === false) throw 'Failed to register';
+
+		// subscribe to bunny queues
+		if (await bunnySubscribe([ 'game', 'lobby', 'history' ]) === false) throw 'Failed to subscribe';
+
 		// start fastify server
 		await fastify.listen({ port: PORT, host: '0.0.0.0' });
+
+		// logging version for info and compatibility
 		console.log(`Server running on http://localhost:${PORT}`);
-
-		/* - - - FT_RABBIT SUBSCRIPTION - - - */
-		await fetch('http://localhost:3030/register')
-		.then(r => r.json())
-		.then((json) =>{
-			if ("ID" in json == false) throw "Invalid JSON";
-			MQID = json.ID;
-
-			console.log("Registered to ft_bunny with ID", MQID);
-		});
-		// catched below
-
-		await fetch(`http://localhost:3030/subscribe?queue=game&ID=${MQID}`)
-		.then(r => r.json())
-		.then((json) =>{
-			if ("status" in json == false) throw "Invalid JSON";
-			if (json.status !== 'success') throw "Unsuccessful subscription";
-
-			console.log("Subscribed to 'game' MessageQueue");
-		});
-		// catched below
+		console.log('Bunny version:', VERSION);
 
 	} catch (err) {
 		console.log(err);
@@ -273,49 +364,14 @@ const start = async () => {
 		process.exit(1);
 	}
 
-	// routine check
+	// routine check (once every second)
 	setInterval((() => {
 		// adds/removes games
-		StatusChecker();
+		GamesManager();
 
 	}), 1000);
 
 };
-
-function StatusChecker()
-{
-	// check if a new games should be added
-	fetch(`http://localhost:3030/get?queue=game&ID=${MQID}`)
-	.then(r => r.json())
-	.then((json) =>{
-		if ("status" in json === false) throw "Invalid JSON";
-		if (json.status !== 'success') return ;
-
-		json = Object(json);
-
-		// check if the message is there
-		if ("message" in json === false) throw 'Invalid JSON (with successful get)';
-
-		const msg = Object(json.message);
-
-		// check if we got the gameID ad the players
-		if ("ID" in msg === false
-			|| typeof msg.ID !== "string"
-			|| "players" in msg === false
-			|| Array.isArray(msg.players) === false
-			|| !msg.players.every((p: unknown) => typeof p === "string"))
-		{
-			console.log(json);
-			throw 'Invalid JSON (with successful get)';
-		}
-
-		createGame(msg.ID, msg.players);
-
-		
-	})
-	.catch((err) => console.log(err));
-
-}
 
 // entrypoint
 start();

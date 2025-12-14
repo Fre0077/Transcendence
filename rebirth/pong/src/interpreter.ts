@@ -1,7 +1,5 @@
 
-import { findGame, joinGame } from './index.js';
 import { AUTH, JOIN, LEAVE, MOVE } from './METHODS.js'
-import { Bot } from './Bot.js'
 
 // check if the string is a JSON obj with the 'method' property
 function isValidObj(message:string): { method: string } | undefined
@@ -33,8 +31,7 @@ export async function interpreter(
 	message:string,
 	outgame:string | undefined,
 	outplayer:string | undefined,
-	outbot:Bot | undefined,
-	callback :(game:string | undefined, player:string | undefined, bot:Bot | undefined) => void): Promise<string>
+	callback :(game:string | undefined, player:string | undefined) => void): Promise<string>
 {
 			
 	// Format and log message
@@ -60,7 +57,7 @@ export async function interpreter(
 			// welp...
 			if (aret.status === "success") {
 				// save variables
-				callback(aret.game, aret.player, outbot);
+				callback(aret.game, aret.player);
 			}
 
 			// send reply
@@ -73,13 +70,8 @@ export async function interpreter(
 			// successful JOIN
 			if (jret.status === "success")
 			{
-				// check if bot needed
-				const { game, idx } = findGame(jret.game as string, "BOT");
-				const bot = (game !== undefined && idx !== undefined) ? new Bot() : undefined;
-				if (bot !== undefined) joinGame(jret.game as string, "BOT");
-			
 				/* store variables */
-				callback(jret.game, jret.player, bot);
+				callback(jret.game, jret.player);
 			}
 
 			// send reply to frontend
@@ -92,7 +84,7 @@ export async function interpreter(
 			if (lret.status === "success")
 			{
 				//---
-				callback(lret.game, lret.player, outbot);
+				callback(lret.game, lret.player);
 			}
 
 			// send reply to frontend
