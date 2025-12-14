@@ -6,14 +6,14 @@ import type { WebSocket } from "ws";
 // Where the Queue will listen
 const PORT = Number(process.env.PORT) || 3031;
 export const BUNNYURL = process.env.BUNNYURL ?? 'http://localhost:3030';
-export const MYURL = process.env.MYURL ?? 'http://localhost:3031';
+export const MYURL = process.env.MYURL ?? `http://localhost:${PORT}`;
 export const MYPASS = process.env.MYPASS ?? 'password';
 
 // service varaibles
 const TIMEOUT:number = 10;	// timeout in seconds to wait before deleeting the game
 
 // bunny client
-import { bunnyRegister, bunnySubscribe, bunnyGet } from './bunny.js'
+import { bunnyRegister, bunnySubscribe, bunnyGet, bunnyPublish } from './bunny.js'
 
 /* ------- LOAD STUFF ------- */
 const fastify = Fastify({ 
@@ -124,13 +124,19 @@ fastify.get('/', async (request, reply) => {
 	return reply.sendFile('fastify_lobby.html');
 });
 
-// serving game test html
-fastify.get('/game', async (request, reply) => {
+// serving pong test html
+fastify.get('/pong', async (request, reply) => {
 	request; // ignore
-	return reply.sendFile('fastify_game.html');
+	return reply.sendFile('fastify_pong.html');
 });
 
-/* ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! */
+// serving tower test html
+fastify.get('/tower', async (request, reply) => {
+	request; // ignore
+	return reply.sendFile('fastify_tower.html');
+});
+
+/* ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! */
 
 
 
@@ -179,9 +185,17 @@ export function resetLobby(ID:string)
 	// reset lobby
 	e.lobby.reset();
 
-	// 'connect' bots
+	// bots operations
 	e.lobby.players.forEach((p, id) => {
-		if (id.startsWith('BOT-')) p.connect(null);
+		if (id.startsWith('BOT')) {
+			// 'connect' bots to lobby
+			p.connect(null);
+			// disconnect bots from game
+			bunnyPublish('bot', {
+				method: 'DELETE',
+				botid: id
+			});
+		}
 	});
 }
 

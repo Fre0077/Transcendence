@@ -1,7 +1,5 @@
 
-import { JOIN, LEAVE, MOVE } from './METHODS.js'
-import { GameEntry, Player } from './gameDB.js';
-import { Bot } from './Bot.js'
+import { AUTH, JOIN, LEAVE, MOVE } from './METHODS.js'
 
 // check if the string is a JSON obj with the 'method' property
 function isValidObj(message:string): { method: string } | undefined
@@ -29,11 +27,11 @@ function isValidObj(message:string): { method: string } | undefined
 	return obj;
 }
 
-export function interpreter(
+export async function interpreter(
 	message:string,
-	entry:GameEntry | undefined,
-	player:Player | undefined,
-	callback :(entry:GameEntry | undefined, player:Player | undefined) => void): string | null
+	outgame:string | undefined,
+	outplayer:string | undefined,
+	callback :(game:string | undefined, player:string | undefined) => void): Promise<string>
 {
 			
 	// Format and log message
@@ -49,17 +47,31 @@ export function interpreter(
 	// Handle methods
 	switch (msg.method)
 	{
+		case "AUTH":
+			/* {method: 'AUTH', playerID: <playerID>}
+				@playerID: the ID you are logging in
+				Description: AUTHenticates the connection, just once per connection.
+			*/
+			let aret = AUTH(msg, outgame, outplayer);
+
+			// welp...
+			if (aret.status === "success") {
+				// save variables
+				callback(aret.game, aret.player);
+			}
+
+			// send reply
+			return aret.reply;
+
 		case "JOIN":
 			// process JOIN request
-			let jret = JOIN(msg);
+			let jret = JOIN(msg, outgame, outplayer);
 
 			// successful JOIN
 			if (jret.status === "success")
 			{
-				const retEntry = jret.entry as GameEntry;
-				const retPlayer = jret.player as Player;
 				/* store variables */
-				callback(retEntry, retPlayer);
+				callback(jret.game, jret.player);
 			}
 
 			// send reply to frontend
@@ -67,12 +79,12 @@ export function interpreter(
 		
 		case "LEAVE":
 			// process LEAVE request
-			let lret = LEAVE(entry, player);
+			let lret = LEAVE(outgame, outplayer);
 
 			if (lret.status === "success")
 			{
 				//---
-				callback(undefined, player);
+				callback(lret.game, lret.player);
 			}
 
 			// send reply to frontend
@@ -80,7 +92,7 @@ export function interpreter(
 
 		case "MOVE":
 			// process MOVE request
-			let mret = MOVE(msg, entry, player);
+			let mret = MOVE(msg, outgame, outplayer);
 
 			return mret;
 		

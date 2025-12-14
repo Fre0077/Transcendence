@@ -26,15 +26,15 @@ let users:Map<string, { endpoint:string, password:string }> = new Map();
 
 interface RegisterQuery {
 	endp: string;
-	pwd: string;
+	pass: string;
 }
 
 fastify.get<{ Querystring: RegisterQuery }>(
 	"/register",
 	async (request) => {
 		// check if they passed the notify endpoint
-		const { endp, pwd } = request.query;
-		if (endp === undefined && pwd === undefined) return { status: 'failure', ID: undefined, reason: 'Missing \'pwd\' propery' };
+		const { endp, pass } = request.query;
+		if (endp !== undefined && pass === undefined) return { status: 'failure', ID: undefined, reason: 'Missing \'pass\' property' };
 
 		// check all the users
 		if (endp !== undefined)
@@ -45,12 +45,14 @@ fastify.get<{ Querystring: RegisterQuery }>(
 				if (endp === endpoint)
 				{
 					// ... and same passowrd
-					if (pwd === password)
+					if (pass === password)
 					{
 						// #debug
 						console.log('Erasing data of endpoint', endpoint);
 						// leave all the qeues
 						mqueues.forEach((mq) => {mq.leave(ID)});
+						// remove the old user from the users list
+						users.delete(ID);
 						break ;
 					}
 					// ... and different password
@@ -61,7 +63,7 @@ fastify.get<{ Querystring: RegisterQuery }>(
 
 		// assign the ID
 		const ID = uuidv4();
-		users.set(ID, { endpoint:endp, password:pwd });
+		users.set(ID, { endpoint:endp, password:pass });
 
 		// #debug
 		console.log(`Client ${ID} successfully registered with endpoint`, endp);

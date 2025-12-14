@@ -27,7 +27,18 @@
     <br/><br/>
     <button id="btnLeave">Leave Lobby</button>
     <br/><br/>
-    <button id="btnAddBot">Add BOT</button><button id="btnRemBot">Rem BOT</button>
+    <button id="btnAddBot">Add BOT</button><label for="botlvl">
+    Bot Level: <span id="botValue">50</span>
+    </label>
+    <input
+      type="range"
+      id="botlvl"
+      min="0"
+      max="100"
+      value="50"
+    />
+    <br>
+    <button id="btnRemBot">Rem BOT</button>
 	<br/><br/>
 
 	<button id="btnStart">Start Game</button><button id="btnRejoin">Rejoin Game</button>
@@ -87,6 +98,17 @@
     const btnRemBot = document.getElementById("btnRemBot");
 
 	  const playersDiv = document.getElementById("players");
+
+    // slider for bot level
+    const slider = document.getElementById("botlvl");
+    const output = document.getElementById("botValue");
+
+    output.textContent = slider.value;
+
+    slider.addEventListener("input", () => {
+      output.textContent = slider.value;
+    });
+    //--------
 
     const socket = new WebSocket(`ws://${window.location.host}/lobbysocket`);
 
@@ -150,7 +172,7 @@
 
     // BOT
     btnAddBot.onclick = () => {
-      socket.send(JSON.stringify({ method: "BOT", value: "ADD" }));
+      socket.send(JSON.stringify({ method: "BOT", value: "ADD", level: Number(slider.value) }));
       clientLog.innerText = "Adding bot...";
     };
 
@@ -176,7 +198,7 @@
         lobbyID: lobbyID
       }));
 
-      window.location.href = "/game";  // same window
+      window.location.href = "/pong";  // same window
     }
 
     /* -------------------------

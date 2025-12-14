@@ -10,7 +10,7 @@ export async function bunnyRegister(): Promise<boolean>
 {
 	try
 	{
-		await fetch(`${BUNNYURL}/register?endp=${MYURL}/bunny&pwd=${MYPASS}`)
+		await fetch(`${BUNNYURL}/register?endp=${MYURL}/bunny&pass=${MYPASS}`)
 		.then(r => r.json())
 		.then((json) =>{
 			if ("status" in json === false || typeof json.status !== "string"

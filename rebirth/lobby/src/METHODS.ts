@@ -99,7 +99,7 @@ export function CREATE(msg:object,
 
 	// check if the obj has format
 	if ("format" in msg && typeof msg.format === "number" ) {
-		console.log(`#todo Setting format ${msg.format}`);
+		console.log(`#todo Set format ${msg.format}`);
 		// lobby.format(msg.format);
 	}
 
@@ -311,9 +311,11 @@ export async function START(outlobby:string | undefined): Promise<StandardReturn
 	for (const id of lobby.players.keys()) {
 		if (id.startsWith('BOT')) {
 			bunnyPublish('bot', {
+				method: 'CREATE',
 				game: 'pong', 				// #todo: flexible
-				ID: lobby.gameID,
-				bot: id,
+				gameid: lobby.gameID,
+				botid: id,
+				level: Number(id.substring(id.lastIndexOf('_') + 1))
 			});
 		}
 	}
@@ -328,8 +330,9 @@ export async function START(outlobby:string | undefined): Promise<StandardReturn
 
 /*
 {
-	method: 'BOT',
-	value: <action>
+	method: 'BOT',	(mandatory)
+	value: <action>	(mandatory)
+	level: <level>	(only if <action> === ADD)
 }
 
 Description: ADDs or REMOVEs bots to the lobby. If you are not in a lobby the request will fail.
@@ -340,7 +343,7 @@ Reply:
 	comment: <comment>
 }
 */
-let botcount:number = 0;
+let botcount:number[] = [];
 
 export function BOT(msg:object, outlobby:string | undefined)
 {
@@ -352,8 +355,8 @@ export function BOT(msg:object, outlobby:string | undefined)
 		};
 	}
 
-	// check if the obj has lobbyID and playerID
-	if ("value" in msg === false || typeof msg.value !== "string")
+	// check if the obj has value
+	if (!("value" in msg) || typeof msg.value !== "string")
 	{
 		console.log(`invalid JSON message ${msg}`);
 		return {
@@ -374,6 +377,17 @@ export function BOT(msg:object, outlobby:string | undefined)
 	// check action expected
 	if (msg.value === "ADD")
 	{
+		// check if the obj has value
+		if (!("level" in msg) || typeof msg.level !== "number"
+			|| msg.level < 0 || msg.level > 100)
+		{
+			console.log(`invalid JSON message ${msg}`);
+			return {
+				status: "failure",
+				reply: JSON.stringify({method: 'BOT_REPLY', status: 'failure', comment: "invalid JSON, missing or invalid 'level'"})
+			};
+		}
+
 		// check if lobby is full
 		if (lobby.full()) {
 			return {
@@ -383,10 +397,10 @@ export function BOT(msg:object, outlobby:string | undefined)
 		}
 
 		// add the bot
-		lobby.join(`BOT-${botcount}`, null);
+		lobby.join(`BOT_${botcount.length}_${msg.level}`, null);
 
 		// next bot
-		++botcount;
+		botcount.push(msg.level);
 
 		// successful return
 		return {
@@ -397,18 +411,24 @@ export function BOT(msg:object, outlobby:string | undefined)
 	else if (msg.value === "REMOVE")
 	{
 		// check if bot in lobby
-		if (botcount === 0) {
+		if (botcount.length === 0) {
 			return {
 				status: "failure",
 				reply: JSON.stringify({ method: 'BOT_REPLY', status: 'failure', comment: "No BOT in the lobby" })
 			};
 		}
 
-		// back one bot
-		--botcount;
-
 		// remove the bot
-		lobby.leave(`BOT-${botcount}`);
+		const idx = botcount.length - 1;
+		if (lobby.leave(`BOT_${idx}_${botcount[idx]}`) === false) {
+			return {
+				status: "failure",
+				reply: JSON.stringify({ method: 'BOT_REPLY', status: 'failure', comment: `Bot name 'BOT_${idx}_${botcount[idx]}'not found` })
+			};
+		}
+	
+		// back one bot
+		botcount.pop();
 
 		// successful return
 		return {

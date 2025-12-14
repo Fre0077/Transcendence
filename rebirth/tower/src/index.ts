@@ -4,7 +4,7 @@ import { Game } from './Game.js'
 
 
 // Where the Queue will listen
-const PORT = Number(process.env.PORT) || 3040;
+const PORT = Number(process.env.PORT) || 3041;
 export const BUNNYURL = process.env.BUNNYURL ?? 'http://localhost:3030';
 export const MYURL = process.env.MYURL ?? `http://localhost:${PORT}`;
 export const MYPASS = process.env.MYPASS ?? 'password';

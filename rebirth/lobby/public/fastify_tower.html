@@ -48,8 +48,8 @@
     // let gameID = null;
     // let playerID = null
 
-    serverLog.innerHTML = `connecting to ws://${window.location.hostname}:3032/gamesocket ...`;
-    const socket = new WebSocket(`ws://${window.location.hostname}:3032/gamesocket`);
+    serverLog.innerHTML = `connecting to ws://${window.location.hostname}:3041/gamesocket ...`;
+    const socket = new WebSocket(`ws://${window.location.hostname}:3041/gamesocket`);
 
 
     btnBack.onclick = () => {
@@ -89,15 +89,12 @@
     }
 
     socket.addEventListener("open", () => {
-      sleep(2000)
-      // If the IDs are already set, send JOIN immediately
-      // console.log('joining ...');
-      // if (playerID && gameID) {
-        // console.log('sending JOIN');
+       sleep(1500)
+      .then(() => {
         socket.send(JSON.stringify({ method: "AUTH", playerID: playerID }));
         serverLog.innerText = `Joining ${gameID}`;
         socket.send(JSON.stringify({ method: "JOIN", gameID: gameID }));
-      // }
+      });
     });
 
     socket.addEventListener("message", (event) => {
@@ -145,7 +142,7 @@
         /* --------------
            GAME STATE
         --------------- */
-        if (data.paddle && data.ball && data.score) {
+        if (data.players && data.score) {
           canvas.style.display = "block";
           scoreboard.style.display = "block";
           drawGame(data);
@@ -170,47 +167,18 @@
     function drawGame(state) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      const paddleHeight1 = canvas.height * state.paddle[0].height;
-      const paddleHeight2 = canvas.height * state.paddle[1].height;
-
-      // console.log(`height1 ${paddleHeight1}`);
-      // console.log(`height2 ${paddleHeight2}`);
-
-      const paddleWidth1 = canvas.width * state.paddle[0].width;
-      const paddleWidth2 = canvas.width * state.paddle[1].width;
-
-      const paddleOffset = canvas.width * state.paddle[0].offset;
-      const ballSize = 10;
-
       scoreboard.innerHTML = `${state.score[0]} : ${state.score[1]}`;
       ctx.fillStyle = "white";
 
-      // Midline
-      ctx.fillRect(canvas.width / 2, 0, 2, canvas.height);
-
-      // Ball
-      ctx.fillRect(
-        state.ball.pos[0] * canvas.width - ballSize / 2,
-        state.ball.pos[1] * canvas.height - ballSize / 2,
-        ballSize,
-        ballSize
-      );
-
-      // Player 1
-      ctx.fillRect(
-        paddleOffset,
-        state.paddle[0].posY * canvas.height - paddleHeight1 / 2,
-        paddleWidth1,
-        paddleHeight1
-      );
-
-      // Player 2
-      ctx.fillRect(
-        canvas.width - paddleOffset - paddleWidth2,
-        state.paddle[1].posY * canvas.height - paddleHeight2 / 2,
-        paddleWidth2,
-        paddleHeight2
-      );
+      // draw players
+      state.players.forEach(player => {
+        ctx.fillRect(
+          player.pos[0],
+          player.pos[1],
+          player.width,
+          player.height
+        );
+      });
     }
 
     /* -------------------------
@@ -220,10 +188,13 @@
     document.addEventListener("keydown", (e) => {
       if (e.repeat) return;
       switch (e.key) {
-        case "f": socket.send(JSON.stringify({ method: "MOVE", value: "UP_PRESS" })); break;
-        case "v": socket.send(JSON.stringify({ method: "MOVE", value: "DW_PRESS" })); break;
-        // case "j": socket.send(JSON.stringify({ method: "MOVE", value: "P2UP_PRESS" })); break;
-        // case "n": socket.send(JSON.stringify({ method: "MOVE", value: "P2DW_PRESS" })); break;
+        // Move buttons
+        case "w": socket.send(JSON.stringify({ method: "MOVE", value: "UP_PRESS" })); break;
+        case "s": socket.send(JSON.stringify({ method: "MOVE", value: "DW_PRESS" })); break;
+        case "a": socket.send(JSON.stringify({ method: "MOVE", value: "LEFT_PRESS" })); break;
+        case "d": socket.send(JSON.stringify({ method: "MOVE", value: "RIGHT_PRESS" })); break;
+        
+        // Game status buttons
         case " ": socket.send(JSON.stringify({ method: "MOVE", value: "START_PRESS" })); break;
         case "r": socket.send(JSON.stringify({ method: "MOVE", value: "RESET_PRESS" })); break;
       }
@@ -231,10 +202,10 @@
 
     document.addEventListener("keyup", (e) => {
       switch (e.key) {
-        case "f": socket.send(JSON.stringify({ method: "MOVE", value: "UP_RELEASE" })); break;
-        case "v": socket.send(JSON.stringify({ method: "MOVE", value: "DW_RELEASE" })); break;
-        // case "j": socket.send(JSON.stringify({ method: "MOVE", value: "P2UP_RELEASE" })); break;
-        // case "n": socket.send(JSON.stringify({ method: "MOVE", value: "P2DW_RELEASE" })); break;
+        case "w": socket.send(JSON.stringify({ method: "MOVE", value: "UP_RELEASE" })); break;
+        case "s": socket.send(JSON.stringify({ method: "MOVE", value: "DW_RELEASE" })); break;
+        case "a": socket.send(JSON.stringify({ method: "MOVE", value: "LEFT_RELEASE" })); break;
+        case "d": socket.send(JSON.stringify({ method: "MOVE", value: "RIGHT_RELEASE" })); break;
       }
     });
   </script>

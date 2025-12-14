@@ -156,6 +156,7 @@ interface GameState {
 	paddle:PaddleState[];
 	playing:boolean;
 	timeout: number;
+	winner: number;
 }
 
 
@@ -212,7 +213,7 @@ export class Game
 		this.score = [0, 0];			// match score to 0;
 		this.lastScored = 0;			// default
 		this.targetScore = format;		// Bo5
-		this.winner = 0;				// noone won just yet
+		this.winner = -1;				// noone won just yet
 		
 		this.ball = new Ball();
 		this.directions = randomAngle((this.targetScore * 2) - 1);
@@ -260,7 +261,8 @@ export class Game
 			},
 			paddle: paddles,
 			playing: this.roundStart,
-			timeout: this.timeout
+			timeout: this.timeout,
+			winner: this.winner
 		};
 	}
 
@@ -357,7 +359,10 @@ export class Game
 				&& collisionY <= this.players[0].posY + paddleHeight_2)
 			{
 				// this.ball.angle = bounce_90_deg('x', this.ball.angle);
-				this.ball.bounceX();
+				const offdeg = (collisionY - this.players[0].posY) * 90;
+				console.log('offset deg:', offdeg);
+				this.ball.bounceX(offdeg);
+
 				this.ball.speed += 0.001;
 				this.ball.pos[0] = collisionX/*  + this.ball.speed */;
 			}
@@ -377,7 +382,10 @@ export class Game
 				&& collisionY <= this.players[1].posY + paddleHeight_2)
 			{
 				// this.ball.angle = bounce_90_deg('x', this.ball.angle);
-				this.ball.bounceX();
+				const offdeg = (collisionY - this.players[1].posY) * 90;
+				console.log('offset deg:', -offdeg);
+				this.ball.bounceX(-offdeg);
+		
 				this.ball.speed += 0.001;
 				this.ball.pos[0] = 1 - collisionX/*  - this.ball.speed */;
 			}
@@ -462,14 +470,14 @@ export class Game
 
 		/* ! ! ! KEEP THIS THE SAME AS THE CONSTRUCTOR ! ! ! */
 		this.timeout = 60;				// 1 sec of timeout
-		this.tick = 0;
+		this.tick = 0;					// start -> 0
 	
 		this.round = 0;					// start at round 0
 		this.roundStart = false;		// ball not moving
 		this.score = [0, 0];			// match score to 0;
 		this.lastScored = 0;			// default
 		this.targetScore = 3;			// Bo5
-		this.winner = 0;				// noone won just yet
+		this.winner = -1;				// noone won just yet
 		
 		this.ball = new Ball();
 		this.directions = randomAngle((this.targetScore * 2) - 1);

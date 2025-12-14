@@ -94,9 +94,9 @@ export class Lobby<T extends MySocket> {
 	private _players:Map<string, Player<T>>;	// unique identifier for each player, sent at th beginning of every move. NOTE: the ID is generated when the websocket is connected
 	
 	constructor(__size:number = 2) {
-		this._size = __size;				// 2 player
+		this._size = __size;					// 2 player
 
-		this._ID = uuidv4();	// #todo lobby code generator. for now fixed code
+		this._ID = uuidv4();					// lobby code generator.
 		this._players = new Map();
 
 		this._ingame = false;

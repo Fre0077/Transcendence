@@ -36,12 +36,14 @@ to install:
 	npm install fastify
 	npm install uuid
 
+	(if any package is installed but not found: `npm i --save-dev @types/<package-name>`)
+
 to build:
 	npm run build
 
 to launch:
 	npm run start
 
-VARIABLES TO DEFINE in .env
+--- VARIABLES TO DEFINE in .env ---
 
 PORT: The port on which the server will be listening on
