@@ -14,6 +14,7 @@ import { bunnyRegister, bunnySubscribe, bunnyGet, bunnyPublish } from './bunny.j
 
 // service varaibles
 const TIMEOUT:number = 10;	// timeout in seconds to wait before deleting the game
+const INACTIVE_TIMEOUT:number = 1 * 60 * 1000;	// timeout in millisecond to wait before deleting the game (player inactivity)
 const FPS:number = 60;
 
 /* ------- LOAD STUFF ------- */
@@ -83,7 +84,7 @@ type Player = {
 	status: "connected" | "disconnected" | "left";
 }
 
-let games:Map<string, {game: Game, players:Player[], timeout:number }> = new Map();
+let games:Map<string, {game: Game, players:Player[], timeout:number, inactive:number }> = new Map();
 
 export function createGame(ID:string, playerIDs:string[]): Game
 {
@@ -97,7 +98,7 @@ export function createGame(ID:string, playerIDs:string[]): Game
 	}));
 
 	const game:Game = new Game();
-	games.set(ID, { game: game, players: players, timeout:TIMEOUT });
+	games.set(ID, { game: game, players: players, timeout:TIMEOUT, inactive:Date.now() });
 	return game;
 }
 
@@ -180,7 +181,7 @@ export function leaveGame(ID:string, playerID:string): { status:"success" | "fai
 	};
 }
 
-export function deleteGame(ID:string)
+export function deleteGame(ID:string, reason:string | void)
 {
 	// check if game is present
 	const game = games.get(ID);
@@ -202,7 +203,7 @@ export function deleteGame(ID:string)
 		status: 'finished'
 	});
 
-	console.log(`Deleting game ${ID} ...`);
+	console.log(`Deleting game ${ID}, reason: ${reason} ...`);
 	games.delete(ID);
 }
 
@@ -255,6 +256,9 @@ fastify.register(async function (fastify) {
 			.catch((error) => {
 				console.error('interpreter() Promise rejected with error: ' + error);
 			});
+
+			// update inactive timeout
+			if (gameID !== undefined) updateTimeFor(gameID);
 		});
 
 		// Handle WebSocket errors
@@ -297,7 +301,18 @@ fastify.register(async function (fastify) {
 });
 
 
+
+
+
+
 /* =============== GamesManager =============== */
+
+function updateTimeFor(gameid:string)
+{
+	const game = games.get(gameid);
+	if (game === undefined) return;
+	game.inactive = Date.now();
+}
 
 function GamesManager()
 {
@@ -306,14 +321,20 @@ function GamesManager()
 		- All players left
 		- No player joined (timeout)
 		- All player disconnected (timeout)
-		- All players inactive (bigtimeout)
+		- All players inactive (bigtimeout) #todo
 		If a game is finished a messagge should be sent
 		to the Lobby and Match History services */
 	games.forEach((game, id) => {
 
 		// delete game if it's over
 		if (game.game.end() !== -1) {
-			deleteGame(id);
+			deleteGame(id, 'finished');
+			return ;
+		}
+		
+		// delete game if inactive
+		if (Date.now() - game.inactive > INACTIVE_TIMEOUT) {
+			deleteGame(id, 'inactive');
 			return ;
 		}
 
@@ -325,7 +346,7 @@ function GamesManager()
 
 		// check if all players left
 		if (players.find(p => p.status !== "left") === undefined) {
-			deleteGame(id);
+			deleteGame(id, 'all player left');
 			return ;
 		}
 
@@ -338,7 +359,7 @@ function GamesManager()
 
 		// if timeout is passed, delete the game
 		if (game.timeout === 0) {
-			deleteGame(id);
+			deleteGame(id, 'timeout');
 		}
 	});
 }

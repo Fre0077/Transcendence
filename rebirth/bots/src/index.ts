@@ -18,8 +18,8 @@ const GAMEURL = [
 	}
 ];
 
-// service varaibles
-// const TIMEOUT:number = 10;	// timeout in seconds to wait before deleeting the game
+// service varaibles   10 minutes
+const TIMEOUT:number = 10 * 60 * 1000;	// timeout in milliseconds before deleting bot after inactivity
 
 // bunny client
 import { bunnyRegister, bunnySubscribe, bunnyGet } from './bunny.js'
@@ -66,7 +66,7 @@ fastify.get<{ Querystring: BunnyQuery }>(
 
 			// check if the method is present
 			if (!("method" in msg) || typeof msg.method !== "string")
-				return { status: 'ko' };
+				return { status: 'failure' };
 
 							// check if we got a 'create bot' message
 
@@ -78,7 +78,7 @@ fastify.get<{ Querystring: BunnyQuery }>(
 				{
 					console.log('Invalid JSON (with successful get)', message);
 					// throw 'Invalid JSON (with successful get)';
-					return { status: 'ko' };
+					return { status: 'failure' };
 				}
 	
 				// check if level is specified
@@ -88,7 +88,7 @@ fastify.get<{ Querystring: BunnyQuery }>(
 				createBot(msg.game, msg.botid, msg.gameid, level);
 
 				// successful return
-				return { status: 'ok' };
+				return { status: 'success' };
 			}
 			// check if we got a 'delete bot' message
 			else if (msg.method === 'DELETE')
@@ -97,19 +97,19 @@ fastify.get<{ Querystring: BunnyQuery }>(
 				{
 					console.log('Invalid JSON (with successful get)', message);
 					// throw 'Invalid JSON (with successful get)';
-					return { status: 'ko' };
+					return { status: 'failure' };
 				}
 
 				/* delete the bot */
 				deleteBot(msg.botid);
 
 				// successful return
-				return { status: 'ok' };
+				return { status: 'success' };
 			}
 		}
 
 		// not expected
-		return { status: 'ko' };
+		return { status: 'failure' };
 	}
 );
 
@@ -126,12 +126,21 @@ fastify.get<{ Querystring: BunnyQuery }>(
 
 
 /* ----------- BOT DataBase ---------- */
-let bots:Map<string, { bot:PongBot, ws:WebSocket }> = new Map();
+
+interface Bot {
+	play: (msg:object) => void;
+	peek: () => string;
+	move: () => string;
+	reset: () => void;
+}
+
+// botid: { bot instance, websocket instance, last time the bt moved }
+let bots:Map<string, { bot:Bot, ws:WebSocket, time:number }> = new Map();
 
 export function createBot(gamestr:string, botid:string, gameid:string, level:number | undefined): boolean
 {
 	let myurl:string | undefined = undefined;
-	let bot:any | undefined = undefined;
+	let bot:Bot | undefined = undefined;
 
 	// get the URL of the game the bot is supposed to join
 	for (const { game, url, type } of GAMEURL)
@@ -145,7 +154,7 @@ export function createBot(gamestr:string, botid:string, gameid:string, level:num
 	}
 
 	// no game with said name
-	if (myurl === undefined) return false;
+	if (bot === undefined || myurl === undefined) return false;
 
 	try {
 		// #debug
@@ -190,6 +199,8 @@ export function createBot(gamestr:string, botid:string, gameid:string, level:num
 						socket.send(JSON.stringify({ method: 'MOVE', value: move }));
 						// performs the move
 						bot.move();
+						// update the last played move
+						updateTimeFor(botid);
 					}
 				} else {bot.reset();}	// reset the bot's data
 
@@ -201,7 +212,7 @@ export function createBot(gamestr:string, botid:string, gameid:string, level:num
 		});
 
 		/* --- Store Bot's variables --- */
-		bots.set(botid, { bot:bot, ws:socket });
+		bots.set(botid, { bot:bot, ws:socket, time:Date.now() });
 
 		// #debug
 		console.log(`Created bot ${botid} of level ${level} and connecting to game of \'${gamestr}\' with id`, gameid);
@@ -245,16 +256,23 @@ function deleteBot(id:string): boolean
 
 /* =============== LobbiesManager =============== */
 
+function updateTimeFor(botid:string)
+{
+	const bot = bots.get(botid);
+	if (bot === undefined) return;
+	bot.time = Date.now();
+}
+
 // #todo kill hanging bots (bots in games alone)
 function BotsManager()
 {
 	// check for bots to delete
-	/* a lobby should be deleted if:
-		- All players left
-		- No player joined after game (timeout)
-		- All player disconnected (timeout)
-		If a game is finished a messagge should be sent
-		to the Lobby and Match History services */
+	/* a bot should be deleted if:
+		- is inactive (timeout)
+	*/
+	bots.forEach((bot, id) => {
+		if (Date.now() - bot.time > TIMEOUT) deleteBot(id);
+	});
 }
 
 /* ============================================= */
@@ -289,7 +307,7 @@ const start = async () => {
 	setInterval(() => {
 		// removes lobbies
 		BotsManager();
-	})
+	}, 1000)
 };
 
 // entrypoint

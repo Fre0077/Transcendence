@@ -48,3 +48,5 @@ to launch:
 --- VARIABLES TO DEFINE in .env ---
 
 PORT: The port on which the server will be listening on
+
+NOTE: the file user.json that is generated in the root of the folder should be saved in case the container crashes

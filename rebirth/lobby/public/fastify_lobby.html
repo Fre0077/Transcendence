@@ -279,6 +279,20 @@
           return;
         }
 
+        /* -----------
+          LOBBY STATE
+        ------------ */
+        if (data.ID && data.players) {
+          playersDiv.innerHTML = ""; // clear
+			    let html = "";
+			    for (let i = 0; i < data.players.length; i++) {
+				    html += `${data.players[i].ID} : ${data.players[i].status}<br>`;
+			    }
+          playersDiv.innerHTML = html;
+          return;
+        }
+
+
         /* ----------------------
            OTHER SERVER MESSAGES
         ----------------------- */
@@ -292,41 +306,41 @@
       }
     });
 
-    setInterval(() => {
-      if (lobbyID === undefined) return;
+    // setInterval(() => {
+    //   if (lobbyID === undefined) return;
     
-      fetch(`http://${window.location.host}/my-lobby?ID=${lobbyID}`)
-        .then(res => res.text())
-        .then(text => {
-          let data;
-          try {
-            data = JSON.parse(text); 
-          } catch (err) {
-            console.error("JSON parse failed:", text);
-            return;
-          }
+    //   fetch(`http://${window.location.host}/my-lobby?ID=${lobbyID}`)
+    //     .then(res => res.text())
+    //     .then(text => {
+    //       let data;
+    //       try {
+    //         data = JSON.parse(text); 
+    //       } catch (err) {
+    //         console.error("JSON parse failed:", text);
+    //         return;
+    //       }
 
-          if (!data.state) {
-            console.warn("Invalid lobby format:", data);
-            return;
-          }
-          const state = data.state;
+    //       if (!data.state) {
+    //         console.warn("Invalid lobby format:", data);
+    //         return;
+    //       }
+    //       const state = data.state;
 
-          playersDiv.innerHTML = ""; // clear
-			    let html = "";
-			    for (let i = 0; i < state.players.length; i++) {
-				    html += `${state.players[i].ID} : ${state.players[i].status}<br>`;
-			    }
-          playersDiv.innerHTML = html;
+    //       playersDiv.innerHTML = ""; // clear
+		// 	    let html = "";
+		// 	    for (let i = 0; i < state.players.length; i++) {
+		// 		    html += `${state.players[i].ID} : ${state.players[i].status}<br>`;
+		// 	    }
+    //       playersDiv.innerHTML = html;
 
-          if (state.ingame === true && rejoin === true) {
-            startGame(state.gameID, playerID);
-            rejoin = false;
-          }
+    //       if (state.ingame === true && rejoin === true) {
+    //         startGame(state.gameID, playerID);
+    //         rejoin = false;
+    //       }
 
-        })
-        .catch(err => console.error("Fetch failed:", err));
-    }, 1000);
+    //     })
+    //     .catch(err => console.error("Fetch failed:", err));
+    // }, 1000);
 
     // All lobbies
     const lobbies = document.getElementById("lobbies");

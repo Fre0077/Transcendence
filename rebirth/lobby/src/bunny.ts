@@ -71,6 +71,7 @@ export async function bunnySubscribe(queues: string[]): Promise<boolean>
 
 
 /* - - - BUNNY PUBLISH - - - */
+// #todo retry
 export async function bunnyPublish(queue:string, message:any): Promise<boolean>
 {
 	try {
@@ -112,7 +113,7 @@ export async function bunnyGet(queue:string): Promise<any>
 		// check if the message is there
 		if ("message" in json === false) throw 'Invalid JSON (with successful get)';
 
-		msg =  json.message;
+		msg = json.message;
 
 	})
 	.catch((err) => console.log(err));

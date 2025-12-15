@@ -10,7 +10,7 @@ export const MYURL = process.env.MYURL ?? `http://localhost:${PORT}`;
 export const MYPASS = process.env.MYPASS ?? 'password';
 
 // service varaibles
-const TIMEOUT:number = 10;	// timeout in seconds to wait before deleeting the game
+const TIMEOUT:number = 10;	// timeout in seconds to wait before deleeting the lobby
 
 // bunny client
 import { bunnyRegister, bunnySubscribe, bunnyGet, bunnyPublish } from './bunny.js'
@@ -144,8 +144,12 @@ fastify.get('/tower', async (request, reply) => {
 
 
 
+
+
+
+
 /* ----------- LOBBY DataBase ---------- */
-let lobbies:Map<string, { lobby:Lobby<WebSocket>, timeout:number }> = new Map();
+let lobbies:Map<string, { lobby:Lobby<WebSocket>, timeout:number, update:boolean }> = new Map();
 
 export function createLobby(/* game:string,  */size:number = 2): Lobby<WebSocket>
 {
@@ -154,7 +158,7 @@ export function createLobby(/* game:string,  */size:number = 2): Lobby<WebSocket
 	// #debug
 	console.log(`Creating lobby ${lobby.ID} ...`);
 
-	lobbies.set(lobby.ID, { lobby: lobby, timeout: TIMEOUT });
+	lobbies.set(lobby.ID, { lobby: lobby, timeout: TIMEOUT, update:true });
 	return lobby;
 }
 
@@ -199,12 +203,21 @@ export function resetLobby(ID:string)
 	});
 }
 
-export function deleteLobby(ID:string)
+// set's the update property to true, meaning that the state was updated
+function updateLobby(ID:string)
+{
+	const e = lobbies.get(ID);
+	if (e === undefined) return;
+
+	e.update = true;
+}
+
+export function deleteLobby(ID:string, reason:string | void)
 {
 	if (!lobbies.has(ID)) return;
 
 	// #debug
-	console.log(`Deleting lobby ${ID} ...`);
+	console.log(`Deleting lobby ${ID}, reason: ${reason} ...`);
 
 	lobbies.delete(ID);
 }
@@ -241,9 +254,12 @@ fastify.register(async function (fastify) {
 		// Handle incoming messages
 		connection.on('message', (message:string) => {
 			
-			interpreter(message, lobby, player, connection, (retLobby:string | undefined, retPlayer:string | undefined) => {
+			interpreter(message, lobby, player, connection, (retLobby:string | undefined, retPlayer:string | undefined, retUpdate:boolean) => {
 				lobby = retLobby;
 				player = retPlayer;
+
+				// new stuff on lobby
+				if (lobby !== undefined && retUpdate === true) updateLobby(lobby);
 			})
 			.then((reply) => {
 				// send reply
@@ -269,6 +285,9 @@ fastify.register(async function (fastify) {
 			{
 				const lobbyObj= findLobby(lobby);
 				lobbyObj?.disconnect(player);
+				
+				// new stuff on lobby
+				updateLobby(lobby);
 			}
 
 			console.log(`Client ${clientIP} disconnected - Code: ${code}, Reason: ${reason?.toString() || 'none'}`);
@@ -276,7 +295,29 @@ fastify.register(async function (fastify) {
 	});
 });
 
+
+
+
+
+
+
 /* =============== LobbiesManager =============== */
+
+function onlyBots(lobby:Lobby<WebSocket>): boolean
+{
+	let ret:boolean = true;
+
+	for (const [id, /* player */] of lobby.players)
+	{
+		if (id.startsWith('BOT') === false)
+		{
+			ret = false;
+			break ;
+		}
+	}
+	
+	return ret;
+}
 
 function LobbiesManager()
 {
@@ -287,14 +328,22 @@ function LobbiesManager()
 		- All player disconnected (timeout)
 		If a game is finished a messagge should be sent
 		to the Lobby and Match History services */
+	// check if the lobby state was updated
 	lobbies.forEach((entry, id) => {
 
 		// for convenience
 		const { lobby } = entry;
 	 
+		/* --- DELETE logic --- */
 		// check if all players left
 		if (lobby.empty()) {
-			deleteLobby(id);
+			deleteLobby(id, 'empty');
+			return ;
+		}
+
+		// check if only bots
+		if (onlyBots(lobby)) {
+			deleteLobby(id, 'only bots');
 			return ;
 		}
 
@@ -309,7 +358,14 @@ function LobbiesManager()
 
 		// if timeout is passed, delete the game
 		if (entry.timeout === 0) {
-			deleteLobby(id);
+			deleteLobby(id, 'timeout');
+		}
+
+		/* --- UPDATE logic --- */
+		if (entry.update === true) {
+			console.log('Broadcasting Lobby');
+			lobby.broadcast(lobby.stateJSON);
+			entry.update = false;
 		}
 	});
 }

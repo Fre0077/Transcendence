@@ -154,14 +154,14 @@ fastify.get<{ Querystring: LeaveQuery }>(
 
 
 /* ============== PUBLISH ============ */
-interface PublushQuery {
+interface PublishQuery {
 	ID: string;
 	queue: string;
 	message:string;
 }
 
 
-fastify.post<{ Body: PublushQuery }>(
+fastify.post<{ Body: PublishQuery }>(
 	"/publish",
 	async (request) => {
 		const { ID, queue, message } = request.body;
