@@ -1,6 +1,11 @@
 import Fastify from 'fastify';
 import { MQueue } from './MQueue.js'
+
+// generate ids
 import { v4 as uuidv4 } from "uuid";
+
+// hash passwords
+import argon2 from "argon2";
 
 // Where the Queue will listen
 const PORT = Number(process.env.PORT) || 3030;
@@ -22,7 +27,7 @@ fastify.get('/health', async () => ({ status: 'ok' }));
 /* ============= REGISTER ============ */
 
 // map of IDs and users data
-let users:Map<string, { endpoint:string, password:string }> = new Map();
+let users:Map<string, { endpoint:string, password:string, subs:Set<string> }> = new Map();
 
 interface RegisterQuery {
 	endp: string;
@@ -34,7 +39,7 @@ fastify.get<{ Querystring: RegisterQuery }>(
 	async (request) => {
 		// check if they passed the notify endpoint
 		const { endp, pwd } = request.query;
-		if (endp === undefined && pwd === undefined) return { status: 'failure', ID: undefined, reason: 'Missing \'pwd\' propery' };
+		if (endp !== undefined && pwd === undefined) return { status: 'failure', ID: undefined, reason: 'Missing \'pwd\' propery' };
 
 		// check all the users
 		if (endp !== undefined)
@@ -45,13 +50,14 @@ fastify.get<{ Querystring: RegisterQuery }>(
 				if (endp === endpoint)
 				{
 					// ... and same passowrd
-					if (pwd === password)
+					if (await argon2.verify(password, pwd))
 					{
 						// #debug
-						console.log('Erasing data of endpoint', endpoint);
-						// leave all the qeues
-						mqueues.forEach((mq) => {mq.leave(ID)});
-						break ;
+						// console.log('Erasing data of endpoint', endpoint);
+						// // leave all the qeues
+						// mqueues.forEach((mq) => {mq.leave(ID)});
+						// and return the ID
+						return { status: 'success', ID: ID };
 					}
 					// ... and different password
 					else return { status: 'failure', ID: undefined, reason: 'Wrong password for endpoint ' + endp };
@@ -61,7 +67,21 @@ fastify.get<{ Querystring: RegisterQuery }>(
 
 		// assign the ID
 		const ID = uuidv4();
-		users.set(ID, { endpoint:endp, password:pwd });
+
+		// no endpoint and password
+		if (endp === undefined) return { status: 'success', ID: ID };
+
+		// hash the password
+		const hash = await argon2.hash(pwd, {
+			type: argon2.argon2id,
+			memoryCost: 2 ** 16, // 64 MB
+			timeCost: 3,
+			parallelism: 1,
+		})
+		
+		// save in db
+		users.set(ID, { endpoint:endp, password:hash, subs: new Set() });
+		// save in mirror #todo
 
 		// #debug
 		console.log(`Client ${ID} successfully registered with endpoint`, endp);
@@ -161,14 +181,20 @@ function subscribe(ID:string, name:string): boolean
 	console.log(`${ID} subscribing to`, name);
 
 	// check if the ID is one of our onw generated ID
-	if (users.has(ID) === false) return false;
+	const user = users.get(ID);
+	if (user === undefined) return false;
+	// console.log('User ok');
 	
 	// check if the MQ exists
 	const mq = mqueues.get(name);
 	if (mq === undefined) return false;
+	// console.log('Queue ok');
 
-	// perform the action
+	// perform the subscription
 	mq.subscribe(ID);
+
+	// add to user
+	user.subs.add(name);
 	return true;
 }
 
@@ -178,14 +204,18 @@ function leave(ID:string, name:string): boolean
 	console.log(`${ID} leaving`, name);
 
 	// check if the ID is one of our onw generated ID
-	if (users.has(ID) === false) return false;
+	const user = users.get(ID);
+	if (user === undefined) return false;
 
 	// check if the MQ exists
 	const mq = mqueues.get(name);
 	if (mq === undefined) return false;
 
-	// perform the action
+	// perform the unsubscription
 	mq.leave(ID);
+
+	// update the user
+	user.subs.delete(name);
 	return true;
 }
 
@@ -260,6 +290,95 @@ function notify(mq:MQueue, name:string)
 
 
 
+
+
+
+
+
+
+/* ------------- FILE MANAGEMENT ------------ */
+// all by ChatGPT
+
+import { writeFile, readFile } from "fs/promises";
+
+function serialize(
+	map: Map<string, { endpoint: string; password: string; subs: Set<string> }>
+  )
+{
+	return JSON.stringify(
+		Array.from(map.entries(), ([key, value]) => [
+		key,
+		{ ...value, subs: [...value.subs] },
+		]),
+		null,
+		2
+	);
+}
+
+function deserialize(json: string)
+{
+	const entries = JSON.parse(json) as [
+		string,
+		{ endpoint: string; password: string; subs: Set<string> }
+	][];
+
+	return new Map(
+		entries.map(([key, value]) => [
+		key,
+		{ ...value, subs: new Set(value.subs) },
+		])
+	);
+}
+
+async function persistMap(
+	map: Map<string, { endpoint: string; password: string, subs: Set<string> }>)
+{
+	const data = serialize(map);
+	console.log('Writing user db...');
+	await writeFile("users.txt", data + "\n", "utf8");
+}
+
+let pending = false;
+
+function schedulePersist(map: Map<string, any>, ms:number)
+{
+	if (pending) return;
+		pending = true;
+
+	setTimeout(async () => {
+		pending = false;
+		if (map.size > 0) await persistMap(map);
+	}, ms);
+}
+
+async function loadMap(): Promise<
+  Map<string, { endpoint: string; password: string, subs: Set<string> }>>
+{
+	let map;
+
+	try {
+		const data = await readFile("users.txt", "utf8");
+
+		map = deserialize(data);
+		
+	} catch {
+	// file doesn't exist yet
+	}
+
+	return (map === undefined) ? new Map() : map;
+}
+
+/* ------------------------------------------ */
+
+
+
+
+
+
+
+
+
+
 // monitor queues
 function MonitorQueues()
 {
@@ -286,6 +405,12 @@ const start = async () => {
 		mqueues.set('lobby', new MQueue());
 		mqueues.set('history', new MQueue());
 		mqueues.set('bot', new MQueue());
+
+		// load users dayabase if present
+		users = await loadMap();
+
+		// schedule file users backup once every 5 seconds
+		schedulePersist(users, 5000);
 
 		// start fastify server
 		await fastify.listen({ port: PORT, host: '0.0.0.0' });

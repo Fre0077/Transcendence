@@ -19,7 +19,7 @@ GET /leave?queue=<queue-name>&ID=<user-ID>
 How it Works?
 
 It's an HTTP API to queue messages in various threads, like reddit.
-When you 'register' you can specify an URL where you want to receeive notifications if new messages are in the queue. Also a password is requested (if endp is specified) so that future registration of said endpoint will block unwanted users.
+When you 'register' you can specify an URL (endp) where you want to receeive notifications if new messages are in the queue. Also a password is requested (if endp is specified) so that future registration of said endpoint will block unwanted users.
 Note that all these queues are volatiles, meaning that if the bunnyMQ process shuts down all messages are lost, as well as all of the users data. Also when you register a second time to bunnyMQ because you lost the ID, all your subscriptions will be erased.
 
 
@@ -35,6 +35,7 @@ to install:
 	npm install typescript --save-dev
 	npm install fastify
 	npm install uuid
+	npm install argon2
 
 to build:
 	npm run build
