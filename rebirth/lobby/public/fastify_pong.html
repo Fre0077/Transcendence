@@ -89,7 +89,7 @@
     }
 
     socket.addEventListener("open", () => {
-      sleep(500)
+      sleep(1500)
       .then(() => {
         socket.send(JSON.stringify({ method: "AUTH", playerID: playerID }));
         serverLog.innerText = `Joining ${gameID}`;

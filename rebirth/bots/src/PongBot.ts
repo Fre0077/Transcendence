@@ -94,8 +94,12 @@ export class PongBot
 			const data = this.parse(state);
 			if (data === undefined) return;
 
-			// save variables
+			// save ball
 			ball = data.ball;
+			// clamp ball (shouldn't be neccesary)
+			ball.angle = ball.angle % (2 * Math.PI);
+
+			// save paddle
 			paddle = data.paddle;
 		
 		} catch(err) {
@@ -104,7 +108,7 @@ export class PongBot
 		}
 	
 		// calculate coordinate of bot paddle
-		const botX = 1 - paddle.offset + paddle.width;
+		const botX = 1 - (paddle.offset + paddle.width);
 
 		// calculate hitY of the ball
 		if (ball.angle < Math.PI / 2 || ball.angle > 3 * Math.PI / 2)
@@ -112,14 +116,20 @@ export class PongBot
 			// if not in timeout
 			if (this._timeout > 0)
 			{
-				console.log('timer', this._timeout);
+				// #debug
+				// console.log('timer', this._timeout);
+
 				--this._timeout;
 			}
 			// and point not calculated yet
 			else if (!this._calculated)
 			{
 				// #todo maybe error too small
-				this._exp = expectedPos(ball.pos, ball.angle, botX) + error(this._level / 400);
+				this._exp = expectedPos(ball.pos, ball.angle, botX) + error(this._level / 500);
+				
+				// #debug
+				// console.log('exp', this._exp);
+
 				this._calculated = true;
 			}
 		}
@@ -127,11 +137,13 @@ export class PongBot
 		{
 			if (this._calculated === true)
 			{
-				console.log('Resetting');
+				// #debug
+				// console.log('Resetting');
+
 				// reset stats
 				this._exp = 0.5;
 				this._calculated = false;
-				this._timeout = Math.floor(this._level / 2);
+				this._timeout = Math.floor(this._level) / 1.5;
 
 			}
 		}
@@ -182,6 +194,9 @@ export class PongBot
 /* calculates the expected position (ChatGPT) */
 function expectedPos(pos:number[], angle: number, targetX: number): number
 {
+	// console.log('pos', pos);
+	// console.log('angle', angle);
+	
     const x0 = pos[0];
     const y0 = pos[1];
 
@@ -192,14 +207,15 @@ function expectedPos(pos:number[], angle: number, targetX: number): number
     // How far horizontally until target
     const dx = targetX - x0;
     if (vx === 0) return y0; // ball not moving horizontally → fallback
-	if (vy === 0) return y0; // ball not moving vertically
 
     // Raw, unbounded Y at that X
 	// (y = mx + q)
-    const y = (vy / vx )* dx + y0;
+    const y = (vy / vx ) * dx + y0;
+
+	// console.log('unbound Y', y);
 
     // Apply vertical reflection inside [0,1]
-    const mod = y % 2;
+    const mod = (y < 0) ? (y % 2) * -1 : y % 2;
     const reflected = mod <= 1 ? mod : 2 - mod;
 
     return reflected;
@@ -236,6 +252,9 @@ function error(max:number): number
 {
 	let ret = Math.random() * max;
 	if (Math.floor(Math.random() * 10) % 2 == 0) ret = -ret;
-	console.log('Error', ret);
+
+	// #debug
+	// console.log('imprecision', ret);
+
 	return ret;
 }

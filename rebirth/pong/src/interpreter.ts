@@ -42,7 +42,7 @@ export async function interpreter(
 	}
 
 	// logging
-	console.log('Received: ', msg);
+	// console.log('Received: ', msg);	/* #debug */
 
 	// Handle methods
 	switch (msg.method)

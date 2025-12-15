@@ -50,6 +50,7 @@ export class MQueue
 	}
 
 	public subscribe(ID:string) {
+		if (this._personal_queues.has(ID)) return;
 		this._personal_queues.set(ID, new Queue());
 	}
 

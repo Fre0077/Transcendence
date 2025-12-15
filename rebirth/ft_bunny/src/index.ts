@@ -9,7 +9,7 @@ import argon2 from "argon2";
 
 // Where the Queue will listen
 const PORT = Number(process.env.PORT) || 3030;
-const VERSION:string = "1.0.3";
+const VERSION:string = "1.0.4";
 
 
 const fastify = Fastify({ 
@@ -26,70 +26,96 @@ fastify.get('/health', async () => ({ status: 'ok' }));
 
 /* ============= REGISTER ============ */
 
+type User = {
+	notify:boolean;
+	endpoint:string;
+	password:string;
+	subs:Set<string>
+}
+
 // map of IDs and users data
-let users:Map<string, { endpoint:string, password:string, subs:Set<string> }> = new Map();
+let users:Map<string, User> = new Map();
 
 interface RegisterQuery {
-	endp: string;
-	pass: string;
+	endp?: string;
+	pass?: string;
 }
 
 fastify.get<{ Querystring: RegisterQuery }>(
 	"/register",
-	async (request) => {
+	async (request, reply) => {
 		// check if they passed the notify endpoint
 		const { endp, pass } = request.query;
-		if (endp !== undefined && pass === undefined) return { status: 'failure', ID: undefined, reason: 'Missing \'pass\' property' };
 
-		// check all the users
+		// check if Endpoint login
 		if (endp !== undefined)
 		{
+			// check if password passed
+			if (pass === undefined) {
+				return reply.status(400).send({
+					status: 'failure',
+					ID: undefined,
+					reason: 'Missing \'pass\' property'
+				});
+			}
+
+			// check if already logged in
 			for (const [ID, { endpoint, password }] of users)
 			{
 				// if someone has same endpoint ...
 				if (endp === endpoint)
 				{
 					// ... and same passowrd
-					if (await argon2.verify(password, pwd))
-					{
-						// #debug
-						// console.log('Erasing data of endpoint', endpoint);
-						// // leave all the qeues
-						// mqueues.forEach((mq) => {mq.leave(ID)});
-						// and return the ID
+					if (await argon2.verify(password, pass))
+					{	
+						// return the ID
 						return { status: 'success', ID: ID };
 					}
 					// ... and different password
-					else return { status: 'failure', ID: undefined, reason: 'Wrong password for endpoint ' + endp };
+					else return reply.status(400).send({
+							status: 'failure',
+							ID: undefined,
+							reason: 'Wrong password for endpoint ' + endp
+						});
 				}
 			}
+
+			// if not logged in yet
+
+			// assign the ID
+			const ID = uuidv4();
+
+			// hash the password
+			const hash = await argon2.hash(pass, {
+				type: argon2.argon2id,
+				memoryCost: 2 ** 16, // 64 MB
+				timeCost: 3,
+				parallelism: 1,
+			})
+			
+			// save in db
+			users.set(ID, { notify: true, endpoint:endp, password:hash, subs: new Set() });
+
+			// #debug
+			console.log(`Client ${ID} successfully registered with endpoint`, endp);
+
+			return { status: 'success', ID: ID };
 		}
-
-		// assign the ID
-		const ID = uuidv4();
-
-		// no endpoint and password
-		if (endp === undefined)
+		else	/* no notification endpoint specified */
 		{
-			users.set(ID, { endpoint:endp, password:'-', subs: new Set() });
+			// assign the ID
+			const ID = uuidv4();
+
+			users.set(ID, { notify: false, endpoint:'-', password:'-', subs: new Set() });
+
+			// #debug
+			console.log(`Client ${ID} successfully registered with endpoint`, endp);
+
 			return { status: 'success', ID: ID };
 		}
 
-		// hash the password
-		const hash = await argon2.hash(pass, {
-			type: argon2.argon2id,
-			memoryCost: 2 ** 16, // 64 MB
-			timeCost: 3,
-			parallelism: 1,
-		})
-		
-		// save in db
-		users.set(ID, { endpoint:endp, password:hash, subs: new Set() });
-		// save in mirror #todo
-
-		// #debug
-		console.log(`Client ${ID} successfully registered with endpoint`, endp);
-		return { status: 'success', ID: ID };
+		// should never come here
+		return reply.status(400).send({ status: 'failure', ID: undefined, reason: 'Unknown error' });
 	}
 );
 
@@ -199,6 +225,7 @@ function subscribe(ID:string, name:string): boolean
 
 	// add to user
 	user.subs.add(name);
+
 	return true;
 }
 
@@ -220,6 +247,7 @@ function leave(ID:string, name:string): boolean
 
 	// update the user
 	user.subs.delete(name);
+
 	return true;
 }
 
@@ -256,12 +284,16 @@ function get(ID:string, name:string): string | undefined
 }
 
 // send notification if new messages are there
+// #todo not notify if notification already sent
 function notify(mq:MQueue, name:string)
 {
 	// better MQueue
 	for (const follower of mq.queues.keys())
 	{
-		const endpoint = users.get(follower)?.endpoint
+		// no notification if disabled
+		if (users.get(follower)?.notify === false) return;
+
+		const endpoint = users.get(follower)?.endpoint;
 		if (endpoint !== undefined && mq.empty(follower) === false)
 		{
 			// #debug
@@ -305,9 +337,7 @@ function notify(mq:MQueue, name:string)
 
 import { writeFile, readFile } from "fs/promises";
 
-function serialize(
-	map: Map<string, { endpoint: string; password: string; subs: Set<string> }>
-  )
+function serialize(map: Map<string, User>)
 {
 	return JSON.stringify(
 		Array.from(map.entries(), ([key, value]) => [
@@ -321,10 +351,7 @@ function serialize(
 
 function deserialize(json: string)
 {
-	const entries = JSON.parse(json) as [
-		string,
-		{ endpoint: string; password: string; subs: Set<string> }
-	][];
+	const entries = JSON.parse(json) as [ string, User ][];
 
 	return new Map(
 		entries.map(([key, value]) => [
@@ -334,15 +361,14 @@ function deserialize(json: string)
 	);
 }
 
-async function persistMap(
-	map: Map<string, { endpoint: string; password: string, subs: Set<string> }>)
+async function persistMap(map: Map<string, User>)
 {
 	const data = serialize(map);
-	console.log('Writing user db...');
-	await writeFile("users.txt", data + "\n", "utf8");
+	console.log('Writing user backup...');
+	await writeFile("users.json", data + "\n", "utf8");
 }
 
-let pending = false;
+/* let pending = false;
 
 function schedulePersist(map: Map<string, any>, ms:number)
 {
@@ -355,21 +381,69 @@ function schedulePersist(map: Map<string, any>, ms:number)
 	}, ms);
 }
 
+function updateDB() { schedulePersist(users, 5000); } */
+
+/*  - - - UPDATE BACKUP REGULARLY - - - */
+
+let mapsize:number = 0;
+
+function getMapSize(map:Map<string, { endpoint:string, password:string, subs:Set<string>}>)
+{
+	let mymapsize = map.size;
+
+	for (const entry of map.values()) {
+		mymapsize += entry.subs.size;
+	}
+
+	return mymapsize;
+}
+
+function updateBackup()
+{
+	const currsize = getMapSize(users);
+
+	if (mapsize !== currsize)
+	{
+		persistMap(users);
+		mapsize = currsize;
+	}
+}
+
+/*  - - - LOAD BACKUP - - - */
+
 async function loadMap(): Promise<
-  Map<string, { endpoint: string; password: string, subs: Set<string> }>>
+  Map<string, User>>
 {
 	let map;
 
 	try {
-		const data = await readFile("users.txt", "utf8");
+		const data = await readFile("users.json", "utf8");
 
 		map = deserialize(data);
 		
 	} catch {
-	// file doesn't exist yet
+		// no file found
+		console.log('No backup file, initializing new map ...');
+		return new Map();
 	}
 
-	return (map === undefined) ? new Map() : map;
+	console.log('Loaded new map:', map);
+
+	return  map;
+}
+
+// read user.json and updates 'users' and 'mqueues' accordingly
+async function laodBackup()
+{
+	// load users
+	users = await loadMap();
+
+	// subscribe to mqueues
+	users.forEach((user, id) => {
+		user.subs.forEach((sub) => {
+			subscribe(id, sub);
+		});
+	})
 }
 
 /* ------------------------------------------ */
@@ -395,6 +469,9 @@ function MonitorQueues()
 		// no mqueue delete for now
 		// if (queue.empty()) mqueues.delete(name);
 	});
+
+	// update backup
+	updateBackup();
 }
 
 
@@ -410,11 +487,8 @@ const start = async () => {
 		mqueues.set('history', new MQueue());
 		mqueues.set('bot', new MQueue());
 
-		// load users dayabase if present
-		users = await loadMap();
-
-		// schedule file users backup once every 5 seconds
-		schedulePersist(users, 5000);
+		// load users backup if present
+		await laodBackup();
 
 		// start fastify server
 		await fastify.listen({ port: PORT, host: '0.0.0.0' });

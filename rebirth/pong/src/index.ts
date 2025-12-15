@@ -13,7 +13,7 @@ export const MYPASS = process.env.MYPASS ?? 'password';
 import { bunnyRegister, bunnySubscribe, bunnyGet, bunnyPublish } from './bunny.js'
 
 // service varaibles
-const TIMEOUT:number = 10;	// timeout in seconds to wait before deleeting the game
+const TIMEOUT:number = 10;	// timeout in seconds to wait before deleting the game
 const FPS:number = 60;
 
 /* ------- LOAD STUFF ------- */
@@ -310,6 +310,12 @@ function GamesManager()
 		If a game is finished a messagge should be sent
 		to the Lobby and Match History services */
 	games.forEach((game, id) => {
+
+		// delete game if it's over
+		if (game.game.end() !== -1) {
+			deleteGame(id);
+			return ;
+		}
 
 		// for convenience
 		const { players } = game;
