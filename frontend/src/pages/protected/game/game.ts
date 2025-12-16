@@ -4,7 +4,7 @@ import { loadNavbar } from "@/components/navbar";
 export function loadGamePage(): HTMLElement {
 	const div = document.createElement('div');
 	div.className = 'min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex flex-col';
-	div.innerHTML = `
+	div.innerHTML = /*html*/ `
 	${loadNavbar().outerHTML}
 
 	<!-- Game Page Content -->
@@ -22,7 +22,7 @@ export function loadGamePage(): HTMLElement {
 				<div class="absolute inset-0 bg-gradient-to-br from-purple-600/0 to-pink-600/0 group-hover:from-purple-600/20 group-hover:to-pink-600/20 transition"></div>
 			</a>
 
-			<a href="/game/custom" class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-cyan-600/30 to-blue-600/30 p-8 border border-white/10 hover:border-cyan-400/50 transition-all hover:scale-105">
+			<a href="/lobby/online" class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-cyan-600/30 to-blue-600/30 p-8 border border-white/10 hover:border-cyan-400/50 transition-all hover:scale-105">
 				<div class="relative z-10">
 					<div class="text-6xl mb-4">🎮</div>
 					<h3 class="text-2xl font-bold text-white mb-2">Online Game</h3>
