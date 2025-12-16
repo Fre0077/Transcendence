@@ -1,6 +1,7 @@
 import { loadNavbar } from "@/components/navbar";
+import { loadOnlineGamePage } from "../onlineGame/onlineGame";
 
-const baseLobbyPath = 'http://localhost:3003/';
+const baseLobbyPath = 'http://localhost:3031/';
 
 interface Player {
     id: string;
@@ -12,10 +13,14 @@ export function loadOnlineLobbyPage(): HTMLElement {
     let lobby_code = '';
     let connected_players: Player[] = [];
 
-    let lobbyWS = createWebSocketConnection(lobby_code, connected_players);
+    // @topiana- we need playerID to authenticate the connection, so I passed it to createWebSocketConnection 
 
     const playerID = localStorage.getItem('playerID') || 'Guest_' + Math.floor(Math.random() * 1000);
     const format = 3; // Best of 3 rounds
+    
+    let lobbyWS = createWebSocketConnection(playerID, lobby_code, connected_players);
+
+    //----
 
     const div = document.createElement('div');
     div.className = 'min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex flex-col';
@@ -81,7 +86,7 @@ export function loadOnlineLobbyPage(): HTMLElement {
     const createGameBtn = div.querySelector('#createGameBtn');
     if (createGameBtn) {
         createGameBtn.addEventListener('click', () => {
-            createLobby(playerID, format, lobbyWS);
+            createLobby(/* playerID,  */format, lobbyWS);
         });
     }
 
@@ -90,7 +95,7 @@ export function loadOnlineLobbyPage(): HTMLElement {
         joinGameBtn.addEventListener('click', () => {
             const lobby_code = prompt('Enter Lobby Code:');
             if (lobby_code) {
-                joinLobby(lobby_code, playerID, lobbyWS);
+                joinLobby(lobby_code, /* playerID, */ lobbyWS);
             }
         });
     }
@@ -100,7 +105,7 @@ export function loadOnlineLobbyPage(): HTMLElement {
         leaveLobbyBtn.addEventListener('click', () => {
             console.log('Leave Lobby Button clicked');
             leaveLobby(lobby_code, connected_players, lobbyWS);
-            lobbyWS = createWebSocketConnection(lobby_code, connected_players);
+            lobbyWS = createWebSocketConnection(playerID, lobby_code, connected_players);
         });
         console.log('Leave Lobby Button found and event listener added');
     }
@@ -108,7 +113,7 @@ export function loadOnlineLobbyPage(): HTMLElement {
     const startGameBtn = div.querySelector('#startGameBtn');
     if (startGameBtn) {
         startGameBtn.addEventListener('click', () => {
-            startGame(lobby_code, lobbyWS);
+            startGame(/* lobby_code, */ lobbyWS);
         });
     }
 
@@ -133,25 +138,25 @@ function checkPlayerListChanged(oldList: Player[], newList: any[]): boolean {
     Request:
     {
         method: 'CREATE',     (mandatory)
-        playerID: <playerID>, (mandatory)
+        playerID: <playerID>, (mandatory) (outdated)
         format: <format>      (optional)
     }
     @format: the number of rounds a player need to win to win the match
 */
-function createLobby(playerID: string, format: number, lobbyWS: WebSocket) {
+function createLobby(/* playerID: string, */ format: number, lobbyWS: WebSocket) {
     const createLobbyRequest = {
         method: 'CREATE',
-        playerID: playerID,
+        // playerID: playerID, // outdated
         format: format
     };
     lobbyWS.send(JSON.stringify(createLobbyRequest));
 }
 
-function joinLobby(lobby_code: string, playerID: string, lobbyWS: WebSocket) {
+function joinLobby(lobby_code: string, /* playerID: string, */ lobbyWS: WebSocket) {
     const joinLobbyRequest = {
         method: 'JOIN',
-        lobbyID: lobby_code,
-        playerID: playerID
+        lobbyID: lobby_code
+        // playerID: playerID      // outdated
     };
     lobbyWS.send(JSON.stringify(joinLobbyRequest));
 }
@@ -164,10 +169,10 @@ function leaveLobby(lobby_code: string, connected_players: Player[], lobbyWS: We
 }
 
 // message received: {"method":"START_REPLY","status":"success","value":"00d78701-cb70-4535-81f3-c7b96bcd757b","comment":"The lobby is now in game"}
-function startGame(lobby_code: string, lobbyWS: WebSocket) {
+function startGame(/* lobby_code: string,  */lobbyWS: WebSocket) {
     const startGameRequest = {
         method: 'START',
-        lobbyID: lobby_code
+        // lobbyID: lobby_code // outdated
     };
     lobbyWS.send(JSON.stringify(startGameRequest));
 }
@@ -207,12 +212,15 @@ function updateLobbyInfo(lobby_code?: string, connected_players: Player[] = []) 
     }
 }
 
-function createWebSocketConnection(lobby_code: string, connected_players: Player[]): WebSocket {
+function createWebSocketConnection(playerID:string, lobby_code: string, connected_players: Player[]): WebSocket {
     const ws = new WebSocket(baseLobbyPath.replace('http', 'ws') + 'lobbysocket');
     console.log(baseLobbyPath.replace('http', 'ws') + 'lobbysocket');
 
     ws.onopen = () => {
         console.log('Connected to lobby WebSocket');
+
+        // @topiana- aggiunta la AUTH call all'inizio della connesione #review pls
+        ws.send(JSON.stringify({ method: 'AUTH', playerID: playerID }));
     };
 
     ws.onmessage = (event) => {
@@ -223,6 +231,11 @@ function createWebSocketConnection(lobby_code: string, connected_players: Player
             const method = data.method || '';
             if (method === 'START_REPLY' && data.status === 'success') {
                 console.log('Lobby is starting the game:', data.comment);
+
+
+                // @topiana- load the game page #review pls
+                loadOnlineGamePage();
+
             }
             if (lobby_code !== data.ID) {
                 updateNeeded = true;

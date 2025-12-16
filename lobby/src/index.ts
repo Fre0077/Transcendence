@@ -10,7 +10,7 @@ export const MYURL = process.env.MYURL ?? `http://localhost:${PORT}`;
 export const MYPASS = process.env.MYPASS ?? 'password';
 
 // service varaibles
-const TIMEOUT:number = 10;	// timeout in seconds to wait before deleeting the lobby
+const TIMEOUT:number = 120;	// timeout in seconds to wait before deleting the lobby
 
 // bunny client
 import { bunnyRegister, bunnySubscribe, bunnyGet, bunnyPublish } from './bunny.js'

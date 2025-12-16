@@ -7,6 +7,7 @@ export function loadOnlineGamePage(): HTMLElement {
     ${loadNavbar().outerHTML}
 
     <!-- Online Game Page Content -->
+    <!--
     <div class="flex-1 container mx-auto px-6 py-16 flex flex-col items-center justify-center">
         <h1 class="text-4xl font-bold text-white mb-8">Online Game</h1>
         <p class="text-white/70 mb-12">Create or join an online game to start playing with others!</p>
@@ -31,6 +32,7 @@ export function loadOnlineGamePage(): HTMLElement {
             </a>
         </div>
     </div>
+    -->
     `;
     return div;
 }
