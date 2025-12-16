@@ -43,11 +43,23 @@ Note that if the 'ingame' propery is set to true the players can join the game s
 
 Here is a brief explaination on how to use all the methods:
 
+<!-- ===== AUTH ===== -->
+Request:
+{
+	method: 'AUTH',	(mandatory)
+	ID: <playerID>	(mandatory)
+}
+Description: This is the first message to inoltrate to the backend, all other requests befor this (or if the Authentication fails) will be ignored.
+Reply:
+{
+	method: 'AUTH_REPLY',
+	status: 'success/failure'
+}
+
 <!-- ===== CREATE ===== -->
 Reqest:
 {
   method: 'CREATE',     (mandatory)
-  playerID: <playerID>, (mandatory)
   format: <format>      (optional)
 }
 @format: the number of rounds a player need to win to win the match
@@ -66,10 +78,8 @@ Request:
 {
   method: 'JOIN',       (mandatory)
   lobbyID: <lobbyID>,   (mandatory)
-  playerID: <playerID>  (mandatory)
 }
 @lobbyID: the ID of the lobby as a string
-@playerID: the ID of the player as a string
 
 Description: Joins a lobby with the specified ID, if any of the property is missing
 or invalid or there is no lobby with the lobbyID requested, it fails.
@@ -142,28 +152,25 @@ The /gamesocket websocket processes input and the game mechanics.
 Once connected you can JOIN a game and make your MOVEs.
 Once every 60ms after a successful JOIN request you will receive the 'GameState' JSON with the position of the ball, of the players, etc ...
 
-GameStateJSON:
-{
-  score:number[],		  /* score of the match [player1, player2] */
-  ball: {
-				pos: this.ball.pos,		/* array of 2 coordinates [X, Y] of the CENTER of the ball */
-				dir: this.ball.angle,	/* angle of the ball, used for BOT play */
-  },
-  player1:number,     /* single Y coordinate of the CENTER of the paddle*/
-  player2:number2,    /* single Y coordinate of the CENTER of the paddle*/
-  paddle: [				    /* paddle size for both players: [player1, player2] */
-    {
-      height:number,
-      width:number,
-      offset:number   /* single X coordinate of the CENTER of the paddle */
-    },
-    {
-      height:number,
-      width:number,
-      offset:number   /* single X coordinate of the CENTER of the paddle (could need a readjustment for player2) */
-    }
-  ],
-  timeout:number      /* The number of millisecond the game will be halting (inbetween rounds or at game start) */
+<!--- GameState --->
+interface BallState {
+	pos: number[];
+	angle: number;
+}
+
+interface PaddleState {
+	posY:number;
+	offset:number;
+	height:number;
+	width:number;
+}
+
+interface GameState {
+	score: number[];
+	ball: BallState;
+	paddle:PaddleState[];
+	playing:boolean;
+	timeout: number;
 }
 
 Note that the game is expected to be played in a square, so the physics of the ball will be messy if you display a rectangular field. The top-left corner of the filed is (0,0),
@@ -171,16 +178,27 @@ the bottom-right one is (1,1).
 
 Here is a brief explaination on how to use all the methods:
 
+<!-- ===== AUTH ===== -->
+Request:
+{
+	method: 'AUTH',	(mandatory)
+	ID: <playerID>	(mandatory)
+}
+Description: This is the first message to inoltrate to the backend, all other requests befor this (or if the Authentication fails) will be ignored.
+Reply:
+{
+	method: 'AUTH_REPLY',
+	status: 'success/failure'
+}
+
 <!-- ===== JOIN ===== -->
 
 Request:
 {
   method: 'JOIN',       (mandatory)
   gameID: <gameID>,     (mandatory)
-  playerID: <playerID>  (mandatory)
 }
 @gameID: the ID of the game as a string
-@playerID: the ID of the player as a string
 
 Description: Joins a game with the specified ID, if any of the property is missing
 or invalid or there is no game with the gameID requested, it fails.
