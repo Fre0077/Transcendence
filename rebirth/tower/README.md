@@ -7,28 +7,7 @@ Once connected you can JOIN a game and make your MOVEs.
 Once every 60ms after a successful JOIN request you will receive the 'GameState' JSON with the position of the ball, of the players, etc ...
 
 <!--- GameState --->
-interface BallState {
-	pos: number[];
-	angle: number;
-}
 
-interface PaddleState {
-	posY:number;
-	offset:number;
-	height:number;
-	width:number;
-}
-
-interface GameState {
-	score: number[];
-	ball: BallState;
-	paddle:PaddleState[];
-	playing:boolean;
-	timeout: number;
-}
-
-Note that the game is expected to be played in a square, so the physics of the ball will be messy if you display a rectangular field. The top-left corner of the filed is (0,0),
-the bottom-right one is (1,1).
 
 Here is a brief explaination on how to use all the methods:
 
@@ -84,12 +63,7 @@ Request:
   value: <moveType>
 }
 @value is the kind of move the player wants to do as a string, the options are:
-  "UP_PRESS"    (the player pressed the Up key)
-  "DW_PRESS"    (the player pressed the Down key)
-  "UP_RELEASE"  (the player releaased the Up key)
-  "DW_RELEASE"  (the player releaased the Down key)
-  "START_PRESS" (the player requested the round to begin)
-  "RESET_PRESS" (the player requested the game to be resetted) (maybe to remove)
+  
 
 Description: this is how the player interacts with the game mechanics and some basic match management.
 Reply (only in case of failure):

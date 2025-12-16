@@ -127,8 +127,7 @@ to install:
 	npm install fastify ws @fastify/websocket @fastify/static
 	npm install uuid
 
-	(if not founding ws)
-	npm i --save-dev @types/ws
+	(if any package is installed but not found: `npm i --save-dev @types/<package-name>`)
 
 
 to build:
@@ -136,6 +135,17 @@ to build:
 
 to launch:
 	npm run start
+
+
+--- VARIABLES TO DEFINE in .env ---
+
+PORT: The port on which the server will be listening on
+MYURL: e.g. 'http://my.ip.add.res:PORT'
+BUNNYURL: The URL of the ft_bunny container (e.g. 'http://bunny.ip.add.res:BUNNYPORT)
+MYPASS: The password used to access the bunnyMQ service
+
+
+
 
 
 nice tutorial:

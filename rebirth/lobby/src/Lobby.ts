@@ -53,7 +53,7 @@ class Player<T extends MySocket>
 	}
 
 	// update socket
-	public connect(__socket:T)
+	public connect(__socket:T | null)
 	{
 		this._socket = __socket;
 		this._status = "connected";
@@ -94,9 +94,9 @@ export class Lobby<T extends MySocket> {
 	private _players:Map<string, Player<T>>;	// unique identifier for each player, sent at th beginning of every move. NOTE: the ID is generated when the websocket is connected
 	
 	constructor(__size:number = 2) {
-		this._size = __size;				// 2 player
+		this._size = __size;					// 2 player
 
-		this._ID = uuidv4();	// #todo lobby code generator. for now fixed code
+		this._ID = uuidv4();					// lobby code generator.
 		this._players = new Map();
 
 		this._ingame = false;
@@ -169,8 +169,8 @@ export class Lobby<T extends MySocket> {
 	/* ----------------------------------------------------- */
 
 	// startup procedure if we reached the number of players
-	public launch(callback: (gameID:string, players:string[]) => boolean):
-		{ status: 'success' | 'failure', reason:string }
+	public async launch(callback: (gameID:string, players:string[]) => Promise<boolean>):
+		Promise<{ status: 'success' | 'failure', reason:string }>
 	{
 		// is lobby full?
 		if (this.full() === false) {
@@ -198,7 +198,7 @@ export class Lobby<T extends MySocket> {
 		const players = Array.from(this._players.keys());
 
 		// callback for external porpouses (send to GameService)
-		if (callback(this._gameID, players) === false) {
+		if (await callback(this._gameID, players) === false) {
 			this._gameID = "empty";
 			return {
 				status: 'failure',
@@ -299,7 +299,9 @@ export class Lobby<T extends MySocket> {
 		}
 
 		// disconnect player
-		player.disconnect();
+		if (this._ingame === false) player.disconnect();
+		if (this._ingame === true) player.away();
+	
 		return true;
 	}
 

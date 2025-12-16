@@ -4,7 +4,7 @@ import { Game } from './Game.js'
 
 
 // Where the Queue will listen
-const PORT = Number(process.env.PORT) || 3040;
+const PORT = Number(process.env.PORT) || 3041;
 export const BUNNYURL = process.env.BUNNYURL ?? 'http://localhost:3030';
 export const MYURL = process.env.MYURL ?? `http://localhost:${PORT}`;
 export const MYPASS = process.env.MYPASS ?? 'password';
@@ -13,8 +13,7 @@ export const MYPASS = process.env.MYPASS ?? 'password';
 import { bunnyRegister, bunnySubscribe, bunnyGet, bunnyPublish } from './bunny.js'
 
 // service varaibles
-const TIMEOUT:number = 10;	// timeout in seconds to wait before deleting the game
-const INACTIVE_TIMEOUT:number = 1 * 60 * 1000;	// timeout in millisecond to wait before deleting the game (player inactivity)
+const TIMEOUT:number = 10;	// timeout in seconds to wait before deleeting the game
 const FPS:number = 60;
 
 /* ------- LOAD STUFF ------- */
@@ -84,7 +83,7 @@ type Player = {
 	status: "connected" | "disconnected" | "left";
 }
 
-let games:Map<string, {game: Game, players:Player[], timeout:number, inactive:number }> = new Map();
+let games:Map<string, {game: Game, players:Player[], timeout:number }> = new Map();
 
 export function createGame(ID:string, playerIDs:string[]): Game
 {
@@ -98,7 +97,7 @@ export function createGame(ID:string, playerIDs:string[]): Game
 	}));
 
 	const game:Game = new Game();
-	games.set(ID, { game: game, players: players, timeout:TIMEOUT, inactive:Date.now() });
+	games.set(ID, { game: game, players: players, timeout:TIMEOUT });
 	return game;
 }
 
@@ -181,7 +180,7 @@ export function leaveGame(ID:string, playerID:string): { status:"success" | "fai
 	};
 }
 
-export function deleteGame(ID:string, reason:string | void)
+export function deleteGame(ID:string)
 {
 	// check if game is present
 	const game = games.get(ID);
@@ -203,7 +202,7 @@ export function deleteGame(ID:string, reason:string | void)
 		status: 'finished'
 	});
 
-	console.log(`Deleting game ${ID}, reason: ${reason} ...`);
+	console.log(`Deleting game ${ID} ...`);
 	games.delete(ID);
 }
 
@@ -256,9 +255,6 @@ fastify.register(async function (fastify) {
 			.catch((error) => {
 				console.error('interpreter() Promise rejected with error: ' + error);
 			});
-
-			// update inactive timeout
-			if (gameID !== undefined) updateTimeFor(gameID);
 		});
 
 		// Handle WebSocket errors
@@ -301,18 +297,7 @@ fastify.register(async function (fastify) {
 });
 
 
-
-
-
-
 /* =============== GamesManager =============== */
-
-function updateTimeFor(gameid:string)
-{
-	const game = games.get(gameid);
-	if (game === undefined) return;
-	game.inactive = Date.now();
-}
 
 function GamesManager()
 {
@@ -321,22 +306,10 @@ function GamesManager()
 		- All players left
 		- No player joined (timeout)
 		- All player disconnected (timeout)
-		- All players inactive (bigtimeout) #todo
+		- All players inactive (bigtimeout)
 		If a game is finished a messagge should be sent
 		to the Lobby and Match History services */
 	games.forEach((game, id) => {
-
-		// delete game if it's over
-		if (game.game.end() !== -1) {
-			deleteGame(id, 'finished');
-			return ;
-		}
-		
-		// delete game if inactive
-		if (Date.now() - game.inactive > INACTIVE_TIMEOUT) {
-			deleteGame(id, 'inactive');
-			return ;
-		}
 
 		// for convenience
 		const { players } = game;
@@ -346,7 +319,7 @@ function GamesManager()
 
 		// check if all players left
 		if (players.find(p => p.status !== "left") === undefined) {
-			deleteGame(id, 'all player left');
+			deleteGame(id);
 			return ;
 		}
 
@@ -359,7 +332,7 @@ function GamesManager()
 
 		// if timeout is passed, delete the game
 		if (game.timeout === 0) {
-			deleteGame(id, 'timeout');
+			deleteGame(id);
 		}
 	});
 }

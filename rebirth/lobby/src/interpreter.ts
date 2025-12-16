@@ -36,7 +36,8 @@ export async function interpreter(
 	lobby:string | undefined,
 	player:string | undefined,
 	ws:WebSocket,
-	callback :(lobby:string | undefined, player:string | undefined) => void): Promise<string>
+	/* the parameters of the callback are the new lobbyID or playerID, or if the lobby was updated (something changed) */
+	callback :(lobby:string | undefined, player:string | undefined, update:boolean) => void): Promise<string>
 {
 	// Format and log message
 	let msg = isValidObj(message.toString());
@@ -61,7 +62,7 @@ export async function interpreter(
 			// welp...
 			if (aret.status === "success") {
 				// save variables
-				callback(aret.lobby, aret.player);
+				callback(aret.lobby, aret.player, false);
 			}
 
 			// send reply
@@ -77,7 +78,7 @@ export async function interpreter(
 			// welp...
 			if (cret.status === "success") {
 				// save variables
-				callback(cret.lobby, cret.player);
+				callback(cret.lobby, cret.player, true);
 			}
 
 			// send reply
@@ -92,7 +93,7 @@ export async function interpreter(
 			// welp...
 			if (jret.status === "success") {
 				// save variables
-				callback(jret.lobby, jret.player);
+				callback(jret.lobby, jret.player, true);
 			}
 			
 			// send reply
@@ -108,7 +109,7 @@ export async function interpreter(
 			// welp...
 			if (lret.status === "success") {
 				// save variables
-				callback(lret.lobby, lret.player);
+				callback(lret.lobby, lret.player, true);
 			}
 
 			// send reply
@@ -120,6 +121,9 @@ export async function interpreter(
 			*/
 			let bret = BOT(msg, lobby);
 			
+			// just for the update
+			callback(lobby, player, true);
+
 			// send reply
 			return bret.reply;
 		
@@ -131,6 +135,9 @@ export async function interpreter(
 				lobbyStatus that gets sent once every second
 			*/
 			let sret = await START(lobby);
+
+			// just for the update
+			callback(lobby, player, true);
 
 			// send reply
 			return sret.reply;

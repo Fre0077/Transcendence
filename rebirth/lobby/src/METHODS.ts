@@ -99,7 +99,7 @@ export function CREATE(msg:object,
 
 	// check if the obj has format
 	if ("format" in msg && typeof msg.format === "number" ) {
-		console.log(`#todo Setting format ${msg.format}`);
+		console.log(`#todo Set format ${msg.format}`);
 		// lobby.format(msg.format);
 	}
 
@@ -255,31 +255,7 @@ Reply:
 }
 */
 
-import { MQID } from './index.js'
-
-/* Health checker */
-// async function checkServiceHealth(url:string)
-// {
-
-// 	// console.log(`checking '${url}' health ...`);
-
-// 	if (url === undefined || url === null) {
-// 		console.log('invalid URL');
-// 		return false;
-// 	}
-
-// 	const health = await fetch(`${url}/health`)
-// 		.then(r => r.json())
-// 		.catch(() => null);
-
-// 	if (!health?.status) {
-// 		console.log(`Server '${url}' offline`);
-// 		return false;
-// 	}
-
-// 	console.log(`Server '${url}' online`);
-// 	return true;
-// }
+import { bunnyPublish } from './bunny.js';
 
 export async function START(outlobby:string | undefined): Promise<StandardReturn>
 {
@@ -307,31 +283,11 @@ export async function START(outlobby:string | undefined): Promise<StandardReturn
 			reply: JSON.stringify({ method: 'START_REPLY', status: 'failure', comment: "The lobby isnt full, cannot start game" })
 		};
 	}
-	
-	// signal the GameService to create a Game
-	// if (await checkServiceHealth('http://localhost:3030') === false) {
-	// 	return {
-	// 		status: "failure",
-	// 		reply: JSON.stringify({ method: 'START_REPLY', status: 'failure', comment: "The MessageQueue service is unavailable" })
-	// 	};
-	// }
 
 	// get variables from the callback
-	let ret = lobby.launch((gameID:string, players:string[]): boolean => {
-		try {
-			fetch('http://localhost:3030/publish', {
-				method: 'POST',
-				headers: {
-				'Accept': 'application/json',
-				'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({ ID: MQID, queue: "game", message: { ID: gameID, players: players }})
-			});
-		} catch (err) {
-			console.log("Failed to connect to MessageQueue service:", err);
-			return false
-		}
-		return true;
+	let ret = await lobby.launch( async (gameID:string, players:string[]): Promise<boolean> => {
+		// signal the GameService to create a Game
+		return bunnyPublish('game', { ID: gameID, players: players });
 	});
 
 	// failed launch
@@ -351,6 +307,19 @@ export async function START(outlobby:string | undefined): Promise<StandardReturn
 	// #debg
 	console.log(`Starting lobby ${lobby.ID} ...`);
 
+	// ask bots to join the game
+	for (const id of lobby.players.keys()) {
+		if (id.startsWith('BOT')) {
+			bunnyPublish('bot', {
+				method: 'CREATE',
+				game: 'pong', 				// #todo: flexible
+				gameid: lobby.gameID,
+				botid: id,
+				level: Number(id.substring(id.lastIndexOf('_') + 1))
+			});
+		}
+	}
+
 	// send game started reply
 	return {
 		status: "success",
@@ -361,8 +330,9 @@ export async function START(outlobby:string | undefined): Promise<StandardReturn
 
 /*
 {
-	method: 'BOT',
-	value: <action>
+	method: 'BOT',	(mandatory)
+	value: <action>	(mandatory)
+	level: <level>	(only if <action> === ADD)
 }
 
 Description: ADDs or REMOVEs bots to the lobby. If you are not in a lobby the request will fail.
@@ -373,6 +343,8 @@ Reply:
 	comment: <comment>
 }
 */
+let botcount:number[] = [];
+
 export function BOT(msg:object, outlobby:string | undefined)
 {
 	// check if you joined a lobby
@@ -383,8 +355,8 @@ export function BOT(msg:object, outlobby:string | undefined)
 		};
 	}
 
-	// check if the obj has lobbyID and playerID
-	if ("value" in msg === false || typeof msg.value !== "string")
+	// check if the obj has value
+	if (!("value" in msg) || typeof msg.value !== "string")
 	{
 		console.log(`invalid JSON message ${msg}`);
 		return {
@@ -405,6 +377,17 @@ export function BOT(msg:object, outlobby:string | undefined)
 	// check action expected
 	if (msg.value === "ADD")
 	{
+		// check if the obj has value
+		if (!("level" in msg) || typeof msg.level !== "number"
+			|| msg.level < 0 || msg.level > 100)
+		{
+			console.log(`invalid JSON message ${msg}`);
+			return {
+				status: "failure",
+				reply: JSON.stringify({method: 'BOT_REPLY', status: 'failure', comment: "invalid JSON, missing or invalid 'level'"})
+			};
+		}
+
 		// check if lobby is full
 		if (lobby.full()) {
 			return {
@@ -414,7 +397,10 @@ export function BOT(msg:object, outlobby:string | undefined)
 		}
 
 		// add the bot
-		lobby.join("BOT", null);
+		lobby.join(`BOT_${botcount.length}_${msg.level}`, null);
+
+		// next bot
+		botcount.push(msg.level);
 
 		// successful return
 		return {
@@ -425,7 +411,7 @@ export function BOT(msg:object, outlobby:string | undefined)
 	else if (msg.value === "REMOVE")
 	{
 		// check if bot in lobby
-		if (lobby.has("BOT") === false) {
+		if (botcount.length === 0) {
 			return {
 				status: "failure",
 				reply: JSON.stringify({ method: 'BOT_REPLY', status: 'failure', comment: "No BOT in the lobby" })
@@ -433,7 +419,16 @@ export function BOT(msg:object, outlobby:string | undefined)
 		}
 
 		// remove the bot
-		lobby.leave("BOT");
+		const idx = botcount.length - 1;
+		if (lobby.leave(`BOT_${idx}_${botcount[idx]}`) === false) {
+			return {
+				status: "failure",
+				reply: JSON.stringify({ method: 'BOT_REPLY', status: 'failure', comment: `Bot name 'BOT_${idx}_${botcount[idx]}'not found` })
+			};
+		}
+	
+		// back one bot
+		botcount.pop();
 
 		// successful return
 		return {

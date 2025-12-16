@@ -231,11 +231,17 @@ export function MOVE(msg:object, outgame:string | undefined, outplayer:string | 
 
 	// check if the player is found
 
-	// process sent input
+	// process PRESS input
 	if (msg.value == "UP_PRESS") game.press(player.idx, "Up");
 	else if (msg.value == "DW_PRESS") game.press(player.idx, "Down");
+	else if (msg.value == "LEFT_PRESS") game.press(player.idx, "Left");
+	else if (msg.value == "RIGHT_PRESS") game.press(player.idx, "Right");
+	// process RELSEASE input
 	else if (msg.value == "UP_RELEASE") game.release(player.idx, "Up");
 	else if (msg.value == "DW_RELEASE") game.release(player.idx, "Down");
+	else if (msg.value == "LEFT_RELEASE") game.release(player.idx, "Left");
+	else if (msg.value == "RIGHT_RELEASE") game.release(player.idx, "Right");
+	// process STATUS events
 	else if (msg.value == "START_PRESS") game.launch();
 	else if (msg.value == "RESET_PRESS") {
 		console.log('User reset disabled');
