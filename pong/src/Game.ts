@@ -89,6 +89,10 @@ class Ball
 
 class Player
 {
+	// ID
+	public _ID:string;
+
+	// position data
 	public posY:number;
 	
 	// paddle stats
@@ -100,8 +104,9 @@ class Player
 	public Up:boolean;		/* key held by the player */
 	public Down:boolean;
 
-	constructor ()
+	constructor (__ID:string)
 	{
+		this._ID = __ID;
 		this.posY = 0.5;
 		this._height = paddleHeight;
 		this._width = paddleWidth;
@@ -119,6 +124,10 @@ class Player
 		this._offset = paddleOffset;
 		this.Up = false;
 		this.Down = false;
+	}
+
+	public get ID() {
+		return this._ID;
 	}
 
 	public get height() {
@@ -150,10 +159,15 @@ interface PaddleState {
 	width:number;
 }
 
+interface PlayerState {
+	ID:string;
+	paddle:PaddleState;
+}
+
 interface GameState {
 	score: number[];
 	ball: BallState;
-	paddle:PaddleState[];
+	players:PlayerState[];
 	playing:boolean;
 	timeout: number;
 	winner: number;
@@ -198,19 +212,19 @@ export class Game
 	private directions:number[];	/* array of launch directions (length = targetScore * 2 - 1) */
 
 	// players variables
-	private players:Player[];
+	private players:[Player, Player];
 
 	private running:boolean;	/* :D */
 
 	// this is a set of functions that should send the game state updat to the client
-	private listeners = new Set<(state: string) => void>();
+	private listeners = new Map<string, (state: string) => void>();
 
 	// last time a player moved
 	private lastmovetime:number;
 
 	/* ======================== CONSTRUCTORS ======================== */
 	// the constructor expliccitly wants the variables initialized
-	constructor(format:number = 3) {
+	constructor(players:{ idx:number, ID:string }[]) {
 		this.timeout = 60;				// 1 sec of timeout
 		this.tick = 0;					// start -> 0
 	
@@ -218,18 +232,18 @@ export class Game
 		this.roundStart = false;		// ball not moving
 		this.score = [0, 0];			// match score to 0;
 		this.lastScored = 0;			// default
-		this.targetScore = format;		// Bo5
+		this.targetScore = 3;		// Bo5
 		this.winner = -1;				// noone won just yet
 		
 		this.ball = new Ball();
 		this.directions = randomAngle((this.targetScore * 2) - 1);
 
-		// just 2 players for now
-		this.players = [new Player(), new Player()];
+		// players
+		this.players = [new Player(players[0].ID), new Player(players[1].ID)]
 
 		//--- do not reset
 		this.running = false;
-		this.listeners = new Set();
+		this.listeners = new Map();
 		this.lastmovetime = Date.now();
 	}
 
@@ -263,11 +277,14 @@ export class Game
 	// @aleborghi qui' viene formattato il gamestate per il frontend.
 	public get state(): GameState
 	{
-		const paddles = Array.from(this.players, (player) => ({
-			posY: player.posY,
-			height: player.height,
-			width: player.width,
-			offset: player.offset,
+		const players = Array.from(this.players, (player) => ({
+			ID: player.ID,
+			paddle: {
+				posY: player.posY,
+				height: player.height,
+				width: player.width,
+				offset: player.offset,
+			}
 		}));
 		return {
 			score: this.score,				/* score of the match [player1, player2] */
@@ -275,7 +292,7 @@ export class Game
 				pos: this.ball.pos,			/* array of 2 coordinates [X, Y] of the CENTER of the ball */
 				angle: this.ball.angle,		/* angle of the ball, used for BOT play */
 			},
-			paddle: paddles,
+			players: players,
 			playing: this.roundStart,
 			timeout: this.timeout,
 			winner: this.winner
@@ -321,14 +338,16 @@ export class Game
 
 	// Input handling
 	public press(player:number, direction: string) {
-		if (player !== 0 && player !== 1) return ;
+		
+		if (player !== 0 && player !== 1) return;
 		if (direction === 'Up') this.players[player].Up = true;
-		if (direction === 'Down') this.players[player].Down = true;
+		if (direction === 'Down')this.players[player].Down = true;
 		this.lastmovetime = Date.now();
 	}
 
 	public release(player:number, direction: string) {
-		if (player !== 0 && player !== 1) return ;
+		
+		if (player !== 0 && player !== 1) return;
 		if (direction === 'Up') this.players[player].Up = false;
 		if (direction === 'Down') this.players[player].Down = false;
 		this.lastmovetime = Date.now();
@@ -339,23 +358,24 @@ export class Game
 	/* ----------------------------------------------------------------- */
 
 	// add the send logic
-	public subscribe(fn: (state: string) => void) {
-		this.listeners.add(fn);
+	public subscribe(ID:string, fn: (state: string) => void) {
+		this.listeners.set(ID, fn);
 	}
 	
 	// remove the send
-	public unsubscribe(fn: (state: string) => void) {
-		this.listeners.delete(fn);
+	public unsubscribe(ID:string/*,  fn: (state: string) => void */) {
+		this.listeners.delete(ID);
 	}
 
 	// send game state to each client
 	private notify()
 	{
 		const state = this.stateJSON;
-		for (const fn of this.listeners) {
+		for (const fn of this.listeners.values()) {
 			fn(state);
 		}
 	}
+
 
 	/* ------------------------------------------------------------ */
 	/* 		-----	-----	||	\		/	 ^	---------	-----	*/
@@ -590,58 +610,6 @@ export class Game
 		// send to players
 		this.notify();
 	}
-
-	//-----------------------
-	// Non-blocking GAME LOOP
-	// public start(tickRate = 60) {
-	// 	const tickInterval = 1000 / tickRate;
-
-	// 	// Prevent multiple loops 
-	// 	if (this.gameLoopInterval) clearInterval(this.gameLoopInterval);
-
-	// 	this.gameLoopInterval = setInterval(() => {
-	// 		// advance the tick
-	// 		++this.tick;
-
-	// 		if (this.timeout > 0) {this.timeout--; return;}
-
-	// 		// Move players
-	// 		this.players.forEach((player) => {
-	// 			if (player.Up === true) player.posY -= playerStep;
-	// 			if (player.Down === true) player.posY += playerStep;
-	
-	// 			// Clamp players positions
-	// 			player.posY = Math.max(0 + paddleHeight_2, Math.min(1 - paddleHeight_2, player.posY));
-	// 		});
-
-
-	// 		if (this.roundStart === true) {
-				
-	// 			/* --- BALL MOVEMENT --- */
-	// 			this.moveBall();
-
-	// 			/* --- END of MATCH --- */
-	// 			// if the ball reached the border
-	// 			if (this.ball.pos[0] < 0)
-	// 			{
-	// 				// player2 scored a point
-	// 				this.score[1] += 1;
-	// 				this.lastScored = 2;
-	// 				this.ballInTheMiddle();
-	// 			}
-	// 			else if (this.ball.pos[0] > 1)
-	// 			{
-	// 				// player1 scored a point
-	// 				this.score[0] += 1;
-	// 				this.lastScored = 1;
-	// 				this.ballInTheMiddle();
-	// 			}
-				
-	// 			// console.log(this.ball);
-	// 		}
-
-	// 	}, tickInterval);
-	// }
 
 	/* plays a tick if more than TICK_TIME has passed,
 	catchin up to MAX_ACCUMULATED lost ticks. (ChatGPT) */

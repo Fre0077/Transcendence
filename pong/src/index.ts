@@ -15,7 +15,7 @@ import { bunnyRegister, bunnySubscribe, bunnyGet, bunnyPublish } from './bunny.j
 // service varaibles
 const TIMEOUT:number = 10;	// timeout in seconds to wait before deleting the game
 const INACTIVE_TIMEOUT:number = 1 * 60 * 1000;	// timeout in millisecond to wait before deleting the game (player inactivity)
-const FPS:number = 60;
+// const FPS:number = 60;
 
 /* ------- LOAD STUFF ------- */
 const fastify = Fastify({ 
@@ -78,7 +78,7 @@ fastify.get<{ Querystring: BunnyQuery }>(
 
 /* ----------- GAMES DataBase ---------- */
 
-type Player = {
+export type Player = {
 	ID:string;
 	idx:number;
 	status: "connected" | "disconnected" | "left";
@@ -97,7 +97,7 @@ export function createGame(gameID:string, playersID:string[]): Game
 		status: "disconnected" as "connected" | "disconnected" | "left"
 	}));
 
-	const game:Game = new Game();
+	const game:Game = new Game(players.map(({ idx, ID }) => ({ idx, ID })));
 	games.set(gameID, { game: game, players: players, timeout:TIMEOUT });
 	return game;
 }
@@ -119,19 +119,30 @@ export function findGame(gameID:string, playerID:string | void): {game: Game | u
 	return { game: game.game, player: player };
 }
 
+export function findPlayer(fn: (players:Player[]) => boolean): { ID:string, game:Game, players:Player[]} | undefined
+{
+	for (const [ID, { game, players } ] of games) {
+		if (fn(players) === true) return { ID:ID, game:game, players:players};
+	}
+	return undefined;
+}
+
 export function joinGame(gameID:string, playerID:string, listener:(state:string) => void): { status:"success" | "failure", reason:string }
 {
 	// check if game with ID is found
-	const game = games.get(gameID);
-	if (game === undefined) {
+	const entry = games.get(gameID);
+	if (entry === undefined) {
 		return {
 			status: "failure",
 			reason: "Game not found"
 		};
 	}
 
+	// for convenience
+	const { game } = entry;
+	
 	// check if player is expected
-	const player = game.players.find(p => p.ID === playerID);
+	const player = entry.players.find(p => p.ID === playerID);
 	if (player === undefined || player.status === 'connected') {
 		return {
 			status: "failure",
@@ -140,12 +151,12 @@ export function joinGame(gameID:string, playerID:string, listener:(state:string)
 	}
 
 	// adds notify callback for game-state update
-	game.game.subscribe(listener);
+	game.subscribe(playerID, listener);
 
 	// start game if first player
-	if (game.players.find(p => p.status === "connected") === undefined) {
+	if (entry.players.find(p => p.status === "connected") === undefined) {
 		console.log(`Starting game ${gameID} ...`);
-		game.game.start();
+		entry.game.start();
 	}
 
 	// set status to connected
@@ -156,19 +167,22 @@ export function joinGame(gameID:string, playerID:string, listener:(state:string)
 	};
 }
 
-export function leaveGame(gameID:string, playerid:string, listener:(state:string) => void): { status:"success" | "failure", reason:string }
+export function leaveGame(gameID:string, playerID:string): { status:"success" | "failure", reason:string }
 {
 	// check if game with ID is found
-	const game = games.get(gameID);
-	if (game === undefined) {
+	const entry = games.get(gameID);
+	if (entry === undefined) {
 		return {
 			status: "failure",
 			reason: "Game not found"
 		};
 	}
 
+	// for convenience
+	const { game } = entry;
+
 	// check if player is expected
-	const player = game.players.find(p => p.ID === playerid);
+	const player = entry.players.find(p => p.ID === playerID);
 	if (player === undefined) {
 		return {
 			status: "failure",
@@ -177,7 +191,7 @@ export function leaveGame(gameID:string, playerid:string, listener:(state:string
 	}
 
 	// remove listener
-	game.game.unsubscribe(listener);
+	game.unsubscribe(playerID);
 
 	// set status to disconnected
 	player.status = "left";
@@ -237,11 +251,9 @@ fastify.register(async function (fastify) {
 		console.log(`Client connected from ${clientIP}`);
 
 		// playerID not verified with JWT yet
-		let playerid:string | undefined = undefined;
+		let playerID:string | undefined = undefined;
 		// gameID
 		let gameID:string | undefined = undefined;
-		// bot interval
-		let interval:NodeJS.Timeout | null = null;	/* :D */
 
 		// listener for updates on the gamestate
 		const listener = (state:string) => {
@@ -256,9 +268,9 @@ fastify.register(async function (fastify) {
 		// Handle incoming messages
 		connection.on('message', (message:string) => {
 			
-			interpreter(message, gameID, playerid, listener, (retGame:string | undefined, retPlayer:string | undefined) => {
+			interpreter(message, gameID, playerID, listener, (retGame:string | undefined, retPlayer:string | undefined) => {
 				gameID = retGame;
-				playerid = retPlayer;
+				playerID = retPlayer;
 			})
 			.then((reply) => {
 				// check if no reply needed
@@ -280,48 +292,23 @@ fastify.register(async function (fastify) {
 
 		// Handle connection close
 		connection.on('close', (code:number, reason:string) => {
-			// kill the spammer
-			if (interval) clearInterval(interval);
 
 			// disconnect procedure (just leave from the connected sockets, not from the lobby)
-			if (gameID !== undefined && playerid !== undefined) {
-				const { player } = findGame(gameID, playerid);
+			if (gameID !== undefined && playerID !== undefined) {
+				const { game, player } = findGame(gameID, playerID);
 
 				if (player !== undefined) {
 					player.status = "disconnected";
 					console.log(player);
+
+					// remove listener
+					game?.unsubscribe(player.ID);
+
 				}
 			}
 
 			console.log(`Client ${clientIP} disconnected - Code: ${code}, Reason: ${reason?.toString() || 'none'}`);
 		});
-
-		// game loop #todo maybe only use game tick frequency
-		let nextTick:number = performance.now();
-		const sendLoop = () => {
-			const now = performance.now();
-
-			// new reached the tick
-			if (now >= nextTick) {
-				// send gamestate
-				if (gameID !== undefined) {
-					const { game } = findGame(gameID);
-			  
-					if (game && connection.readyState === connection.OPEN) {
-						connection.send(game.stateJSON);
-					}
-				}
-
-				// update nextTick
-				nextTick += 1000 / FPS;
-			}
-
-			// call the loop later
-			interval = setTimeout(sendLoop, Math.max(0, nextTick - performance.now()));
-		}
-
-		// start the loop
-		sendLoop();
 	});
 });
 

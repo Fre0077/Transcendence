@@ -1,4 +1,3 @@
-import { loadNavbar } from "@/components/navbar";
 import { load404Page } from "@/pages/errors/404";
 
 const basePongPath = 'http://localhost:3040/';
@@ -10,7 +9,7 @@ export function loadOnlineGamePage(): HTMLElement {
     const { matchId } = router.getParams();
 
     // connect socket
-    const playerID = localStorage.getItem('playerID') || localStorage.getItem('guestID');
+    const playerID = localStorage.getItem('playerID') || sessionStorage.getItem('guestID');
     if (playerID === null) {
         return load404Page();
     }
@@ -23,22 +22,6 @@ export function loadOnlineGamePage(): HTMLElement {
     div.innerHTML = /*html*/ `
 
     <!-- Online Game Page Content -->
-    
-    <!-- <style>
-        canvas { background: #000; display: none; margin: 20px auto; }
-        #ui { text-align: center; margin-top: 20px; }
-        #gameID { margin-top: 10px; font-weight: bold; }
-    </style>
-
-    <div class="flex-1 container mx-auto px-4 flex flex-col items-center justify-center gap-8">
-        <div id="scoreboard" align="center" style="display:none;">P1 : P2 </div>
-
-        <canvas id="game" width="600" height="600"></canvas>
-        <div id="serverLog"></div>
-
-        <br>
-        <div id="leaveGameBtn">Back to Lobby</div>
-    </div>  -->
 
         <!-- (ChatGPT) -->
         <div class="flex-1 container mx-auto px-4 flex flex-col items-center justify-center gap-8">
@@ -96,34 +79,6 @@ export function loadOnlineGamePage(): HTMLElement {
         </div>
 
     </div>
-
-
-    <!--
-    <div class="flex-1 container mx-auto px-6 py-16 flex flex-col items-center justify-center">
-        <h1 class="text-4xl font-bold text-white mb-8">Online Game</h1>
-        <p class="text-white/70 mb-12">Create or join an online game to start playing with others!</p>
-
-        <div class="flex flex-row gap-8 w-full max-w-4xl items-center justify-center">
-            <a href="/lobby/create" class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-green-600/30 to-teal-600/30 p-8 border border-white/10 hover:border-green-400/50 transition-all hover:scale-105">
-                <div class="relative z-10">
-                    <div class="text-6xl mb-4">➕</div>
-                    <h3 class="text-2xl font-bold text-white mb-2">Create Lobby</h3>
-                    <p class="text-white/70">Host a new online game lobby</p>
-                </div>
-                <div class="absolute inset-0 bg-gradient-to-br from-green-600/0 to-teal-600/0 group-hover:from-green-600/20 group-hover:to-teal-600/20 transition"></div>
-            </a>
-
-            <a href="/lobby/join" class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-yellow-600/30 to-orange-600/30 p-8 border border-white/10 hover:border-yellow-400/50 transition-all hover:scale-105">
-                <div class="relative z-10">
-                    <div class="text-6xl mb-4">🔗</div>
-                    <h3 class="text-2xl font-bold text-white mb-2">Join Lobby</h3>
-                    <p class="text-white/70">Enter a code to join an existing lobby</p>
-                </div>
-                <div class="absolute inset-0 bg-gradient-to-br from-yellow-600/0 to-orange-600/0 group-hover:from-yellow-600/20 group-hover:to-orange-600/20 transition"></div>
-            </a>
-        </div>
-    </div>
-    -->
     `;
 
     // Add event listener for create game button
@@ -134,6 +89,9 @@ export function loadOnlineGamePage(): HTMLElement {
 
             if (socket && socket.readyState === WebSocket.OPEN) {
                 socket.send(JSON.stringify({ method: 'LEAVE' }));
+
+                // IMPORTANT becouse some browse open 1231234 sockets
+                socket.close();
             }
             router.push('/lobby/online');
         });
@@ -201,10 +159,10 @@ function createWebSocketConnection(playerID:string, game_code: string): WebSocke
             if (method === "JOIN_REPLY")
             {
                 if (data.status === "success") console.log("Joined successfully");
-                else if (data.status === "failure")
+                else if (data.status === "failure" && data.cause !== 'rejoin' /* really important since some browsers rejoin a bunch of times */)
                 {
                     console.log("Couldn't connect to server");
-                    if(serverLog) serverLog.innerText = `Error trying to connect to: ${data.value}, reason: ${data.reason}`;
+                    if(serverLog) serverLog.innerText = `Error trying to connect to game, reason: ${data.reason}`;
         
                     // stop this shit??
                     ws.close();
@@ -222,7 +180,7 @@ function createWebSocketConnection(playerID:string, game_code: string): WebSocke
                     // ws.close(); #todo maybe not?
                 }
             }
-            else if (data.paddle && data.ball && data.score) {drawGame(data);}
+            else if (data.players && data.ball && data.score) {drawGame(data);}
         } catch (e) {
             console.log("message received:", event.data);
         }
@@ -239,13 +197,18 @@ function createWebSocketConnection(playerID:string, game_code: string): WebSocke
     return ws;
 }
 
-function drawGame(state:{paddle:any, ball:any, score:any} )
+function drawGame(state:{players:any, ball:any, score:any} )
 {
+    // BOARD
     const element = document.getElementById('game');
     const canvas:HTMLCanvasElement | null = (element instanceof HTMLCanvasElement) ? element : null;
+    const ctx = canvas?.getContext("2d");
+
+    // DATA
     const scorePlayer1 = document.getElementById("player1Score");
     const scorePlayer2 = document.getElementById("player2Score");   
-    const ctx = canvas?.getContext("2d");
+    const player1Name = document.getElementById("player1Name");
+    const player2Name = document.getElementById("player2Name");
 
     if (!canvas || !ctx)
     {
@@ -257,22 +220,29 @@ function drawGame(state:{paddle:any, ball:any, score:any} )
     canvas.style.display = "block";
     ctx?.clearRect(0, 0, canvas.width, canvas.height);
 
-    const paddleHeight1 = canvas.height * state.paddle[0].height;
-    const paddleHeight2 = canvas.height * state.paddle[1].height;
+    const paddleHeight1 = canvas.height * state.players[0].paddle.height;
+    const paddleHeight2 = canvas.height * state.players[1].paddle.height;
 
     // console.log(`height1 ${paddleHeight1}`);
     // console.log(`height2 ${paddleHeight2}`);
 
-    const paddleWidth1 = canvas.width * state.paddle[0].width;
-    const paddleWidth2 = canvas.width * state.paddle[1].width;
+    const paddleWidth1 = canvas.width * state.players[0].paddle.width;
+    const paddleWidth2 = canvas.width * state.players[1].paddle.width;
 
-    const paddleOffset = canvas.width * state.paddle[0].offset;
+    const paddleOffset1 = canvas.width * state.players[0].paddle.offset;
+    const paddleOffset2 = canvas.width * state.players[1].paddle.offset;
     const ballSize = 10;
 
-    // scoreboard
+    /* ---- GAME DATA ----- */
     if (scorePlayer1) scorePlayer1.textContent = state.score[0];
     if (scorePlayer2) scorePlayer2.textContent = state.score[1];
+    // @aleborghi: aggiorna mettendo l'username e nn l'ID
+    if (player1Name) player1Name.textContent = state.players[0].ID;
+    if (player2Name) player2Name.textContent = state.players[1].ID;
 
+
+
+    /* ---- GAME BOARD ---- */
     ctx.fillStyle = "white";
 
     // Midline
@@ -280,25 +250,25 @@ function drawGame(state:{paddle:any, ball:any, score:any} )
 
     // Ball
     ctx.fillRect(
-      state.ball.pos[0] * canvas.width - ballSize / 2,
-      state.ball.pos[1] * canvas.height - ballSize / 2,
-      ballSize,
-      ballSize
+        state.ball.pos[0] * canvas.width - ballSize / 2,
+        state.ball.pos[1] * canvas.height - ballSize / 2,
+        ballSize,
+        ballSize
     );
 
     // Player 1
     ctx.fillRect(
-      paddleOffset,
-      state.paddle[0].posY * canvas.height - paddleHeight1 / 2,
-      paddleWidth1,
-      paddleHeight1
+        paddleOffset1,
+        state.players[0].paddle.posY * canvas.height - paddleHeight1 / 2,
+        paddleWidth1,
+        paddleHeight1
     );
 
     // Player 2
     ctx.fillRect(
-      canvas.width - paddleOffset - paddleWidth2,
-      state.paddle[1].posY * canvas.height - paddleHeight2 / 2,
-      paddleWidth2,
-      paddleHeight2
+        canvas.width - paddleOffset2 - paddleWidth2,
+        state.players[1].paddle.posY * canvas.height - paddleHeight2 / 2,
+        paddleWidth2,
+        paddleHeight2
     );
 }

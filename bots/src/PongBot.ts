@@ -10,6 +10,11 @@ type Paddle = {
 	width:number;
 }
 
+type Player = {
+	ID:string;
+	paddle:Paddle;
+}
+
 /* NOTE: BOT is always Player2 */
 export class PongBot
 {
@@ -79,10 +84,10 @@ export class PongBot
 		// ball is a Ball
 		if (!("ball" in state) || !isBall(state.ball)) return undefined;
 		// paddle is an array of Paddles
-		if (!("paddle" in state) || !Array.isArray(state.paddle)
-			|| !state.paddle.every((p: unknown) => isPaddle(p))) return undefined;
+		if (!("players" in state) || !Array.isArray(state.players)
+			|| !state.players.every((p: unknown) => isPlayer(p))) return undefined;
 
-		return { ball: state.ball, paddle: state.paddle[1] };
+		return { ball: state.ball, paddle: state.players[1].paddle };
 	}
 
 	public play(state:object)
@@ -243,6 +248,16 @@ function isPaddle(value: unknown): value is Paddle {
 		"height" in value && typeof value.height === "number" && 
 		"width" in value && typeof value.width === "number" && 
 		"offset" in value && typeof value.offset === "number"
+	);
+}
+
+
+function isPlayer(value: unknown): value is Player {
+	return (
+		typeof value === "object" &&
+		value !== null &&
+		"ID" in value && typeof value.ID === "string" && 
+		"paddle" in value && isPaddle(value.paddle)
 	);
 }
 

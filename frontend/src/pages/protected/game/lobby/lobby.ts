@@ -14,7 +14,7 @@ export function loadOnlineLobbyPage(): HTMLElement {
 
     // @topiana- we need playerID to authenticate the connection, so I passed it to createWebSocketConnection 
 
-    const playerID = localStorage.getItem('playerID') || 'Guest_' + Math.floor(Math.random() * 1000);
+    const playerID = localStorage.getItem('playerID') || sessionStorage.getItem('guestID') || 'Guest_' + Math.floor(Math.random() * 1000);
     const format = 3; // Best of 3 rounds
     
     let lobbyWS = createWebSocketConnection(playerID, lobby_code, connected_players);
@@ -51,32 +51,110 @@ export function loadOnlineLobbyPage(): HTMLElement {
                 </div>
             </a>
 
-            <!-- Lobby Info Card -->
-            <div class="rounded-xl bg-gradient-to-br from-purple-600/20 to-pink-600/20 p-8 border border-purple-500/30">
-                <h3 class="text-lg font-bold text-white mb-4">Lobby Info</h3>
-                <div class="space-y-4" id="lobbyInfo">
-                    <div>
-                        <p class="text-xs text-white/50 uppercase tracking-wide mb-1">Lobby Code</p>
-                        <p id="lobbyCode" class="text-sm font-mono text-cyan-400">${lobby_code || 'Waiting...'}</p>
-                        <div class="flex items-center gap-2">
-                            <button id="copyLobbyCodeBtn" class="mt-4 px-4 py-2 bg-cyan-600/20 border border-cyan-500/30 rounded-lg text-sm text-white hover:bg-cyan-600/30 transition flex items-center gap-2">
-                                <img src="/assets/icons/copy.png" alt="Copy" class="w-4 h-4">
-                            </button>
-                            <span id="copyStatus" class="mt-4 text-sm text-white/60"></span>
-                        </div>
-                        </div>
+            <!-- Lobby Info Card (ChatGPT) -->
+            <div class="flex flex-col h-full lg:col-span-2 rounded-xl bg-gradient-to-br from-purple-600/20 to-pink-600/20 border border-purple-500/30 overflow-hidden">
+
+                <!-- CARD CONTENT -->
+                <div class="p-8 flex-1">
+                    <h3 class="text-lg font-bold text-white mb-4">Lobby Info</h3>
+
+                    <div class="space-y-4" id="lobbyInfo">
                         <div>
-                        <p class="text-xs text-white/50 uppercase tracking-wide mb-2">Connected Players</p>
-                        <ul id="connectedPlayersList" class="space-y-1">
-                            ${connected_players.length > 0 ? connected_players.map(player => `<li class="text-sm text-white/80">• ${player.name}</li>`).join('') : '<li class="text-sm text-white/40 italic">No players connected</li>'}
-                        </ul>
+                            <p class="text-xs text-white/50 uppercase tracking-wide mb-1">Lobby Code</p>
+                            <p id="lobbyCode" class="text-sm font-mono text-cyan-400">
+                                ${lobby_code || 'Waiting...'}
+                            </p>
+
+                            <div class="flex items-center gap-2 mt-4">
+                                <button id="copyLobbyCodeBtn" class="px-4 py-2 bg-cyan-600/20 border border-cyan-500/30 rounded-lg text-sm text-white hover:bg-cyan-600/30 transition flex items-center gap-2">
+                                    <img src="/assets/icons/copy.png" alt="Copy" class="w-4 h-4">
+                                </button>
+                                <span id="copyStatus" class="text-sm text-white/60"></span>
+                            </div>
+                        </div>
+
                         <div>
-                            <a id="startGameBtn" onclick={} class="mt-4 px-4 py-2 bg-green-600/20 border border-green-500/30 rounded-lg text-sm text-white hover:bg-green-600/30 transition">Start Game</a>
-                            <a id="leaveLobbyBtn" class="mt-4 ml-2 px-4 py-2 bg-red-600/20 border border-red-500/30 rounded-lg text-sm text-white hover:bg-red-600/30 transition">Leave Lobby</a>
+                            <p class="text-xs text-white/50 uppercase tracking-wide mb-2">Connected Players</p>
+                            <ul id="connectedPlayersList" class="space-y-1">
+                                ${connected_players.length > 0 ? connected_players.map(player => `<li class="text-sm text-white/80">• ${player.name}</li>`).join('') : '<li class="text-sm text-white/40 italic">No players connected</li>'}
+                            </ul>
                         </div>
                     </div>
                 </div>
+
+                <!-- ACTION BAR (STUCK TO BOTTOM, FULL WIDTH) -->
+                <div class="border-t border-white/10">
+                    <div class="flex w-full">
+
+                        <!-- Start Game -->
+                        <a id="startGameBtn" class="flex-1 flex items-center justify-center py-3 text-sm font-medium text-white bg-green-600/20 hover:bg-green-600/30 transition">
+                            Start Game
+                        </a>
+
+                        <!-- Leave Lobby -->
+                        <a id="leaveLobbyBtn" class="flex-1 flex items-center justify-center py-3 text-sm font-medium text-white bg-red-600/20 hover:bg-red-600/30 transition">
+                            Leave Lobby
+                        </a>
+
+                    </div>
+                </div>
             </div>
+
+
+
+            <!-- BOT card (ChatGPT) -->
+            <div class="flex flex-col h-full rounded-xl bg-gradient-to-br from-blue-600/20 to-indigo-600/20 border border-blue-500/30 overflow-hidden">
+
+                <!-- CARD CONTENT -->
+                <div class="p-6 flex-1 flex flex-col items-center">
+                    <h3 class="text-lg font-bold text-white mb-2">BOT</h3>
+                    <p class="text-xs text-white/70 mb-6">Difficulty</p>
+
+                    <!-- Slider container -->
+                    <div class="flex flex-col items-center gap-2 flex-1 justify-center">
+                        <span class="text-xs text-white/50">Gremlin</span>
+
+                        <input
+                            id="botLevelSlider"
+                            type="range"
+                            min="0"
+                            max="100"
+                            value="50"
+                            class="h-40 w-2 accent-blue-500 cursor-pointer
+                                [writing-mode:vertical-rl]
+                                [direction:rtl]"
+                        />
+
+                        <span class="text-xs text-white/50">Demigod</span>
+                    </div>
+                </div>
+
+                <!-- ACTION BAR (FULL WIDTH, 2 BUTTONS) -->
+                <div class="border-t border-white/10">
+                    <div class="flex w-full">
+
+                        <!-- ADD button -->
+                        <button
+                            id="addBotBtn"
+                            class="flex-1 flex items-center justify-center py-3 text-sm font-medium text-white bg-green-600/20 hover:bg-green-600/30 transition"
+                        >
+                            ADD
+                        </button>
+
+                        <!-- LEAVE button -->
+                        <button
+                            id="remBotBtn"
+                            class="flex-1 flex items-center justify-center py-3 text-sm font-medium text-white bg-red-600/20 hover:bg-red-600/30 transition"
+                        >
+                            REMOVE
+                        </button>
+
+                    </div>
+                </div>
+            </div>
+
+
+
         </div>
     </div>
     `;
@@ -116,10 +194,29 @@ export function loadOnlineLobbyPage(): HTMLElement {
         });
     }
 
+    //----------------------
+    // @topiana-
+    const slider = div.querySelector("#botLevelSlider") as HTMLInputElement;
+    const addBotBtn = div.querySelector('#addBotBtn');
+    if (addBotBtn && slider) {
+        addBotBtn.addEventListener('click', () => {
+            const level = slider.value;
+            addBot(Number(level), lobbyWS);
+        });
+    }
+
+    const remBotBtn = div.querySelector('#remBotBtn');
+    if (remBotBtn) {
+        remBotBtn.addEventListener('click', () => {
+            remBot(lobbyWS);
+        });
+    }
+
     return div;
 }
 
-function checkPlayerListChanged(oldList: Player[], newList: any[]): boolean {
+// @topiana- (outdated, now sending lobbystate only on update)
+/* function checkPlayerListChanged(oldList: Player[], newList: any[]): boolean {
     if (oldList.length !== newList.length) {
         return true;
     }
@@ -131,7 +228,7 @@ function checkPlayerListChanged(oldList: Player[], newList: any[]): boolean {
         }
     }
     return false;
-}
+} */
 
 /* 
     Request:
@@ -161,6 +258,16 @@ function joinLobby(lobby_code: string, /* playerID: string, */ lobbyWS: WebSocke
 }
 
 function leaveLobby(lobby_code: string, connected_players: Player[], lobbyWS: WebSocket) {
+    
+    // @topiana- check on socket state
+    if (lobbyWS.readyState === WebSocket.OPEN) {
+        lobbyWS.send(JSON.stringify({ method: 'LEAVE' }));
+    } else {
+        console.log("Socket closed, couldn't leave lobby");
+        return ;
+    }
+
+    // cleanup
     lobbyWS.close();
     lobby_code = '';
     connected_players = [];
@@ -176,6 +283,22 @@ function startGame(/* lobby_code: string,  */lobbyWS: WebSocket) {
     lobbyWS.send(JSON.stringify(startGameRequest));
 }
 
+// @topiana- add a bot
+function addBot(level:number, ws:WebSocket)
+{
+    if (ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ method: 'BOT', value: 'ADD', level: level }))
+    }
+}
+
+// @topiana- remove a bot
+function remBot(ws:WebSocket)
+{
+    if (ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ method: 'BOT', value: 'REMOVE'}))
+    }
+}
+
 function updateLobbyInfo(lobby_code?: string, connected_players: Player[] = []) {
     const lobbyCodeElem = document.getElementById('lobbyCode');
     if (lobbyCodeElem) {
@@ -185,7 +308,7 @@ function updateLobbyInfo(lobby_code?: string, connected_players: Player[] = []) 
     const playersListElem = document.getElementById('connectedPlayersList');
     if (playersListElem) {
         if (connected_players.length > 0) {
-            playersListElem.innerHTML = connected_players.map(player => `<li class="text-sm text-white/80">• ${player.name}</li>`).join('');
+            playersListElem.innerHTML = connected_players.map(player => `<li class="text-sm text-white/80">• ${player.name} - ${player.status}</li>`).join('');
         } else {
             playersListElem.innerHTML = '<li class="text-sm text-white/40 italic">No players connected</li>';
         }
@@ -229,7 +352,7 @@ function createWebSocketConnection(playerID:string, lobby_code: string, connecte
         try {
             const data = JSON.parse(event.data);
             console.log('Lobby WebSocket message received:', data);
-            let updateNeeded = false;
+            // let updateNeeded = false; // (outdated)
             const method = data.method || '';
             if (method === 'START_REPLY' && data.status === 'success') {
                 console.log('Lobby is starting the game:', data.comment);
@@ -239,14 +362,47 @@ function createWebSocketConnection(playerID:string, lobby_code: string, connecte
                 // window.location.href = `/game:${data.value}`;
 
                 // #remove
-                window.localStorage.setItem('guestID', playerID);
+                window.sessionStorage.setItem('guestID', playerID);
+
+                
                 router.push(`/game/${data.value}`);
 
             }
-            if (lobby_code !== data.ID) {
-                updateNeeded = true;
+            // @topiana-
+            else if (method === 'AUTH_REPLY' && data.status === 'success') {
+                console.log('Authenticatd successfully');
+
+
+                // reset lobbycode
+                // lobby_code = ''; // (not necessary)
+
             }
-            lobby_code = data.ID;
+            /* interface LobbyState {
+                ID:string;
+                gameID:string;
+                players: {
+                    ID:string;
+                    status:string;
+                }[];
+            } */
+            if (data.ID && data.players)
+            {
+                // save lobbyID
+                if (lobby_code !== data.ID) {
+                    lobby_code = data.ID;
+                }
+
+                // update players
+                connected_players = data.players.map((p: any) => ({
+                    id: p.ID,
+                    name: p.ID,
+                    status: p.status
+                }));
+
+                // update lobby
+                updateLobbyInfo(lobby_code, connected_players);
+            }
+            /* lobby_code = data.ID;
             if (checkPlayerListChanged(connected_players, data.players)) {
                 updateNeeded = true;
                 connected_players = data.players.map((p: any) => ({
@@ -256,7 +412,7 @@ function createWebSocketConnection(playerID:string, lobby_code: string, connecte
                 }));
             }
             if (updateNeeded)
-                updateLobbyInfo(lobby_code, connected_players);
+                updateLobbyInfo(lobby_code, connected_players); */
         } catch (e) {
             console.log("message received:", event.data);
         }

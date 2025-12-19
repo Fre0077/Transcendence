@@ -22,7 +22,11 @@ Reply:
 	comment: <reason>
 }
 */
-export function AUTH(msg:object, outgame:string | undefined, outplayer:string | undefined): StandardReturn
+
+import type { Player } from './index.js'
+import { findPlayer } from './index.js'
+
+export function AUTH(msg:object, outplayer:string | undefined, listener:(state:string) => void): StandardReturn
 {
 	// check if already authenticated
 	if (outplayer !== undefined) {
@@ -41,13 +45,22 @@ export function AUTH(msg:object, outgame:string | undefined, outplayer:string | 
 	}
 
 	/* ! ! ! authentication procedure here ! ! ! */
+	// #todo (shouldn't be neccesary)
+	
+	// if already joined previously get the lobby ID
+	const game = findPlayer((players:Player[]) => { return (players.find(p => p.ID === msg.playerID as string) !== undefined) ? true : false;})
+	const retgame = (game === undefined) ? undefined : game.ID;
+	if (retgame) {
+		// update the websocket if already in a lobby
+		joinGame(retgame, msg.playerID, listener);
+	}
 
 	// success return
 	return {
 		status: "success",
 		reply: JSON.stringify({ method: 'AUTH_REPLY', status: "success", comment: "Successfully authenticated"}),
 		player: msg.playerID,
-		game: outgame
+		game: retgame
 	};
 }
 
@@ -75,7 +88,7 @@ export function JOIN(msg:object, outgame:string | undefined, outplayer:string | 
 	if (outplayer === undefined) {
 		return {
 			status: "failure",
-			reply: JSON.stringify({ method: 'JOIN_REPLY', status: "failure", comment: "Authenticate before joining a game pls"})
+			reply: JSON.stringify({ method: 'JOIN_REPLY', status: "failure", cause: 'no-auth', comment: "Authenticate before joining a game pls"})
 		}
 	}
 
@@ -83,7 +96,7 @@ export function JOIN(msg:object, outgame:string | undefined, outplayer:string | 
 	if (outgame !== undefined) {
 		return {
 			status: "failure",
-			reply: JSON.stringify({ method: 'JOIN_REPLY', status: "failure", comment: "Already joined a game"})
+			reply: JSON.stringify({ method: 'JOIN_REPLY', status: "failure", cause: 'rejoin', comment: "Already joined a game"})
 		}
 	}
 
@@ -93,7 +106,7 @@ export function JOIN(msg:object, outgame:string | undefined, outplayer:string | 
 		console.log('invalid JSON message:', msg);
 		return {
 			status: "failure",
-			reply: JSON.stringify({ method: 'JOIN_REPLY', status: "failure", comment: "invalid JSON, missing gameID"})
+			reply: JSON.stringify({ method: 'JOIN_REPLY', status: "failure", cause: 'no-id', comment: "invalid JSON, missing gameID"})
 		};
 	}
 
@@ -104,7 +117,7 @@ export function JOIN(msg:object, outgame:string | undefined, outplayer:string | 
 	if (ret.status === "failure") {
 		return {
 			status: "failure",
-			reply: JSON.stringify({ method: 'JOIN_REPLY', status: "failure", value: msg.gameID, comment: ret.reason })
+			reply: JSON.stringify({ method: 'JOIN_REPLY', status: "failure", cause: 'serv-err', comment: ret.reason })
 		};
 	}
 	
@@ -131,7 +144,7 @@ Reply:
 */
 import { leaveGame } from './index.js';
 
-export function LEAVE(outgame:string | undefined, outplayer:string | undefined, listener:(state:string) => void): StandardReturn
+export function LEAVE(outgame:string | undefined, outplayer:string | undefined): StandardReturn
 {
 	// check auth
 	if (outplayer === undefined) {
@@ -150,7 +163,7 @@ export function LEAVE(outgame:string | undefined, outplayer:string | undefined, 
 	}
 
 	// leave the game
-	const ret = leaveGame(outgame, outplayer, listener);
+	const ret = leaveGame(outgame, outplayer);
 
 	// join failure
 	if (ret.status === "failure") {

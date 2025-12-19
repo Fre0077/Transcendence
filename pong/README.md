@@ -19,12 +19,18 @@ interface PaddleState {
 	width:number;
 }
 
+interface PlayerState {
+	ID:string;
+	paddle:PaddleState;
+}
+
 interface GameState {
 	score: number[];
 	ball: BallState;
-	paddle:PaddleState[];
+	players:PlayerState[];
 	playing:boolean;
 	timeout: number;
+	winner: number;
 }
 
 Note that the game is expected to be played in a square, so the physics of the ball will be messy if you display a rectangular field. The top-left corner of the filed is (0,0),
@@ -60,8 +66,9 @@ Reply:
 {
   method: 'JOIN_REPLY',
   status: 'success/failure',
-  value: <gameID>,
-  comment: <comment>		 (only on status === 'failure')
+  value: <gameID>,						(only on status === 'success')
+  cause: <auth/rejoin/no-id/serv-err>	(only on status === 'failure')
+  comment: <comment>					(only on status === 'failure')
 }
 
 <!-- ===== LEAVE ===== -->

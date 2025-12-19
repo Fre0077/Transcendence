@@ -229,6 +229,7 @@ export class Lobby<T extends MySocket> {
 	}
 
 	// reset the lobby
+	@SyncLobby
 	public reset() {
 		if (this._ingame == false) {return ;}
 
@@ -261,6 +262,7 @@ export class Lobby<T extends MySocket> {
 	/* ----------------------------------------------------- */
 
 	// function to join the lobby, syntax: 'playerID'
+	@SyncLobby
 	public join(outPlayerID:string, ws:T | null): boolean {
 		// if (this._ingame === true) {return false;}
 
@@ -291,12 +293,14 @@ export class Lobby<T extends MySocket> {
 		// add player
 		this._players.set(outPlayerID, new Player(ws));
 
+		// update state
 		return true;
 	}
 
 
 	// The player temporarly left the lobby
 	// (connection closed but still inside the lobby)
+	@SyncLobby
 	public disconnect(playerID:string): boolean
 	{
 		// check if the player is inside
@@ -316,6 +320,7 @@ export class Lobby<T extends MySocket> {
 
 
 	// Remove a player from the lobby
+	@SyncLobby
 	public leave(playerID:string): boolean
 	{
 		// check if the player is inside
@@ -347,4 +352,35 @@ export class Lobby<T extends MySocket> {
 		});
 	}
 
+	// send to all users the lobby state
+	public sync() {
+		this.broadcast(this.stateJSON);
+	}
+
 }
+
+/* function SyncLobby<T extends MySocket>(
+  _target: any,
+  _propertyKey: string,
+  descriptor: PropertyDescriptor
+) {
+  const original = descriptor.value;
+
+  descriptor.value = function (this: Lobby<T>, ...args: any[]) {
+    const result = original.apply(this, args);
+    this.sync();
+    return result;
+  };
+} */
+
+function SyncLobby(
+  originalMethod: Function,
+  /* context: ClassMethodDecoratorContext */
+) {
+  return function (this: { sync(): void }, ...args: any[]) {
+    const result = originalMethod.apply(this, args);
+    this.sync();
+    return result;
+  };
+}
+

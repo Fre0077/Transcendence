@@ -53,7 +53,7 @@ export async function interpreter(
 				@playerID: the ID you are logging in
 				Description: AUTHenticates the connection, just once per connection.
 			*/
-			let aret = AUTH(msg, outgame, outplayer);
+			let aret = AUTH(msg, outplayer, listener);
 
 			// welp...
 			if (aret.status === "success") {
@@ -80,7 +80,7 @@ export async function interpreter(
 		
 		case "LEAVE":
 			// process LEAVE request
-			let lret = LEAVE(outgame, outplayer, listener);
+			let lret = LEAVE(outgame, outplayer);
 
 			if (lret.status === "success")
 			{

@@ -44,7 +44,7 @@ fastify.get<{ Querystring: MyLobbyQuery }>(
 	async (request) => {
 		const { ID } = request.query;
 
-		const lobby = findLobby(ID);
+		const lobby:Lobby<WebSocket> | undefined = findLobby((lobby:Lobby<WebSocket>) => { return lobby.ID === ID });
 		if (lobby === undefined)
 			return { status: 'failure' };
 		else
@@ -149,7 +149,7 @@ fastify.get('/tower', async (request, reply) => {
 
 
 /* ----------- LOBBY DataBase ---------- */
-let lobbies:Map<string, { lobby:Lobby<WebSocket>, timeout:number, update:boolean }> = new Map();
+let lobbies:Map<string, { lobby:Lobby<WebSocket>, timeout:number}> = new Map();
 
 export function createLobby(/* game:string,  */size:number = 2): Lobby<WebSocket>
 {
@@ -158,13 +158,21 @@ export function createLobby(/* game:string,  */size:number = 2): Lobby<WebSocket
 	// #debug
 	console.log(`Creating lobby ${lobby.ID} ...`);
 
-	lobbies.set(lobby.ID, { lobby: lobby, timeout: TIMEOUT, update:true });
+	lobbies.set(lobby.ID, { lobby: lobby, timeout: TIMEOUT });
 	return lobby;
 }
 
-export function findLobby(ID:string): Lobby<WebSocket> | undefined
+/* export function findLobby(ID:string): Lobby<WebSocket> | undefined
 {
 	return lobbies.get(ID)?.lobby;
+} */
+
+export function findLobby(fn: (lobby:Lobby<WebSocket>) => boolean): Lobby<WebSocket> | undefined
+{
+	for (const { lobby } of lobbies.values()) {
+		if (fn(lobby) === true) return lobby;
+	}
+	return undefined;
 }
 
 export function joinLobby(ID:string, playerID:string, ws:WebSocket)
@@ -202,18 +210,18 @@ export function resetLobby(ID:string)
 		}
 	});
 
-	// set the lobby to update
-	e.update = true;
+	// send the update manually (not good but only here)
+	e.lobby.sync();
 }
 
 // set's the update property to true, meaning that the state was updated
-function updateLobby(ID:string)
+/* function updateLobby(ID:string)
 {
 	const e = lobbies.get(ID);
 	if (e === undefined) return;
 
 	e.update = true;
-}
+} */
 
 export function deleteLobby(ID:string, reason:string | void)
 {
@@ -257,12 +265,15 @@ fastify.register(async function (fastify) {
 		// Handle incoming messages
 		connection.on('message', (message:string) => {
 			
-			interpreter(message, lobby, player, connection, (retLobby:string | undefined, retPlayer:string | undefined, retUpdate:boolean) => {
+			interpreter(message, lobby, player, connection, (retLobby:string | undefined, retPlayer:string | undefined) => {
+				// new stuff on lobby
+				// if (retUpdate === true) {	/* #ugly */
+				// 	if (lobby !== undefined) updateLobby(lobby);
+				// 	else if (retLobby !== undefined) updateLobby(retLobby);
+				// }
+
 				lobby = retLobby;
 				player = retPlayer;
-
-				// new stuff on lobby
-				if (lobby !== undefined && retUpdate === true) updateLobby(lobby);
 			})
 			.then((reply) => {
 				// send reply
@@ -286,7 +297,7 @@ fastify.register(async function (fastify) {
 			// leave procedure (just leave from the connected sockets, not from the lobby)
 			if (lobby !== undefined && player !== undefined)
 			{
-				const lobbyObj= findLobby(lobby);
+				const lobbyObj:Lobby<WebSocket> | undefined = findLobby((l:Lobby<WebSocket>) => { return l.ID === lobby });
 				lobbyObj?.disconnect(player);
 
 				// #debug
@@ -367,11 +378,11 @@ function LobbiesManager()
 			}
 
 			/* --- UPDATE logic --- */
-			if (entry.update === true) {
-				console.log('Broadcasting Lobby');
-				lobby.broadcast(lobby.stateJSON);
-				entry.update = false;
-			}
+			// if (entry.update === true) {
+			// 	console.log('Broadcasting Lobby');
+			// 	lobby.broadcast(lobby.stateJSON);
+			// 	entry.update = false;
+			// }
 		});
 
 		// loop

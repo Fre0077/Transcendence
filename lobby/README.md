@@ -1,4 +1,14 @@
-This project's goald is to provide a Lobby Service's backend using Fastify with Websocket connections and the following API:
+This project's goal is to provide a Lobby Service's backend using Fastify with Websocket connections and the following API:
+
+LobbyState onject that will be sent every time the lobby changes
+interface LobbyState {
+	ID:string;
+	gameID:string;
+	players: {
+		ID:string;
+		status:string;
+	}[];
+}
 
 <!-- ===== AUTH ===== -->
 Request:

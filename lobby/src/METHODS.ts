@@ -1,7 +1,7 @@
 
 
 import { Lobby } from './Lobby.js';
-import { createLobby, findLobby } from './index.js';
+import { createLobby, findLobby, joinLobby } from './index.js';
 import type { WebSocket } from "ws";
 
 
@@ -27,7 +27,7 @@ Reply:
 	comment: <reason>
 }
 */
-export function AUTH(msg:object, outplayer:string | undefined): StandardReturn
+export function AUTH(msg:object, outplayer:string | undefined, ws:WebSocket): StandardReturn
 {
 	// check if already authenticated
 	if (outplayer !== undefined) {
@@ -46,13 +46,23 @@ export function AUTH(msg:object, outplayer:string | undefined): StandardReturn
 	}
 
 	/* ! ! ! authentication procedure here ! ! ! */
+	// #todo (shouldn't be neccesary)
+	
+	// if already joined previously get the lobby ID
+	const lobby = findLobby((lobby:Lobby<WebSocket>) => { return lobby.players.has(msg.playerID as string);})
+	const retlobby = (lobby === undefined) ? undefined : lobby.ID;
+	if (retlobby) {
+		// update the websocket if already in a lobby
+		joinLobby(retlobby, msg.playerID, ws);
+	}
+
 
 	// success return
 	return {
 		status: "success",
 		reply: JSON.stringify({ method: 'AUTH_REPLY', status: "success", comment: "Successfully authenticated"}),
 		player: msg.playerID,
-		lobby: undefined
+		lobby: retlobby
 	};
 }
 
@@ -166,7 +176,7 @@ export function JOIN(msg:object,
 	}
 
 	// check if lobby is created
-	const lobby:Lobby<WebSocket> | undefined = findLobby(msg.lobbyID);
+	const lobby:Lobby<WebSocket> | undefined = findLobby((lobby:Lobby<WebSocket>) => { return lobby.ID === msg.lobbyID });
 
 	// lobby not found
 	if (lobby === undefined) {
@@ -226,7 +236,7 @@ export function LEAVE(outlobby:string | undefined, outplayer:string | undefined)
 	}
 
 	// leave the lobby
-	const lobby = findLobby(outlobby);
+	const lobby:Lobby<WebSocket> | undefined = findLobby((lobby:Lobby<WebSocket>) => { return lobby.ID === outlobby });
 	lobby?.leave(outplayer);
 
 	// successfule return
@@ -268,7 +278,7 @@ export async function START(outlobby:string | undefined): Promise<StandardReturn
 	}
 
 	// get the lobby
-	const lobby = findLobby(outlobby);
+	const lobby:Lobby<WebSocket> | undefined = findLobby((lobby:Lobby<WebSocket>) => { return lobby.ID === outlobby });
 	if (lobby === undefined) {
 		return {
 			status: "failure",
@@ -366,7 +376,7 @@ export function BOT(msg:object, outlobby:string | undefined)
 	}
 
 	// get the lobby
-	const lobby = findLobby(outlobby);
+	const lobby:Lobby<WebSocket> | undefined = findLobby((lobby:Lobby<WebSocket>) => { return lobby.ID === outlobby });
 	if (lobby === undefined) {
 		return {
 			status: "failure",
