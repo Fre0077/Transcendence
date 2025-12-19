@@ -1,5 +1,4 @@
 import { loadNavbar } from "@/components/navbar";
-import { loadOnlineGamePage } from "../onlineGame/onlineGame";
 
 const baseLobbyPath = 'http://localhost:3031/';
 
@@ -212,6 +211,9 @@ function updateLobbyInfo(lobby_code?: string, connected_players: Player[] = []) 
     }
 }
 
+// #review pls (ChatGPT)
+import { router } from "@/router";
+
 function createWebSocketConnection(playerID:string, lobby_code: string, connected_players: Player[]): WebSocket {
     const ws = new WebSocket(baseLobbyPath.replace('http', 'ws') + 'lobbysocket');
     console.log(baseLobbyPath.replace('http', 'ws') + 'lobbysocket');
@@ -234,7 +236,11 @@ function createWebSocketConnection(playerID:string, lobby_code: string, connecte
 
 
                 // @topiana- load the game page #review pls
-                loadOnlineGamePage();
+                // window.location.href = `/game:${data.value}`;
+
+                // #remove
+                window.localStorage.setItem('guestID', playerID);
+                router.push(`/game/${data.value}`);
 
             }
             if (lobby_code !== data.ID) {

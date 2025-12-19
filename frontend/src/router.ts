@@ -3,6 +3,7 @@ import { load500Page } from "./pages/errors/500";
 import { ChatsPage } from "./pages/protected/chats/chats";
 import { loadGamePage } from "./pages/protected/game/game";
 import { loadOnlineLobbyPage } from "./pages/protected/game/lobby/lobby";
+import { loadOnlineGamePage } from "./pages/protected/game/onlineGame/onlineGame";
 import { loadLocalGamePage } from "./pages/protected/game/localGame";
 import { loadHomePage } from "./pages/protected/home/home";
 import { loadProfilePage } from "./pages/protected/profile/profile";
@@ -331,7 +332,7 @@ const routes: RouteConfig[] = [
     path: '/game/:matchId',
     name: 'game-match',
     component: () => {
-      return document.createElement('div');
+      return loadOnlineGamePage();
     },
     meta: { title: 'Game Match - ft_transcendence', requiresAuth: true, requires2FA: true },
   },

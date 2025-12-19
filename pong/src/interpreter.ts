@@ -43,7 +43,7 @@ export async function interpreter(
 	}
 
 	// logging
-	// console.log('Received: ', msg);	/* #debug */
+	if (msg.method !== 'MOVE') console.log('Received: ', msg);	/* #debug */
 
 	// Handle methods
 	switch (msg.method)

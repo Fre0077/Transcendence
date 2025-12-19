@@ -5,6 +5,9 @@
 import { v4 as uuidv4 } from "uuid";
 // import { WebSocket } from "ws";
 
+// just for this usecase
+const OPEN = WebSocket.OPEN;
+
 interface MySocket {
 	close(): void;
 	send(message:string): void;
@@ -53,18 +56,23 @@ class Player<T extends MySocket>
 	}
 
 	// update socket
-	public connect(__socket:T | null)
+	public connect(__socket:T | null | void)
 	{
-		this._socket = __socket;
+		if (__socket) {this._socket = __socket};
 		this._status = "connected";
 	}
 
 	// send message
 	public send(message:string)
 	{
-		if (this._socket !== null && this._socket.readyState === 1) {
+		if (this._socket !== null && this._socket.readyState === OPEN) {
 			this._socket.send(message);
 		};
+	}
+
+	// returns the state of the socket
+	public get state() {
+		return this._socket?.readyState;
 	}
 }
 
@@ -228,11 +236,12 @@ export class Lobby<T extends MySocket> {
 		this._gameID = "empty";
 		this._ingame = false;
 
-		// all the players are expected to reconnect
-		// #todo (maybe?)
-		// this._players.forEach((player) => {
-		// 	player.status = "joining";
-		// });
+		// if the socket is still open, set the players to connected
+		this._players.forEach((player) => {
+			if (player.state === OPEN) {
+				player.connect();
+			}
+		});
 	}
 
 	// cleanup procedure if no player in lobby

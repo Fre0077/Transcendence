@@ -201,6 +201,9 @@ export function resetLobby(ID:string)
 			});
 		}
 	});
+
+	// set the lobby to update
+	e.update = true;
 }
 
 // set's the update property to true, meaning that the state was updated
@@ -285,9 +288,9 @@ fastify.register(async function (fastify) {
 			{
 				const lobbyObj= findLobby(lobby);
 				lobbyObj?.disconnect(player);
-				
-				// new stuff on lobby
-				updateLobby(lobby);
+
+				// #debug
+				console.log('Disconnecting:',player);
 			}
 
 			console.log(`Client ${clientIP} disconnected - Code: ${code}, Reason: ${reason?.toString() || 'none'}`);
