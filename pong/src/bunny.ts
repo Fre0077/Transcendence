@@ -140,7 +140,6 @@ export async function bunnyPublish(queue:string, message:any): Promise<boolean>
 		}
 	}
 
-	// #todo log the error
 	console.log(`Couldn't publish on ${queue}`);
 
 	return false;

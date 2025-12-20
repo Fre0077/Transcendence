@@ -179,7 +179,7 @@ function createWebSocketConnection(playerID:string/* , game_code: string */): We
                     if(serverLog) serverLog.innerText = `Error trying to connect to: ${data.value}, reason: ${data.reason}`;
         
                     // stop this shit??
-                    // ws.close(); #todo maybe not?
+                    ws.close(); // #todo maybe not?
                 }
             }
             else if (data.players && data.ball && data.score) {drawGame(data);}

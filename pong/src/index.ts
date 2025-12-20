@@ -329,7 +329,7 @@ function GamesManager()
 			- All players left
 			- No player joined (timeout)
 			- All player disconnected (timeout)
-			- All players inactive (bigtimeout) #todo
+			- All players inactive (bigtimeout)
 			If a game is finished a messagge should be sent
 			to the Lobby and Match History services */
 		games.forEach((entry, id) => {

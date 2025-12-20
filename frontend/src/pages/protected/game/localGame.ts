@@ -57,6 +57,8 @@ function connectToGame(keys: keys) {
 	// 		return;
 	// 	}
 	// };
+	
+	// dummy subscription so that the client (the page) can see the updates
 	game.subscribe('Player1', updateGameCanvas);
 	game.start();
 
@@ -65,16 +67,18 @@ function connectToGame(keys: keys) {
 			// console.log("Sending message: SPACE_PRESS");
 			// ws.send("SPACE_PRESS");
 			game.launch();
+			return ;
 		}
 		if (e.key === 'W' || e.key === 'w') game.press(0, 'Up');
 		if (e.key === 'S' || e.key === 's') game.press(0, 'Down');
 		if (e.key === 'I' || e.key === 'i') game.press(1, 'Up');
 		if (e.key === 'K' || e.key === 'k') game.press(1, 'Down');
+
+		keys[e.key.toUpperCase() as keyof keys] = true;
 			/* || e.key === 'I' || e.key === 'i' || e.key === 'K' || e.key === 'k') { */
 			// const msg = e.key.toUpperCase() + "_PRESS";
 			// console.log("Sending message: " + msg);
 			// ws.send(msg);
-			keys[e.key.toUpperCase() as keyof keys] = true; //???
 		// }
 	});
 
@@ -83,13 +87,14 @@ function connectToGame(keys: keys) {
 		if (e.key === 'S' || e.key === 's') game.release(0, 'Down');
 		if (e.key === 'I' || e.key === 'i') game.release(1, 'Up');
 		if (e.key === 'K' || e.key === 'k') game.release(1, 'Down');
+
+		keys[e.key.toUpperCase() as keyof keys] = false;
 		/* if (e.key === 'W' || e.key === 'w' || e.key === 'S' || e.key === 's'
 			|| e.key === 'I' || e.key === 'i' || e.key === 'K' || e.key === 'k') {
 			const msg = e.key.toUpperCase() + "_RELEASE";
 			// console.log("Sending message: " + msg);
-			ws.send(msg);
-			keys[e.key.toUpperCase() as keyof keys] = false;
-		} */
+			ws.send(msg); */
+		// } 
 	});
 }
 

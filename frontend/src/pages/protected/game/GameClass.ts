@@ -186,22 +186,12 @@ const	paddleOffset: number = 0.05;	// distance from the border
 
 const	paddleHeight_2: number = paddleHeight / 2;
 
-/* #todo
-	change angle bases on player movement
-
-	bugfix: ball enters the paddle from above (DONE)
-	player collision (DONE)
-	different bounce based on which part of the paddle was hit (DONE)
-	Point counter? (DONE)
-	Randomize the start (DONE)
-	Start when pressing space (DONE)
-*/
 
 export class Game
 {
 	private timeout:number;			/* number of ms the game should halt between rouds */
 	private tick:number;			/* number of in-game tick passed till the beginning of the match */
-	// private log:string;				// list of movements #todo
+	// private log:string;				// list of movements for replay #todo
 
 	// match variables
 	private round:number;			/* number of round (0 - > target * 2 - 1) */
@@ -318,7 +308,7 @@ export class Game
 
 	// /* sets the score a player must reach to win the game */
 	// public setFormat(format:number) {
-	// 	if (format <= 0) {console.log(`Error: Invalid format ${format}`);}	// #todo send to the frontend
+	// 	if (format <= 0) {console.log(`Error: Invalid format ${format}`);}
 	// 	else {this.targetScore = format;}
 	// }
 
@@ -327,14 +317,14 @@ export class Game
 		if (dirs.length != (this.targetScore * 2) - 1)
 		{
 			console.log(`Error: Invalid directions number: ${dirs.length}, expected: ${(this.targetScore * 2) - 1}`);
-			return ;		// #todo send to the frontend
+			return ;
 		}
 		for (let i = 0; i < dirs.length; ++i) {
 			if (Math.abs(dirs[i]) > Math.PI / 4
 			|| Math.abs(dirs[i]) < 0)
 			{
 				console.log(`Error: Invalid direction value: ${Math.abs(dirs[i])}, expected: 0 < |value| < PI / 4`);
-				return ;	// #todo send to the frontend
+				return ;
 			}
 		}
 		this.directions = dirs;
