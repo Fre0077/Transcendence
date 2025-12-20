@@ -211,6 +211,8 @@ export function deleteGame(gameID:string, reason:string | void)
 
 	// check if game is finished
 	const winner = game.game.end();
+
+	// #todo send to RabbitMQ, not ft_bunny
 	if (winner !== -1) bunnyPublish('history', {
 		game: 'pong',
 		ID: gameID,
