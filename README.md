@@ -20,28 +20,22 @@ Every second after a successful CREATE/JOIN you will receive a 'LobbyState' JSON
 
 type Player = {
 	ID:string,
-	status: "connected" | "disconnected" | "ingame" | "joining"
+	status: "connected" | "away | "disconnected"
 }
 
 > player statuses:
   - "connected": the player is connected to the lobby's websocket
   - "disconnected": the player disconnected from the lobby's websocket while the game wasn't started
-  - "ingame": the player is playing the game that the lobby is hosting and it isn't necessairly connected to the lobby's websocket
-  - "joining": the player just finished the game the lobby hosted and should be reconnecting to the lobby's websocket
+  - "away": the player is playing the game that the lobby is hosting and it isn't necessairly connected to the lobby's websocket
 
-LobbySateJSON:
-{
-  ID:string,        // ID of the lobby
-  gameID:string,    // ID of the game the lobby is playing
-  ingame:boolean,   // are the player playing?
-  format:number,    // the format of the game (number of sets to win a match)
-  players:Player[]  // an array of player UUIDs and statuses
+<!-- Lobbystate -->
+LobbyState object that will be sent every time the lobby changes
+
+interface LobbyState {
+	ID:string;
+	gameID:string;
+	players:Player[];
 }
-
-Note that if the 'ingame' propery is set to true the players can join the game specified in gameID, since someone successfully STARTed the lobby.
-
-
-Here is a brief explaination on how to use all the methods:
 
 <!-- ===== AUTH ===== -->
 Request:
@@ -60,7 +54,6 @@ Reply:
 Reqest:
 {
   method: 'CREATE',     (mandatory)
-  format: <format>      (optional)
 }
 @format: the number of rounds a player need to win to win the match
 
@@ -105,6 +98,14 @@ Reply:
 	status: 'success/failure',
 	comment: <comment>
 }
+
+<!-- ===== SET ===== -->
+Request:
+{
+	method: 'SET',
+	...
+}
+Description: Changes values/settings of the lobby. see later
 
 <!-- ===== BOT ===== -->
 Request:
@@ -165,12 +166,18 @@ interface PaddleState {
 	width:number;
 }
 
+interface PlayerState {
+	ID:string;
+	paddle:PaddleState;
+}
+
 interface GameState {
 	score: number[];
 	ball: BallState;
-	paddle:PaddleState[];
+	players:PlayerState[];
 	playing:boolean;
 	timeout: number;
+	winner: number;
 }
 
 Note that the game is expected to be played in a square, so the physics of the ball will be messy if you display a rectangular field. The top-left corner of the filed is (0,0),
@@ -191,7 +198,7 @@ Reply:
 	status: 'success/failure'
 }
 
-<!-- ===== JOIN ===== -->
+<!-- ===== JOIN (soon outdated) ===== -->
 
 Request:
 {
@@ -206,8 +213,9 @@ Reply:
 {
   method: 'JOIN_REPLY',
   status: 'success/failure',
-  value: <gameID>,
-  comment: <comment>
+  value: <gameID>,						        (only on status === 'success')
+  cause: <auth/rejoin/no-id/serv-err>	(only on status === 'failure')
+  comment: <comment>					        (only on status === 'failure')
 }
 
 <!-- ===== LEAVE ===== -->
@@ -238,7 +246,12 @@ Request:
   "RESET_PRESS" (the player requested the game to be resetted) (maybe to remove)
 
 Description: this is how the player interacts with the game mechanics and some basic match management.
-Reply: NO-REPLY
+Reply (only in case of failure):
+{
+	method: 'MOVE_REPLY',
+	status: 'failure',
+	comment: <comment>	
+}
 
 When the Game is finished or someone RESETted the game, the data regarding that game is (will be) stored in a database. 
 

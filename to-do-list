@@ -1,0 +1,4 @@
+1. remove JOIN method for games
+2. Log all major messages
+3. save MQueues messages in DB
+4. Publish on RabbitMQ the history of the games
