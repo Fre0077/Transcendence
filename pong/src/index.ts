@@ -215,6 +215,8 @@ export function deleteGame(gameID:string, reason:string | void)
 
 	// check if game is finished
 	const winner = game.game.end();
+
+	// #todo send to RabbitMQ, not ft_bunny
 	if (winner !== -1) bunnyPublish('history', {
 		game: 'pong',
 		ID: gameID,
@@ -331,7 +333,7 @@ function GamesManager()
 			- All players left
 			- No player joined (timeout)
 			- All player disconnected (timeout)
-			- All players inactive (bigtimeout) #todo
+			- All players inactive (bigtimeout)
 			If a game is finished a messagge should be sent
 			to the Lobby and Match History services */
 		games.forEach((entry, id) => {

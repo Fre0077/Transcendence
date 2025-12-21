@@ -6,7 +6,9 @@ import { router } from "@/router";
 
 export function loadOnlineGamePage(): HTMLElement {
 
-    const { matchId } = router.getParams();
+    // @aleborghi actually il codice del game non serve che il frontend lo abbia
+    // dato che la lobby dice al game che player deve aspettarsi
+    // const { matchId } = router.getParams();
 
     // connect socket
     const playerID = localStorage.getItem('playerID') || sessionStorage.getItem('guestID');
@@ -15,7 +17,7 @@ export function loadOnlineGamePage(): HTMLElement {
     }
 
     // coonnecction with backend (somehow safari does this twice)
-    const socket = createWebSocketConnection(playerID, matchId);
+    const socket = createWebSocketConnection(playerID/* , matchId */);
 
     const div = document.createElement('div');
     div.className = 'min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex flex-col';
@@ -135,7 +137,7 @@ function sleep(ms:number) {
 
 const serverLog = document.getElementById("serverLog");
 
-function createWebSocketConnection(playerID:string, game_code: string): WebSocket
+function createWebSocketConnection(playerID:string/* , game_code: string */): WebSocket
 {
     const ws = new WebSocket(basePongPath.replace('http', 'ws') + 'gamesocket');
     console.log(basePongPath.replace('http', 'ws') + 'gamesocket');
@@ -147,7 +149,7 @@ function createWebSocketConnection(playerID:string, game_code: string): WebSocke
     
             // @topiana- aggiunta la AUTH call all'inizio della connesione #review pls
             ws.send(JSON.stringify({ method: 'AUTH', playerID: playerID }));
-            ws.send(JSON.stringify({ method: 'JOIN', gameID: game_code }));
+            // ws.send(JSON.stringify({ method: 'JOIN', gameID: game_code }));  // (outdated)
         });
     };
 
@@ -179,7 +181,7 @@ function createWebSocketConnection(playerID:string, game_code: string): WebSocke
                     if(serverLog) serverLog.innerText = `Error trying to connect to: ${data.value}, reason: ${data.reason}`;
         
                     // stop this shit??
-                    // ws.close(); #todo maybe not?
+                    ws.close(); // #todo maybe not?
                 }
             }
             else if (data.players && data.ball && data.score) {drawGame(data);}
@@ -222,18 +224,18 @@ function drawGame(state:{players:any, ball:any, score:any} )
     canvas.style.display = "block";
     ctx?.clearRect(0, 0, canvas.width, canvas.height);
 
-    const paddleHeight1 = canvas.height * state.players[0].paddle.height;
-    const paddleHeight2 = canvas.height * state.players[1].paddle.height;
+    // const paddleHeight1 = canvas.height * state.players[0].paddle.height;
+    // const paddleHeight2 = canvas.height * state.players[1].paddle.height;
 
-    // console.log(`height1 ${paddleHeight1}`);
-    // console.log(`height2 ${paddleHeight2}`);
+    // // console.log(`height1 ${paddleHeight1}`);
+    // // console.log(`height2 ${paddleHeight2}`);
 
-    const paddleWidth1 = canvas.width * state.players[0].paddle.width;
-    const paddleWidth2 = canvas.width * state.players[1].paddle.width;
+    // const paddleWidth1 = canvas.width * state.players[0].paddle.width;
+    // const paddleWidth2 = canvas.width * state.players[1].paddle.width;
 
-    const paddleOffset1 = canvas.width * state.players[0].paddle.offset;
-    const paddleOffset2 = canvas.width * state.players[1].paddle.offset;
-    const ballSize = 10;
+    // const paddleOffset1 = canvas.width * state.players[0].paddle.offset;
+    // const paddleOffset2 = canvas.width * state.players[1].paddle.offset;
+    // const ballSize = 10;
 
     /* ---- GAME DATA ----- */
     if (scorePlayer1) scorePlayer1.textContent = state.score[0];
@@ -242,35 +244,39 @@ function drawGame(state:{players:any, ball:any, score:any} )
     if (player1Name) player1Name.textContent = state.players[0].ID;
     if (player2Name) player2Name.textContent = state.players[1].ID;
 
-
-
     /* ---- GAME BOARD ---- */
-    ctx.fillStyle = "white";
+    const ball = state.ball;
+	const player1 = state.players[0];
+	const player2 = state.players[1];
 
-    // Midline
-    ctx.fillRect(canvas.width / 2, 0, 2, canvas.height);
+	// Clear canvas
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+	canvas.style.display = "block";
 
-    // Ball
-    ctx.fillRect(
-        state.ball.pos[0] * canvas.width - ballSize / 2,
-        state.ball.pos[1] * canvas.height - ballSize / 2,
-        ballSize,
-        ballSize
-    );
+	// Draw paddles
+	ctx.fillStyle = 'white';
 
-    // Player 1
-    ctx.fillRect(
-        paddleOffset1,
-        state.players[0].paddle.posY * canvas.height - paddleHeight1 / 2,
-        paddleWidth1,
-        paddleHeight1
-    );
+	// Player 1
+	ctx.fillRect(
+		player1.paddle.offset * canvas.width,
+		(player1.paddle.posY - player1.paddle.height / 2) * canvas.height,
+		player1.paddle.width * canvas.width,
+		player1.paddle.height * canvas.height
+	);
+	// Player 2
+	ctx.fillRect(
+		canvas.width - (player2.paddle.offset + player2.paddle.width) * canvas.width,
+		(player2.paddle.posY - player2.paddle.height / 2) * canvas.height,
+		player2.paddle.width * canvas.width,
+		player2.paddle.height * canvas.height
+	);
 
-    // Player 2
-    ctx.fillRect(
-        canvas.width - paddleOffset2 - paddleWidth2,
-        state.players[1].paddle.posY * canvas.height - paddleHeight2 / 2,
-        paddleWidth2,
-        paddleHeight2
-    );
+	// Draw ball
+	const ballSize = 0.02; // 2% of canvas size
+	ctx.fillRect(
+		ball.pos[0] * canvas.width - (ballSize * canvas.width) / 2,
+		ball.pos[1] * canvas.height - (ballSize * canvas.height) / 2,
+		ballSize * canvas.width,
+		ballSize * canvas.height
+	);
 }

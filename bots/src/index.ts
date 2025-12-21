@@ -263,7 +263,6 @@ function updateTimeFor(botid:string)
 	bot.time = Date.now();
 }
 
-// #todo kill hanging bots (bots in games alone)
 function BotsManager()
 {
 	setTimeout(() => {
@@ -277,7 +276,7 @@ function BotsManager()
 
 		// loop
 		BotsManager();
-	}), 1000;
+	}, 1000);
 }
 
 /* ============================================= */

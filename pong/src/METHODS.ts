@@ -45,7 +45,6 @@ export function AUTH(msg:object, outplayer:string | undefined, listener:(state:s
 	}
 
 	/* ! ! ! authentication procedure here ! ! ! */
-	// #todo (shouldn't be neccesary)
 	
 	// if already joined previously get the lobby ID
 	const game = findPlayer((players:Player[]) => { return (players.find(p => p.ID === msg.playerID as string) !== undefined) ? true : false;})

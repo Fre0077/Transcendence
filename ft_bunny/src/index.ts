@@ -500,7 +500,10 @@ function MonitorQueues()
 	}, 1000);
 }
 
-
+/* #todo
+ - add log to all services
+ - store all messages
+ - single MQueue with multiple 'head's, once per sub  */
 
 /* ------------------------------------------ */
 const start = async () => {

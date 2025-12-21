@@ -46,7 +46,6 @@ export function AUTH(msg:object, outplayer:string | undefined, ws:WebSocket): St
 	}
 
 	/* ! ! ! authentication procedure here ! ! ! */
-	// #todo (shouldn't be neccesary)
 	
 	// if already joined previously get the lobby ID
 	const lobby = findLobby((lobby:Lobby<WebSocket>) => { return lobby.players.has(msg.playerID as string);})

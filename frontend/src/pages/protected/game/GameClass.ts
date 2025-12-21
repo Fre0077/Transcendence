@@ -10,7 +10,11 @@
 
 */
 
-import { randIntM } from './random.js'
+/* returns a pseudo random number using the Math.random()
+function. The number will be from 0 to max (max excluded) */
+export function randIntM(max:number = 2147483648) {
+	return Math.floor(Math.random() * max);
+}
 
 // array of number angles between +PI / 4 and -PI / 4
 function randomAngle(N:number = 1) : number[]
@@ -181,6 +185,7 @@ const	paddleWidth: number = 0.02		// short side
 const	paddleOffset: number = 0.05;	// distance from the border
 
 const	paddleHeight_2: number = paddleHeight / 2;
+
 
 export class Game
 {

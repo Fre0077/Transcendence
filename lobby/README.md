@@ -1,6 +1,7 @@
 This project's goal is to provide a Lobby Service's backend using Fastify with Websocket connections and the following API:
 
-LobbyState onject that will be sent every time the lobby changes
+<!-- Lobbystate -->
+LobbyState object that will be sent every time the lobby changes
 interface LobbyState {
 	ID:string;
 	gameID:string;
@@ -46,7 +47,6 @@ Request:
   lobbyID: <lobbyID>,   (mandatory)
 }
 @lobbyID: the ID of the lobby as a string
-@playerID: the ID of the player as a string
 
 Description: Joins a lobby with the specified ID, if any of the property is missing
 or invalid or there is no lobby with the lobbyID requested, it fails.
