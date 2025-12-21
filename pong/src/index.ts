@@ -143,12 +143,16 @@ export function joinGame(gameID:string, playerID:string, listener:(state:string)
 	
 	// check if player is expected
 	const player = entry.players.find(p => p.ID === playerID);
-	if (player === undefined || player.status === 'connected') {
+	if (player === undefined) {
 		return {
 			status: "failure",
 			reason: "Player not expected"
 		};
 	}
+
+	// remove listener if another socket is connected
+	// #todo inndagare sul perche' dei multi socket
+	if (player.status === 'connected') game.unsubscribe(playerID);
 
 	// adds notify callback for game-state update
 	game.subscribe(playerID, listener);

@@ -1,6 +1,6 @@
 import { loadNavbar } from "@/components/navbar";
 
-const baseLobbyPath = 'http://localhost:3031/';
+const baseLobbyPath = `http://${window.location.hostname}:3031/`;
 
 interface Player {
     id: string;
@@ -103,7 +103,7 @@ export function loadOnlineLobbyPage(): HTMLElement {
 
 
             <!-- BOT card (ChatGPT) -->
-            <div class="flex flex-col h-full rounded-xl bg-gradient-to-br from-blue-600/20 to-indigo-600/20 border border-blue-500/30 overflow-hidden">
+            <div class="flex flex-col rounded-xl bg-gradient-to-br from-blue-600/20 to-indigo-600/20 border border-blue-500/30 overflow-hidden">
 
                 <!-- CARD CONTENT -->
                 <div class="p-6 flex-1 flex flex-col items-center">

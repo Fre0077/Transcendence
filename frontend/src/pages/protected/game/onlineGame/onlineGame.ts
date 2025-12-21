@@ -1,6 +1,6 @@
 import { load404Page } from "@/pages/errors/404";
 
-const basePongPath = 'http://localhost:3040/';
+const basePongPath = `http://${window.location.hostname}:3040/`;
 
 import { router } from "@/router";
 
@@ -24,6 +24,7 @@ export function loadOnlineGamePage(): HTMLElement {
     <!-- Online Game Page Content -->
 
         <!-- (ChatGPT) -->
+        <br>
         <div class="flex-1 container mx-auto px-4 flex flex-col items-center justify-center gap-8">
 
         <!-- Game Area -->
@@ -100,11 +101,12 @@ export function loadOnlineGamePage(): HTMLElement {
     // inputs
     document.addEventListener("keydown", (e) => {
         if (e.repeat) return;
+        if (e.code === "Space") e.preventDefault(); // 🚫 stop page scrolling
         switch (e.key) {
           case "w": socket.send(JSON.stringify({ method: "MOVE", value: "UP_PRESS" })); break;
           case "s": socket.send(JSON.stringify({ method: "MOVE", value: "DW_PRESS" })); break;
-          case "Up": socket.send(JSON.stringify({ method: "MOVE", value: "UP_PRESS" })); break;
-          case "Down": socket.send(JSON.stringify({ method: "MOVE", value: "DW_PRESS" })); break;
+          case "ArrowUp": socket.send(JSON.stringify({ method: "MOVE", value: "UP_PRESS" })); break;
+          case "ArrowDown": socket.send(JSON.stringify({ method: "MOVE", value: "DW_PRESS" })); break;
           // case "j": socket.send(JSON.stringify({ method: "MOVE", value: "P2UP_PRESS" })); break;
           // case "n": socket.send(JSON.stringify({ method: "MOVE", value: "P2DW_PRESS" })); break;
           case " ": socket.send(JSON.stringify({ method: "MOVE", value: "START_PRESS" })); break;
@@ -116,8 +118,8 @@ export function loadOnlineGamePage(): HTMLElement {
         switch (e.key) {
           case "w": socket.send(JSON.stringify({ method: "MOVE", value: "UP_RELEASE" })); break;
           case "s": socket.send(JSON.stringify({ method: "MOVE", value: "DW_RELEASE" })); break;
-          case "Up": socket.send(JSON.stringify({ method: "MOVE", value: "UP_RELEASE" })); break;
-          case "Down": socket.send(JSON.stringify({ method: "MOVE", value: "DW_RELEASE" })); break;
+          case "ArrowUp": socket.send(JSON.stringify({ method: "MOVE", value: "UP_RELEASE" })); break;
+          case "ArrowDown": socket.send(JSON.stringify({ method: "MOVE", value: "DW_RELEASE" })); break;
 
           // case "j": socket.send(JSON.stringify({ method: "MOVE", value: "P2UP_RELEASE" })); break;
           // case "n": socket.send(JSON.stringify({ method: "MOVE", value: "P2DW_RELEASE" })); break;
