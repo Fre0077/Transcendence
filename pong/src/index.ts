@@ -217,12 +217,14 @@ export function deleteGame(gameID:string, reason:string | void)
 	const winner = game.game.end();
 
 	// #todo send to RabbitMQ, not ft_bunny
-	if (winner !== -1) bunnyPublish('history', {
-		game: 'pong',
-		ID: gameID,
-		winner: game.players[winner],
-		players: game.players.map(player => player.ID)
-	});
+	if (winner !== -1) bunnyPublish('history',
+		{
+			game: 'pong',
+			ID: gameID,
+			winner: [game.players[winner]],
+			players: game.players.map(player => player.ID)
+		}
+	);
 
 	// send to lobby that all the players left the game
 	bunnyPublish('lobby', {
