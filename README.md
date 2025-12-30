@@ -50,11 +50,9 @@ Usa il **Makefile** per gestire l'intero ciclo di vita dell'applicazione:
 
 ### 4. Protocollo di Test (Istruzioni per l'Ingegnere)
 
-1. 
-**Sequenza di Avvio automatizzata:** Il file `docker-compose.yml` gestisce già le dipendenze: **RabbitMQ** (con healthcheck) → **Frontend** → **Microservizi** (`auth`, `chat`, `profile`). 
+1. **Sequenza di Avvio automatizzata:** Il file `docker-compose.yml` gestisce già le dipendenze: **RabbitMQ** (con healthcheck) → **Frontend** → **Microservizi** (`auth`, `chat`, `profile`). 
 
-2. 
-**Verifica Stato:** Esegui `docker-compose ps` per confermare che tutti i container siano "Up" o "Healthy". 
+2. **Verifica Stato:** Esegui `docker-compose ps` per confermare che tutti i container siano "Up" o "Healthy". 
 
 3. **Interfacce e Debug:**
 * **Piattaforma di Test:** [http://localhost:3000?test=true](https://www.google.com/search?q=http://localhost:3000%3Ftest%3Dtrue)
