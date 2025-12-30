@@ -5,22 +5,13 @@
 
 Utilizza il **Makefile** incluso per gestire il ciclo di vita dei container: 
 
-* 
-**Avvio completo (build e background):** `make up` 
+* **Avvio completo (build e background):** `make up` 
 
+* **Spegnimento:** `make down` 
 
-* 
-**Spegnimento:** `make down` 
+* **Reset totale (re-build):** `make re` 
 
-
-* 
-**Reset totale (re-build):** `make re` 
-
-
-* 
-**Pulizia profonda (rimozione volumi e immagini):** `make clean` 
-
-
+* **Pulizia profonda (rimozione volumi e immagini):** `make clean` 
 
 > **Nota:** Se la porta **3001** risulta occupata prima dell'avvio, usa:
 > `sudo lsof -ti:3001 | xargs kill -9`
