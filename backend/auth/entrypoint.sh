@@ -1,12 +1,15 @@
 #!/bin/sh
 set -e
 
-npm install --no-audit --no-fund
+echo "--- Initializing Auth Service ---"
 
-#npm run generate || true
-npm run push || true
+echo "Generating Prisma Client..."
+npx prisma generate --schema=./database/auth.prisma
+
+echo "Syncing Database..."
+npx prisma db push --schema=./database/auth.prisma --accept-data-loss
 
 export HOST=0.0.0.0
-#export NODE_ENV=production
 
+echo "🚀 Starting Server with ts-node..."
 npm start

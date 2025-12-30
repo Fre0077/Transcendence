@@ -1,16 +1,20 @@
 FROM node:20-bullseye-slim
+
 WORKDIR /app
 
-# copy only auth package files and install deps
-COPY auth/package*.json ./
-RUN npm ci --include=dev --silent
 
-# copy service sources
+COPY auth/package*.json ./
+
+RUN npm install && \
+    npm install --save-dev @types/amqplib @types/node typescript ts-node
+
 COPY auth ./
 
-# ensure entrypoint is executable
 RUN chmod +x ./entrypoint.sh
 
 ENV NODE_ENV=production
+ENV TS_NODE_TRANSPILE_ONLY=true
+
 EXPOSE 3001
+
 ENTRYPOINT ["./entrypoint.sh"]

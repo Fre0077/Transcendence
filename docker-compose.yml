@@ -41,7 +41,7 @@ services:
       - "3001:3001"
     environment:
       - NODE_ENV=production
-      - RABBITMQ_URL=amqp://guest:guest@localhost:5672
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -49,7 +49,7 @@ services:
         condition: service_started
     networks:
       - transcendence
-    #restart: always
+    restart: always
 
   chat:
     build:
@@ -60,7 +60,7 @@ services:
       - "3002:3002"
     environment:
       - NODE_ENV=production
-      - RABBITMQ_URL=amqp://guest:guest@localhost:5672
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -68,7 +68,7 @@ services:
         condition: service_started
     networks:
       - transcendence
-    #restart: always
+    restart: always
 
   profile:
     build:
@@ -79,7 +79,7 @@ services:
       - "3003:3003"
     environment:
       - NODE_ENV=production
-      - RABBITMQ_URL=amqp://guest:guest@localhost:5672
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -87,7 +87,7 @@ services:
         condition: service_started
     networks:
       - transcendence
-    #restart: always
+    restart: always
 
 networks:
   transcendence:
