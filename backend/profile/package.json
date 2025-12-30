@@ -1,0 +1,33 @@
+{
+  "name": "profile-service",
+  "version": "1.0.0",
+  "description": "Microservice for User Profiles and Friendships",
+  "main": "server.ts",
+  "license": "ISC",
+  "type": "commonjs",
+  "scripts": {
+    "start": "clear && npx ts-node ./server.ts",
+    "dev": "npx ts-node-dev --respawn --transpile-only ./server.ts",
+    "migrate": "npx prisma migrate dev --name init --schema=./database/profile.prisma",
+    "generate": "npx prisma generate --schema=./database/profile.prisma",
+    "push": "npx prisma db push --schema=./database/profile.prisma --force-reset",
+    "studio": "npx prisma studio --schema=./database/profile.prisma"
+  },
+  "dependencies": {
+    "@fastify/cors": "^11.0.1",
+    "@prisma/client": "^6.11.0",
+    "amqplib": "^0.10.9",
+    "dotenv": "^17.2.3",
+    "fastify": "^5.4.0",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "devDependencies": {
+    "@types/amqplib": "^0.10.8",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^24.10.4",
+    "prisma": "^6.11.0",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.8.3"
+  }
+}

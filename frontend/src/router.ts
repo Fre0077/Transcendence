@@ -164,7 +164,7 @@ class Router {
     if (!this.rootElement) return;
 
     // Show loading state
-    this.rootElement.innerHTML = `
+    this.rootElement.innerHTML = /* html */ `
       <div class="flex items-center justify-center min-h-screen">
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
         <span class="sr-only">Loading...</span>
@@ -242,6 +242,17 @@ const routes: RouteConfig[] = [
       return loadRegisterPage();
     },
     meta: { title: 'Register - ft_transcendence', requiresGuest: true },
+  },
+  {
+    path: '/callback',
+    name: 'oauth-callback',
+    component: () => {
+      const div = document.createElement('div');
+      div.innerHTML = '<p style="text-align:center;margin-top:50px;">Authentication successful. You may close this window.</p>';
+      // Parent window will close this popup after extracting token
+      return div;
+    },
+    meta: { title: 'OAuth Callback' },
   },
   {
     // TODO: Implement forgot password page

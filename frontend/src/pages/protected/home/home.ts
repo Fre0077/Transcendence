@@ -1,6 +1,7 @@
 import { ChatWidget } from '@/components/chatWidget';
 import { loadNavbar } from '../../../components/navbar';
 import { loadHeroContent } from './heroContent';
+import { router } from "@/router";
 
 export function loadHomePage(): HTMLElement {
 	const div = document.createElement('div');
@@ -89,6 +90,53 @@ export function loadHomePage(): HTMLElement {
 			</a>
 		`).join('');
 	}
+
+	async function checkAuthAndPlay(event: MouseEvent) {
+        event.preventDefault(); 
+        console.log("Controllo autorizzazione per giocare...");
+
+        const token = localStorage.getItem('authToken');
+
+        if (!token) {
+            console.warn("Nessun token trovato. L'utente deve fare il login.");
+            alert("Devi essere loggato per giocare!");
+            router.push('/login'); // Reindirizza al login
+            return;
+        }
+
+        try {
+            const response = await fetch('http://localhost:3001/api/profile', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || "Sessione non valida");
+            }
+
+            // === SUCCESSO ===
+            console.log("Autorizzazione confermata! Avvio del gioco...");
+            router.push('/game'); // Reindirizza alla pagina di gioco
+
+        } catch (error) {
+            // === FALLIMENTO ===
+            console.error("Autorizzazione fallita:", error);
+            alert("La tua sessione è scaduta o non è valida. Effettua nuovamente il login.");
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('user');
+            router.push('/login');
+        }
+    }
+
+    const heroPlayButton = div.querySelector<HTMLElement>('#hero-play-button');
+    if (heroPlayButton) {
+        heroPlayButton.addEventListener('click', checkAuthAndPlay);
+    }
 
 	return div;
 }

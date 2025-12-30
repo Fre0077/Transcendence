@@ -35,35 +35,19 @@ var defChatList: chatList[] = [
 	}
 ]
 
-var defChatMessages: chatMessages[] = [
-	{
-		chatName: "lmicheli",
-		messages: [
-			{ sender: "you", content: "Hey, are we still on for the meeting?", timestamp: "10:30 AM" },
-			{ sender: "lmicheli", content: "Yes, see you at 2 PM.", timestamp: "10:32 AM" }
-		]
-	},
-	{
-		chatName: "glancell",
-		messages: [
-			{ sender: "you", content: "Hey, just wanted to confirm our meeting.", timestamp: "Yesterday 4:45 PM" },
-			{ sender: "glancell", content: "Don't forget our meeting tomorrow.", timestamp: "Yesterday 5:00 PM" }
-		]
-	},
-	{
-		chatName: "fde-sant",
-		messages: [
-			{ sender: "fde-sant", content: "Happy Birthday!", timestamp: "Today 8:55 AM" },
-			{ sender: "you", content: "Happy Birthday!", timestamp: "Today 9:00 AM" }
-		]
-	}
-]
+var defChatMessages: chatMessages =
+{
+	chatName: "lmicheli",
+	messages: [
+		{ sender: "you", content: "Hey, are we still on for the meeting?", timestamp: "10:30 AM" },
+		{ sender: "lmicheli", content: "Yes, see you at 2 PM.", timestamp: "10:32 AM" }
+	]
+}
 
 export class ChatsPage {
 
 	chatList: chatList[];
-	chatMessages: chatMessages[];
-	selectedChatIndex: number = 0;
+	chatMessages: chatMessages;
 
 	constructor (chatList?: chatList[]) {
 		this.chatList = chatList || defChatList;
@@ -80,8 +64,8 @@ export class ChatsPage {
 				<h1 class="text-3xl font-bold text-white mb-6">Chats</h1>
 				<div class="bg-white/5 border border-white/10 rounded-xl p-6 text-white flex flex-row">
 					<div id="chatList" class="">
-						${this.chatList.map((chat, index) => `
-							<div class="mt-1 p-4 bg-white/5 border border-white/10 rounded-lg flex items-center justify-between cursor-pointer" data-chat-index="${index}">
+						${this.chatList.map(chat => `
+							<div class="mt-1 p-4 bg-white/5 border border-white/10 rounded-lg flex items-center justify-between">
 								<div>
 									<div class="font-medium">${chat.name}</div>
 									<div class="text-white/70 text-sm">${chat.lastMessage}</div>
@@ -92,9 +76,9 @@ export class ChatsPage {
 					</div>
 					<div id="chatDisplay" class="ml-4 flex-grow">
 						<div id="chatMessages" class="h-64 overflow-y-auto mb-4 p-4 bg-white/5 border border-white/10 rounded-lg">
-							${this.chatMessages[this.selectedChatIndex].messages.map(message => `
+							${this.chatMessages.messages.map(msg => `
 								<div class="mb-2">
-									<span class="font-semibold">${message.sender}</span>: ${message.content} <span class="text-white/70 text-sm">${message.timestamp}</span>
+									<span class="font-semibold">${msg.sender}</span>: ${msg.content} <span class="text-white/70 text-sm">${msg.timestamp}</span>
 								</div>
 							`).join('')}
 						</div>
@@ -121,16 +105,6 @@ export class ChatsPage {
 		const chatForm = div.querySelector('#chatForm') as HTMLFormElement;
 		const chatInput = div.querySelector('#chatInput') as HTMLInputElement;
 
-		const chatListDiv = div.querySelector('#chatList') as HTMLElement;
-		chatListDiv.addEventListener('click', (event) => {
-			const target = event.target as HTMLElement;
-			const chatItem = target.closest('[data-chat-index]') as HTMLElement;
-			if (chatItem) {
-				const index = parseInt(chatItem.getAttribute('data-chat-index') || '0', 10);
-				this.updateChatDisplay(index);
-			}
-		});
-
 		chatForm.addEventListener('submit', (event) => {
 			event.preventDefault();
 			const message = chatInput.value.trim();
@@ -146,7 +120,7 @@ export class ChatsPage {
 				content: newMessageContent,
 				timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 			};
-			this.chatMessages[this.selectedChatIndex].messages.push(newMessage);
+			this.chatMessages.messages.push(newMessage);
 
 			const chatMessagesDiv = div.querySelector('#chatMessages') as HTMLElement;
 			const messageDiv = document.createElement('div');
@@ -157,16 +131,5 @@ export class ChatsPage {
 		});
 
 		return div;
-	}
-
-	updateChatDisplay(index: number) {
-		if (this.selectedChatIndex === index || index < 0 || index >= this.chatMessages.length || !this.chatMessages[index]) return;
-		this.selectedChatIndex = index;
-		const chatMessagesDiv = document.querySelector('#chatMessages') as HTMLElement;
-		chatMessagesDiv.innerHTML = this.chatMessages[this.selectedChatIndex].messages.map(message => `
-			<div class="mb-2">
-				<span class="font-semibold">${message.sender}</span>: ${message.content} <span class="text-white/70 text-sm">${message.timestamp}</span>
-			</div>
-		`).join('');
 	}
 }

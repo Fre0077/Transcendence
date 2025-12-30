@@ -1,4 +1,23 @@
 services:
+  # 1. RABBITMQ STARTS FIRST
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - transcendence
+
+  # 2. FRONTEND STARTS AFTER RABBITMQ IS HEALTHY
   frontend:
     build:
       context: ./frontend
@@ -6,14 +25,69 @@ services:
     container_name: frontend
     ports:
       - "3000:3000"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
     networks:
       - transcendence
-    volumes:
-      - ./frontend:/frontend
-      - /frontend/node_modules
+
+  # 3. BACKEND SERVICES START LAST
+  auth:
+    build:
+      context: ./backend
+      dockerfile: auth/Dockerfile
+    container_name: auth
+    ports:
+      - "3001:3001"
     environment:
-      - NODE_ENV=development
-    command: npm run dev
+      - NODE_ENV=production
+      - RABBITMQ_URL=amqp://guest:guest@localhost:5672
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      frontend:
+        condition: service_started
+    networks:
+      - transcendence
+    restart: always
+
+  chat:
+    build:
+      context: ./backend
+      dockerfile: chat/Dockerfile
+    container_name: chat
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=production
+      - RABBITMQ_URL=amqp://guest:guest@localhost:5672
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      frontend:
+        condition: service_started
+    networks:
+      - transcendence
+    restart: always
+
+  profile:
+    build:
+      context: ./backend
+      dockerfile: profile/Dockerfile
+    container_name: profile
+    ports:
+      - "3003:3003"
+    environment:
+      - NODE_ENV=production
+      - RABBITMQ_URL=amqp://guest:guest@localhost:5672
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      frontend:
+        condition: service_started
+    networks:
+      - transcendence
+    restart: always
 
 networks:
   transcendence:
