@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { Unauthorized } from "../../utils/exception";
+import { Unauthorized } from "../utils/exception";
 import { FastifyRequest, FastifyReply } from 'fastify';
 
 export interface AuthRequest extends FastifyRequest {

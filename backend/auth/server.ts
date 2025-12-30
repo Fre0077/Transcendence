@@ -6,7 +6,7 @@ import path from "path";
 
 import { startRabbit } from "./rabbit";
 import { authEndpoint } from "./src/endpoint";
-// import { utilsEndpoint } from "../utils/database_manage";
+//import { utilsEndpoint } from "./utils/database_manage";
 
 export const fastify = Fastify({
     logger: false
@@ -50,7 +50,7 @@ fastify.register(fastifyStatic, {
 
 // ENDPOINT SOLO AUTH
 fastify.register(authEndpoint, { prefix: "/api" });
-// fastify.register(utilsEndpoint, { prefix: "/api" });
+//fastify.register(utilsEndpoint, { prefix: "/api" });
 
 // RICEZIONE DATI RABBITMQ (TEST)
 startRabbit();

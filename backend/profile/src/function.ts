@@ -1,4 +1,4 @@
-import { NotFound, Conflict, BadRequest } from "../../utils/exception";
+import { NotFound, Conflict, BadRequest } from "../utils/exception";
 
 import { PrismaClient as ProfileClient } from "../database/generate/profile";
 const profilePrisma = new ProfileClient();

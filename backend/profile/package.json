@@ -6,7 +6,7 @@
   "license": "ISC",
   "type": "commonjs",
   "scripts": {
-    "start": "clear && npx ts-node ./server.ts",
+    "start": "npx ts-node ./server.ts",
     "dev": "npx ts-node-dev --respawn --transpile-only ./server.ts",
     "migrate": "npx prisma migrate dev --name init --schema=./database/profile.prisma",
     "generate": "npx prisma generate --schema=./database/profile.prisma",

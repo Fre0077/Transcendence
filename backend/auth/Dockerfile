@@ -3,7 +3,7 @@ WORKDIR /app
 
 # copy only auth package files and install deps
 COPY auth/package*.json ./
-RUN npm ci --silent
+RUN npm ci --include=dev --silent
 
 # copy service sources
 COPY auth ./

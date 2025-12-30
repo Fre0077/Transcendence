@@ -1,9 +1,9 @@
 import { PrismaClient as chatPrismaClient } from "../database/generate/chat"
 const chatPrisma = new chatPrismaClient()
 
-import { BadRequest, NotFound, Unauthorized } from "../../utils/exception";
-import { NewChat, NewMessage, SrcChat } from "../../utils/interface";
-import { logInfo } from "../../utils/logger";
+import { BadRequest, NotFound, Unauthorized } from "../utils/exception";
+import { NewChat, NewMessage, SrcChat } from "../utils/interface";
+import { logInfo } from "../utils/logger";
 import { fastify } from "../server";
 import jwt from "jsonwebtoken";
 

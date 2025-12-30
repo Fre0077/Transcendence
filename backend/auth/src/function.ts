@@ -9,8 +9,8 @@ import { verifyRefreshToken, findRefreshToken, deleteRefreshToken } from "./midd
 import { Account, PrismaClient as authPrismaClient } from "../database/generate/auth"
 const authPrisma = new authPrismaClient()
 
-import { auth2fa, newDataProfile, userLogin } from "../../utils/interface"
-import { BadRequest, Unauthorized, Forbidden, NotFound, Conflict } from "../../utils/exception"
+import { auth2fa, newDataProfile, userLogin } from "../utils/interface"
+import { BadRequest, Unauthorized, Forbidden, NotFound, Conflict } from "../utils/exception"
 import { fastify } from "../server";
 import { stringify } from 'querystring';
 

@@ -1,7 +1,7 @@
 import ms from 'ms';
 import jwt from 'jsonwebtoken';
 import { createHash } from 'crypto';
-import { Unauthorized } from "../../utils/exception";
+import { Unauthorized } from "../utils/exception";
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { Account, PrismaClient as authPrismaClient } from "../database/generate/auth"
 const authPrisma = new authPrismaClient()

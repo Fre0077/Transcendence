@@ -7,9 +7,9 @@ const chatPrisma = new chatPrismaClient();
 import { userList, chatList, messageList, newChat, newMessage, deleteChatMessages,
 		deleteMessage, searchMessage, searchChat, listChatMessage, blockUser,
 		sblockUser } from "./function";
-import { BadRequest, Unauthorized, Forbidden, NotFound, Conflict } from "../../utils/exception"
-import { NewChat, NewMessage, SrcChat } from "../../utils/interface";
-import { logError, logInfo } from "../../utils/logger"
+import { BadRequest, Unauthorized, Forbidden, NotFound, Conflict } from "../utils/exception"
+import { NewChat, NewMessage, SrcChat } from "../utils/interface";
+import { logError, logInfo } from "../utils/logger"
 import { authMiddleware } from "./middleware";
 
 const messClients: { [chatId: number]: Set<any> } = {};

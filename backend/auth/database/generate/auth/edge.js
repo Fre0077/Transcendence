@@ -141,7 +141,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/home/giovanni/Desktop/Transcendence/backend/auth/database/generate/auth",
+      "value": "/home/fre007/Desktop/giova/Transcendence/backend/auth/database/generate/auth",
       "fromEnvVar": null
     },
     "config": {
@@ -150,12 +150,12 @@ const config = {
     "binaryTargets": [
       {
         "fromEnvVar": null,
-        "value": "rhel-openssl-3.0.x",
+        "value": "debian-openssl-3.0.x",
         "native": true
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/home/giovanni/Desktop/Transcendence/backend/auth/database/auth.prisma",
+    "sourceFilePath": "/home/fre007/Desktop/giova/Transcendence/backend/auth/database/auth.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {

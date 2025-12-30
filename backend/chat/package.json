@@ -4,7 +4,7 @@
 	"license": "ISC",
 	"type": "CommonJS",
 	"scripts": {
-		"start": "clear && npx ts-node ./server.ts",
+		"start": "npx ts-node ./server.ts",
 		"migrate": "npx prisma migrate dev --name init --schema=./database/chat.prisma",
 		"generate": "npx prisma generate --schema=./database/chat.prisma",
 		"push": "npx prisma db push --schema=./database/chat.prisma --force-reset"

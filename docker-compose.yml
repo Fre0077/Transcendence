@@ -49,7 +49,7 @@ services:
         condition: service_started
     networks:
       - transcendence
-    restart: always
+    #restart: always
 
   chat:
     build:
@@ -68,7 +68,7 @@ services:
         condition: service_started
     networks:
       - transcendence
-    restart: always
+    #restart: always
 
   profile:
     build:
@@ -87,7 +87,7 @@ services:
         condition: service_started
     networks:
       - transcendence
-    restart: always
+    #restart: always
 
 networks:
   transcendence:

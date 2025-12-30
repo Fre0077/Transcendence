@@ -5,11 +5,11 @@ import { generateTokens, deleteRefreshToken } from "./middleware";
 import { Account, PrismaClient as authPrismaClient } from "../database/generate/auth";
 const authPrisma = new authPrismaClient();
 
-import { userLogin, RegisterBody, LoginBody, GoogleAuthBody, auth2fa, newDataProfile } from "../../utils/interface";
+import { userLogin, RegisterBody, LoginBody, GoogleAuthBody, auth2fa, newDataProfile } from "../utils/interface";
 import { authMiddleware, AuthRequest } from "./middleware";
-import { logError, logInfo } from "../../utils/logger";
+import { logError, logInfo } from "../utils/logger";
 import { backup } from "node:sqlite";
-import { BadRequest, NotFound, Unauthorized } from "../../utils/exception";
+import { BadRequest, NotFound, Unauthorized } from "../utils/exception";
 import { NotBeforeError } from "jsonwebtoken";
 
 export async function authEndpoint(fastify: FastifyInstance) {

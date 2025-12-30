@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { FastifyRequest, FastifyReply } from 'fastify';
-import { Unauthorized } from "../../utils/exception";
+import { Unauthorized } from "../utils/exception";
 
 export interface AuthRequest extends FastifyRequest {
 	user?: { userId: number; email: string };

@@ -3,7 +3,7 @@ WORKDIR /app
 
 # copy only profile package files and install deps
 COPY profile/package*.json ./
-RUN npm ci --silent
+RUN npm ci --silent && npm i --save-dev @types/amqplib --silent
 
 # copy service sources
 COPY profile ./

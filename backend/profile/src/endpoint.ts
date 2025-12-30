@@ -1,7 +1,7 @@
 import type { FastifyInstance, FastifyReply } from "fastify";
 import { authMiddleware, AuthRequest } from "./middleware";
-import { BadRequest, Unauthorized } from "../../utils/exception";
-import { logError, logInfo } from "../../utils/logger";
+import { BadRequest, Unauthorized } from "../utils/exception";
+import { logError, logInfo } from "../utils/logger";
 import {
     sendFriendRequest, 
     acceptFriendRequest, 

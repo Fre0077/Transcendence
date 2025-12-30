@@ -3,7 +3,7 @@ WORKDIR /app
 
 # copy only chat package files and install deps
 COPY chat/package*.json ./
-RUN npm ci --silent
+RUN npm ci --silent && npm i --save-dev @types/amqplib --silent
 
 # copy service sources
 COPY chat ./

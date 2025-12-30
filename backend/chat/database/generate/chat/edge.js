@@ -138,7 +138,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/home/giovanni/Desktop/Transcendence/backend/chat/database/generate/chat",
+      "value": "/home/fre007/Desktop/giova/Transcendence/backend/chat/database/generate/chat",
       "fromEnvVar": null
     },
     "config": {
@@ -147,12 +147,12 @@ const config = {
     "binaryTargets": [
       {
         "fromEnvVar": null,
-        "value": "rhel-openssl-3.0.x",
+        "value": "debian-openssl-3.0.x",
         "native": true
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/home/giovanni/Desktop/Transcendence/backend/chat/database/chat.prisma",
+    "sourceFilePath": "/home/fre007/Desktop/giova/Transcendence/backend/chat/database/chat.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
