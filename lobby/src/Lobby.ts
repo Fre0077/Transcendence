@@ -231,7 +231,7 @@ export class Lobby<T extends MySocket> {
 	// reset the lobby
 	@SyncLobby
 	public reset() {
-		if (this._ingame == false) {return ;}
+		if (this._ingame === false) {return ;}
 
 		// no game linked to lobby
 		this._gameID = "empty";
