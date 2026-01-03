@@ -221,8 +221,9 @@ export function deleteGame(gameID:string, reason:string | void)
 		{
 			game: 'pong',
 			ID: gameID,
-			winner: [game.players[winner]],
-			players: game.players.map(player => player.ID)
+			winner: [game.players[winner].ID],
+			players: game.players.map(player => player.ID),
+			score: game.game.state.score
 		}
 	);
 

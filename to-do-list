@@ -1,6 +1,13 @@
+
+MAJOR
+1. fix layer:2 of tournaments (moves on it's own wtf???)
+
+MINOR
+1. Replay system
+
+CLEANUPS:
 1. remove JOIN method for games
 2. Log all major messages
 3. save MQueues messages in DB
 4. Publish on RabbitMQ the history of the games
-5. Replay system
-6. Emotes
+5. Emotes

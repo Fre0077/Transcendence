@@ -1,7 +1,6 @@
 
-
-import { Lobby } from './Tournament.js';
-import { createLobby, findLobby, joinLobby } from './index.js';
+import { Tournament } from './Tournament.js';
+import { createTournament, findTournament, joinTournament } from './index.js';
 import type { WebSocket } from "ws";
 
 
@@ -9,7 +8,7 @@ type StandardReturn = {
 	status: "success" | "failure";
 	reply:string;
 	player?:string;
-	lobby?:string;
+	tournament?:string;
 }
 
 /*
@@ -47,12 +46,13 @@ export function AUTH(msg:object, outplayer:string | undefined, ws:WebSocket): St
 
 	/* ! ! ! authentication procedure here ! ! ! */
 	
-	// if already joined previously get the lobby ID
-	const lobby = findLobby((lobby:Lobby<WebSocket>) => { return lobby.players.has(msg.playerID as string);})
-	const retlobby = (lobby === undefined) ? undefined : lobby.ID;
-	if (retlobby) {
+	// if already joined previously get the tournament ID
+	const tournament = findTournament((tournament:Tournament<WebSocket>) => { return tournament.has(msg.playerID as string);})
+	const retournament = (tournament === undefined) ? undefined : tournament.ID;
+	if (retournament) {
 		// update the websocket if already in a lobby
-		joinLobby(retlobby, msg.playerID, ws);
+		console.log('Autojoining', msg.playerID);
+		joinTournament(retournament, msg.playerID, ws);
 	}
 
 
@@ -61,7 +61,7 @@ export function AUTH(msg:object, outplayer:string | undefined, ws:WebSocket): St
 		status: "success",
 		reply: JSON.stringify({ method: 'AUTH_REPLY', status: "success", comment: "Successfully authenticated"}),
 		player: msg.playerID,
-		lobby: retlobby
+		tournament: retournament
 	};
 }
 
@@ -83,7 +83,7 @@ Reply:
 */
 
 export function CREATE(msg:object,
-	outlobby:string | undefined,
+	outournament:string | undefined,
 	outplayer:string | undefined,
 	ws:WebSocket): StandardReturn
 {
@@ -95,16 +95,16 @@ export function CREATE(msg:object,
 		}
 	}
 
-	// check if we already in lobby
-	if (outlobby !== undefined) {
+	// check if we already in tournament
+	if (outournament !== undefined) {
 		return {
 			status: "failure",
-			reply: JSON.stringify({ method: 'CREATE_REPLY', status: "failure", comment: "already in a lobby"})
+			reply: JSON.stringify({ method: 'CREATE_REPLY', status: "failure", comment: "already in a tournament"})
 		}
 	}
 
 	//create lobby
-	const lobby:Lobby<WebSocket> = createLobby(/* "pong" */);
+	const tournament:Tournament<WebSocket> = createTournament(/* "pong" */);
 
 	// check if the obj has format
 	if ("format" in msg && typeof msg.format === "number" ) {
@@ -113,14 +113,14 @@ export function CREATE(msg:object,
 	}
 
 	// join lobby
-	lobby.join(outplayer, ws);
+	tournament.join(outplayer, ws);
 
 	// success return
 	return {
 		status: "success",
-		reply: JSON.stringify({ method: 'CREATE_REPLY', status: "success", value: lobby.ID}),
+		reply: JSON.stringify({ method: 'CREATE_REPLY', status: "success", value: tournament.ID}),
 		player: outplayer,
-		lobby: lobby.ID
+		tournament: tournament.ID
 	};
 }
 
@@ -144,7 +144,7 @@ Reply:
 */
 
 export function JOIN(msg:object,
-	outlobby:string | undefined,
+	outournament:string | undefined,
 	outplayer:string | undefined,
 	ws:WebSocket): StandardReturn
 {
@@ -157,15 +157,15 @@ export function JOIN(msg:object,
 	}
 
 	// check if we already in lobby
-	if (outlobby !== undefined) {
+	if (outournament !== undefined) {
 		return {
 			status: "failure",
-			reply: JSON.stringify({ method: 'JOIN_REPLY', status: "failure", comment: "already in a lobby"})
+			reply: JSON.stringify({ method: 'JOIN_REPLY', status: "failure", comment: "already in a tournament"})
 		}
 	}
 
-	// check if the obj has lobbyID and playerID
-	if ("lobbyID" in msg === false || typeof msg.lobbyID !== "string")
+	// check if the obj has tournamentID and playerID
+	if ("tournamentID" in msg === false || typeof msg.tournamentID !== "string")
 	{
 		console.log(`invalid JSON message ${msg}`);
 		return {
@@ -175,30 +175,30 @@ export function JOIN(msg:object,
 	}
 
 	// check if lobby is created
-	const lobby:Lobby<WebSocket> | undefined = findLobby((lobby:Lobby<WebSocket>) => { return lobby.ID === msg.lobbyID });
+	const tournament:Tournament<WebSocket> | undefined = findTournament((tournament:Tournament<WebSocket>) => { return tournament.ID === msg.tournamentID });
 
 	// lobby not found
-	if (lobby === undefined) {
+	if (tournament === undefined) {
 		return {
 			status: "failure",
-			reply: JSON.stringify({ method: 'JOIN_REPLY', status: 'failure', value: msg.lobbyID, comment: "Lobby not found"})
+			reply: JSON.stringify({ method: 'JOIN_REPLY', status: 'failure', value: msg.tournamentID, comment: "Tournament not found"})
 		};
 	}
 
 	// actually join the lobby
-	if (lobby.join(outplayer, ws) === false) {
+	if (tournament.join(outplayer, ws) === false) {
 		return {
 			status: "failure",
-			reply: JSON.stringify({ method: 'JOIN_REPLY', status: 'failure', value: msg.lobbyID, comment: "Error while joining the lobby, either the lobby is full or you're already connected"})
+			reply: JSON.stringify({ method: 'JOIN_REPLY', status: 'failure', value: msg.tournamentID, comment: "Error while joining the tournament, either the lobby is full or you're already connected"})
 		};
 	}
 
 	// successful return
 	return {
 		status: "success",
-		reply: JSON.stringify({ method: 'JOIN_REPLY', status: 'success', value: msg.lobbyID, comment: `Lobby ${msg.lobbyID} joined successfully!`}),
+		reply: JSON.stringify({ method: 'JOIN_REPLY', status: 'success', value: msg.tournamentID, comment: `Tournament ${msg.tournamentID} joined successfully!`}),
 		player: outplayer,
-		lobby: lobby.ID
+		tournament: tournament.ID
 	}
 }
 
@@ -216,7 +216,7 @@ Reply:
 }
 */
 
-export function LEAVE(outlobby:string | undefined, outplayer:string | undefined): StandardReturn
+export function LEAVE(outournament:string | undefined, outplayer:string | undefined): StandardReturn
 {
 	// check auth
 	if (outplayer === undefined) {
@@ -227,7 +227,7 @@ export function LEAVE(outlobby:string | undefined, outplayer:string | undefined)
 	}
 
 	// check if you joined a lobby
-	if (outlobby === undefined) {
+	if (outournament === undefined) {
 		return {
 			status: "failure",
 			reply: JSON.stringify({ method: 'LEAVE_REPLY', status: 'failure', comment: "Not in a lobby" })
@@ -235,14 +235,14 @@ export function LEAVE(outlobby:string | undefined, outplayer:string | undefined)
 	}
 
 	// leave the lobby
-	const lobby:Lobby<WebSocket> | undefined = findLobby((lobby:Lobby<WebSocket>) => { return lobby.ID === outlobby });
-	lobby?.leave(outplayer);
+	const tournament:Tournament<WebSocket> | undefined = findTournament((tournament:Tournament<WebSocket>) => { return tournament.ID === outournament });
+	tournament?.leave(outplayer);
 
 	// successfule return
 	return {
 		status: "success",
 		reply: JSON.stringify({ method: 'LEAVE_REPLY', status: 'success', comment: "Left the lobby" }),
-		lobby: undefined,
+		tournament: undefined,
 		player: outplayer
 	};
 }
@@ -266,63 +266,65 @@ Reply:
 
 import { bunnyPublish } from './bunny.js';
 
-export async function START(outlobby:string | undefined): Promise<StandardReturn>
+export async function READY(outplayer:string | undefined, outournament:string | undefined): Promise<StandardReturn>
 {
-	// check if you joined a lobby
-	if (outlobby === undefined) {
+	// check if authenticated
+	if (outplayer === undefined) {
 		return {
 			status: "failure",
-			reply: JSON.stringify({ method: 'START_REPLY', status: 'failure', comment: "Join a lobby before starting the game dumass" })
+			reply: JSON.stringify({ method: 'READY_REPLY', status: 'failure', comment: 'Authenticate before getting ready' })
+		}
+	}
+
+	// check if you joined a tournament
+	if (outournament === undefined) {
+		return {
+			status: "failure",
+			reply: JSON.stringify({ method: 'READY_REPLY', status: 'failure', comment: "Join a tournament before starting the game dumass" })
 		};
 	}
 
 	// get the lobby
-	const lobby:Lobby<WebSocket> | undefined = findLobby((lobby:Lobby<WebSocket>) => { return lobby.ID === outlobby });
-	if (lobby === undefined) {
+	const tournament:Tournament<WebSocket> | undefined = findTournament((tournament:Tournament<WebSocket>) => { return tournament.ID === outournament });
+	if (tournament === undefined) {
 		return {
 			status: "failure",
-			reply: JSON.stringify({ method: 'START_REPLY', status: 'failure', comment: "The lobby was deleted while you where still inside, im sorry" })
-		};
-	}
-
-	// check if lobby is full
-	if (lobby.full() === false) {
-		return {
-			status: "failure",
-			reply: JSON.stringify({ method: 'START_REPLY', status: 'failure', comment: "The lobby isnt full, cannot start game" })
+			reply: JSON.stringify({ method: 'READY_REPLY', status: 'failure', comment: "The tournament was deleted while you where still inside, im sorry" })
 		};
 	}
 
 	// get variables from the callback
-	let ret = await lobby.launch( async (gameID:string, players:string[]): Promise<boolean> => {
-		// signal the GameService to create a Game
-		return bunnyPublish('game', { ID: gameID, players: players });
-	});
+	let ret = tournament.ready(outplayer);
 
 	// failed launch
 	if (ret.status === 'failure') {
 		return {
 			status: "failure",
-			reply: JSON.stringify({ method: 'START_REPLY', status: 'failure', comment: ret.reason })
+			reply: JSON.stringify({ method: 'READY_REPLY', status: 'failure', comment: ret.reason })
 		}
 	}
 
-	// build successful reply
-	const reply:string = JSON.stringify({ method: 'START_REPLY', status: 'success', value: lobby.gameID, comment: "The lobby is now in game"});
-	
-	// broadcast to everyone
-	lobby.broadcast(reply);
+	// just another player readyed
+	if (ret.gameid === undefined) {
+		return {
+			status: "success",
+			reply: JSON.stringify({ method: 'READY_REPLY', status: 'success', comment: "Readyed successfully"})
+		};
+	}
 
-	// #debg
-	console.log(`Starting lobby ${lobby.ID} ...`);
+	// build successful reply
+	const reply:string = JSON.stringify({ method: 'START_REPLY', status: 'success', value: ret.gameid, comment: "The room is now in game"});
+	
+	// send to all players in room
+	tournament.roomcast(outplayer, reply);
 
 	// ask bots to join the game
-	for (const id of lobby.players.keys()) {
+	for (const id of tournament.roomates(outplayer)) {
 		if (id.startsWith('BOT')) {
 			bunnyPublish('bot', {
 				method: 'CREATE',
 				game: 'pong', 				// #todo: flexible
-				gameid: lobby.gameID,
+				gameid: ret.gameid,
 				botid: id,
 				level: Number(id.substring(id.lastIndexOf('_') + 1))
 			});
@@ -354,13 +356,13 @@ Reply:
 */
 let botcount:number[] = [];
 
-export function BOT(msg:object, outlobby:string | undefined)
+export function BOT(msg:object, outournament:string | undefined)
 {
 	// check if you joined a lobby
-	if (outlobby === undefined) {
+	if (outournament === undefined) {
 		return {
 			status: "failure",
-			reply: JSON.stringify({ method: 'BOT_REPLY', status: 'failure', comment: "Join a lobby before adding a Bot" })
+			reply: JSON.stringify({ method: 'BOT_REPLY', status: 'failure', comment: "Join a tournament before adding a Bot" })
 		};
 	}
 
@@ -375,11 +377,11 @@ export function BOT(msg:object, outlobby:string | undefined)
 	}
 
 	// get the lobby
-	const lobby:Lobby<WebSocket> | undefined = findLobby((lobby:Lobby<WebSocket>) => { return lobby.ID === outlobby });
-	if (lobby === undefined) {
+	const tournament:Tournament<WebSocket> | undefined = findTournament((tournament:Tournament<WebSocket>) => { return tournament.ID === outournament });
+	if (tournament === undefined) {
 		return {
 			status: "failure",
-			reply: JSON.stringify({ method: 'BOT_REPLY', status: 'failure', comment: "The lobby was deleted while you where still inside, im sorry" })
+			reply: JSON.stringify({ method: 'BOT_REPLY', status: 'failure', comment: "The tournament was deleted while you where still inside, im sorry" })
 		};
 	}
 
@@ -398,15 +400,15 @@ export function BOT(msg:object, outlobby:string | undefined)
 		}
 
 		// check if lobby is full
-		if (lobby.full()) {
+		if (tournament.full()) {
 			return {
 				status: "failure",
-				reply: JSON.stringify({ method: 'BOT_REPLY', status: 'failure', comment: "The lobby is full, cannot add a BOT" })
+				reply: JSON.stringify({ method: 'BOT_REPLY', status: 'failure', comment: "The tournament is full, cannot add a BOT" })
 			};
 		}
 
 		// add the bot
-		lobby.join(`BOT_${botcount.length}_${msg.level}`, null);
+		tournament.join(`BOT_${botcount.length}_${msg.level}`, null);
 
 		// next bot
 		botcount.push(msg.level);
@@ -414,7 +416,7 @@ export function BOT(msg:object, outlobby:string | undefined)
 		// successful return
 		return {
 			status: "success",
-			reply: JSON.stringify({ method: 'BOT_REPLY', status: 'success', comment: "Added BOT to the lobby" })
+			reply: JSON.stringify({ method: 'BOT_REPLY', status: 'success', comment: "Added BOT to the tournament" })
 		};
 	}
 	else if (msg.value === "REMOVE")
@@ -423,13 +425,13 @@ export function BOT(msg:object, outlobby:string | undefined)
 		if (botcount.length === 0) {
 			return {
 				status: "failure",
-				reply: JSON.stringify({ method: 'BOT_REPLY', status: 'failure', comment: "No BOT in the lobby" })
+				reply: JSON.stringify({ method: 'BOT_REPLY', status: 'failure', comment: "No BOT in the tournament" })
 			};
 		}
 
 		// remove the bot
 		const idx = botcount.length - 1;
-		if (lobby.leave(`BOT_${idx}_${botcount[idx]}`) === false) {
+		if (tournament.leave(`BOT_${idx}_${botcount[idx]}`) === false) {
 			return {
 				status: "failure",
 				reply: JSON.stringify({ method: 'BOT_REPLY', status: 'failure', comment: `Bot name 'BOT_${idx}_${botcount[idx]}'not found` })

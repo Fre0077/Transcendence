@@ -2,8 +2,6 @@
 /* ----------------- */
 /* ----------------- */
 
-import { triggerAsyncId } from "node:async_hooks";
-import { captureRejectionSymbol } from "node:events";
 import { v4 as uuidv4 } from "uuid";
 // import { WebSocket } from "ws";
 
@@ -21,7 +19,7 @@ interface MySocket {
 Socket operaitions only inside here */
 class Player<T extends MySocket>
 {
-	private _status: "connected" | "ready" | "away" | "disconnected";
+	private _status: "connected" | "ready" | "away" | "disconnected" | "left";
 	private _socket:T | null;
 
 	constructor(__socket:T | null)
@@ -33,6 +31,21 @@ class Player<T extends MySocket>
 	// get the status outside
 	public get status() {
 		return this._status;
+	}
+
+	public isBot() {
+		return (this._socket === null) ? true : false;
+	}
+
+	// leave the player
+	public leave()
+	{
+		if (this._status === "left") return;
+
+		// close socket...
+		if (this._socket !== null) this._socket.close();
+		//... and set status
+		this._status = "left";
 	}
 
 	// disconnect the player
@@ -95,48 +108,110 @@ class Player<T extends MySocket>
 // }
 
 /* what you will receive from the /your-lobby endpoint @aleborghi */
-interface TournamentState {
+interface TournamentState
+{
 	ID:string;
 	// gameID:string;
 	players: {
 		ID:string;
 		status:string;
 	}[];
+	rooms: {
+		// id room
+		layer:number;
+		idx:number;
+
+		players:string/* , boolean */[];
+
+		// outcome
+		winner:string[];
+		score:number[];
+	}[]
 }
 
-class Room {
+
+/* ----------------------- ROOMKEY/ROOMIDX ----------------------- */
+interface RoomIdx {
+	layer:number;
+	idx:number;
+}
+// formatted like so: 'layer:idx'
+type RoomKey = string;
+
+
+function idxToKey(roomidx:RoomIdx): RoomKey
+{
+	return `${roomidx.layer}:${roomidx.idx}`;
+}
+
+function keyToIdx(key: RoomKey): RoomIdx | null
+{
+	const parts = key.split(":");
+	if (parts.length !== 2) return null;
+
+	const layer = Number(parts[0]);
+	const idx = Number(parts[1]);
+
+	if (Number.isNaN(layer) || Number.isNaN(idx)) return null;
+
+	return { layer, idx };
+}
+/* --------------------------------------------------------------- */
+
+class Room
+{
+	private _rsize = 2;	// static room size of 2
+
 	public gameid:string = uuidv4();
 	public ingame:boolean = false;
 	public played:boolean = false;
-	public players:Map<string, boolean> = new Map();	// id: ready/not-ready
+	public players:Set<string> = new Set();				// id: ready/not-ready
 	public score:number[] = [];							// array of nums
+	public winner:string[] = ["unkown"];
 
 	public has(playerid:string) {
 		return this.players.has(playerid);
 	}
+
+	public full() {
+		return this.players.size === this._rsize;
+	}
 }
 
-/* LOBBY CLASS */
+/* TOURNAMENT CLASS */
 
-export class Tournament<T extends MySocket> {
+export class Tournament<T extends MySocket>
+{
 	// tournament specs
 	private _size:number;		// number of players
 	private	_rsize:number;		// number of players per room
 
-	// private _ingame:boolean;	// are the player playing?
-	// private _gameID:string;
-	private	_closed:boolean;
+	private	_closed:boolean;	// is the tournament closed? (no more player can join)
+	private _finished:boolean;
+	private _winner:string;
 
 	// tournament's unique code
 	private readonly _ID:string;
 
 	private _players:Map<string, Player<T>>;	// unique identifier for each player, sent at th beginning of every move. NOTE: the ID is generated when the websocket is connected
-	private _rooms:Map<number, Room>;			// each room has multiple players
+	private _rooms:Map<RoomKey, Room>;			// each room has multiple players
 	
-	constructor(__size:number = 3, __rsize = 2) {
-		this._size = __size;					// 2 player
-		this._rsize = __rsize;
+	private _gamecallback: (gameID:string, players:string[]) => Promise<boolean>;
+
+	constructor(
+		__gamecallback:(gameID:string, players:string[]) => Promise<boolean>,
+		__size:number = 4,
+		__rsize = 2)
+	{
+		if (__size <= 0 || __size % 2 !== 0) throw `Tournament::Error: Invalid player size '${__size}'`;
+		
+		this._gamecallback = __gamecallback;
+		this._size = __size;					// 4 player
+		this._rsize = __rsize;					// 2 players
+
 		this._closed = false;
+		this._finished = false;
+		this._winner = '';
 
 		this._ID = uuidv4();					// lobby code generator.
 		this._players = new Map();
@@ -146,53 +221,79 @@ export class Tournament<T extends MySocket> {
 		// this._gameID = "empty";
 	}
 
+	/* --- CORE FUNCTION FOR TOURNAMENT STRUCTURE --- */
+
+	//	6ppl			  2ppl				2ppl			  2ppl
+
+	/* for now single elimination */
+	private nextRoom(idx:RoomIdx): { winner:RoomIdx, loser:RoomIdx }
+	{
+		return {
+			winner: { layer: idx.layer + 1, idx: Math.floor(idx.idx / 2) },
+			loser: { layer: -1, idx: -1 }
+		}
+	}
+
+	/* ---------------------------------------------- */
+
+	private roomOf(playerid:string): RoomKey | undefined
+	{
+		let roomidx = undefined;
+		for (const [idx, room] of this._rooms)
+		{
+			if (room.has(playerid)) {roomidx = idx};
+		}
+
+		return roomidx;
+	}
+
 	/* ========== GETTERS ========= */
+
 	// getter of ID
 	public get ID():string {
 		return this._ID;
 	}
 
-	private room(idx:number) {
-		return this._rooms.get(idx);
+	public get rooms() {
+		return this._rooms;
 	}
 
-	private roomOf(playerid:string): number | undefined
-	{
-		for (const [idx, room] of this._rooms)
-		{
-			if (room.has(playerid)) return idx;
-		}
-
-		return undefined;
+	public get finished() {
+		return this._finished;
 	}
 
-	// getter of gameID
-	/* public get gameID():string {
-		return this._gameID;
+	public get winner() {
+		return this._winner;
 	}
 
-	// getter of ingame
-	public get ingame(): boolean {
-		return this._ingame;
-	} */
-
-	// getter of ingame
+	// getter of players
 	public get players(): Map<string, Player<T>> {
 		return this._players;
 	}
 
 	// Lobby state to the frontend
-	public get state(): TournamentState {
+	public get state(): TournamentState
+	{
 		const players = Array.from(this._players, ([id, player]) => ({
 			ID: id,
 			status: player.status,
 		}));
 
+		const rooms = Array.from(this._rooms, ([idx, room]) => ({
+			layer: Number(idx.split(':')[0]),
+			idx: Number(idx.split(':')[1]),
+			players: Array.from(room.players),
+			winner: room.winner,
+			score: room.score
+		}));
+
+
 		const state = {
 			ID: this._ID,
 			/* gameID: this._gameID,
 			ingame: this._ingame, */
-			players: players
+			players: players,
+			rooms:rooms
 		};
 
 		return state;
@@ -204,15 +305,24 @@ export class Tournament<T extends MySocket> {
 
 	/* ---------------------------------------------- */
 
-	// return true if the lobby is full, false if it isn't... duh?
+	// return true if the tournament is full, false if it isn't... duh?
 	public full(): boolean {
 		if (this._players.size === this._size) return true;
 		else return false
 	}
 
-	// is the player in the lobby?
+	// is the player in the tournament?
 	public has(player:string): boolean {
-		return this._players.has(player);
+		const p = this._players.get(player);
+		return (p !== undefined && p.status !== "left") ? true : false;
+	}
+
+	// is the game part of the tournament rooms?
+	public game(gameid:string): boolean {
+		for (const r of this._rooms.values()) {
+			if (r.gameid === gameid) return true;
+		}
+		return false;
 	}
 
 	// return true if the empty is full, false if it isn't... are you dumb?
@@ -221,24 +331,27 @@ export class Tournament<T extends MySocket> {
 		else return false;
 	}
 
+	// all the players in the same room !!!
+	public roomates(playerid:string): string[] {
+		const roomkey = this.roomOf(playerid);
+		if (roomkey === undefined) return [];
+		const room = this._rooms.get(roomkey) as Room;
+		return Array.from(room.players);
+	}
+
 	/* ---------------------------------------------------- */
 	/* ----------- TOURNAMENT STATUS OPERATIONS ----------- */
 	/* ---------------------------------------------------- */
 
+	// force the room start (for bots)
+	public forcePlayRoom(roomkey:RoomKey) { this.playRoom(roomkey);}
+
 	// startup procedure for a room if the room is full
-	private async playRoom(idx:number, callback: (gameID:string, players:string[]) => Promise<boolean>):
+	private async playRoom(roomkey:RoomKey):
 		Promise<{ status: 'success' | 'failure', reason:string }>
 	{
-		// check if the tournament is closed
-		if (this._closed === false) {
-			return {
-				status: 'failure',
-				reason: "Tournament not closed"
-			};
-		}
-
-		// get the room idx'ed
-		const room = this.room(idx);
+		// get the room roomkey'ed
+		const room = this._rooms.get(roomkey);
 		if (room === undefined) {
 			return {
 				status: 'failure',
@@ -263,9 +376,9 @@ export class Tournament<T extends MySocket> {
 		}
 
 		// check if all the players are connected
-		room.players.forEach((ready, player) => {
+		room.players.forEach((player) => {
 			const p = this._players.get(player);
-			if (p?.status !== "connected" || ready === false) {
+			if (p?.status !== "ready") {
 				return {
 					status: 'failure',
 					reason: "Not all players connected, or ready"
@@ -274,10 +387,10 @@ export class Tournament<T extends MySocket> {
 		});
 
 		// Prepare object to send to GameService
-		const players = Array.from(this._players.keys());
+		const players = Array.from(room.players);
 
 		// callback for external porpouses (send to GameService)
-		if (await callback(room.gameid, players) === false) {
+		if (await this._gamecallback(room.gameid, players) === false) {
 			// room.gameID = "empty";
 			return {
 				status: 'failure',
@@ -289,12 +402,11 @@ export class Tournament<T extends MySocket> {
 		room.ingame = true;
 
 		// set all the players to away
-		for (let [id, ready] of room.players.entries())
-		{
-			ready = false;	//maybe it doesn't work
-			this._players.get(id)?.away();
+		room.players.forEach((player) => {
+			// room.players.set(player, false);
+			this._players.get(player)?.away();
 
-		}
+		});
 
 		return {
 			status: 'success',
@@ -302,48 +414,78 @@ export class Tournament<T extends MySocket> {
 		};
 	}
 
-	// reset the lobby
+	// reset the room (hardcoded 1 winner)
 	@SyncTournament
-	public finalizeRoom(idx:number)
+	public finalizeRoom(winner:string, score:number[])
 	{
+		/* ---------- BASE CHECK --------- */
+		// check if tournament finished
+		if (this._finished === true) {
+			return ;
+		}
+
+		// check if the tournament is closed
+		if (this._closed === false) {
+			return ;
+		}
+		/* ------------------------------ */
+
 		// gets the room
-		const room = this.room(idx);
+		const roomkey = this.roomOf(winner);
+		if (roomkey === undefined) {
+			console.log('Tournament::finalizeRoom::Error: Player not found');
+			return ;
+		}
+		const roomidx = keyToIdx(roomkey) as RoomIdx;
+
+		const room = this._rooms.get(roomkey);
 		if (room === undefined) {
-			console.log('Error: Room not found');
+			console.log('Tournament::finalizeRoom::Error: Room not found');
 			return ;
 		}
 
 		// check if room already played
 		if (room.played === true) {
-			console.log('Error: Room already played');
+			console.log('Tournament::finalizeRoom::Error: Room already played');
 			return ;
 		}
 
 		// check if not ingame
 		if (room.ingame === false) {
-			console.log('Error: Room not in-game');
+			console.log('Tournament::finalizeRoom::Error: Room not in-game');
 			return ;
 		}
 
-		// #todo
-		// 1. read the game outcome from bunny (callback maybe?)
+		// 1. read the game outcome // from bunny (callback maybe?)
 		// 2. write the score
 		// 3. move players accordingly
+
+		// 1.
+		room.winner = [ winner ];
+		// 2.
+		room.score = score;
+		// 3.
+		if (/* finals */roomidx.layer === (this._size / this._rsize) - 1)
+		{
+			console.log('Tournament finished, winner', winner);
+		}
+		else
+		{
+			const nextroom = this.nextRoom(roomidx);
+			this.movePlayer(winner, roomkey, idxToKey(nextroom.winner))
+			// loser just dies
+		}
 
 		// no game linked to lobby
 		room.ingame = false;
 		room.played = true;
-
-		// if the socket is still open, set the players to connected
-		// set all the players to away
-		/* room.players.forEach((player) => {
-			this._players.get(player)?.connect();
-		}); */
 	}
 
 	// moves the player from a room to another (checks on start and end room)
-	private movePlayer(playerid:string, from:number, to:number)
+	private movePlayer(playerid:string, from:RoomKey, to:RoomKey)
 	{
+		console.log(`moving ${playerid}, from '${from}' to '${to}' ...`);
+
 		// check player existance
 		const player = this._players.get(playerid);
 		if (player === undefined) {
@@ -352,8 +494,8 @@ export class Tournament<T extends MySocket> {
 		}
 
 		// check 'from' and 'to' room existance
-		const fromRoom = this.room(from);
-		const toRoom = this.room(to);
+		const fromRoom = this._rooms.get(from);
+		const toRoom = this._rooms.get(to);
 		if (!fromRoom || !toRoom) {
 			console.log('Error::movePlayer: Room(s) not found');
 			return ;
@@ -371,8 +513,8 @@ export class Tournament<T extends MySocket> {
 			return ;
 		} */
 
-		console.log(`Moving player ${playerid} from '${from}' to '${to}'`);
-		toRoom.players.set(playerid, false);
+		console.log(`Moved player ${playerid} from '${from}' to '${to}'`);
+		toRoom.players.add(playerid);
 	}
 
 	// All players joined the torunament, no more joins
@@ -383,37 +525,130 @@ export class Tournament<T extends MySocket> {
 			return ;
 		}
 
+		/* build all rooms for a single elimination tournament */
+		const layers = this._size / this._rsize;
+		for (let i = 0; i < layers; ++i)
+		{
+			const rooms = layers / Math.pow(2, i);
+			for (let r = 0; r < rooms; ++r)
+			{
+				console.log(`Adding room { layer:${i}, idx:${r} }`);
+				this._rooms.set(idxToKey({ layer:i, idx:r }), new Room());
+			}
+		}
+
+		// assign players to rooms
+		let i = 0;
+		let idx = 0;
+		for (const id of this._players.keys())
+		{
+			if (idx !== 0 && idx % this._rsize == 0) ++i;
+			const room = this._rooms.get(idxToKey({ layer:0, idx:i }));
+			if (room === undefined)
+			{
+				console.log('Error while assigning players to the rooms. Room not found', { layer:0, idx:i });
+				// clear all rooms
+				return ;
+			}
+
+			room.players.add(id);
+			++idx;
+		}
+
 		// closed tournament
 		this._closed = true;
-
-		// #todo assign players to rooms
-
-		console.log(`Closing tournament ${this._ID}, no more player allowed, games can now start`);
+		console.log(`Closed tournament ${this._ID}, no more player allowed, games can now start`);
 	}
 
 	/* ----------------------------------------------------- */
 	/* ------------------ USER MANAGEMENT ------------------ */
 	/* ----------------------------------------------------- */
 
-	public ready(playerid:string)
+	public ready(playerid:string): { status: "success" | "failure", reason:string, gameid?:string }
 	{
+		/* ---------- BASE CHECK --------- */
+		// check if tournament finished
+		if (this._finished === true) {
+			return {
+				status: "failure",
+				reason: 'Tournament is finished'
+			};
+		}
+
+		// check if the tournament is closed
+		if (this._closed === false) {
+			return {
+				status: "failure",
+				reason: "Tournament isn't closed"
+			};
+		}
+		/* ------------------------------ */
+	
 		// check if player in a room
 		const roomIdx = this.roomOf(playerid);
 		if (roomIdx === undefined) {
 			console.log('Error::Tournnament::Ready: Not in a room');
-			return ;
+			return {
+				status: "failure",
+				reason: 'Not in a room'
+			};
 		}
 
 		// check if the room is in game
 		const room = this._rooms.get(roomIdx) as Room;
 		if (room.ingame === true) {
 			console.log('Error::Tournnament::Ready: Room in-game');
-			return ;
+			return {
+				status: "failure",
+				reason: 'Room in-game'
+			};
+		}
+
+		// check if room already played
+		if (room.played === true) {
+			console.log('Error::Tournnament::Ready: Room already played');
+			return {
+				status: "failure",
+				reason: 'Room already played'
+			};
 		}
 
 		// set the player to ready
 		const player = this._players.get(playerid);
 		player?.ready();
+
+		// if all players ready, play room
+		// #todo layer check, don't start a layer 2 game if layer 1 games are still to be played
+		let allready = true;
+		for (const player of room.players)
+		{
+			const p = this._players.get(player);
+			if (p?.isBot() === false && p?.status !== "ready") {
+				allready = false;
+				break;
+			}
+		}
+
+		if (room.players.size === this._rsize && allready === true)
+		{
+			// #todo loop if failed
+			// prepare the Game Service
+			const ret = this.playRoom(roomIdx);
+			console.log('PlayRoom', ret);
+
+			// also the room is full ready
+			return {
+				status: "success",
+				reason: 'Successful readyed',
+				gameid: room.gameid
+			};
+		}
+
+		// successful ready
+		return {
+			status: "success",
+			reason: 'Successful readyed'
+		};
 	}
 
 	// function to join the lobby, syntax: 'playerID'
@@ -501,7 +736,7 @@ export class Tournament<T extends MySocket> {
 		}
 
 		// disconnect player ...
-		player.disconnect();
+		player.leave();
 		//... and remove from lobby
 		// this._players.delete(playerID);
 		// #todo autowin (DNP) procedure
@@ -517,6 +752,20 @@ export class Tournament<T extends MySocket> {
 	{
 		this._players.forEach((player) => {
 			player.send(message);
+		});
+	}
+
+	// send messages to all players in the same room of 'player'
+	public roomcast(playerid:string, message:string)
+	{
+		// get the room
+		const roomkey = this.roomOf(playerid);
+		if (roomkey === undefined) return;
+		const room = this._rooms.get(roomkey);
+		if (room === undefined) return ;
+	
+		room.players.forEach((player) => {
+			this._players.get(player)?.send(message);
 		});
 	}
 
@@ -545,9 +794,14 @@ function SyncTournament(
   originalMethod: Function,
   /* context: ClassMethodDecoratorContext */
 ) {
-  return function (this: { sync(): void }, ...args: any[]) {
+  return function (this: { sync(): void, players:Map<string, Player<WebSocket>> }, ...args: any[]) {
     const result = originalMethod.apply(this, args);
     this.sync();
+
+	// ready all bots // #todo lame, make it better
+	// for (const p of this.players.values()) {
+	// 	if (p.isBot()) p.ready();
+	// }
     return result;
   };
 }

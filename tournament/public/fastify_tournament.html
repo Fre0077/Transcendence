@@ -6,7 +6,7 @@
   <style>
 	canvas { background: #000; display: none; margin: 20px auto; }
 	#ui { text-align: center; margin-top: 20px; }
-	#lobbyCode { margin-top: 10px; font-weight: bold; }
+	#tournamentCode { margin-top: 10px; font-weight: bold; }
 	footer {
 	  position: fixed;
 	  bottom: 0;
@@ -14,18 +14,40 @@
 	  width: 100%;
 	  padding: 10px;
 	}
+	#bracket {
+		display: flex;
+		gap: 40px;
+		margin-top: 20px;
+		justify-content: center;
+	}
+	.round {
+		display: flex;
+		flex-direction: column;
+		gap: 20px;
+	}
+	.match {
+		border: 1px solid #aaa;
+		padding: 8px;
+		background: #111;
+		color: #fff;
+		min-width: 140px;
+	}
+	.match .winner {
+		color: #0f0;
+		font-weight: bold;
+	}
   </style>
 </head>
 <body>
   <div id="playerID">playerID</div>
   <div id="ui">
-	<button id="btnCreate">Create Lobby</button>
+	<button id="btnCreate">Create tournament</button>
 	<br/><br/>
 
-	<input id="joinInput" placeholder="Lobby code or ANY" />
-	<button id="btnJoin">Join Lobby</button>
+	<input id="joinInput" placeholder="tournament code or ANY" />
+	<button id="btnJoin">Join tournament</button>
 	<br/><br/>
-	<button id="btnLeave">Leave Lobby</button>
+	<button id="btnLeave">Leave tournament</button>
 	<br/><br/>
 	<button id="btnAddBot">Add BOT</button><label for="botlvl">
 	Bot Level: <span id="botValue">50</span>
@@ -41,31 +63,31 @@
 	<button id="btnRemBot">Rem BOT</button>
 	<br/><br/>
 
-	<button id="btnStart">Start Game</button><button id="btnRejoin">Rejoin Game</button>
+	<button id="btnReady">Ready</button><button id="btnRejoin">Rejoin Game</button>
 	<br/><br/>
 
-	<div id="lobbyCode"></div>
+	<div id="tournamentCode"></div>
 	<div id="clientLog">Waiting...</div>
 	<div id="serverLog">Waiting...</div>
   </div>
-  <div id="players">
-	Players
-  </div>
 
-  <footer>
-  Lobbies:<br>
-	<div id="lobbies"></div>
-  </footer>
+  	<div id="players" style="display:none;">
+		Players
+	</div>
+
+	<!-- Tournament bracket visualization -->
+	<div id="bracket"></div>
+
   <script>
 
-	let playerID, lobbyID;
+	let playerID, tournamentID;
   
 	try {
 	  const data = JSON.parse(sessionStorage.getItem("sesData"));
 
 		// YOINK the data
 		playerID = data.playerID;
-		lobbyID = data.lobbyID;
+		tournamentID = data.tournamentID;
 
 	} catch (err) {
 	  console.log("Error whil parsing session data:", err);
@@ -85,13 +107,13 @@
 	const scoreboard = document.getElementById("scoreboard");
 	const serverLog = document.getElementById("serverLog");
 	const clientLog = document.getElementById("clientLog");
-	const lobbyCodeDiv = document.getElementById("lobbyCode");
+	const tournamentCodeDiv = document.getElementById("tournamentCode");
 
 	const joinInput = document.getElementById("joinInput");
 	const btnCreate = document.getElementById("btnCreate");
 	const btnJoin = document.getElementById("btnJoin");
 	const btnLeave = document.getElementById("btnLeave");
-	  const btnStart = document.getElementById("btnStart");
+	const btnReady = document.getElementById("btnReady");
 	const btnRejoin = document.getElementById("btnRejoin");
 
 	const btnAddBot = document.getElementById("btnAddBot");
@@ -110,27 +132,27 @@
 	});
 	//--------
 
-	const socket = new WebSocket(`ws://${window.location.host}/lobbysocket`);
+	const socket = new WebSocket(`ws://${window.location.host}/tournamentsocket`);
 
 	// visualize playerID
 	document.getElementById("playerID").innerHTML = playerID;
 
 	/* STARTUP PROCEDURE for FRONTEND @aleborghi */
 	/*
-	  first you create a lobby,
-	  the backend will send the ID of the lobby created:
-		{ method: 'CREATE_REPLY', status: 'success', value: '<lobbyID>' }
+	  first you create a tournament,
+	  the backend will send the ID of the tournament created:
+		{ method: 'CREATE_REPLY', status: 'success', value: '<tournamentID>' }
 
-	  the other players will join the lobby
-	  if 'value' is set to 'ANY', the first lobby with an empty slot will be joined.
+	  the other players will join the tournament
+	  if 'value' is set to 'ANY', the first tournament with an empty slot will be joined.
 	  the backend will send a reply:
-	  { method: 'JOIN_REPLY', status: 'success', value: '<lobbyID>' }
-	  if the join failed because the <lobbyID> was not found or no lobby were yet created
+	  { method: 'JOIN_REPLY', status: 'success', value: '<tournamentID>' }
+	  if the join failed because the <tournamentID> was not found or no tournament were yet created
 	  (ANY case), the status will be set to 'failure'.
 
-	  then the lobby can be STARTed.
+	  then the tournament can be STARTed.
 
-	  When the lobby is in game the lobbyStatus.ingame value is set to true
+	  When the tournament is in game the tournamentStatus.ingame value is set to true
 	*/
 
 	/* -------------------------
@@ -142,26 +164,26 @@
 	// CREATE
 	btnCreate.onclick = () => {
 	  socket.send(JSON.stringify({ method: "CREATE", format: 12 }));
-	  clientLog.innerText = "Creating lobby...";
+	  clientLog.innerText = "Creating tournament...";
 	};
 
 	// JOIN
 	btnJoin.onclick = () => {
 	  const code = joinInput.value.trim() || "ANY";
-	  socket.send(JSON.stringify({ method: "JOIN", lobbyID: code }));
-	  clientLog.innerText = `Joining lobby: ${code}...`;
+	  socket.send(JSON.stringify({ method: "JOIN", tournamentID: code }));
+	  clientLog.innerText = `Joining tournament: ${code}...`;
 	};
 
 	// LEAVE
 	btnLeave.onclick = () => {
 	  socket.send(JSON.stringify({ method: "LEAVE" }));
-	  clientLog.innerText = `Leaving lobby ...`;
+	  clientLog.innerText = `Leaving tournament ...`;
 	};
 
 	// START
-	  btnStart.onclick = () => {
-	  socket.send(JSON.stringify({ method: "START" }));
-	  clientLog.innerText = "Starting game...";
+	btnReady.onclick = () => {
+	  socket.send(JSON.stringify({ method: "READY" }));
+	  clientLog.innerText = "Getting ready ...";
 	};
 
 	// REJOIN
@@ -195,7 +217,7 @@
 	  sessionStorage.setItem("sesData", JSON.stringify({
 		gameID: myGameID,
 		playerID: myPlayerID,
-		lobbyID: lobbyID
+		tournamentID: tournamentID
 	  }));
 
 	  window.location.href = "/pong";  // same window
@@ -212,11 +234,11 @@
 	  // instantly AUTH after socket connection
 	  socket.send(JSON.stringify({ method: "AUTH", playerID: playerID }));
 
-	  if (lobbyID !== undefined) {
-		sleep(1100) // @aleborghi sleeppino quando ti riconnetti all lobby dopo la partita
+	  if (tournamentID !== undefined) {
+		sleep(1100) // @aleborghi sleeppino quando ti riconnetti all tournament dopo la partita
 		.then(() => {
-		  socket.send(JSON.stringify({ method: "JOIN", lobbyID: lobbyID }));
-		  clientLog.innerText = `Joining lobby: ${lobbyID}...`;
+		  socket.send(JSON.stringify({ method: "JOIN", tournamentID: tournamentID }));
+		  clientLog.innerText = `Joining tournament: ${tournamentID}...`;
 		});
 	  }
 	});
@@ -227,43 +249,55 @@
 		const data = JSON.parse(event.data);
 
 		/* ---------------
-		   LOBBY CREATION
+		   tournament CREATION
 		----------------- */
 		if (data.method === "CREATE_REPLY") {
 		  if (data.status === 'success') {
-			lobbyID = data.value;
-			lobbyCodeDiv.innerHTML = lobbyID;
-			serverLog.innerText = `Lobby created! Code: ${lobbyID}`;
+			tournamentID = data.value;
+			tournamentCodeDiv.innerHTML = tournamentID;
+			serverLog.innerText = `tournament created! Code: ${tournamentID}`;
 		  }
 		  else if (data.status === 'failure')
-			serverLog.innerText = `Failed to create the Lobby\n${data.comment}`;
+			serverLog.innerText = `Failed to create the tournament\n${data.comment}`;
 		  return;
 		}
 
 		/* -----------
-		   LOBBY JOIN
+		   tournament JOIN
 		------------ */
 		if (data.method === "JOIN_REPLY") {
 			  if (data.status === 'success') {
-			lobbyID = data.value;
-			lobbyCodeDiv.innerHTML = lobbyID;
-		  	serverLog.innerText = `Joined lobby ${data.value}`;
+			tournamentID = data.value;
+			tournamentCodeDiv.innerHTML = tournamentID;
+		  	serverLog.innerText = `Joined tournament ${data.value}`;
 		  } else if (data.status === 'failure')
 				serverLog.innerText = `Failed to join ${data.value}: ${data.comment}`;
 		  return;
 		}
 
 		 /* -----------
-		   LOBBY LEAVE
+		   tournament LEAVE
 		------------ */
 		if (data.method === "LEAVE_REPLY") {
 			  if (data.status === 'success') {
 			playersDiv.innerHTML = "players"; // clear
-			lobbyCodeDiv.innerHTML = "";      // clear
+			tournamentCodeDiv.innerHTML = "";      // clear
 		  	serverLog.innerText = `Success: ${data.comment}`;
-			lobbyID = undefined;
+			tournamentID = undefined;
 		  } else if (data.status === 'failure')
 				serverLog.innerText = `Failure: ${data.comment}`;
+		  return;
+		}
+
+		/* -----------
+		  READY START
+		------------ */
+		if (data.method === "READY_REPLY") {
+		  if (data.status === 'success') {
+			  serverLog.innerText = `Successfully ready: ${data.comment}`;
+		  }
+		  else if (data.status === 'failure')
+			serverLog.innerText = `Failed to start game: ${data.comment}`;
 		  return;
 		}
 
@@ -280,17 +314,66 @@
 		}
 
 		/* -----------
-		  LOBBY STATE
+		tournament STATE
 		------------ */
-		if (data.ID && data.players) {
-			playersDiv.innerHTML = ""; // clear
-			let html = "";
-			for (let i = 0; i < data.players.length; i++) {
-				html += `${data.players[i].ID} : ${data.players[i].status}<br>`;
+		if (data.ID && data.rooms) {
+			const bracketDiv = document.getElementById("bracket");
+			bracketDiv.innerHTML = ""; // clear
+
+			// Group rooms by layer
+			const layers = {};
+			for (const room of data.rooms) {
+				if (!layers[room.layer]) layers[room.layer] = [];
+				layers[room.layer].push(room);
 			}
-			playersDiv.innerHTML = html;
+
+			// Render each layer (round)
+			Object.keys(layers)
+				.sort((a, b) => Number(a) - Number(b))
+				.forEach(layerKey => {
+				const roundDiv = document.createElement("div");
+				roundDiv.className = "round";
+
+				const title = document.createElement("div");
+				title.innerText = `Round ${Number(layerKey) + 1}`;
+				title.style.fontWeight = "bold";
+				roundDiv.appendChild(title);
+
+				for (const room of layers[layerKey]) {
+					const matchDiv = document.createElement("div");
+					matchDiv.className = "match";
+
+					// Players
+					for (let i = 0; i < room.players.length; i++) {
+					const p = document.createElement("div");
+					p.innerText = room.players[i] ?? "—";
+
+					// Highlight winner
+					if (room.winner.includes(room.players[i])) {
+						p.className = "winner";
+					}
+
+					matchDiv.appendChild(p);
+					}
+
+					// Score (if available)
+					if (room.score.length) {
+					const score = document.createElement("div");
+					score.style.fontSize = "0.8em";
+					score.style.marginTop = "5px";
+					score.innerText = `Score: ${room.score.join(" - ")}`;
+					matchDiv.appendChild(score);
+					}
+
+					roundDiv.appendChild(matchDiv);
+				}
+
+				bracketDiv.appendChild(roundDiv);
+				});
+
 			return;
 		}
+
 
 
 		/* ----------------------
@@ -307,9 +390,9 @@
 	});
 
 	// setInterval(() => {
-	//   if (lobbyID === undefined) return;
+	//   if (tournamentID === undefined) return;
 	
-	//   fetch(`http://${window.location.host}/my-lobby?ID=${lobbyID}`)
+	//   fetch(`http://${window.location.host}/my-tournament?ID=${tournamentID}`)
 	//     .then(res => res.text())
 	//     .then(text => {
 	//       let data;
@@ -321,7 +404,7 @@
 	//       }
 
 	//       if (!data.state) {
-	//         console.warn("Invalid lobby format:", data);
+	//         console.warn("Invalid tournament format:", data);
 	//         return;
 	//       }
 	//       const state = data.state;
@@ -340,39 +423,7 @@
 
 	//     })
 	//     .catch(err => console.error("Fetch failed:", err));
-	// }, 1000);
-
-	// All lobbies
-	const lobbies = document.getElementById("lobbies");
-
-	setInterval(() => {
-	  fetch(`http://${window.location.host}/lobbies`)
-		.then(res => res.text())
-		.then(text => {
-		  let data;
-		  try {
-			data = JSON.parse(text); 
-		  } catch (err) {
-			console.error("JSON parse failed:", text);
-			return;
-		  }
-
-		  if (!Array.isArray(data.states)) {
-			console.warn("Invalid /lobbies format:", data);
-			return;
-		  }
-
-		  let html = "";
-		  for (const lobby of data.states) {
-			html += `${lobby.ID}<br>`;
-			for (const p of lobby.state.players)
-			  html += `${p.ID} - ${p.status}<br>`;
-		  }
-
-		  if (lobbies) lobbies.innerHTML = html;
-		})
-		.catch(err => console.error("Fetch failed:", err));
-	}, 1000);
+	// }, 1000);	
 
   </script>
 </body>

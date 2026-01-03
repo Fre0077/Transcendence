@@ -1,4 +1,4 @@
-import { AUTH, CREATE, JOIN, LEAVE, START, BOT } from './METHODS.js';
+import { AUTH, CREATE, JOIN, LEAVE, READY, BOT } from './METHODS.js';
 
 import type { WebSocket } from "ws";
 
@@ -29,15 +29,15 @@ function isValidObj(message:string): { method: string } | undefined {
 	return obj;
 }
 
-/* gets the player and lobby strings (if undefined meaning not AUTH or CREATE/JOIN)
+/* gets the player and tournament strings (if undefined meaning not AUTH or CREATE/JOIN)
 and process the input. Reurns the reply to send to the client as a Promise */
 export async function interpreter(
 	message:string,
-	lobby:string | undefined,
+	tournament:string | undefined,
 	player:string | undefined,
 	ws:WebSocket,
-	/* the parameters of the callback are the new lobbyID or playerID, or if the lobby was updated (something changed) */
-	callback :(lobby:string | undefined, player:string | undefined) => void): Promise<string>
+	/* the parameters of the callback are the new tournamentID or playerID, or if the tournament was updated (something changed) */
+	callback :(tournament:string | undefined, player:string | undefined) => void): Promise<string>
 {
 	// Format and log message
 	let msg = isValidObj(message.toString());
@@ -62,7 +62,7 @@ export async function interpreter(
 			// welp...
 			if (aret.status === "success") {
 				// save variables
-				callback(aret.lobby, aret.player);
+				callback(aret.tournament, aret.player);
 			}
 
 			// send reply
@@ -71,29 +71,29 @@ export async function interpreter(
 		case "CREATE":
 			/* { method: 'CREATE', playerID: <playerID>, format: <format> }
 				Description: Creates a lobby, if 'format' is a valid format the lobby inherits that format.
-				NOTE: automatically JOIN the lobby after a CREATE request
+				NOTE: automatically JOIN the tournament after a CREATE request
 			*/
-			let cret = CREATE(msg, lobby, player, ws);
+			let cret = CREATE(msg, tournament, player, ws);
 
 			// welp...
 			if (cret.status === "success") {
 				// save variables
-				callback(cret.lobby, cret.player);
+				callback(cret.tournament, cret.player);
 			}
 
 			// send reply
 			return cret.reply;
 
 		case "JOIN":
-			/* { method: 'JOIN', lobbyID: <lobbyID>, playerID: <playerID> }
-				Description: Joins a lobby with the specified ID, if playerID is null it fails
+			/* { method: 'JOIN', tournamentID: <tournamentID>, playerID: <playerID> }
+				Description: Joins a tournament with the specified ID, if playerID is null it fails
 			*/
-			let jret = JOIN(msg, lobby, player, ws);
+			let jret = JOIN(msg, tournament, player, ws);
 
 			// welp...
 			if (jret.status === "success") {
 				// save variables
-				callback(jret.lobby, jret.player);
+				callback(jret.tournament, jret.player);
 			}
 			
 			// send reply
@@ -101,15 +101,15 @@ export async function interpreter(
 		
 		case "LEAVE":
 			/* { method: 'LEAVE' }
-				Description: Leaves the lobby. If not authenticated or not joined a lobby the
+				Description: Leaves the tournament. If not authenticated or not joined a lobby the
 				request fails.
 			*/
-			let lret = LEAVE(lobby, player);
+			let lret = LEAVE(tournament, player);
 
 			// welp...
 			if (lret.status === "success") {
 				// save variables
-				callback(lret.lobby, lret.player);
+				callback(lret.tournament, lret.player);
 			}
 
 			// send reply
@@ -117,27 +117,27 @@ export async function interpreter(
 
 		case "BOT":
 			/* { method: 'BOT', value: <command> }
-				Description: ADDs or REMOVEs a BOT to the lobby
+				Description: ADDs or REMOVEs a BOT to the tournament
 			*/
-			let bret = BOT(msg, lobby);
+			let bret = BOT(msg, tournament);
 			
 			// just for the update
-			callback(lobby, player);
+			callback(tournament, player);
 
 			// send reply
 			return bret.reply;
 		
-		case "START":
+		case "READY":
 			/* { method: 'START' }
-				Description: Starts the lobby. only one player will do that, than the lobby is closed and set to 'in-game'.
-				If the lobby started correctly the 'value' of the reply is set to the 'gameID' to join
-				Note: the other player will be notified that the lobby was successfully started by the 'ingame' propery of the
-				lobbyStatus that gets sent once every second
+				Description: Starts the tournament. only one player will do that, than the tournament is closed and set to 'in-game'.
+				If the tournament started correctly the 'value' of the reply is set to the 'gameID' to join
+				Note: the other player will be notified that the tournament was successfully started by the 'ingame' propery of the
+				tournamentStatus that gets sent once every second
 			*/
-			let sret = await START(lobby);
+			let sret = await READY(player, tournament);
 
 			// just for the update
-			callback(lobby, player);
+			callback(tournament, player);
 
 			// send reply
 			return sret.reply;

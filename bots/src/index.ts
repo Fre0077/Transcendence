@@ -202,7 +202,14 @@ export function createBot(gamestr:string, botid:string, gameid:string, level:num
 						// update the last played move
 						updateTimeFor(botid);
 					}
-				} else {bot.reset();}	// reset the bot's data
+				}
+				else
+				{
+					// reset the bot's data
+					bot.reset();
+					// auto start // #todo maybe wait a bit
+					socket.send(JSON.stringify({ method: "MOVE", value: "START_PRESS" }));
+				}
 
 			} catch (err) {
 				if (err instanceof SyntaxError) console.log('Error on bot:', 'JSON.parse(): SyntaxError');

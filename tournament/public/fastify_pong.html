@@ -58,6 +58,7 @@
         playerID: playerID
       }));
 
+      socket.close();
       window.location.href = "/";
     };
 
@@ -112,10 +113,10 @@
           }
           else if (data.status === "failure") {
             console.log("Couldn't connect to server");
-            serverLog.innerText = `Error trying to connect to: ${data.value}\nreason: ${data.reason}`;
+            serverLog.innerText = `Error trying to connect to: ${data.value}\ncause: ${data.cause}, reason: ${data.comment}`;
 
-            // stop this shit??
-            socket.close();
+            /* // stop this shit??
+            socket.close(); */
           }
           return ;
         }
@@ -142,7 +143,7 @@
         /* --------------
            GAME STATE
         --------------- */
-        if (data.paddle && data.ball && data.score) {
+        if (data.players && data.ball && data.score) {
           canvas.style.display = "block";
           scoreboard.style.display = "block";
           drawGame(data);
@@ -164,51 +165,85 @@
        DRAW GAME
     -------------------------- */
 
-    function drawGame(state) {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    function drawGame(state)
+{
+    // BOARD
+    const element = document.getElementById('game');
+    // const canvas:HTMLCanvasElement | null = (element instanceof HTMLCanvasElement) ? element : null;
+    const ctx = canvas?.getContext("2d");
 
-      const paddleHeight1 = canvas.height * state.paddle[0].height;
-      const paddleHeight2 = canvas.height * state.paddle[1].height;
+    // DATA
+    const scorePlayer1 = document.getElementById("player1Score");
+    const scorePlayer2 = document.getElementById("player2Score");   
+    const player1Name = document.getElementById("player1Name");
+    const player2Name = document.getElementById("player2Name");
 
-      // console.log(`height1 ${paddleHeight1}`);
-      // console.log(`height2 ${paddleHeight2}`);
-
-      const paddleWidth1 = canvas.width * state.paddle[0].width;
-      const paddleWidth2 = canvas.width * state.paddle[1].width;
-
-      const paddleOffset = canvas.width * state.paddle[0].offset;
-      const ballSize = 10;
-
-      scoreboard.innerHTML = `${state.score[0]} : ${state.score[1]}`;
-      ctx.fillStyle = "white";
-
-      // Midline
-      ctx.fillRect(canvas.width / 2, 0, 2, canvas.height);
-
-      // Ball
-      ctx.fillRect(
-        state.ball.pos[0] * canvas.width - ballSize / 2,
-        state.ball.pos[1] * canvas.height - ballSize / 2,
-        ballSize,
-        ballSize
-      );
-
-      // Player 1
-      ctx.fillRect(
-        paddleOffset,
-        state.paddle[0].posY * canvas.height - paddleHeight1 / 2,
-        paddleWidth1,
-        paddleHeight1
-      );
-
-      // Player 2
-      ctx.fillRect(
-        canvas.width - paddleOffset - paddleWidth2,
-        state.paddle[1].posY * canvas.height - paddleHeight2 / 2,
-        paddleWidth2,
-        paddleHeight2
-      );
+    if (!canvas || !ctx)
+    {
+        console.log("Couldn't find canvas/scoreboad/ctx");
+        return ;
     }
+    
+    // clear stuff
+    canvas.style.display = "block";
+    ctx?.clearRect(0, 0, canvas.width, canvas.height);
+
+    // const paddleHeight1 = canvas.height * state.players[0].paddle.height;
+    // const paddleHeight2 = canvas.height * state.players[1].paddle.height;
+
+    // // console.log(`height1 ${paddleHeight1}`);
+    // // console.log(`height2 ${paddleHeight2}`);
+
+    // const paddleWidth1 = canvas.width * state.players[0].paddle.width;
+    // const paddleWidth2 = canvas.width * state.players[1].paddle.width;
+
+    // const paddleOffset1 = canvas.width * state.players[0].paddle.offset;
+    // const paddleOffset2 = canvas.width * state.players[1].paddle.offset;
+    // const ballSize = 10;
+
+    /* ---- GAME DATA ----- */
+    if (scorePlayer1) scorePlayer1.textContent = state.score[0];
+    if (scorePlayer2) scorePlayer2.textContent = state.score[1];
+    // @aleborghi: aggiorna mettendo l'username e nn l'ID
+    if (player1Name) player1Name.textContent = state.players[0].ID;
+    if (player2Name) player2Name.textContent = state.players[1].ID;
+
+    /* ---- GAME BOARD ---- */
+    const ball = state.ball;
+	const player1 = state.players[0];
+	const player2 = state.players[1];
+
+	// Clear canvas
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+	canvas.style.display = "block";
+
+	// Draw paddles
+	ctx.fillStyle = 'white';
+
+	// Player 1
+	ctx.fillRect(
+		player1.paddle.offset * canvas.width,
+		(player1.paddle.posY - player1.paddle.height / 2) * canvas.height,
+		player1.paddle.width * canvas.width,
+		player1.paddle.height * canvas.height
+	);
+	// Player 2
+	ctx.fillRect(
+		canvas.width - (player2.paddle.offset + player2.paddle.width) * canvas.width,
+		(player2.paddle.posY - player2.paddle.height / 2) * canvas.height,
+		player2.paddle.width * canvas.width,
+		player2.paddle.height * canvas.height
+	);
+
+	// Draw ball
+	const ballSize = 0.02; // 2% of canvas size
+	ctx.fillRect(
+		ball.pos[0] * canvas.width - (ballSize * canvas.width) / 2,
+		ball.pos[1] * canvas.height - (ballSize * canvas.height) / 2,
+		ballSize * canvas.width,
+		ballSize * canvas.height
+	);
+}
 
     /* -------------------------
        KEYBOARD INPUT
