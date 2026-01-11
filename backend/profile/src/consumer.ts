@@ -27,23 +27,21 @@ export async function startprofileConsumer() {
 		console.log("📥 profile ricevuto:", data);
 
 		try {
-			const existingByLink = await profilePrisma.user.findUnique({
-				where: { linkId: data.linkId }
-			});
-
-			if (existingByLink) {
-				console.log("⛔ Utente già registrato (linkId), tentativo bloccato:", data.linkId);
-				channel.ack(msg);
-				return;
-			}
-
-			await profilePrisma.user.create({
-				data: {
-					avatarUrl: data.imageProfile || null,
-					username: data.username,
-					linkId: data.linkId
-				}
-			});
+			await profilePrisma.user.upsert({
+                where: { 
+                    linkId: data.linkId
+                },
+                update: {
+                    username: data.username,
+                    ...(data.imageProfile !== undefined ? { avatarUrl: data.imageProfile } : {})
+                },
+                create: {
+                    linkId: data.linkId,
+                    username: data.username,
+                    avatarUrl: data.imageProfile || null
+                }
+            });
+            channel!.ack(msg);
 		} catch (err) {
 			const e = err as any;
 			if (e?.code === "P2002") {
@@ -51,8 +49,6 @@ export async function startprofileConsumer() {
 			} else {
 				console.error("❌ Errore nella gestione del messaggio profile:", e);
 			}
-		} finally {
-			channel.ack(msg);
 		}
 	});
 }
