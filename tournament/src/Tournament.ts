@@ -3,109 +3,8 @@
 /* ----------------- */
 
 import { v4 as uuidv4 } from "uuid";
-// import { WebSocket } from "ws";
+import { Player, MySocket } from './Player.js'
 
-// just for this usecase
-const OPEN = WebSocket.OPEN;
-
-interface MySocket {
-	close(): void;
-	send(message:string): void;
-	readyState:number;
-}
-
-
-/* PLAYER CLASS
-Socket operaitions only inside here */
-class Player<T extends MySocket>
-{
-	private _status: "connected" | "ready" | "away" | "disconnected" | "left";
-	private _socket:T | null;
-
-	constructor(__socket:T | null)
-	{
-		this._status = "connected";
-		this._socket = __socket;
-	}
-
-	// get the status outside
-	public get status() {
-		return this._status;
-	}
-
-	public isBot() {
-		return (this._socket === null) ? true : false;
-	}
-
-	// leave the player
-	public leave()
-	{
-		if (this._status === "left") return;
-
-		// close socket...
-		if (this._socket !== null) this._socket.close();
-		//... and set status
-		this._status = "left";
-	}
-
-	// disconnect the player
-	public disconnect()
-	{
-		if (this._status === "disconnected") return;
-
-		// close socket...
-		if (this._socket !== null) this._socket.close();
-		//... and set status
-		this._status = "disconnected";
-	}
-
-	// go away!!
-	public away()
-	{
-		if (this._status === "away") return;
-
-		// close socket...
-		// this._socket.close();
-		//... and set status
-		this._status = "away";
-	}
-
-	// get ready
-	public ready()
-	{
-		if (this._status === "ready") return;
-
-		// close socket...
-		// this._socket.close();
-		//... and set status
-		this._status = "ready";
-	}
-
-	// update socket
-	public connect(__socket:T | null | void)
-	{
-		if (__socket) {this._socket = __socket};
-		this._status = "connected";
-	}
-
-	// send message
-	public send(message:string)
-	{
-		if (this._socket !== null && this._socket.readyState === OPEN) {
-			this._socket.send(message);
-		};
-	}
-
-	// returns the state of the socket
-	public get state() {
-		return this._socket?.readyState;
-	}
-}
-
-// interface MyPlayer {
-// 	player:Player<WebSocket>;
-// 	room:number;
-// }
 
 /* what you will receive from the /your-lobby endpoint @aleborghi */
 interface TournamentState
@@ -129,90 +28,150 @@ interface TournamentState
 	}[]
 }
 
+// /* --------------------------------------------------------------- */
+// /* Format class to input various tournament formats */
+
+// interface Branch {
+
+// }
+
+// class Elimated implements Branch
+// {
+
+// }
+
+// class Match implements Branch
+// {
+// 	public readonly layer:number;
+// 	public readonly idx:number;
+
+// 	public winner:Branch | undefined = undefined;
+// 	public loser:Branch | undefined = undefined;
+
+// 	constructor(__layer:number, __idx:number)
+// 	{
+// 		this.layer = __layer;
+// 		this.idx = __idx;
+// 	}
+// }
+
+// /* format string example:
+// 	'explicit:|(0,0)-(1,0)-X|(0,1)-(1,0)-X| ...'
+// 	'alias:#todolater'
+// */
+
+// class Format
+// {
+// 	private _format:string;
+
+// 	private _layers:Match[][] = [];
+
+// 	private _layer0:Match[] = [];
+
+// 	constructor(__format:string)
+// 	{
+// 		this._format = __format;
+// 	}
+
+// 	private buildNodeMatrix()
+// 	{
+// 		if (!this._format.startsWith('explicit:')) throw 'Only explicit formats for tournaments';
+
+// 		const nodestring:string[] = this._format.split('|').splice(0, 1);
+
+// 		for (const node of nodestring)
+// 		{
+// 			const comma = node.indexOf(',');
+// 			const bracket = node.indexOf(')');
+// 			const layer = Number(node.substring(1, comma));
+// 			const idx = Number(node.substring(comma + 1, bracket));
+// 			const newy:Branch = new Match(layer, idx);
+
+// 			/* find win */
+// 			{
+// 				// const bracket2 = 
+// 				const w = node.indexOf('w');
+// 				const comma2 = node.indexOf(',', w);
+// 				const bracket2 = node.indexOf(')', w);
+// 				const winstring = node.substring(w, bracket2);
+
+
+// 			}
+// 			/* find loss */
+// 			{
+
+// 			}
+// 		}
+// 	}
+
+// 	/* public node(l:number, i:number): Node | undefined
+// 	{
+// 		if (this._layers.length >= l) return undefined;
+// 		if (this._layers[l].length >= i) return undefined;
+
+// 		return this._layers[l][i];
+// 	} */
+// }
+
 /* --------------------------------------------------------------- */
-/* Format class to input various tournament formats */
+/* 						 FORMAT BUILDER 						   */
 
-interface Branch {
-
-}
-
-class Elimated implements Branch
+function isPowOf(p:number, base:number): boolean
 {
-
-}
-
-class Match implements Branch
-{
-	public readonly layer:number;
-	public readonly idx:number;
-
-	public winner:Branch | undefined = undefined;
-	public loser:Branch | undefined = undefined;
-
-	constructor(__layer:number, __idx:number)
+	while (p !== 0)
 	{
-		this.layer = __layer;
-		this.idx = __idx;
+		p /= base;
+		if (p !== 0 && p % base !== 0) return false;
 	}
+
+	return true;
 }
+
+function buildSE(players:number): string | undefined
+{
+	if (!isPowOf(players, 2)) return undefined;
+}
+
+function buildformat(alias:string, players:number): string | undefined
+{
+	if (alias === 'single-elimination') return buildSE(players);
+
+	return undefined;
+}
+
+/* 						FORMAT INTERPRETER 						   */
 
 /* format string example:
 	'explicit:|(0,0)-(1,0)-X|(0,1)-(1,0)-X| ...'
-	'cutted:#todolater'
+	'alias:#todolater'
 */
 
-class Format
+// string is a valid formatted format-string as the above example
+// in case of an elimination, the 'loser' will have the same idx as the starting idx
+// NOTA: se format non torna, si rompre tutto
+function nextroom(format:string, idx:RoomIdx): { winner:RoomIdx, loser:RoomIdx } | undefined
 {
-	private _format:string;
+	const cells = format.split('|');
 
-	private _layers:Match[][] = [];
-
-	private _layer0:Match[] = [];
-
-	constructor(__format:string)
+	for (const c of cells)
 	{
-		this._format = __format;
-	}
+		const nexts = c.split('-');
+		if (keyToIdx(nexts[0]) !== idx) continue;
 
-	private buildNodeMatrix()
-	{
-		if (!this._format.startsWith('explicit:')) throw 'Only explicit formats for tournaments';
+		const winner = keyToIdx(nexts[1]);
+		const loser = (nexts[2] === 'X') ? idx : keyToIdx(nexts[2]);
 
-		const nodestring:string[] = this._format.split('|').splice(0, 1);
-
-		for (const node of nodestring)
-		{
-			const comma = node.indexOf(',');
-			const bracket = node.indexOf(')');
-			const layer = Number(node.substring(1, comma));
-			const idx = Number(node.substring(comma + 1, bracket));
-			const newy:Branch = new Match(layer, idx);
-
-			/* find win */
-			{
-				// const bracket2 = 
-				const w = node.indexOf('w');
-				const comma2 = node.indexOf(',', w);
-				const bracket2 = node.indexOf(')', w);
-				const winstring = node.substring(w, bracket2);
-
-
-			}
-			/* find loss */
-			{
-
-			}
+		if (winner === null || loser === null) return undefined;
+	
+		return {
+			winner: winner,
+			loser: loser
 		}
 	}
 
-	/* public node(l:number, i:number): Node | undefined
-	{
-		if (this._layers.length >= l) return undefined;
-		if (this._layers[l].length >= i) return undefined;
-
-		return this._layers[l][i];
-	} */
+	return undefined;
 }
+
 
 /* ----------------------- ROOMKEY/ROOMIDX ----------------------- */
 interface RoomIdx {
@@ -225,12 +184,12 @@ type RoomKey = string;
 
 function idxToKey(roomidx:RoomIdx): RoomKey
 {
-	return `${roomidx.layer}:${roomidx.idx}`;
+	return `(${roomidx.layer},${roomidx.idx})`;
 }
 
 function keyToIdx(key: RoomKey): RoomIdx | null
 {
-	const parts = key.split(":");
+	const parts = key.substring(1, key.length - 1).split(",");
 	if (parts.length !== 2) return null;
 
 	const layer = Number(parts[0]);
@@ -242,6 +201,8 @@ function keyToIdx(key: RoomKey): RoomIdx | null
 }
 /* --------------------------------------------------------------- */
 
+/* this is basicall a struct with steroids, having all properties
+public and with default initializations. */
 class Room
 {
 	private _rsize = 2;
@@ -249,9 +210,10 @@ class Room
 	public gameid:string = uuidv4();
 	public ingame:boolean = false;
 	public played:boolean = false;
-	public players:Set<string> = new Set();				// id: ready/not-ready
-	public score:number[] = [];							// array of nums
+	public score:number[] = [];							// final score of the room
 	public winner:string[] = ["unkown"];
+
+	public players:Set<string> = new Set();				// set of players ids
 
 	constructor(__rsize:number = 2)
 	{
