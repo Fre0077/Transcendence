@@ -89,6 +89,56 @@ services:
       - transcendence
     restart: always
 
+  ft_bunny:
+    build:
+      context: ./backend/ft_bunny
+      dockerfile: Dockerfile
+    container_name: ft_bunny
+    ports:
+      - "3030:3030"
+    networks:
+      - transcendence
+    restart: always
+
+  lobby:
+    build:
+      context: ./backend/lobby
+      dockerfile: Dockerfile
+    container_name: lobby
+    ports:
+      - "3031:3031"
+    depends_on:
+      - ft_bunny
+    networks:
+      - transcendence
+    restart: always
+
+  pong:
+    build:
+      context: ./backend/pong
+      dockerfile: Dockerfile
+    container_name: pong
+    ports:
+      - "3040:3040"
+    depends_on:
+      - ft_bunny
+    networks:
+      - transcendence
+    restart: always
+  
+  bots:
+    build:
+      context: ./backend/bots
+      dockerfile: Dockerfile
+    container_name: bots
+    ports:
+      - "3033:3033"
+    depends_on:
+      - ft_bunny
+    networks:
+      - transcendence
+    restart: always
+
 networks:
   transcendence:
     driver: bridge

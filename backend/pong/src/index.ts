@@ -1,12 +1,12 @@
 import Fastify from 'fastify';
 import { Game } from './Game.js'
-// import type { WebSocket } from "ws";
+import { WebSocket } from "ws";
 
 
 // Where the Queue will listen
 const PORT = Number(process.env.PORT) || 3040;
-export const BUNNYURL = process.env.BUNNYURL ?? 'http://localhost:3030';
-export const MYURL = process.env.MYURL ?? `http://localhost:${PORT}`;
+export const BUNNYURL = process.env.BUNNYURL ?? 'http://ft_bunny:3030';
+export const MYURL = process.env.MYURL ?? `http://pong:${PORT}`;
 export const MYPASS = process.env.MYPASS ?? 'password';
 
 // bunny client
