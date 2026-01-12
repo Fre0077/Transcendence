@@ -116,27 +116,59 @@ interface TournamentState
 /* --------------------------------------------------------------- */
 /* 						 FORMAT BUILDER 						   */
 
-function isPowOf(p:number, base:number): boolean
+function isPowOf(num:number, base:number): number
 {
-	while (p !== 0)
+	let pow = 0;
+
+	while (num !== 1)
 	{
-		p /= base;
-		if (p !== 0 && p % base !== 0) return false;
+		pow++;
+		num /= base;
+		if (num !== 1 && num % base !== 0) return 0;
 	}
 
-	return true;
+	return pow;
 }
 
-function buildSE(players:number): string | undefined
+function buildSE(players:number): string
 {
-	if (!isPowOf(players, 2)) return undefined;
+	const pow = isPowOf(players, 2);
+
+	/* #debug */
+	console.log(`2^${pow} = ${players}`);
+	
+	if (!pow) throw `Invalid player size for 'single-elimination' format: ${players}`;
+
+	// one layer per pow of 2
+	const layers:number = pow;
+	
+	let format:string = '';
+	for (let l = 0; l < layers; ++l)
+	{
+		for (let c = 0; c < Math.pow(2, layers - l) / 2; ++c)
+		{
+			//build a single cell
+			format += `|(${l},${c})-(${l + 1},${Math.floor(c / 2)})-X`;
+		}
+	}
+
+	format += '|';
+
+	/* #debug */
+	console.log(`Single elimination for '${players}' players:\n`, format);
+
+	return format;
 }
 
-function buildformat(alias:string, players:number): string | undefined
+/* @throw errors if invalid players size */
+function buildformat(alias:string, players:number): string
 {
-	if (alias === 'single-elimination') return buildSE(players);
-
-	return undefined;
+	switch (alias)
+	{
+		default:
+			return buildSE(players);
+	}
+	// if (alias === 'single-elimination') return buildSE(players);
 }
 
 /* 						FORMAT INTERPRETER 						   */
@@ -149,27 +181,35 @@ function buildformat(alias:string, players:number): string | undefined
 // string is a valid formatted format-string as the above example
 // in case of an elimination, the 'loser' will have the same idx as the starting idx
 // NOTA: se format non torna, si rompre tutto
-function nextroom(format:string, idx:RoomIdx): { winner:RoomIdx, loser:RoomIdx } | undefined
+function nextroom(format:string, idx:RoomIdx): { winner:RoomIdx, loser:RoomIdx }
 {
 	const cells = format.split('|');
 
 	for (const c of cells)
 	{
 		const nexts = c.split('-');
+		
+		/* #debug */
+		console.log('splitted cells', nexts);
+
 		if (keyToIdx(nexts[0]) !== idx) continue;
 
 		const winner = keyToIdx(nexts[1]);
 		const loser = (nexts[2] === 'X') ? idx : keyToIdx(nexts[2]);
-
-		if (winner === null || loser === null) return undefined;
-	
+		
 		return {
 			winner: winner,
 			loser: loser
 		}
 	}
 
-	return undefined;
+	// return same cell on invalid cells
+	/* #debug */
+	console.log('Invalid cell asked in nextroom() DANGER!!!!', idx);
+	return {
+		winner: idx,
+		loser: idx
+	};
 }
 
 
@@ -187,15 +227,18 @@ function idxToKey(roomidx:RoomIdx): RoomKey
 	return `(${roomidx.layer},${roomidx.idx})`;
 }
 
-function keyToIdx(key: RoomKey): RoomIdx | null
+function keyToIdx(key: RoomKey): RoomIdx
 {
+	/* #debug */
+	console.log('KeyToIdx-ing:', key);
+	
 	const parts = key.substring(1, key.length - 1).split(",");
-	if (parts.length !== 2) return null;
+
+	/* #debug */
+	console.log('KeyToIndx removed brackets:', parts);
 
 	const layer = Number(parts[0]);
 	const idx = Number(parts[1]);
-
-	if (Number.isNaN(layer) || Number.isNaN(idx)) return null;
 
 	return { layer, idx };
 }
@@ -236,6 +279,7 @@ export class Tournament<T extends MySocket>
 	// tournament specs
 	private _size:number;		// number of players
 	private	_rsize:number;		// number of players per room
+	private _format:string;		// format of the tournament
 
 	private	_closed:boolean;	// is the tournament closed? (no more player can join)
 	private _finished:boolean;
@@ -252,13 +296,16 @@ export class Tournament<T extends MySocket>
 	constructor(
 		__gamecallback:(gameID:string, players:string[]) => Promise<boolean>,
 		__size:number = 4,
-		__rsize = 2)
+		__rsize = 2,
+		__format:string = 'single-elimination')
 	{
 		if (__size <= 0 || __size % __rsize !== 0) throw `Tournament::Error: Invalid player size '${__size}'`;
 		
 		this._gamecallback = __gamecallback;
 		this._size = __size;					// 4 player
 		this._rsize = __rsize;					// 2 players
+		this._format = buildformat(__format, __size);
+		// NOTE: format at this point is a valid format, no further controls needed
 
 		this._closed = false;
 		this._finished = false;
@@ -279,10 +326,7 @@ export class Tournament<T extends MySocket>
 	/* for now single elimination */
 	private nextRoom(idx:RoomIdx): { winner:RoomIdx, loser:RoomIdx }
 	{
-		return {
-			winner: { layer: idx.layer + 1, idx: Math.floor(idx.idx / 2) },
-			loser: { layer: idx.layer, idx: idx.idx }
-		}
+		return nextroom(this._format, idx);
 	}
 
 	/* ---------------------------------------------- */
