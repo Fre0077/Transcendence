@@ -1,0 +1,4 @@
+1)	Risolvere il problema di RabbitMQ per chat. Se lo user è già stato aggiunto e la richiesta viene inviata di nuovo il server 
+	crasha cercando di aggiungere un linkId già esistente [fatto da testare]
+
+2)	fiinire di testare tutti glie endpoint di chat

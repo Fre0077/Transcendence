@@ -1,0 +1,26 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generate/profile"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./profile.db"
+}
+
+model User {
+  id        Int     @id @default(autoincrement())
+  linkId    Int     @unique
+  username  String?
+  avatarUrl String?
+
+  //Gli utenti che IO ho aggiunto come amici
+  friends  User[] @relation("friends")
+  //Gli utenti che hanno aggiunto ME come amico
+  friendOf User[] @relation("friends")
+
+  // Chi vuole essere mio amico
+  incomingRequests User[] @relation("requests")
+  // A chi ho chiesto io l'amicizia
+  outgoingRequests User[] @relation("requests")
+}
