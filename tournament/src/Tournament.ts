@@ -129,6 +129,90 @@ interface TournamentState
 	}[]
 }
 
+/* --------------------------------------------------------------- */
+/* Format class to input various tournament formats */
+
+interface Branch {
+
+}
+
+class Elimated implements Branch
+{
+
+}
+
+class Match implements Branch
+{
+	public readonly layer:number;
+	public readonly idx:number;
+
+	public winner:Branch | undefined = undefined;
+	public loser:Branch | undefined = undefined;
+
+	constructor(__layer:number, __idx:number)
+	{
+		this.layer = __layer;
+		this.idx = __idx;
+	}
+}
+
+/* format string example:
+	'explicit:|(0,0)-(1,0)-X|(0,1)-(1,0)-X| ...'
+	'cutted:#todolater'
+*/
+
+class Format
+{
+	private _format:string;
+
+	private _layers:Match[][] = [];
+
+	private _layer0:Match[] = [];
+
+	constructor(__format:string)
+	{
+		this._format = __format;
+	}
+
+	private buildNodeMatrix()
+	{
+		if (!this._format.startsWith('explicit:')) throw 'Only explicit formats for tournaments';
+
+		const nodestring:string[] = this._format.split('|').splice(0, 1);
+
+		for (const node of nodestring)
+		{
+			const comma = node.indexOf(',');
+			const bracket = node.indexOf(')');
+			const layer = Number(node.substring(1, comma));
+			const idx = Number(node.substring(comma + 1, bracket));
+			const newy:Branch = new Match(layer, idx);
+
+			/* find win */
+			{
+				// const bracket2 = 
+				const w = node.indexOf('w');
+				const comma2 = node.indexOf(',', w);
+				const bracket2 = node.indexOf(')', w);
+				const winstring = node.substring(w, bracket2);
+
+
+			}
+			/* find loss */
+			{
+
+			}
+		}
+	}
+
+	/* public node(l:number, i:number): Node | undefined
+	{
+		if (this._layers.length >= l) return undefined;
+		if (this._layers[l].length >= i) return undefined;
+
+		return this._layers[l][i];
+	} */
+}
 
 /* ----------------------- ROOMKEY/ROOMIDX ----------------------- */
 interface RoomIdx {
@@ -160,7 +244,7 @@ function keyToIdx(key: RoomKey): RoomIdx | null
 
 class Room
 {
-	private _rsize = 2;	// static room size of 2
+	private _rsize = 2;
 
 	public gameid:string = uuidv4();
 	public ingame:boolean = false;
@@ -168,6 +252,11 @@ class Room
 	public players:Set<string> = new Set();				// id: ready/not-ready
 	public score:number[] = [];							// array of nums
 	public winner:string[] = ["unkown"];
+
+	constructor(__rsize:number = 2)
+	{
+		this._rsize = __rsize;
+	}
 
 	public has(playerid:string) {
 		return this.players.has(playerid);
@@ -203,7 +292,7 @@ export class Tournament<T extends MySocket>
 		__size:number = 4,
 		__rsize = 2)
 	{
-		if (__size <= 0 || __size % 2 !== 0) throw `Tournament::Error: Invalid player size '${__size}'`;
+		if (__size <= 0 || __size % __rsize !== 0) throw `Tournament::Error: Invalid player size '${__size}'`;
 		
 		this._gamecallback = __gamecallback;
 		this._size = __size;					// 4 player
@@ -230,7 +319,7 @@ export class Tournament<T extends MySocket>
 	{
 		return {
 			winner: { layer: idx.layer + 1, idx: Math.floor(idx.idx / 2) },
-			loser: { layer: -1, idx: -1 }
+			loser: { layer: idx.layer, idx: idx.idx }
 		}
 	}
 
@@ -416,7 +505,7 @@ export class Tournament<T extends MySocket>
 
 	// reset the room (hardcoded 1 winner)
 	@SyncTournament
-	public finalizeRoom(winner:string, score:number[])
+	public finalizeRoom(winners:string[], score:number[])
 	{
 		/* ---------- BASE CHECK --------- */
 		// check if tournament finished
@@ -431,7 +520,7 @@ export class Tournament<T extends MySocket>
 		/* ------------------------------ */
 
 		// gets the room
-		const roomkey = this.roomOf(winner);
+		const roomkey = this.roomOf(winners[0]);
 		if (roomkey === undefined) {
 			console.log('Tournament::finalizeRoom::Error: Player not found');
 			return ;
@@ -461,19 +550,24 @@ export class Tournament<T extends MySocket>
 		// 3. move players accordingly
 
 		// 1.
-		room.winner = [ winner ];
+		room.winner = winners;
 		// 2.
 		room.score = score;
 		// 3.
 		if (/* finals */roomidx.layer === (this._size / this._rsize) - 1)
 		{
-			console.log('Tournament finished, winner', winner);
+			console.log('Tournament finished, winner', winners);
 		}
 		else
 		{
+			// move players
 			const nextroom = this.nextRoom(roomidx);
-			this.movePlayer(winner, roomkey, idxToKey(nextroom.winner))
-			// loser just dies
+			room.players.forEach(player => {
+				if (room.winner.find(p => p === player)) {
+					this.movePlayer(player, roomkey, idxToKey(nextroom.winner));
+				}
+				else this.movePlayer(player, roomkey, idxToKey(nextroom.loser))
+			})
 		}
 
 		// no game linked to lobby
@@ -484,8 +578,6 @@ export class Tournament<T extends MySocket>
 	// moves the player from a room to another (checks on start and end room)
 	private movePlayer(playerid:string, from:RoomKey, to:RoomKey)
 	{
-		console.log(`moving ${playerid}, from '${from}' to '${to}' ...`);
-
 		// check player existance
 		const player = this._players.get(playerid);
 		if (player === undefined) {
@@ -533,7 +625,7 @@ export class Tournament<T extends MySocket>
 			for (let r = 0; r < rooms; ++r)
 			{
 				console.log(`Adding room { layer:${i}, idx:${r} }`);
-				this._rooms.set(idxToKey({ layer:i, idx:r }), new Room());
+				this._rooms.set(idxToKey({ layer:i, idx:r }), new Room(this._rsize));
 			}
 		}
 

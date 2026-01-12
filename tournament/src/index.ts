@@ -76,7 +76,7 @@ fastify.get<{ Querystring: BunnyQuery }>(
 
 			// finalize the room
 			if (tournament !== undefined) {
-				tournament.finalizeRoom(msg.winner[0], msg.score);
+				tournament.finalizeRoom(msg.winner, msg.score);
 			}
 			
 			// successful get
@@ -273,6 +273,16 @@ fastify.register(async function (fastify) {
 
 /* =============== LobbiesManager =============== */
 
+function onlyBots(tournament:Tournament<WebSocket>): boolean
+{
+	for (const p of tournament.players.values())
+	{
+		if (p.isBot() === false && p.status !== "left") return false;
+	}
+
+	return true;
+}
+
 function *getBotRooms(tournament:Tournament<WebSocket>):
 	Generator<{ roomkey: string, gameid:string, players:string[] }>
 {
@@ -346,6 +356,10 @@ function LobbiesManager()
 				return ;
 			}
 
+			if (onlyBots(tournament)) {
+				deleteTournament(id, 'only-bots');
+				return ;
+			}
 
 			// check if at least one player is connected
 			const hasConnectedPlayer = Array

@@ -148,7 +148,7 @@ export function createBot(gamestr:string, botid:string, gameid:string, level:num
 		if (game === gamestr)
 		{
 			myurl = url;
-			bot = (level === undefined) ? new type() : new type(level);
+			bot = (level === undefined) ? new type(botid) : new type(botid, level);
 			break ;
 		}
 	}
@@ -166,7 +166,7 @@ export function createBot(gamestr:string, botid:string, gameid:string, level:num
 		// authentication and join game
 		socket.on('open', () => {
 			socket.send(JSON.stringify({ method: 'AUTH', playerID: botid }));
-			socket.send(JSON.stringify({ method: 'JOIN', gameID: gameid }));
+			// socket.send(JSON.stringify({ method: 'JOIN', gameID: gameid }));
 		});
 
 		// process incoming messages (just GameState JSON)

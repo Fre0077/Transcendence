@@ -1,12 +1,13 @@
 
 MAJOR
-1. fix layer:2 of tournaments (moves on it's own wtf???)
+1. fix layer:2 of tournaments (moves on it's own wtf???) (DONE)
 
 MINOR
 1. Replay system
+2. Tournament setup as string
 
 CLEANUPS:
-1. remove JOIN method for games
+1. remove JOIN method for games (DONE)
 2. Log all major messages
 3. save MQueues messages in DB
 4. Publish on RabbitMQ the history of the games

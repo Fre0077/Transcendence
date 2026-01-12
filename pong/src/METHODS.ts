@@ -24,7 +24,7 @@ Reply:
 */
 
 import type { Player } from './index.js'
-import { findPlayer } from './index.js'
+import { findPlayer, joinGame } from './index.js'
 
 export function AUTH(msg:object, outplayer:string | undefined, listener:(state:string) => void): StandardReturn
 {
@@ -79,7 +79,7 @@ Reply:
 	comment: <comment>		(only on status === 'failure')
 } */	
 
-import { findGame, joinGame } from './index.js';
+/* import { findGame, joinGame } from './index.js';
 
 export function JOIN(msg:object, outgame:string | undefined, outplayer:string | undefined, listener:(state:string) => void): StandardReturn
 {
@@ -127,7 +127,9 @@ export function JOIN(msg:object, outgame:string | undefined, outplayer:string | 
 		player: outplayer,
 		game: msg.gameID
 	};
-}
+} */
+
+
 /* 
 {
 	method: 'LEAVE'
@@ -203,6 +205,8 @@ Reply:
 }
 Only replies in case of failure
 */
+
+import { findGame } from './index.js';
 
 export function MOVE(msg:object, outgame:string | undefined, outplayer:string | undefined): string
 {
