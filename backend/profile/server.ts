@@ -12,18 +12,18 @@ export const fastify = Fastify({
 
 // Registro cors
 fastify.register(cors, {
-    origin: (origin, cb) => {
-        const allowedOrigins = [
-            "http://localhost:4269",
-            "http://localhost:3000",
-        ];
+    // origin: (origin, cb) => {
+    //     const allowedOrigins = [
+    //         "http://localhost:4269",
+    //         "http://localhost:3000",
+    //     ];
 
-        if (!origin || allowedOrigins.includes(origin)) {
-            cb(null, true);
-        } else {
-            cb(new Error("Not allowed by CORS"), false);
-        }
-    },
+    //     if (!origin || allowedOrigins.includes(origin)) {
+    //         cb(null, true);
+    //     } else {
+    //         cb(new Error("Not allowed by CORS"), false);
+    //     }
+    // },
     credentials: true, // se usi cookie o autenticazione
     methods: ["GET", "POST", "PATCH", "PUT", "DELETE"],
 });
