@@ -40,6 +40,12 @@ let socialTargetInput: HTMLInputElement;
 let friendsListDisplay: HTMLDivElement;
 let rootElement: HTMLElement;
 
+// User Remote Elements (Nuovi)
+let userRemoteDisplay: HTMLDivElement;
+let userRemoteAvatar: HTMLImageElement;
+let userRemoteUsername: HTMLElement;
+
+
 export const renderTestPage = (element: HTMLElement) => {
     rootElement = element;
     injectStyles();
@@ -53,8 +59,8 @@ export const renderTestPage = (element: HTMLElement) => {
  * Funzione helper per decidere a quale microservizio mandare la richiesta
  */
 function getServiceUrl(endpoint: string): string {
-    // Solo le rotte delle AMICIZIE vanno sulla 3003
-    if (endpoint.startsWith('/friends') || endpoint.startsWith('/friend/')) {
+    // Le rotte AMICIZIE e USER (profilo remoto) vanno sulla 3003
+    if (endpoint.startsWith('/friends') || endpoint.startsWith('/friend/') || endpoint === '/user') {
         return PROFILE_URL;
     }
     // Tutto il resto (Login, 2FA, Avatar, Update Profile PATCH) va su AUTH (3001)
@@ -193,6 +199,20 @@ function createHTMLStructure(): string {
 
             <fieldset id="social-fieldset">
                 <legend>7. Social & Amicizie (Profile 3003)</legend>
+                
+                <div class="form-group" style="background: #eef; padding: 10px; border-radius: 4px; margin-bottom: 15px;">
+                    <label>Verifica Profilo Remoto (/user):</label>
+                    <div style="display: flex; align-items: center; gap: 15px; margin-top: 5px;">
+                        <button id="btn-get-user-data" style="font-size: 0.9em;">Scarica Dati Utente</button>
+                        
+                        <div id="user-remote-display" style="display: none; align-items: center; gap: 10px; border: 1px solid #ccc; padding: 5px 10px; background: #fff; border-radius: 20px;">
+                            <img id="user-remote-avatar" src="" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
+                            <span id="user-remote-username" style="font-weight: bold; color: #333;">-</span>
+                        </div>
+                    </div>
+                </div>
+                <hr>
+
                 <div class="form-group">
                     <label>Gestione Richieste:</label>
                     <div style="display: flex; gap: 10px; margin-bottom: 15px;">
@@ -251,6 +271,11 @@ function bindDOMElements() {
 
     socialTargetInput = document.getElementById('social-target-user') as HTMLInputElement;
     friendsListDisplay = document.getElementById('friends-list-display') as HTMLDivElement;
+
+    // Nuovi Binding per User Data
+    userRemoteDisplay = document.getElementById('user-remote-display') as HTMLDivElement;
+    userRemoteAvatar = document.getElementById('user-remote-avatar') as HTMLImageElement;
+    userRemoteUsername = document.getElementById('user-remote-username') as HTMLElement;
 }
 
 function logResponse(data: any) {
@@ -426,7 +451,6 @@ function attachEventListeners() {
     });
 
     // --- AUTH (3001 - Avatar & Profile Update) ---
-    // Poiché solo le API 'friend' sono sulla 3003, avatar e profilo sono ancora su AUTH
     
     // Upload Avatar (Fetch diretto perché usa FormData)
     avatarForm?.addEventListener('submit', async (e) => {
@@ -459,7 +483,6 @@ function attachEventListeners() {
         if (username) body.username = username;
         if (bio) body.bio = bio;
         
-        // Questo andrà su 3001 perché l'endpoint '/profile' non inizia per '/friend'
         await apiCall('/profile', 'PATCH', body, accessToken);
     });
 
@@ -486,6 +509,42 @@ function attachEventListeners() {
 
     // --- SOCIAL (Profile 3003) ---
     
+    // 0. Get user data (Endpoint: /user)
+    document.getElementById('btn-get-user-data')?.addEventListener('click', async (e) => {
+        e.preventDefault();
+        
+        // Nascondi il display prima della chiamata per pulizia UI
+        if (userRemoteDisplay) userRemoteDisplay.style.display = 'none';
+
+        try {
+            // La chiamata andrà su 3003 grazie alla modifica in getServiceUrl
+            const data = await apiCall('/user', 'GET', null, accessToken);
+
+            if (data && !data.error) {
+                // Gestione robusta dei dati
+                if (userRemoteUsername) userRemoteUsername.textContent = data.username || "Sconosciuto";
+                
+                if (userRemoteAvatar) {
+                    // Fallback se avatarUrl è null
+                    userRemoteAvatar.src = data.avatarUrl 
+                        ? data.avatarUrl 
+                        : "https://via.placeholder.com/32?text=U";
+                }
+
+                // Mostra il risultato
+                if (userRemoteDisplay) {
+                    userRemoteDisplay.style.display = 'flex';
+                    // Feedback visivo temporaneo (verde)
+                    userRemoteDisplay.style.borderColor = 'green';
+                    setTimeout(() => userRemoteDisplay.style.borderColor = '#ccc', 1000);
+                }
+            }
+        } catch (error) {
+            console.error("Errore recupero dati utente:", error);
+            alert("Impossibile recuperare i dati utente dal servizio Profile.");
+        }
+    });
+
     // 1. Aggiorna Lista
     document.getElementById('btn-get-friends')?.addEventListener('click', async (e) => {
         e.preventDefault();

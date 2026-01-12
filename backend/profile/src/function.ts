@@ -182,3 +182,17 @@ export async function getProfileData(myLinkId: number) {
 
     return data;
 }
+
+//Ottieni la lista amici e richieste che hai in sospeso
+export async function getUserData(myLinkId: number) {
+    const data = await profilePrisma.user.findUnique({
+        where: { linkId: myLinkId },
+        select: {
+            username: true,
+            avatarUrl: true
+        }
+    });
+    if (!data)
+        throw new NotFound("Profilo utente non trovato.", "profile");
+    return data;
+}

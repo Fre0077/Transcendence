@@ -6,10 +6,27 @@ import {
     sendFriendRequest, 
     acceptFriendRequest, 
     removeFriendRequest, 
-    getProfileData 
+    getProfileData,
+    getUserData
 } from "./function";
 
 export async function profileEndpoint(fastify: FastifyInstance) {
+    //GET /api/user -> Ottieni i dati dello user
+    fastify.get('/user', {preHandler: [authMiddleware] }, async (request: AuthRequest, reply: FastifyReply) => {
+        try {
+            if (!request.user)
+                throw new Unauthorized("Utente non autorizzato", "profile");
+            const data = await getUserData(request.user.userId);
+            logInfo('{profile} [200] Dati utente recuperati con successo');
+            return reply.status(200).send(data);
+        } catch (err) {
+            if (err instanceof Error)
+                return reply.status((err as any).statusCode).send({ error: err.message });
+            logError('{profile} [500] errore interno del server');
+            return reply.status(500).send({ error: "Internal server error" });
+        }
+    });
+
     // GET /api/friends -> Ottieni amici e richieste
     fastify.get('/friends', { preHandler: [authMiddleware] }, async (request: AuthRequest, reply: FastifyReply) => {
         try {
