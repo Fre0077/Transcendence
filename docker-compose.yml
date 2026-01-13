@@ -1,4 +1,23 @@
 services:
+  # 1. RABBITMQ STARTS FIRST
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - transcendence
+
+  # 2. FRONTEND STARTS AFTER RABBITMQ IS HEALTHY
   frontend:
     build:
       context: ./frontend
@@ -6,14 +25,119 @@ services:
     container_name: frontend
     ports:
       - "3000:3000"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
     networks:
       - transcendence
-    volumes:
-      - ./frontend:/frontend
-      - /frontend/node_modules
+
+  # 3. BACKEND SERVICES START LAST
+  auth:
+    build:
+      context: ./backend
+      dockerfile: auth/Dockerfile
+    container_name: auth
+    ports:
+      - "3001:3001"
     environment:
-      - NODE_ENV=development
-    command: npm run dev
+      - NODE_ENV=production
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      frontend:
+        condition: service_started
+    networks:
+      - transcendence
+    restart: always
+
+  chat:
+    build:
+      context: ./backend
+      dockerfile: chat/Dockerfile
+    container_name: chat
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=production
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      frontend:
+        condition: service_started
+    networks:
+      - transcendence
+    restart: always
+
+  profile:
+    build:
+      context: ./backend
+      dockerfile: profile/Dockerfile
+    container_name: profile
+    ports:
+      - "3003:3003"
+    environment:
+      - NODE_ENV=production
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      frontend:
+        condition: service_started
+    networks:
+      - transcendence
+    restart: always
+
+  ft_bunny:
+    build:
+      context: ./backend/ft_bunny
+      dockerfile: Dockerfile
+    container_name: ft_bunny
+    ports:
+      - "3030:3030"
+    networks:
+      - transcendence
+    restart: always
+
+  lobby:
+    build:
+      context: ./backend/lobby
+      dockerfile: Dockerfile
+    container_name: lobby
+    ports:
+      - "3031:3031"
+    depends_on:
+      - ft_bunny
+    networks:
+      - transcendence
+    restart: always
+
+  pong:
+    build:
+      context: ./backend/pong
+      dockerfile: Dockerfile
+    container_name: pong
+    ports:
+      - "3040:3040"
+    depends_on:
+      - ft_bunny
+    networks:
+      - transcendence
+    restart: always
+  
+  bots:
+    build:
+      context: ./backend/bots
+      dockerfile: Dockerfile
+    container_name: bots
+    ports:
+      - "3033:3033"
+    depends_on:
+      - ft_bunny
+    networks:
+      - transcendence
+    restart: always
 
 networks:
   transcendence:

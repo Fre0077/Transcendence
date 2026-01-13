@@ -1,11 +1,15 @@
-FROM node:18-alpine
+FROM node:20-alpine
+WORKDIR /app
 
-WORKDIR /frontend
-
+# install deps at build time for faster container start
 COPY package*.json ./
+RUN npm ci --silent
 
-RUN npm install
+# copy source
+COPY . .
 
+ENV NODE_ENV=development
 EXPOSE 3000
 
-CMD ["npm", "run", "dev"]
+# run dev server and force bind to 0.0.0.0 so container is reachable
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "3000"]
