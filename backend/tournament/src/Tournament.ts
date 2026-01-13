@@ -316,9 +316,9 @@ export class Tournament<T extends MySocket>
 			status: player.status,
 		}));
 
-		const rooms = Array.from(this._rooms, ([idx, room]) => ({
-			layer: Number(idx.split(':')[0]),
-			idx: Number(idx.split(':')[1]),
+		const rooms = Array.from(this._rooms, ([key, room]) => ({
+			layer: keyToIdx(key).layer,
+			idx: keyToIdx(key).idx,
 			players: Array.from(room.players),
 			winner: room.winner,
 			score: room.score

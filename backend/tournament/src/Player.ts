@@ -1,4 +1,6 @@
 // just for this usecase
+import { WebSocket } from "ws";
+
 const OPEN = WebSocket.OPEN;
 
 export interface MySocket {

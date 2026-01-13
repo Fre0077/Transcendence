@@ -338,7 +338,7 @@ function startBotRoom(tournament:Tournament<WebSocket>, roomkey:string, gameid:s
 }
 
 // loops asyncronously
-function LobbiesManager()
+function TournamentsManager()
 {
 	setTimeout(() => {
 		// check for lobbies to delete
@@ -397,7 +397,7 @@ function LobbiesManager()
 		});
 
 		// loop
-		LobbiesManager();
+		TournamentsManager();
 	}, 1000);
 }
 
@@ -430,7 +430,7 @@ const start = async () => {
 	}
 
 	// routine check (once every second)
-	LobbiesManager();
+	TournamentsManager();
 };
 
 // entrypoint

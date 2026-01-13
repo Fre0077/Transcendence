@@ -120,10 +120,27 @@ export function loadTournamentHubPage(): HTMLElement
     });
 
     // Format selection
-    div.querySelectorAll('.format-option').forEach(btn => {
+    /* div.querySelectorAll('.format-option').forEach(btn => {
         btn.addEventListener('click', () => {
             selectedFormat = (btn as HTMLElement).dataset.value!;
             selectedFormatSpan.textContent = selectedFormat;
+        });
+    }); */
+
+    const formatButtons = div.querySelectorAll('.format-option');
+
+    formatButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            selectedFormat = (btn as HTMLElement).dataset.value!;
+            selectedFormatSpan.textContent = selectedFormat;
+
+            // Reset all buttons
+            formatButtons.forEach(b => {
+                b.classList.remove('font-bold', 'text-cyan-400', 'bg-cyan-600/20');
+            });
+
+            // Highlight selected one
+            btn.classList.add('font-bold', 'text-cyan-400', 'bg-cyan-600/20');
         });
     });
 
@@ -131,13 +148,31 @@ export function loadTournamentHubPage(): HTMLElement
     div.querySelector('#confirmCreateTourn')?.addEventListener('click', () => {
         const playerCount = Number(playerCountInput.value);
 
+        // check on the player count
         if (playerCount < 2) {
             alert('At least 2 players required.');
             return;
         }
 
+        // type check
+        if (selectedFormat !== 'single-elimination')
+        {
+            alert('Only single-elimination supported yet');
+            return ;
+        }
+
+        // player check specific for each format
+        if (selectedFormat === 'single-elimination')
+        {
+            if (!isPowOf(2, playerCount))
+            {
+                alert('In Single elimination only power of 2 player count allowed');
+                return ;
+            }
+        }
+
         // assemble and send the create ruequest
-        create(playerCount,selectedFormat, tournamentWS);
+        create(playerCount, selectedFormat, tournamentWS);
     });
 
     
@@ -292,7 +327,7 @@ function createWebSocketConnection(playerID:string): WebSocket
     ws.onmessage = (event) => {
         try {
             const data = JSON.parse(event.data);
-            console.log('Lobby WebSocket message received:', data);
+            console.log('Tournament WebSocket message received:', data);
             // let updateNeeded = false; // (outdated)
             const method = data.method || '';
             if (method === 'CREATE_REPLY' && data.status === 'success') {
@@ -306,7 +341,7 @@ function createWebSocketConnection(playerID:string): WebSocket
                 window.sessionStorage.setItem('guestID', playerID);
 
                 
-                router.push(`/game/${data.value}`);
+                router.push(`/tournament/${data.value}`);
 
             }
             // @topiana-
@@ -352,4 +387,23 @@ function createWebSocketConnection(playerID:string): WebSocket
     };
 
     return ws;
+}
+
+
+/* ---------------------------------------- */
+/*                  UTILS                   */
+/* ---------------------------------------- */
+
+function isPowOf(base:number, num:number): number
+{
+	let pow = 0;
+
+	while (num !== 1)
+	{
+		pow++;
+		num /= base;
+		if (num !== 1 && num % base !== 0) return 0;
+	}
+
+	return pow;
 }

@@ -3,7 +3,8 @@ import { load500Page } from "./pages/errors/500";
 import { ChatsPage } from "./pages/protected/chats/chats";
 import { loadGamePage } from "./pages/protected/game/game";
 import { loadOnlineLobbyPage } from "./pages/protected/game/lobby/lobby";
-import { loadTournamentHubPage } from "./pages/protected/game/tournament/tournament"
+import { loadTournamentHubPage } from "./pages/protected/game/tournament/tournamentHub";
+import { loadOnlineTournamentPage } from "./pages/protected/game/tournament/tournamentPage";
 import { loadOnlineGamePage } from "./pages/protected/game/onlineGame/onlineGame";
 import { loadLocalGamePage } from "./pages/protected/game/localGame";
 import { loadHomePage } from "./pages/protected/home/home";
@@ -359,10 +360,10 @@ const routes: RouteConfig[] = [
   },
   {
     // TODO: Implement tournament details page
-    path: '/tournaments/:tournamentId',
+    path: '/tournament/:tournamentId',
     name: 'tournament-details',
     component: () => {
-      return document.createElement('div');
+      return loadOnlineTournamentPage();
     },
     meta: { title: 'Tournament Details - ft_transcendence', requiresAuth: true, requires2FA: true },
   },
