@@ -89,6 +89,7 @@ services:
       - transcendence
     restart: always
 
+  # GAME RELATED SERVICES
   ft_bunny:
     build:
       context: ./backend/ft_bunny
@@ -107,6 +108,19 @@ services:
     container_name: lobby
     ports:
       - "3031:3031"
+    depends_on:
+      - ft_bunny
+    networks:
+      - transcendence
+    restart: always
+
+  tournament:
+    build:
+      context: ./backend/tournament
+      dockerfile: Dockerfile
+    container_name: tournament
+    ports:
+      - "3032:3032"
     depends_on:
       - ft_bunny
     networks:

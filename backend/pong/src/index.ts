@@ -52,18 +52,20 @@ fastify.get<{ Querystring: BunnyQuery }>(
 			const msg = Object(message);
 
 			// check if we got the gameID ad the players
-			if ("ID" in msg === false
+			if (!("ID" in msg)
 				|| typeof msg.ID !== "string"
-				|| "players" in msg === false
+				|| !("players" in msg)
 				|| Array.isArray(msg.players) === false
-				|| !msg.players.every((p: unknown) => typeof p === "string"))
+				|| !msg.players.every((p: unknown) => typeof p === "string")
+				/* new metadata */
+				|| !("metadata" in msg))
 			{
 				console.log('Invalid JSON (with successful get)', message);
 				// throw 'Invalid JSON (with successful get)';
 				return { status: 'ko' };
 			}
 
-			createGame(msg.ID, msg.players);
+			createGame(msg.ID, msg.players, msg.metadata);
 		}
 		return { status: 'ok' };
 	}
@@ -84,9 +86,9 @@ export type Player = {
 	status: "connected" | "disconnected" | "left";
 }
 
-let games:Map<string, {game: Game, players:Player[], timeout:number }> = new Map();
+let games:Map<string, {game: Game, players:Player[], timeout:number, metadata:any }> = new Map();
 
-export function createGame(gameID:string, playersID:string[]): Game
+export function createGame(gameID:string, playersID:string[], metadata: any): Game
 {
 	// #debug
 	console.log(`Creating game ${gameID} ...`);
@@ -98,7 +100,7 @@ export function createGame(gameID:string, playersID:string[]): Game
 	}));
 
 	const game:Game = new Game(players.map(({ idx, ID }) => ({ idx, ID })));
-	games.set(gameID, { game: game, players: players, timeout:TIMEOUT });
+	games.set(gameID, { game: game, players: players, timeout:TIMEOUT, metadata:metadata });
 	return game;
 }
 
@@ -216,16 +218,18 @@ export function deleteGame(gameID:string, reason:string | void)
 	// check if game is finished
 	const winner = game.game.end();
 
+	// what will be sent to RabbitMQ and ft_bunnyMQ
+	const history = {
+		game: 'pong',
+		ID: gameID,
+		winner: [game.players[winner].ID],
+		players: game.players.map(player => player.ID),
+		score: game.game.state.score,
+		metadata: game.metadata
+	}
+
 	// #todo send to RabbitMQ, not ft_bunny
-	if (winner !== -1) bunnyPublish('history',
-		{
-			game: 'pong',
-			ID: gameID,
-			winner: [game.players[winner].ID],
-			players: game.players.map(player => player.ID),
-			score: game.game.state.score
-		}
-	);
+	if (winner !== -1) bunnyPublish('history', history);
 
 	// send to lobby that all the players left the game
 	bunnyPublish('lobby', {

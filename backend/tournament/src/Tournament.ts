@@ -233,10 +233,10 @@ export class Tournament<T extends MySocket>
 	private _players:Map<string, Player<T>>;	// unique identifier for each player, sent at th beginning of every move. NOTE: the ID is generated when the websocket is connected
 	private _rooms:Map<RoomKey, Room>;			// each room has multiple players
 	
-	private _gamecallback: (gameID:string, players:string[]) => Promise<boolean>;
+	private _gamecallback: (gameID:string, players:string[], metadata:any) => Promise<boolean>;
 
 	constructor(
-		__gamecallback:(gameID:string, players:string[]) => Promise<boolean>,
+		__gamecallback:(gameID:string, players:string[], metadata:any) => Promise<boolean>,
 		__size:number = 4,
 		__rsize = 2,
 		__format:string = 'single-elimination')
@@ -427,7 +427,12 @@ export class Tournament<T extends MySocket>
 		const players = Array.from(room.players);
 
 		// callback for external porpouses (send to GameService)
-		if (await this._gamecallback(room.gameid, players) === false) {
+		if (await this._gamecallback(room.gameid, players, {
+			origin: 'tournament',
+			ID: this._ID,
+			room: roomkey
+		}) === false)
+		{
 			// room.gameID = "empty";
 			return {
 				status: 'failure',

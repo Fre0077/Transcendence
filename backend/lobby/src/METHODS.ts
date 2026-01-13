@@ -296,7 +296,14 @@ export async function START(outlobby:string | undefined): Promise<StandardReturn
 	// get variables from the callback
 	let ret = await lobby.launch( async (gameID:string, players:string[]): Promise<boolean> => {
 		// signal the GameService to create a Game
-		return bunnyPublish('game', { ID: gameID, players: players });
+		return bunnyPublish('game', {
+			ID: gameID,
+			players: players,
+			metadata: {
+				origin: 'causal-lobby',
+				ID: lobby.ID
+			}
+		});
 	});
 
 	// failed launch

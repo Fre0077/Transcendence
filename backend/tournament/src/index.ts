@@ -5,8 +5,8 @@ import type { WebSocket } from "ws";
 
 // Where the Queue will listen
 const PORT = Number(process.env.PORT) || 3032;
-export const BUNNYURL = process.env.BUNNYURL ?? 'http://localhost:3030';
-export const MYURL = process.env.MYURL ?? `http://localhost:${PORT}`;
+export const BUNNYURL = process.env.BUNNYURL ?? 'http://ft_bunny:3030';
+export const MYURL = process.env.MYURL ?? `http://tournament:${PORT}`;
 export const MYPASS = process.env.MYPASS ?? 'password';
 
 // service varaibles
@@ -125,9 +125,13 @@ fastify.get('/pong', async (request, reply) => {
 
 
 
-const sendgame = async (gameid:string, players:string[]): Promise<boolean> => {
+const sendgame = async (gameid:string, players:string[], metadata:any): Promise<boolean> => {
 	// signal the GameService to create a Game
-	return bunnyPublish('game', { ID: gameid, players: players });
+	return bunnyPublish('game', {
+		ID: gameid,
+		players: players,
+		metadata: metadata
+	});
 } 
 
 
