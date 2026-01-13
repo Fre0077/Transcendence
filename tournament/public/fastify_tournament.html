@@ -163,7 +163,7 @@
 
 	// CREATE
 	btnCreate.onclick = () => {
-	  socket.send(JSON.stringify({ method: "CREATE", format: 12 }));
+	  socket.send(JSON.stringify({ method: "CREATE", size: 8 }));
 	  clientLog.innerText = "Creating tournament...";
 	};
 

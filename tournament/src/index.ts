@@ -135,9 +135,18 @@ const sendgame = async (gameid:string, players:string[]): Promise<boolean> => {
 /* ----------- LOBBY DataBase ---------- */
 let tournaments:Map<string, { tournament:Tournament<WebSocket>, timeout:number}> = new Map();
 
-export function createTournament(/* game:string,  */size:number = 4): Tournament<WebSocket>
+export function createTournament(/* game:string,  */ size:number = 4, format:string = 'single-elimination'): Tournament<WebSocket> | undefined
 {
-	const tournament:Tournament<WebSocket> = new Tournament(sendgame, size);
+	let tournament:Tournament<WebSocket> | undefined = undefined;
+
+	try
+	{
+		tournament = new Tournament(sendgame, size, 2, format);
+
+	} catch (err) {
+		console.log('Error while creating tournament');
+		return undefined;
+	}
 
 	// #debug
 	console.log(`Creating tournament ${tournament.ID} ...`);

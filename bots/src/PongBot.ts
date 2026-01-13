@@ -122,7 +122,8 @@ export class PongBot
 		const botX = (idx == 1) ? 1 - (paddle.offset + paddle.width) : paddle.offset + paddle.width;
 
 		// calculate hitY of the ball
-		if (ball.angle < Math.PI / 2 || ball.angle > 3 * Math.PI / 2)
+		if ((idx === 1 && (ball.angle < Math.PI / 2 || ball.angle > 3 * Math.PI / 2))
+			|| (idx === 0 && (ball.angle > Math.PI / 2 && ball.angle < 3 * Math.PI / 2)))
 		{
 			// if not in timeout
 			if (this._timeout > 0)

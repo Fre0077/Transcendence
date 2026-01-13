@@ -68,16 +68,18 @@ export function AUTH(msg:object, outplayer:string | undefined, ws:WebSocket): St
 /*
 {
 	method: 'CREATE',     (mandatory)
+	size: <size>,		  (optional)
 	format: <format>      (optional)
 }
-@format: the number of rounds a player need to win to win the match
+@size: the number of player in the tournament (must be compatible with the format)
+@format: the format of the tournament as an alias (single-elimination)
 
 Description: Creates a lobby, if 'format' is a valid format the lobby inherits that format. The player automatically joins the lobby that he created
 Reply:
 {
 	method: 'CREATE_REPLY',
 	status: 'success/failure',
-	value: <lobbyID>,           (only on status === 'success')
+	value: <tournamentID>,           (only on status === 'success')
 	comment: <reason>           (only on status === 'failure')
 }
 */
@@ -103,16 +105,37 @@ export function CREATE(msg:object,
 		}
 	}
 
-	//create lobby
-	const tournament:Tournament<WebSocket> = createTournament(/* "pong" */);
+	let tournament:Tournament<WebSocket> | undefined;
 
 	// check if the obj has format
-	if ("format" in msg && typeof msg.format === "number" ) {
-		console.log(`#todo Set format ${msg.format}`);
-		// lobby.format(msg.format);
+	if ("size" in msg && typeof msg.size === "number" )
+	{
+		if ("format" in msg && typeof msg.format === "string" )
+		{
+			// crerate tournamnet with format and size
+			tournament = createTournament(/* "pong" */msg.size, msg.format);
+		}
+		else
+		{
+			// create tournamennt with default values
+			tournament = createTournament(/* "pong" */msg.size);
+		}
+	}
+	else
+	{
+		// create tournament with format
+		tournament = createTournament(/* "pong" */);
 	}
 
-	// join lobby
+	// check if creation was correct
+	if (tournament === undefined) {
+		return {
+			status: "failure",
+			reply: JSON.stringify({ method: 'CREATE_REPLY', status: "failure", comment: "error while creating tournament"})
+		}
+	}
+
+	// join tournament
 	tournament.join(outplayer, ws);
 
 	// success return

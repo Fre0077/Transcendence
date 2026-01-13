@@ -28,90 +28,7 @@ interface TournamentState
 	}[]
 }
 
-// /* --------------------------------------------------------------- */
-// /* Format class to input various tournament formats */
-
-// interface Branch {
-
-// }
-
-// class Elimated implements Branch
-// {
-
-// }
-
-// class Match implements Branch
-// {
-// 	public readonly layer:number;
-// 	public readonly idx:number;
-
-// 	public winner:Branch | undefined = undefined;
-// 	public loser:Branch | undefined = undefined;
-
-// 	constructor(__layer:number, __idx:number)
-// 	{
-// 		this.layer = __layer;
-// 		this.idx = __idx;
-// 	}
-// }
-
-// /* format string example:
-// 	'explicit:|(0,0)-(1,0)-X|(0,1)-(1,0)-X| ...'
-// 	'alias:#todolater'
-// */
-
-// class Format
-// {
-// 	private _format:string;
-
-// 	private _layers:Match[][] = [];
-
-// 	private _layer0:Match[] = [];
-
-// 	constructor(__format:string)
-// 	{
-// 		this._format = __format;
-// 	}
-
-// 	private buildNodeMatrix()
-// 	{
-// 		if (!this._format.startsWith('explicit:')) throw 'Only explicit formats for tournaments';
-
-// 		const nodestring:string[] = this._format.split('|').splice(0, 1);
-
-// 		for (const node of nodestring)
-// 		{
-// 			const comma = node.indexOf(',');
-// 			const bracket = node.indexOf(')');
-// 			const layer = Number(node.substring(1, comma));
-// 			const idx = Number(node.substring(comma + 1, bracket));
-// 			const newy:Branch = new Match(layer, idx);
-
-// 			/* find win */
-// 			{
-// 				// const bracket2 = 
-// 				const w = node.indexOf('w');
-// 				const comma2 = node.indexOf(',', w);
-// 				const bracket2 = node.indexOf(')', w);
-// 				const winstring = node.substring(w, bracket2);
-
-
-// 			}
-// 			/* find loss */
-// 			{
-
-// 			}
-// 		}
-// 	}
-
-// 	/* public node(l:number, i:number): Node | undefined
-// 	{
-// 		if (this._layers.length >= l) return undefined;
-// 		if (this._layers[l].length >= i) return undefined;
-
-// 		return this._layers[l][i];
-// 	} */
-// }
+/* --------------------------------------------------------------- */
 
 /* --------------------------------------------------------------- */
 /* 						 FORMAT BUILDER 						   */
@@ -130,12 +47,12 @@ function isPowOf(num:number, base:number): number
 	return pow;
 }
 
-function buildSE(players:number): string
+function buildSE(players:number, roomsize:number): string
 {
-	const pow = isPowOf(players, 2);
+	const pow = isPowOf(players / roomsize, 2);
 
 	/* #debug */
-	console.log(`2^${pow} = ${players}`);
+	// console.log(`2^${pow} = ${players}`);
 	
 	if (!pow) throw `Invalid player size for 'single-elimination' format: ${players}`;
 
@@ -145,14 +62,15 @@ function buildSE(players:number): string
 	let format:string = '';
 	for (let l = 0; l < layers; ++l)
 	{
-		for (let c = 0; c < Math.pow(2, layers - l) / 2; ++c)
+		for (let c = 0; c < Math.pow(2, layers - l)/*  / 2 */; ++c)
 		{
-			//build a single cell
+			// build a single cell
 			format += `|(${l},${c})-(${l + 1},${Math.floor(c / 2)})-X`;
 		}
 	}
 
-	format += '|';
+	// adding final
+	format += `|(${layers},0)-W-X|`;
 
 	/* #debug */
 	console.log(`Single elimination for '${players}' players:\n`, format);
@@ -161,12 +79,12 @@ function buildSE(players:number): string
 }
 
 /* @throw errors if invalid players size */
-function buildformat(alias:string, players:number): string
+function buildformat(alias:string, players:number, roomsize:number): string
 {
 	switch (alias)
 	{
 		default:
-			return buildSE(players);
+			return buildSE(players, roomsize);
 	}
 	// if (alias === 'single-elimination') return buildSE(players);
 }
@@ -183,18 +101,23 @@ function buildformat(alias:string, players:number): string
 // NOTA: se format non torna, si rompre tutto
 function nextroom(format:string, idx:RoomIdx): { winner:RoomIdx, loser:RoomIdx }
 {
+	const key:string = idxToKey(idx);
 	const cells = format.split('|');
 
 	for (const c of cells)
 	{
+		// first and last split
+		if (c.length === 0) continue;
+	
 		const nexts = c.split('-');
 		
 		/* #debug */
-		console.log('splitted cells', nexts);
+		// console.log('splitted cells', nexts);
 
-		if (keyToIdx(nexts[0]) !== idx) continue;
+		if (nexts[0] !== key) continue;
 
-		const winner = keyToIdx(nexts[1]);
+		// (-1, -1) for winner
+		const winner = (nexts[1] === 'W') ? { layer:-1, idx:-1 } : keyToIdx(nexts[1]);
 		const loser = (nexts[2] === 'X') ? idx : keyToIdx(nexts[2]);
 		
 		return {
@@ -212,6 +135,25 @@ function nextroom(format:string, idx:RoomIdx): { winner:RoomIdx, loser:RoomIdx }
 	};
 }
 
+// returns all the rooms needed for the tournnament to work
+function *allrooms(format:string): Generator<RoomKey>
+{
+	const cells = format.split('|');
+
+	for (const c of cells)
+	{
+		// first and last split
+		if (c.length === 0) continue;
+	
+		const nexts = c.split('-');
+		
+		/* #debug */
+
+		// const idx = keyToIdx(nexts[0]);
+		// yield idx;
+		yield nexts[0]
+	}
+}
 
 /* ----------------------- ROOMKEY/ROOMIDX ----------------------- */
 interface RoomIdx {
@@ -230,17 +172,17 @@ function idxToKey(roomidx:RoomIdx): RoomKey
 function keyToIdx(key: RoomKey): RoomIdx
 {
 	/* #debug */
-	console.log('KeyToIdx-ing:', key);
+	// console.log('KeyToIdx-ing:', key);
 	
 	const parts = key.substring(1, key.length - 1).split(",");
 
 	/* #debug */
-	console.log('KeyToIndx removed brackets:', parts);
+	// console.log('KeyToIndx removed brackets:', parts);
 
 	const layer = Number(parts[0]);
 	const idx = Number(parts[1]);
 
-	return { layer, idx };
+	return { layer:layer, idx:idx };
 }
 /* --------------------------------------------------------------- */
 
@@ -304,7 +246,7 @@ export class Tournament<T extends MySocket>
 		this._gamecallback = __gamecallback;
 		this._size = __size;					// 4 player
 		this._rsize = __rsize;					// 2 players
-		this._format = buildformat(__format, __size);
+		this._format = buildformat(__format, __size, __rsize);
 		// NOTE: format at this point is a valid format, no further controls needed
 
 		this._closed = false;
@@ -560,14 +502,14 @@ export class Tournament<T extends MySocket>
 		// 2.
 		room.score = score;
 		// 3.
-		if (/* finals */roomidx.layer === (this._size / this._rsize) - 1)
+		const nextroom = this.nextRoom(roomidx);
+		if (/* finals */nextroom.winner.layer === -1)
 		{
 			console.log('Tournament finished, winner', winners);
 		}
 		else
 		{
 			// move players
-			const nextroom = this.nextRoom(roomidx);
 			room.players.forEach(player => {
 				if (room.winner.find(p => p === player)) {
 					this.movePlayer(player, roomkey, idxToKey(nextroom.winner));
@@ -624,8 +566,8 @@ export class Tournament<T extends MySocket>
 		}
 
 		/* build all rooms for a single elimination tournament */
-		const layers = this._size / this._rsize;
-		for (let i = 0; i < layers; ++i)
+		/* const layers = this._size / this._rsize;
+		for (let i = 0; i < layers - 1; ++i)
 		{
 			const rooms = layers / Math.pow(2, i);
 			for (let r = 0; r < rooms; ++r)
@@ -633,6 +575,12 @@ export class Tournament<T extends MySocket>
 				console.log(`Adding room { layer:${i}, idx:${r} }`);
 				this._rooms.set(idxToKey({ layer:i, idx:r }), new Room(this._rsize));
 			}
+		} */
+		for (const r of allrooms(this._format))
+		{
+			console.log(`Adding room ${r}`);
+			this._rooms.set(r, new Room(this._rsize));
+
 		}
 
 		// assign players to rooms
