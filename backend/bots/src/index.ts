@@ -148,7 +148,7 @@ export function createBot(gamestr:string, botid:string, gameid:string, level:num
 		if (game === gamestr)
 		{
 			myurl = url;
-			bot = (level === undefined) ? new type() : new type(level);
+			bot = (level === undefined) ? new type(botid) : new type(botid, level);
 			break ;
 		}
 	}
@@ -166,7 +166,7 @@ export function createBot(gamestr:string, botid:string, gameid:string, level:num
 		// authentication and join game
 		socket.on('open', () => {
 			socket.send(JSON.stringify({ method: 'AUTH', playerID: botid }));
-			socket.send(JSON.stringify({ method: 'JOIN', gameID: gameid }));
+			// socket.send(JSON.stringify({ method: 'JOIN', gameID: gameid }));
 		});
 
 		// process incoming messages (just GameState JSON)
@@ -202,7 +202,14 @@ export function createBot(gamestr:string, botid:string, gameid:string, level:num
 						// update the last played move
 						updateTimeFor(botid);
 					}
-				} else {bot.reset();}	// reset the bot's data
+				}
+				else
+				{
+					// reset the bot's data
+					bot.reset();
+					// auto start // #todo maybe wait a bit
+					socket.send(JSON.stringify({ method: "MOVE", value: "START_PRESS" }));
+				}
 
 			} catch (err) {
 				if (err instanceof SyntaxError) console.log('Error on bot:', 'JSON.parse(): SyntaxError');

@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Pong Client</title>
+  <style>
+    canvas { background: #000; display: none; margin: 20px auto; }
+    #ui { text-align: center; margin-top: 20px; }
+    #gameID { margin-top: 10px; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <div id="serverLog"></div>
+  <div id="sessionLog"></div>
+  <div id="scoreboard" align="center" style="display:none;">
+    P1 : P2
+  </div>
+
+  <canvas id="game" width="600" height="600"></canvas>
+
+  <br>
+  <div id="foot">
+    <button id="btnBack" align="center">Back to Lobby</button>
+  </div>
+
+  <script>
+    const scoreboard = document.getElementById("scoreboard");
+    const serverLog = document.getElementById("serverLog");
+    const sessionLog = document.getElementById("sessionLog");
+    const gameIDDiv = document.getElementById("gameID");
+
+    const btnBack = document.getElementById("btnBack");
+
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+
+    let gameID, playerID, lobbyID;
+    try {
+      const data = JSON.parse(sessionStorage.getItem("sesData"));
+
+      gameID = data.gameID;
+      playerID = data.playerID;
+      lobbyID = data.lobbyID;
+    } catch (err) {
+      sessionLog.innerHTML = `Error while reading session storage: ${err}`;
+    }
+
+    // let gameID = null;
+    // let playerID = null
+
+    serverLog.innerHTML = `connecting to ws://${window.location.hostname}:3040/gamesocket ...`;
+    const socket = new WebSocket(`ws://${window.location.hostname}:3040/gamesocket`);
+
+
+    btnBack.onclick = () => {
+      sessionStorage.setItem("sesData", JSON.stringify({
+        lobbyID: lobbyID,
+        playerID: playerID
+      }));
+
+      socket.close();
+      window.location.href = "/";
+    };
+
+    /* -------------------------
+       WINDOW EVENTS
+    -------------------------- */
+
+    // gets the playerID and the gameID
+    // window.addEventListener("message", (event) => {
+    //   if (event.origin !== window.location.origin) return;
+
+    //   playerID = event.data.playerID;
+    //   gameID = event.data.gameID;
+
+    //   console.log(`got playerID ${playerID} and gameID ${gameID}`);
+
+    //   // if socket is already open, send JOIN now
+    //   if (socket.readyState === WebSocket.OPEN) {
+    //     socket.send(JSON.stringify({ method: "JOIN", value: gameID, playerID: playerID }));
+    //   }
+    // });
+
+    /* -------------------------
+       WEBSOCKET EVENTS
+    -------------------------- */
+
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    socket.addEventListener("open", () => {
+      sleep(1500)
+      .then(() => {
+        socket.send(JSON.stringify({ method: "AUTH", playerID: playerID }));
+        serverLog.innerText = `Joining ${gameID}`;
+        socket.send(JSON.stringify({ method: "JOIN", gameID: gameID }));
+      });
+    });
+
+    socket.addEventListener("message", (event) => {
+      try {
+        const data = JSON.parse(event.data);
+
+        /* --------------
+           JOIN REPLY
+        --------------- */
+        if (data.method === "JOIN_REPLY") {
+
+          if (data.status === "success") {
+            console.log("Joined successfully");
+            serverLog.innerText = `Joined ${data.value}`;
+          }
+          else if (data.status === "failure") {
+            console.log("Couldn't connect to server");
+            serverLog.innerText = `Error trying to connect to: ${data.value}\ncause: ${data.cause}, reason: ${data.comment}`;
+
+            /* // stop this shit??
+            socket.close(); */
+          }
+          return ;
+        }
+
+        /* --------------
+           AUTH REPLY
+        --------------- */
+        if (data.method === "AUTH_REPLY") {
+
+          if (data.status === "success") {
+            console.log("Connected to server");
+            serverLog.innerText = `Connected to ${data.value}`;
+          }
+          else if (data.status === "failure") {
+            console.log("Couldn't connect to server");
+            serverLog.innerText = `Error trying to connect to: ${data.value}<br>reason: ${data.reason}`;
+
+            // stop this shit??
+            socket.close();
+          }
+          return ;
+        }
+
+        /* --------------
+           GAME STATE
+        --------------- */
+        if (data.players && data.ball && data.score) {
+          canvas.style.display = "block";
+          scoreboard.style.display = "block";
+          drawGame(data);
+          return;
+        }
+
+        /* ----------------------
+           OTHER SERVER MESSAGES
+        ----------------------- */
+        serverLog.innerText = event.data;
+
+      } catch (err) {
+        console.error("Bad JSON:", event.data);
+        serverLog.innerText = event.data;
+      }
+    });
+
+    /* -------------------------
+       DRAW GAME
+    -------------------------- */
+
+    function drawGame(state)
+{
+    // BOARD
+    const element = document.getElementById('game');
+    // const canvas:HTMLCanvasElement | null = (element instanceof HTMLCanvasElement) ? element : null;
+    const ctx = canvas?.getContext("2d");
+
+    // DATA
+    const scorePlayer1 = document.getElementById("player1Score");
+    const scorePlayer2 = document.getElementById("player2Score");   
+    const player1Name = document.getElementById("player1Name");
+    const player2Name = document.getElementById("player2Name");
+
+    if (!canvas || !ctx)
+    {
+        console.log("Couldn't find canvas/scoreboad/ctx");
+        return ;
+    }
+    
+    // clear stuff
+    canvas.style.display = "block";
+    ctx?.clearRect(0, 0, canvas.width, canvas.height);
+
+    // const paddleHeight1 = canvas.height * state.players[0].paddle.height;
+    // const paddleHeight2 = canvas.height * state.players[1].paddle.height;
+
+    // // console.log(`height1 ${paddleHeight1}`);
+    // // console.log(`height2 ${paddleHeight2}`);
+
+    // const paddleWidth1 = canvas.width * state.players[0].paddle.width;
+    // const paddleWidth2 = canvas.width * state.players[1].paddle.width;
+
+    // const paddleOffset1 = canvas.width * state.players[0].paddle.offset;
+    // const paddleOffset2 = canvas.width * state.players[1].paddle.offset;
+    // const ballSize = 10;
+
+    /* ---- GAME DATA ----- */
+    if (scorePlayer1) scorePlayer1.textContent = state.score[0];
+    if (scorePlayer2) scorePlayer2.textContent = state.score[1];
+    // @aleborghi: aggiorna mettendo l'username e nn l'ID
+    if (player1Name) player1Name.textContent = state.players[0].ID;
+    if (player2Name) player2Name.textContent = state.players[1].ID;
+
+    /* ---- GAME BOARD ---- */
+    const ball = state.ball;
+	const player1 = state.players[0];
+	const player2 = state.players[1];
+
+	// Clear canvas
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+	canvas.style.display = "block";
+
+	// Draw paddles
+	ctx.fillStyle = 'white';
+
+	// Player 1
+	ctx.fillRect(
+		player1.paddle.offset * canvas.width,
+		(player1.paddle.posY - player1.paddle.height / 2) * canvas.height,
+		player1.paddle.width * canvas.width,
+		player1.paddle.height * canvas.height
+	);
+	// Player 2
+	ctx.fillRect(
+		canvas.width - (player2.paddle.offset + player2.paddle.width) * canvas.width,
+		(player2.paddle.posY - player2.paddle.height / 2) * canvas.height,
+		player2.paddle.width * canvas.width,
+		player2.paddle.height * canvas.height
+	);
+
+	// Draw ball
+	const ballSize = 0.02; // 2% of canvas size
+	ctx.fillRect(
+		ball.pos[0] * canvas.width - (ballSize * canvas.width) / 2,
+		ball.pos[1] * canvas.height - (ballSize * canvas.height) / 2,
+		ballSize * canvas.width,
+		ballSize * canvas.height
+	);
+}
+
+    /* -------------------------
+       KEYBOARD INPUT
+    -------------------------- */
+
+    document.addEventListener("keydown", (e) => {
+      if (e.repeat) return;
+      switch (e.key) {
+        case "f": socket.send(JSON.stringify({ method: "MOVE", value: "UP_PRESS" })); break;
+        case "v": socket.send(JSON.stringify({ method: "MOVE", value: "DW_PRESS" })); break;
+        // case "j": socket.send(JSON.stringify({ method: "MOVE", value: "P2UP_PRESS" })); break;
+        // case "n": socket.send(JSON.stringify({ method: "MOVE", value: "P2DW_PRESS" })); break;
+        case " ": socket.send(JSON.stringify({ method: "MOVE", value: "START_PRESS" })); break;
+        case "r": socket.send(JSON.stringify({ method: "MOVE", value: "RESET_PRESS" })); break;
+      }
+    });
+
+    document.addEventListener("keyup", (e) => {
+      switch (e.key) {
+        case "f": socket.send(JSON.stringify({ method: "MOVE", value: "UP_RELEASE" })); break;
+        case "v": socket.send(JSON.stringify({ method: "MOVE", value: "DW_RELEASE" })); break;
+        // case "j": socket.send(JSON.stringify({ method: "MOVE", value: "P2UP_RELEASE" })); break;
+        // case "n": socket.send(JSON.stringify({ method: "MOVE", value: "P2DW_RELEASE" })); break;
+      }
+    });
+  </script>
+</body>
+</html>

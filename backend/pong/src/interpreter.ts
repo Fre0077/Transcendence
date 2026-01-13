@@ -1,5 +1,5 @@
 
-import { AUTH, JOIN, LEAVE, MOVE } from './METHODS.js'
+import { AUTH, /* JOIN, */ LEAVE, MOVE } from './METHODS.js'
 
 // check if the string is a JSON obj with the 'method' property
 function isValidObj(message:string): { method: string } | undefined
@@ -66,17 +66,18 @@ export async function interpreter(
 
 		case "JOIN":
 			// process JOIN request
-			let jret = JOIN(msg, outgame, outplayer, listener);
+			// let jret = JOIN(msg, outgame, outplayer, listener);
 
-			// successful JOIN
-			if (jret.status === "success")
-			{
-				/* store variables */
-				callback(jret.game, jret.player);
-			}
+			// // successful JOIN
+			// if (jret.status === "success")
+			// {
+			// 	/* store variables */
+			// 	callback(jret.game, jret.player);
+			// }
 
 			// send reply to frontend
-			return jret.reply;
+			// return jret.reply;
+			return JSON.stringify({ method: 'JOIN_REPLY', status: "failure", cause: 'deprecated', comment: "JOIN method deprecated"})
 		
 		case "LEAVE":
 			// process LEAVE request

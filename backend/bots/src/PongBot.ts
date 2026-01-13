@@ -18,6 +18,7 @@ type Player = {
 /* NOTE: BOT is always Player2 */
 export class PongBot
 {
+	private _ID:string;
 	// 0 = demon, ..., 100 = dumb
 	private _level:number;
 
@@ -31,8 +32,9 @@ export class PongBot
 	private _calculated:boolean;
 	private _timeout:number;
 
-	constructor(__level:number = 50)
+	constructor(__ID:string, __level:number = 50)
 	{
+		this._ID = __ID;
 		this._level = __level;
 		this._lastmove = "null";
 		this._move = "null";
@@ -80,19 +82,21 @@ export class PongBot
 
 	/* PARSE OBJECT */
 	
-	private parse(state:object): { ball:Ball, paddle:Paddle } | undefined {
+	private parse(state:object): { ball:Ball, paddle:Paddle, idx:number } | undefined {
 		// ball is a Ball
 		if (!("ball" in state) || !isBall(state.ball)) return undefined;
 		// paddle is an array of Paddles
 		if (!("players" in state) || !Array.isArray(state.players)
 			|| !state.players.every((p: unknown) => isPlayer(p))) return undefined;
 
-		return { ball: state.ball, paddle: state.players[1].paddle };
+		const idx:number = (state.players[0].ID === this._ID) ? 0 : 1;
+
+		return { ball: state.ball, paddle: state.players[idx].paddle, idx:idx };
 	}
 
 	public play(state:object)
 	{
-		let ball:Ball, paddle:Paddle;
+		let ball:Ball, paddle:Paddle, idx:number;
 	
 		try {
 			// parse state
@@ -106,6 +110,8 @@ export class PongBot
 
 			// save paddle
 			paddle = data.paddle;
+			// save idx
+			idx = data.idx;
 		
 		} catch(err) {
 			console.log('Error while parsing', err);
@@ -113,10 +119,11 @@ export class PongBot
 		}
 	
 		// calculate coordinate of bot paddle
-		const botX = 1 - (paddle.offset + paddle.width);
+		const botX = (idx == 1) ? 1 - (paddle.offset + paddle.width) : paddle.offset + paddle.width;
 
 		// calculate hitY of the ball
-		if (ball.angle < Math.PI / 2 || ball.angle > 3 * Math.PI / 2)
+		if ((idx === 1 && (ball.angle < Math.PI / 2 || ball.angle > 3 * Math.PI / 2))
+			|| (idx === 0 && (ball.angle > Math.PI / 2 && ball.angle < 3 * Math.PI / 2)))
 		{
 			// if not in timeout
 			if (this._timeout > 0)
