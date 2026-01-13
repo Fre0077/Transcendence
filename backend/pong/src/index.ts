@@ -218,7 +218,7 @@ export function deleteGame(gameID:string, reason:string | void)
 	// check if game is finished
 	const winner = game.game.end();
 
-	// what will be sent to RabbitMQ and ft_bunnyMQ
+	// what will be sent to RabbitMQ and ft_bunnyMQ @ecarbona
 	const history = {
 		game: 'pong',
 		ID: gameID,
