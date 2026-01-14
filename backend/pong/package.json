@@ -13,12 +13,14 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/amqplib": "^0.10.8",
     "@types/node": "^25.0.1",
     "@types/ws": "^8.18.1",
     "typescript": "^5.9.3"
   },
   "dependencies": {
     "@fastify/websocket": "^11.2.0",
+    "amqplib": "^0.10.9",
     "fastify": "^5.6.2",
     "ws": "^8.18.3"
   }

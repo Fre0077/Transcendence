@@ -14,6 +14,16 @@ export type PrismaPromise<T> = $Public.PrismaPromise<T>
 
 
 /**
+ * Model Metadata
+ * 
+ */
+export type Metadata = $Result.DefaultSelection<Prisma.$MetadataPayload>
+/**
+ * Model Game
+ * 
+ */
+export type Game = $Result.DefaultSelection<Prisma.$GamePayload>
+/**
  * Model User
  * 
  */
@@ -26,8 +36,8 @@ export type User = $Result.DefaultSelection<Prisma.$UserPayload>
  * @example
  * ```
  * const prisma = new PrismaClient()
- * // Fetch zero or more Users
- * const users = await prisma.user.findMany()
+ * // Fetch zero or more Metadata
+ * const metadata = await prisma.metadata.findMany()
  * ```
  *
  *
@@ -47,8 +57,8 @@ export class PrismaClient<
    * @example
    * ```
    * const prisma = new PrismaClient()
-   * // Fetch zero or more Users
-   * const users = await prisma.user.findMany()
+   * // Fetch zero or more Metadata
+   * const metadata = await prisma.metadata.findMany()
    * ```
    *
    *
@@ -145,6 +155,26 @@ export class PrismaClient<
   }>>
 
       /**
+   * `prisma.metadata`: Exposes CRUD operations for the **Metadata** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Metadata
+    * const metadata = await prisma.metadata.findMany()
+    * ```
+    */
+  get metadata(): Prisma.MetadataDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.game`: Exposes CRUD operations for the **Game** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Games
+    * const games = await prisma.game.findMany()
+    * ```
+    */
+  get game(): Prisma.GameDelegate<ExtArgs, ClientOptions>;
+
+  /**
    * `prisma.user`: Exposes CRUD operations for the **User** model.
     * Example usage:
     * ```ts
@@ -593,6 +623,8 @@ export namespace Prisma {
 
 
   export const ModelName: {
+    Metadata: 'Metadata',
+    Game: 'Game',
     User: 'User'
   };
 
@@ -612,10 +644,158 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user"
+      modelProps: "metadata" | "game" | "user"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
+      Metadata: {
+        payload: Prisma.$MetadataPayload<ExtArgs>
+        fields: Prisma.MetadataFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.MetadataFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MetadataPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.MetadataFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MetadataPayload>
+          }
+          findFirst: {
+            args: Prisma.MetadataFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MetadataPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.MetadataFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MetadataPayload>
+          }
+          findMany: {
+            args: Prisma.MetadataFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MetadataPayload>[]
+          }
+          create: {
+            args: Prisma.MetadataCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MetadataPayload>
+          }
+          createMany: {
+            args: Prisma.MetadataCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.MetadataCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MetadataPayload>[]
+          }
+          delete: {
+            args: Prisma.MetadataDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MetadataPayload>
+          }
+          update: {
+            args: Prisma.MetadataUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MetadataPayload>
+          }
+          deleteMany: {
+            args: Prisma.MetadataDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.MetadataUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.MetadataUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MetadataPayload>[]
+          }
+          upsert: {
+            args: Prisma.MetadataUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MetadataPayload>
+          }
+          aggregate: {
+            args: Prisma.MetadataAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateMetadata>
+          }
+          groupBy: {
+            args: Prisma.MetadataGroupByArgs<ExtArgs>
+            result: $Utils.Optional<MetadataGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.MetadataCountArgs<ExtArgs>
+            result: $Utils.Optional<MetadataCountAggregateOutputType> | number
+          }
+        }
+      }
+      Game: {
+        payload: Prisma.$GamePayload<ExtArgs>
+        fields: Prisma.GameFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.GameFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GamePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.GameFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GamePayload>
+          }
+          findFirst: {
+            args: Prisma.GameFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GamePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.GameFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GamePayload>
+          }
+          findMany: {
+            args: Prisma.GameFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GamePayload>[]
+          }
+          create: {
+            args: Prisma.GameCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GamePayload>
+          }
+          createMany: {
+            args: Prisma.GameCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.GameCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GamePayload>[]
+          }
+          delete: {
+            args: Prisma.GameDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GamePayload>
+          }
+          update: {
+            args: Prisma.GameUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GamePayload>
+          }
+          deleteMany: {
+            args: Prisma.GameDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.GameUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.GameUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GamePayload>[]
+          }
+          upsert: {
+            args: Prisma.GameUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GamePayload>
+          }
+          aggregate: {
+            args: Prisma.GameAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateGame>
+          }
+          groupBy: {
+            args: Prisma.GameGroupByArgs<ExtArgs>
+            result: $Utils.Optional<GameGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.GameCountArgs<ExtArgs>
+            result: $Utils.Optional<GameCountAggregateOutputType> | number
+          }
+        }
+      }
       User: {
         payload: Prisma.$UserPayload<ExtArgs>
         fields: Prisma.UserFieldRefs
@@ -774,6 +954,8 @@ export namespace Prisma {
     omit?: Prisma.GlobalOmitConfig
   }
   export type GlobalOmitConfig = {
+    metadata?: MetadataOmit
+    game?: GameOmit
     user?: UserOmit
   }
 
@@ -865,6 +1047,37 @@ export namespace Prisma {
 
 
   /**
+   * Count Type GameCountOutputType
+   */
+
+  export type GameCountOutputType = {
+    players: number
+  }
+
+  export type GameCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    players?: boolean | GameCountOutputTypeCountPlayersArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * GameCountOutputType without action
+   */
+  export type GameCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GameCountOutputType
+     */
+    select?: GameCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * GameCountOutputType without action
+   */
+  export type GameCountOutputTypeCountPlayersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: UserWhereInput
+  }
+
+
+  /**
    * Count Type UserCountOutputType
    */
 
@@ -873,6 +1086,7 @@ export namespace Prisma {
     friendOf: number
     incomingRequests: number
     outgoingRequests: number
+    history: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -880,6 +1094,7 @@ export namespace Prisma {
     friendOf?: boolean | UserCountOutputTypeCountFriendOfArgs
     incomingRequests?: boolean | UserCountOutputTypeCountIncomingRequestsArgs
     outgoingRequests?: boolean | UserCountOutputTypeCountOutgoingRequestsArgs
+    history?: boolean | UserCountOutputTypeCountHistoryArgs
   }
 
   // Custom InputTypes
@@ -921,10 +1136,2230 @@ export namespace Prisma {
     where?: UserWhereInput
   }
 
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountHistoryArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: GameWhereInput
+  }
+
 
   /**
    * Models
    */
+
+  /**
+   * Model Metadata
+   */
+
+  export type AggregateMetadata = {
+    _count: MetadataCountAggregateOutputType | null
+    _min: MetadataMinAggregateOutputType | null
+    _max: MetadataMaxAggregateOutputType | null
+  }
+
+  export type MetadataMinAggregateOutputType = {
+    id: string | null
+    origin: string | null
+    originId: string | null
+    room: string | null
+  }
+
+  export type MetadataMaxAggregateOutputType = {
+    id: string | null
+    origin: string | null
+    originId: string | null
+    room: string | null
+  }
+
+  export type MetadataCountAggregateOutputType = {
+    id: number
+    origin: number
+    originId: number
+    room: number
+    _all: number
+  }
+
+
+  export type MetadataMinAggregateInputType = {
+    id?: true
+    origin?: true
+    originId?: true
+    room?: true
+  }
+
+  export type MetadataMaxAggregateInputType = {
+    id?: true
+    origin?: true
+    originId?: true
+    room?: true
+  }
+
+  export type MetadataCountAggregateInputType = {
+    id?: true
+    origin?: true
+    originId?: true
+    room?: true
+    _all?: true
+  }
+
+  export type MetadataAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Metadata to aggregate.
+     */
+    where?: MetadataWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Metadata to fetch.
+     */
+    orderBy?: MetadataOrderByWithRelationInput | MetadataOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: MetadataWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Metadata from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Metadata.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Metadata
+    **/
+    _count?: true | MetadataCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: MetadataMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: MetadataMaxAggregateInputType
+  }
+
+  export type GetMetadataAggregateType<T extends MetadataAggregateArgs> = {
+        [P in keyof T & keyof AggregateMetadata]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateMetadata[P]>
+      : GetScalarType<T[P], AggregateMetadata[P]>
+  }
+
+
+
+
+  export type MetadataGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: MetadataWhereInput
+    orderBy?: MetadataOrderByWithAggregationInput | MetadataOrderByWithAggregationInput[]
+    by: MetadataScalarFieldEnum[] | MetadataScalarFieldEnum
+    having?: MetadataScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: MetadataCountAggregateInputType | true
+    _min?: MetadataMinAggregateInputType
+    _max?: MetadataMaxAggregateInputType
+  }
+
+  export type MetadataGroupByOutputType = {
+    id: string
+    origin: string
+    originId: string
+    room: string | null
+    _count: MetadataCountAggregateOutputType | null
+    _min: MetadataMinAggregateOutputType | null
+    _max: MetadataMaxAggregateOutputType | null
+  }
+
+  type GetMetadataGroupByPayload<T extends MetadataGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<MetadataGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof MetadataGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], MetadataGroupByOutputType[P]>
+            : GetScalarType<T[P], MetadataGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type MetadataSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    origin?: boolean
+    originId?: boolean
+    room?: boolean
+    game?: boolean | Metadata$gameArgs<ExtArgs>
+  }, ExtArgs["result"]["metadata"]>
+
+  export type MetadataSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    origin?: boolean
+    originId?: boolean
+    room?: boolean
+  }, ExtArgs["result"]["metadata"]>
+
+  export type MetadataSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    origin?: boolean
+    originId?: boolean
+    room?: boolean
+  }, ExtArgs["result"]["metadata"]>
+
+  export type MetadataSelectScalar = {
+    id?: boolean
+    origin?: boolean
+    originId?: boolean
+    room?: boolean
+  }
+
+  export type MetadataOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "origin" | "originId" | "room", ExtArgs["result"]["metadata"]>
+  export type MetadataInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    game?: boolean | Metadata$gameArgs<ExtArgs>
+  }
+  export type MetadataIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+  export type MetadataIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+
+  export type $MetadataPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Metadata"
+    objects: {
+      game: Prisma.$GamePayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      origin: string
+      originId: string
+      room: string | null
+    }, ExtArgs["result"]["metadata"]>
+    composites: {}
+  }
+
+  type MetadataGetPayload<S extends boolean | null | undefined | MetadataDefaultArgs> = $Result.GetResult<Prisma.$MetadataPayload, S>
+
+  type MetadataCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<MetadataFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: MetadataCountAggregateInputType | true
+    }
+
+  export interface MetadataDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Metadata'], meta: { name: 'Metadata' } }
+    /**
+     * Find zero or one Metadata that matches the filter.
+     * @param {MetadataFindUniqueArgs} args - Arguments to find a Metadata
+     * @example
+     * // Get one Metadata
+     * const metadata = await prisma.metadata.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends MetadataFindUniqueArgs>(args: SelectSubset<T, MetadataFindUniqueArgs<ExtArgs>>): Prisma__MetadataClient<$Result.GetResult<Prisma.$MetadataPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Metadata that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {MetadataFindUniqueOrThrowArgs} args - Arguments to find a Metadata
+     * @example
+     * // Get one Metadata
+     * const metadata = await prisma.metadata.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends MetadataFindUniqueOrThrowArgs>(args: SelectSubset<T, MetadataFindUniqueOrThrowArgs<ExtArgs>>): Prisma__MetadataClient<$Result.GetResult<Prisma.$MetadataPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Metadata that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MetadataFindFirstArgs} args - Arguments to find a Metadata
+     * @example
+     * // Get one Metadata
+     * const metadata = await prisma.metadata.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends MetadataFindFirstArgs>(args?: SelectSubset<T, MetadataFindFirstArgs<ExtArgs>>): Prisma__MetadataClient<$Result.GetResult<Prisma.$MetadataPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Metadata that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MetadataFindFirstOrThrowArgs} args - Arguments to find a Metadata
+     * @example
+     * // Get one Metadata
+     * const metadata = await prisma.metadata.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends MetadataFindFirstOrThrowArgs>(args?: SelectSubset<T, MetadataFindFirstOrThrowArgs<ExtArgs>>): Prisma__MetadataClient<$Result.GetResult<Prisma.$MetadataPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Metadata that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MetadataFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Metadata
+     * const metadata = await prisma.metadata.findMany()
+     * 
+     * // Get first 10 Metadata
+     * const metadata = await prisma.metadata.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const metadataWithIdOnly = await prisma.metadata.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends MetadataFindManyArgs>(args?: SelectSubset<T, MetadataFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MetadataPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Metadata.
+     * @param {MetadataCreateArgs} args - Arguments to create a Metadata.
+     * @example
+     * // Create one Metadata
+     * const Metadata = await prisma.metadata.create({
+     *   data: {
+     *     // ... data to create a Metadata
+     *   }
+     * })
+     * 
+     */
+    create<T extends MetadataCreateArgs>(args: SelectSubset<T, MetadataCreateArgs<ExtArgs>>): Prisma__MetadataClient<$Result.GetResult<Prisma.$MetadataPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Metadata.
+     * @param {MetadataCreateManyArgs} args - Arguments to create many Metadata.
+     * @example
+     * // Create many Metadata
+     * const metadata = await prisma.metadata.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends MetadataCreateManyArgs>(args?: SelectSubset<T, MetadataCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Metadata and returns the data saved in the database.
+     * @param {MetadataCreateManyAndReturnArgs} args - Arguments to create many Metadata.
+     * @example
+     * // Create many Metadata
+     * const metadata = await prisma.metadata.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Metadata and only return the `id`
+     * const metadataWithIdOnly = await prisma.metadata.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends MetadataCreateManyAndReturnArgs>(args?: SelectSubset<T, MetadataCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MetadataPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a Metadata.
+     * @param {MetadataDeleteArgs} args - Arguments to delete one Metadata.
+     * @example
+     * // Delete one Metadata
+     * const Metadata = await prisma.metadata.delete({
+     *   where: {
+     *     // ... filter to delete one Metadata
+     *   }
+     * })
+     * 
+     */
+    delete<T extends MetadataDeleteArgs>(args: SelectSubset<T, MetadataDeleteArgs<ExtArgs>>): Prisma__MetadataClient<$Result.GetResult<Prisma.$MetadataPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Metadata.
+     * @param {MetadataUpdateArgs} args - Arguments to update one Metadata.
+     * @example
+     * // Update one Metadata
+     * const metadata = await prisma.metadata.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends MetadataUpdateArgs>(args: SelectSubset<T, MetadataUpdateArgs<ExtArgs>>): Prisma__MetadataClient<$Result.GetResult<Prisma.$MetadataPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Metadata.
+     * @param {MetadataDeleteManyArgs} args - Arguments to filter Metadata to delete.
+     * @example
+     * // Delete a few Metadata
+     * const { count } = await prisma.metadata.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends MetadataDeleteManyArgs>(args?: SelectSubset<T, MetadataDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Metadata.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MetadataUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Metadata
+     * const metadata = await prisma.metadata.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends MetadataUpdateManyArgs>(args: SelectSubset<T, MetadataUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Metadata and returns the data updated in the database.
+     * @param {MetadataUpdateManyAndReturnArgs} args - Arguments to update many Metadata.
+     * @example
+     * // Update many Metadata
+     * const metadata = await prisma.metadata.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more Metadata and only return the `id`
+     * const metadataWithIdOnly = await prisma.metadata.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends MetadataUpdateManyAndReturnArgs>(args: SelectSubset<T, MetadataUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MetadataPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one Metadata.
+     * @param {MetadataUpsertArgs} args - Arguments to update or create a Metadata.
+     * @example
+     * // Update or create a Metadata
+     * const metadata = await prisma.metadata.upsert({
+     *   create: {
+     *     // ... data to create a Metadata
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Metadata we want to update
+     *   }
+     * })
+     */
+    upsert<T extends MetadataUpsertArgs>(args: SelectSubset<T, MetadataUpsertArgs<ExtArgs>>): Prisma__MetadataClient<$Result.GetResult<Prisma.$MetadataPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Metadata.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MetadataCountArgs} args - Arguments to filter Metadata to count.
+     * @example
+     * // Count the number of Metadata
+     * const count = await prisma.metadata.count({
+     *   where: {
+     *     // ... the filter for the Metadata we want to count
+     *   }
+     * })
+    **/
+    count<T extends MetadataCountArgs>(
+      args?: Subset<T, MetadataCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], MetadataCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Metadata.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MetadataAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends MetadataAggregateArgs>(args: Subset<T, MetadataAggregateArgs>): Prisma.PrismaPromise<GetMetadataAggregateType<T>>
+
+    /**
+     * Group by Metadata.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MetadataGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends MetadataGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: MetadataGroupByArgs['orderBy'] }
+        : { orderBy?: MetadataGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, MetadataGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetMetadataGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Metadata model
+   */
+  readonly fields: MetadataFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Metadata.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__MetadataClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    game<T extends Metadata$gameArgs<ExtArgs> = {}>(args?: Subset<T, Metadata$gameArgs<ExtArgs>>): Prisma__GameClient<$Result.GetResult<Prisma.$GamePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Metadata model
+   */
+  interface MetadataFieldRefs {
+    readonly id: FieldRef<"Metadata", 'String'>
+    readonly origin: FieldRef<"Metadata", 'String'>
+    readonly originId: FieldRef<"Metadata", 'String'>
+    readonly room: FieldRef<"Metadata", 'String'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Metadata findUnique
+   */
+  export type MetadataFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Metadata
+     */
+    select?: MetadataSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Metadata
+     */
+    omit?: MetadataOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MetadataInclude<ExtArgs> | null
+    /**
+     * Filter, which Metadata to fetch.
+     */
+    where: MetadataWhereUniqueInput
+  }
+
+  /**
+   * Metadata findUniqueOrThrow
+   */
+  export type MetadataFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Metadata
+     */
+    select?: MetadataSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Metadata
+     */
+    omit?: MetadataOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MetadataInclude<ExtArgs> | null
+    /**
+     * Filter, which Metadata to fetch.
+     */
+    where: MetadataWhereUniqueInput
+  }
+
+  /**
+   * Metadata findFirst
+   */
+  export type MetadataFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Metadata
+     */
+    select?: MetadataSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Metadata
+     */
+    omit?: MetadataOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MetadataInclude<ExtArgs> | null
+    /**
+     * Filter, which Metadata to fetch.
+     */
+    where?: MetadataWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Metadata to fetch.
+     */
+    orderBy?: MetadataOrderByWithRelationInput | MetadataOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Metadata.
+     */
+    cursor?: MetadataWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Metadata from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Metadata.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Metadata.
+     */
+    distinct?: MetadataScalarFieldEnum | MetadataScalarFieldEnum[]
+  }
+
+  /**
+   * Metadata findFirstOrThrow
+   */
+  export type MetadataFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Metadata
+     */
+    select?: MetadataSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Metadata
+     */
+    omit?: MetadataOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MetadataInclude<ExtArgs> | null
+    /**
+     * Filter, which Metadata to fetch.
+     */
+    where?: MetadataWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Metadata to fetch.
+     */
+    orderBy?: MetadataOrderByWithRelationInput | MetadataOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Metadata.
+     */
+    cursor?: MetadataWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Metadata from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Metadata.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Metadata.
+     */
+    distinct?: MetadataScalarFieldEnum | MetadataScalarFieldEnum[]
+  }
+
+  /**
+   * Metadata findMany
+   */
+  export type MetadataFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Metadata
+     */
+    select?: MetadataSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Metadata
+     */
+    omit?: MetadataOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MetadataInclude<ExtArgs> | null
+    /**
+     * Filter, which Metadata to fetch.
+     */
+    where?: MetadataWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Metadata to fetch.
+     */
+    orderBy?: MetadataOrderByWithRelationInput | MetadataOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Metadata.
+     */
+    cursor?: MetadataWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Metadata from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Metadata.
+     */
+    skip?: number
+    distinct?: MetadataScalarFieldEnum | MetadataScalarFieldEnum[]
+  }
+
+  /**
+   * Metadata create
+   */
+  export type MetadataCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Metadata
+     */
+    select?: MetadataSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Metadata
+     */
+    omit?: MetadataOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MetadataInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Metadata.
+     */
+    data: XOR<MetadataCreateInput, MetadataUncheckedCreateInput>
+  }
+
+  /**
+   * Metadata createMany
+   */
+  export type MetadataCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Metadata.
+     */
+    data: MetadataCreateManyInput | MetadataCreateManyInput[]
+  }
+
+  /**
+   * Metadata createManyAndReturn
+   */
+  export type MetadataCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Metadata
+     */
+    select?: MetadataSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Metadata
+     */
+    omit?: MetadataOmit<ExtArgs> | null
+    /**
+     * The data used to create many Metadata.
+     */
+    data: MetadataCreateManyInput | MetadataCreateManyInput[]
+  }
+
+  /**
+   * Metadata update
+   */
+  export type MetadataUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Metadata
+     */
+    select?: MetadataSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Metadata
+     */
+    omit?: MetadataOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MetadataInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Metadata.
+     */
+    data: XOR<MetadataUpdateInput, MetadataUncheckedUpdateInput>
+    /**
+     * Choose, which Metadata to update.
+     */
+    where: MetadataWhereUniqueInput
+  }
+
+  /**
+   * Metadata updateMany
+   */
+  export type MetadataUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Metadata.
+     */
+    data: XOR<MetadataUpdateManyMutationInput, MetadataUncheckedUpdateManyInput>
+    /**
+     * Filter which Metadata to update
+     */
+    where?: MetadataWhereInput
+    /**
+     * Limit how many Metadata to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Metadata updateManyAndReturn
+   */
+  export type MetadataUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Metadata
+     */
+    select?: MetadataSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Metadata
+     */
+    omit?: MetadataOmit<ExtArgs> | null
+    /**
+     * The data used to update Metadata.
+     */
+    data: XOR<MetadataUpdateManyMutationInput, MetadataUncheckedUpdateManyInput>
+    /**
+     * Filter which Metadata to update
+     */
+    where?: MetadataWhereInput
+    /**
+     * Limit how many Metadata to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Metadata upsert
+   */
+  export type MetadataUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Metadata
+     */
+    select?: MetadataSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Metadata
+     */
+    omit?: MetadataOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MetadataInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Metadata to update in case it exists.
+     */
+    where: MetadataWhereUniqueInput
+    /**
+     * In case the Metadata found by the `where` argument doesn't exist, create a new Metadata with this data.
+     */
+    create: XOR<MetadataCreateInput, MetadataUncheckedCreateInput>
+    /**
+     * In case the Metadata was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<MetadataUpdateInput, MetadataUncheckedUpdateInput>
+  }
+
+  /**
+   * Metadata delete
+   */
+  export type MetadataDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Metadata
+     */
+    select?: MetadataSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Metadata
+     */
+    omit?: MetadataOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MetadataInclude<ExtArgs> | null
+    /**
+     * Filter which Metadata to delete.
+     */
+    where: MetadataWhereUniqueInput
+  }
+
+  /**
+   * Metadata deleteMany
+   */
+  export type MetadataDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Metadata to delete
+     */
+    where?: MetadataWhereInput
+    /**
+     * Limit how many Metadata to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Metadata.game
+   */
+  export type Metadata$gameArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Game
+     */
+    select?: GameSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Game
+     */
+    omit?: GameOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GameInclude<ExtArgs> | null
+    where?: GameWhereInput
+  }
+
+  /**
+   * Metadata without action
+   */
+  export type MetadataDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Metadata
+     */
+    select?: MetadataSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Metadata
+     */
+    omit?: MetadataOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MetadataInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model Game
+   */
+
+  export type AggregateGame = {
+    _count: GameCountAggregateOutputType | null
+    _avg: GameAvgAggregateOutputType | null
+    _sum: GameSumAggregateOutputType | null
+    _min: GameMinAggregateOutputType | null
+    _max: GameMaxAggregateOutputType | null
+  }
+
+  export type GameAvgAggregateOutputType = {
+    id: number | null
+  }
+
+  export type GameSumAggregateOutputType = {
+    id: number | null
+  }
+
+  export type GameMinAggregateOutputType = {
+    id: number | null
+    game: string | null
+    gameId: string | null
+    winner: string | null
+    score: string | null
+    replay: string | null
+    metadataId: string | null
+  }
+
+  export type GameMaxAggregateOutputType = {
+    id: number | null
+    game: string | null
+    gameId: string | null
+    winner: string | null
+    score: string | null
+    replay: string | null
+    metadataId: string | null
+  }
+
+  export type GameCountAggregateOutputType = {
+    id: number
+    game: number
+    gameId: number
+    winner: number
+    score: number
+    replay: number
+    metadataId: number
+    _all: number
+  }
+
+
+  export type GameAvgAggregateInputType = {
+    id?: true
+  }
+
+  export type GameSumAggregateInputType = {
+    id?: true
+  }
+
+  export type GameMinAggregateInputType = {
+    id?: true
+    game?: true
+    gameId?: true
+    winner?: true
+    score?: true
+    replay?: true
+    metadataId?: true
+  }
+
+  export type GameMaxAggregateInputType = {
+    id?: true
+    game?: true
+    gameId?: true
+    winner?: true
+    score?: true
+    replay?: true
+    metadataId?: true
+  }
+
+  export type GameCountAggregateInputType = {
+    id?: true
+    game?: true
+    gameId?: true
+    winner?: true
+    score?: true
+    replay?: true
+    metadataId?: true
+    _all?: true
+  }
+
+  export type GameAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Game to aggregate.
+     */
+    where?: GameWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Games to fetch.
+     */
+    orderBy?: GameOrderByWithRelationInput | GameOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: GameWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Games from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Games.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Games
+    **/
+    _count?: true | GameCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: GameAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: GameSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: GameMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: GameMaxAggregateInputType
+  }
+
+  export type GetGameAggregateType<T extends GameAggregateArgs> = {
+        [P in keyof T & keyof AggregateGame]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateGame[P]>
+      : GetScalarType<T[P], AggregateGame[P]>
+  }
+
+
+
+
+  export type GameGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: GameWhereInput
+    orderBy?: GameOrderByWithAggregationInput | GameOrderByWithAggregationInput[]
+    by: GameScalarFieldEnum[] | GameScalarFieldEnum
+    having?: GameScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: GameCountAggregateInputType | true
+    _avg?: GameAvgAggregateInputType
+    _sum?: GameSumAggregateInputType
+    _min?: GameMinAggregateInputType
+    _max?: GameMaxAggregateInputType
+  }
+
+  export type GameGroupByOutputType = {
+    id: number
+    game: string
+    gameId: string
+    winner: string
+    score: string
+    replay: string
+    metadataId: string | null
+    _count: GameCountAggregateOutputType | null
+    _avg: GameAvgAggregateOutputType | null
+    _sum: GameSumAggregateOutputType | null
+    _min: GameMinAggregateOutputType | null
+    _max: GameMaxAggregateOutputType | null
+  }
+
+  type GetGameGroupByPayload<T extends GameGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<GameGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof GameGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], GameGroupByOutputType[P]>
+            : GetScalarType<T[P], GameGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type GameSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    game?: boolean
+    gameId?: boolean
+    winner?: boolean
+    score?: boolean
+    replay?: boolean
+    metadataId?: boolean
+    players?: boolean | Game$playersArgs<ExtArgs>
+    metadata?: boolean | Game$metadataArgs<ExtArgs>
+    _count?: boolean | GameCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["game"]>
+
+  export type GameSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    game?: boolean
+    gameId?: boolean
+    winner?: boolean
+    score?: boolean
+    replay?: boolean
+    metadataId?: boolean
+    metadata?: boolean | Game$metadataArgs<ExtArgs>
+  }, ExtArgs["result"]["game"]>
+
+  export type GameSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    game?: boolean
+    gameId?: boolean
+    winner?: boolean
+    score?: boolean
+    replay?: boolean
+    metadataId?: boolean
+    metadata?: boolean | Game$metadataArgs<ExtArgs>
+  }, ExtArgs["result"]["game"]>
+
+  export type GameSelectScalar = {
+    id?: boolean
+    game?: boolean
+    gameId?: boolean
+    winner?: boolean
+    score?: boolean
+    replay?: boolean
+    metadataId?: boolean
+  }
+
+  export type GameOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "game" | "gameId" | "winner" | "score" | "replay" | "metadataId", ExtArgs["result"]["game"]>
+  export type GameInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    players?: boolean | Game$playersArgs<ExtArgs>
+    metadata?: boolean | Game$metadataArgs<ExtArgs>
+    _count?: boolean | GameCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type GameIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    metadata?: boolean | Game$metadataArgs<ExtArgs>
+  }
+  export type GameIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    metadata?: boolean | Game$metadataArgs<ExtArgs>
+  }
+
+  export type $GamePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Game"
+    objects: {
+      players: Prisma.$UserPayload<ExtArgs>[]
+      metadata: Prisma.$MetadataPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: number
+      game: string
+      gameId: string
+      winner: string
+      score: string
+      replay: string
+      metadataId: string | null
+    }, ExtArgs["result"]["game"]>
+    composites: {}
+  }
+
+  type GameGetPayload<S extends boolean | null | undefined | GameDefaultArgs> = $Result.GetResult<Prisma.$GamePayload, S>
+
+  type GameCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<GameFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: GameCountAggregateInputType | true
+    }
+
+  export interface GameDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Game'], meta: { name: 'Game' } }
+    /**
+     * Find zero or one Game that matches the filter.
+     * @param {GameFindUniqueArgs} args - Arguments to find a Game
+     * @example
+     * // Get one Game
+     * const game = await prisma.game.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends GameFindUniqueArgs>(args: SelectSubset<T, GameFindUniqueArgs<ExtArgs>>): Prisma__GameClient<$Result.GetResult<Prisma.$GamePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Game that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {GameFindUniqueOrThrowArgs} args - Arguments to find a Game
+     * @example
+     * // Get one Game
+     * const game = await prisma.game.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends GameFindUniqueOrThrowArgs>(args: SelectSubset<T, GameFindUniqueOrThrowArgs<ExtArgs>>): Prisma__GameClient<$Result.GetResult<Prisma.$GamePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Game that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GameFindFirstArgs} args - Arguments to find a Game
+     * @example
+     * // Get one Game
+     * const game = await prisma.game.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends GameFindFirstArgs>(args?: SelectSubset<T, GameFindFirstArgs<ExtArgs>>): Prisma__GameClient<$Result.GetResult<Prisma.$GamePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Game that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GameFindFirstOrThrowArgs} args - Arguments to find a Game
+     * @example
+     * // Get one Game
+     * const game = await prisma.game.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends GameFindFirstOrThrowArgs>(args?: SelectSubset<T, GameFindFirstOrThrowArgs<ExtArgs>>): Prisma__GameClient<$Result.GetResult<Prisma.$GamePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Games that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GameFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Games
+     * const games = await prisma.game.findMany()
+     * 
+     * // Get first 10 Games
+     * const games = await prisma.game.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const gameWithIdOnly = await prisma.game.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends GameFindManyArgs>(args?: SelectSubset<T, GameFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GamePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Game.
+     * @param {GameCreateArgs} args - Arguments to create a Game.
+     * @example
+     * // Create one Game
+     * const Game = await prisma.game.create({
+     *   data: {
+     *     // ... data to create a Game
+     *   }
+     * })
+     * 
+     */
+    create<T extends GameCreateArgs>(args: SelectSubset<T, GameCreateArgs<ExtArgs>>): Prisma__GameClient<$Result.GetResult<Prisma.$GamePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Games.
+     * @param {GameCreateManyArgs} args - Arguments to create many Games.
+     * @example
+     * // Create many Games
+     * const game = await prisma.game.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends GameCreateManyArgs>(args?: SelectSubset<T, GameCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Games and returns the data saved in the database.
+     * @param {GameCreateManyAndReturnArgs} args - Arguments to create many Games.
+     * @example
+     * // Create many Games
+     * const game = await prisma.game.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Games and only return the `id`
+     * const gameWithIdOnly = await prisma.game.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends GameCreateManyAndReturnArgs>(args?: SelectSubset<T, GameCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GamePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a Game.
+     * @param {GameDeleteArgs} args - Arguments to delete one Game.
+     * @example
+     * // Delete one Game
+     * const Game = await prisma.game.delete({
+     *   where: {
+     *     // ... filter to delete one Game
+     *   }
+     * })
+     * 
+     */
+    delete<T extends GameDeleteArgs>(args: SelectSubset<T, GameDeleteArgs<ExtArgs>>): Prisma__GameClient<$Result.GetResult<Prisma.$GamePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Game.
+     * @param {GameUpdateArgs} args - Arguments to update one Game.
+     * @example
+     * // Update one Game
+     * const game = await prisma.game.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends GameUpdateArgs>(args: SelectSubset<T, GameUpdateArgs<ExtArgs>>): Prisma__GameClient<$Result.GetResult<Prisma.$GamePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Games.
+     * @param {GameDeleteManyArgs} args - Arguments to filter Games to delete.
+     * @example
+     * // Delete a few Games
+     * const { count } = await prisma.game.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends GameDeleteManyArgs>(args?: SelectSubset<T, GameDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Games.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GameUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Games
+     * const game = await prisma.game.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends GameUpdateManyArgs>(args: SelectSubset<T, GameUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Games and returns the data updated in the database.
+     * @param {GameUpdateManyAndReturnArgs} args - Arguments to update many Games.
+     * @example
+     * // Update many Games
+     * const game = await prisma.game.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more Games and only return the `id`
+     * const gameWithIdOnly = await prisma.game.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends GameUpdateManyAndReturnArgs>(args: SelectSubset<T, GameUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GamePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one Game.
+     * @param {GameUpsertArgs} args - Arguments to update or create a Game.
+     * @example
+     * // Update or create a Game
+     * const game = await prisma.game.upsert({
+     *   create: {
+     *     // ... data to create a Game
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Game we want to update
+     *   }
+     * })
+     */
+    upsert<T extends GameUpsertArgs>(args: SelectSubset<T, GameUpsertArgs<ExtArgs>>): Prisma__GameClient<$Result.GetResult<Prisma.$GamePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Games.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GameCountArgs} args - Arguments to filter Games to count.
+     * @example
+     * // Count the number of Games
+     * const count = await prisma.game.count({
+     *   where: {
+     *     // ... the filter for the Games we want to count
+     *   }
+     * })
+    **/
+    count<T extends GameCountArgs>(
+      args?: Subset<T, GameCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], GameCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Game.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GameAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends GameAggregateArgs>(args: Subset<T, GameAggregateArgs>): Prisma.PrismaPromise<GetGameAggregateType<T>>
+
+    /**
+     * Group by Game.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GameGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends GameGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: GameGroupByArgs['orderBy'] }
+        : { orderBy?: GameGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, GameGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetGameGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Game model
+   */
+  readonly fields: GameFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Game.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__GameClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    players<T extends Game$playersArgs<ExtArgs> = {}>(args?: Subset<T, Game$playersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    metadata<T extends Game$metadataArgs<ExtArgs> = {}>(args?: Subset<T, Game$metadataArgs<ExtArgs>>): Prisma__MetadataClient<$Result.GetResult<Prisma.$MetadataPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Game model
+   */
+  interface GameFieldRefs {
+    readonly id: FieldRef<"Game", 'Int'>
+    readonly game: FieldRef<"Game", 'String'>
+    readonly gameId: FieldRef<"Game", 'String'>
+    readonly winner: FieldRef<"Game", 'String'>
+    readonly score: FieldRef<"Game", 'String'>
+    readonly replay: FieldRef<"Game", 'String'>
+    readonly metadataId: FieldRef<"Game", 'String'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Game findUnique
+   */
+  export type GameFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Game
+     */
+    select?: GameSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Game
+     */
+    omit?: GameOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GameInclude<ExtArgs> | null
+    /**
+     * Filter, which Game to fetch.
+     */
+    where: GameWhereUniqueInput
+  }
+
+  /**
+   * Game findUniqueOrThrow
+   */
+  export type GameFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Game
+     */
+    select?: GameSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Game
+     */
+    omit?: GameOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GameInclude<ExtArgs> | null
+    /**
+     * Filter, which Game to fetch.
+     */
+    where: GameWhereUniqueInput
+  }
+
+  /**
+   * Game findFirst
+   */
+  export type GameFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Game
+     */
+    select?: GameSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Game
+     */
+    omit?: GameOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GameInclude<ExtArgs> | null
+    /**
+     * Filter, which Game to fetch.
+     */
+    where?: GameWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Games to fetch.
+     */
+    orderBy?: GameOrderByWithRelationInput | GameOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Games.
+     */
+    cursor?: GameWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Games from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Games.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Games.
+     */
+    distinct?: GameScalarFieldEnum | GameScalarFieldEnum[]
+  }
+
+  /**
+   * Game findFirstOrThrow
+   */
+  export type GameFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Game
+     */
+    select?: GameSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Game
+     */
+    omit?: GameOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GameInclude<ExtArgs> | null
+    /**
+     * Filter, which Game to fetch.
+     */
+    where?: GameWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Games to fetch.
+     */
+    orderBy?: GameOrderByWithRelationInput | GameOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Games.
+     */
+    cursor?: GameWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Games from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Games.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Games.
+     */
+    distinct?: GameScalarFieldEnum | GameScalarFieldEnum[]
+  }
+
+  /**
+   * Game findMany
+   */
+  export type GameFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Game
+     */
+    select?: GameSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Game
+     */
+    omit?: GameOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GameInclude<ExtArgs> | null
+    /**
+     * Filter, which Games to fetch.
+     */
+    where?: GameWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Games to fetch.
+     */
+    orderBy?: GameOrderByWithRelationInput | GameOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Games.
+     */
+    cursor?: GameWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Games from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Games.
+     */
+    skip?: number
+    distinct?: GameScalarFieldEnum | GameScalarFieldEnum[]
+  }
+
+  /**
+   * Game create
+   */
+  export type GameCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Game
+     */
+    select?: GameSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Game
+     */
+    omit?: GameOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GameInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Game.
+     */
+    data: XOR<GameCreateInput, GameUncheckedCreateInput>
+  }
+
+  /**
+   * Game createMany
+   */
+  export type GameCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Games.
+     */
+    data: GameCreateManyInput | GameCreateManyInput[]
+  }
+
+  /**
+   * Game createManyAndReturn
+   */
+  export type GameCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Game
+     */
+    select?: GameSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Game
+     */
+    omit?: GameOmit<ExtArgs> | null
+    /**
+     * The data used to create many Games.
+     */
+    data: GameCreateManyInput | GameCreateManyInput[]
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GameIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Game update
+   */
+  export type GameUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Game
+     */
+    select?: GameSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Game
+     */
+    omit?: GameOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GameInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Game.
+     */
+    data: XOR<GameUpdateInput, GameUncheckedUpdateInput>
+    /**
+     * Choose, which Game to update.
+     */
+    where: GameWhereUniqueInput
+  }
+
+  /**
+   * Game updateMany
+   */
+  export type GameUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Games.
+     */
+    data: XOR<GameUpdateManyMutationInput, GameUncheckedUpdateManyInput>
+    /**
+     * Filter which Games to update
+     */
+    where?: GameWhereInput
+    /**
+     * Limit how many Games to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Game updateManyAndReturn
+   */
+  export type GameUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Game
+     */
+    select?: GameSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Game
+     */
+    omit?: GameOmit<ExtArgs> | null
+    /**
+     * The data used to update Games.
+     */
+    data: XOR<GameUpdateManyMutationInput, GameUncheckedUpdateManyInput>
+    /**
+     * Filter which Games to update
+     */
+    where?: GameWhereInput
+    /**
+     * Limit how many Games to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GameIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Game upsert
+   */
+  export type GameUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Game
+     */
+    select?: GameSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Game
+     */
+    omit?: GameOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GameInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Game to update in case it exists.
+     */
+    where: GameWhereUniqueInput
+    /**
+     * In case the Game found by the `where` argument doesn't exist, create a new Game with this data.
+     */
+    create: XOR<GameCreateInput, GameUncheckedCreateInput>
+    /**
+     * In case the Game was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<GameUpdateInput, GameUncheckedUpdateInput>
+  }
+
+  /**
+   * Game delete
+   */
+  export type GameDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Game
+     */
+    select?: GameSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Game
+     */
+    omit?: GameOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GameInclude<ExtArgs> | null
+    /**
+     * Filter which Game to delete.
+     */
+    where: GameWhereUniqueInput
+  }
+
+  /**
+   * Game deleteMany
+   */
+  export type GameDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Games to delete
+     */
+    where?: GameWhereInput
+    /**
+     * Limit how many Games to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Game.players
+   */
+  export type Game$playersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+    orderBy?: UserOrderByWithRelationInput | UserOrderByWithRelationInput[]
+    cursor?: UserWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: UserScalarFieldEnum | UserScalarFieldEnum[]
+  }
+
+  /**
+   * Game.metadata
+   */
+  export type Game$metadataArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Metadata
+     */
+    select?: MetadataSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Metadata
+     */
+    omit?: MetadataOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MetadataInclude<ExtArgs> | null
+    where?: MetadataWhereInput
+  }
+
+  /**
+   * Game without action
+   */
+  export type GameDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Game
+     */
+    select?: GameSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Game
+     */
+    omit?: GameOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GameInclude<ExtArgs> | null
+  }
+
 
   /**
    * Model User
@@ -1124,6 +3559,7 @@ export namespace Prisma {
     friendOf?: boolean | User$friendOfArgs<ExtArgs>
     incomingRequests?: boolean | User$incomingRequestsArgs<ExtArgs>
     outgoingRequests?: boolean | User$outgoingRequestsArgs<ExtArgs>
+    history?: boolean | User$historyArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -1154,6 +3590,7 @@ export namespace Prisma {
     friendOf?: boolean | User$friendOfArgs<ExtArgs>
     incomingRequests?: boolean | User$incomingRequestsArgs<ExtArgs>
     outgoingRequests?: boolean | User$outgoingRequestsArgs<ExtArgs>
+    history?: boolean | User$historyArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -1166,6 +3603,7 @@ export namespace Prisma {
       friendOf: Prisma.$UserPayload<ExtArgs>[]
       incomingRequests: Prisma.$UserPayload<ExtArgs>[]
       outgoingRequests: Prisma.$UserPayload<ExtArgs>[]
+      history: Prisma.$GamePayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: number
@@ -1570,6 +4008,7 @@ export namespace Prisma {
     friendOf<T extends User$friendOfArgs<ExtArgs> = {}>(args?: Subset<T, User$friendOfArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     incomingRequests<T extends User$incomingRequestsArgs<ExtArgs> = {}>(args?: Subset<T, User$incomingRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     outgoingRequests<T extends User$outgoingRequestsArgs<ExtArgs> = {}>(args?: Subset<T, User$outgoingRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    history<T extends User$historyArgs<ExtArgs> = {}>(args?: Subset<T, User$historyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GamePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2085,6 +4524,30 @@ export namespace Prisma {
   }
 
   /**
+   * User.history
+   */
+  export type User$historyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Game
+     */
+    select?: GameSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Game
+     */
+    omit?: GameOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GameInclude<ExtArgs> | null
+    where?: GameWhereInput
+    orderBy?: GameOrderByWithRelationInput | GameOrderByWithRelationInput[]
+    cursor?: GameWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: GameScalarFieldEnum | GameScalarFieldEnum[]
+  }
+
+  /**
    * User without action
    */
   export type UserDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2112,6 +4575,29 @@ export namespace Prisma {
   };
 
   export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
+
+
+  export const MetadataScalarFieldEnum: {
+    id: 'id',
+    origin: 'origin',
+    originId: 'originId',
+    room: 'room'
+  };
+
+  export type MetadataScalarFieldEnum = (typeof MetadataScalarFieldEnum)[keyof typeof MetadataScalarFieldEnum]
+
+
+  export const GameScalarFieldEnum: {
+    id: 'id',
+    game: 'game',
+    gameId: 'gameId',
+    winner: 'winner',
+    score: 'score',
+    replay: 'replay',
+    metadataId: 'metadataId'
+  };
+
+  export type GameScalarFieldEnum = (typeof GameScalarFieldEnum)[keyof typeof GameScalarFieldEnum]
 
 
   export const UserScalarFieldEnum: {
@@ -2146,16 +4632,16 @@ export namespace Prisma {
 
 
   /**
-   * Reference to a field of type 'Int'
+   * Reference to a field of type 'String'
    */
-  export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
+  export type StringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'String'>
     
 
 
   /**
-   * Reference to a field of type 'String'
+   * Reference to a field of type 'Int'
    */
-  export type StringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'String'>
+  export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
     
 
 
@@ -2169,6 +4655,126 @@ export namespace Prisma {
    */
 
 
+  export type MetadataWhereInput = {
+    AND?: MetadataWhereInput | MetadataWhereInput[]
+    OR?: MetadataWhereInput[]
+    NOT?: MetadataWhereInput | MetadataWhereInput[]
+    id?: StringFilter<"Metadata"> | string
+    origin?: StringFilter<"Metadata"> | string
+    originId?: StringFilter<"Metadata"> | string
+    room?: StringNullableFilter<"Metadata"> | string | null
+    game?: XOR<GameNullableScalarRelationFilter, GameWhereInput> | null
+  }
+
+  export type MetadataOrderByWithRelationInput = {
+    id?: SortOrder
+    origin?: SortOrder
+    originId?: SortOrder
+    room?: SortOrderInput | SortOrder
+    game?: GameOrderByWithRelationInput
+  }
+
+  export type MetadataWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: MetadataWhereInput | MetadataWhereInput[]
+    OR?: MetadataWhereInput[]
+    NOT?: MetadataWhereInput | MetadataWhereInput[]
+    origin?: StringFilter<"Metadata"> | string
+    originId?: StringFilter<"Metadata"> | string
+    room?: StringNullableFilter<"Metadata"> | string | null
+    game?: XOR<GameNullableScalarRelationFilter, GameWhereInput> | null
+  }, "id">
+
+  export type MetadataOrderByWithAggregationInput = {
+    id?: SortOrder
+    origin?: SortOrder
+    originId?: SortOrder
+    room?: SortOrderInput | SortOrder
+    _count?: MetadataCountOrderByAggregateInput
+    _max?: MetadataMaxOrderByAggregateInput
+    _min?: MetadataMinOrderByAggregateInput
+  }
+
+  export type MetadataScalarWhereWithAggregatesInput = {
+    AND?: MetadataScalarWhereWithAggregatesInput | MetadataScalarWhereWithAggregatesInput[]
+    OR?: MetadataScalarWhereWithAggregatesInput[]
+    NOT?: MetadataScalarWhereWithAggregatesInput | MetadataScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Metadata"> | string
+    origin?: StringWithAggregatesFilter<"Metadata"> | string
+    originId?: StringWithAggregatesFilter<"Metadata"> | string
+    room?: StringNullableWithAggregatesFilter<"Metadata"> | string | null
+  }
+
+  export type GameWhereInput = {
+    AND?: GameWhereInput | GameWhereInput[]
+    OR?: GameWhereInput[]
+    NOT?: GameWhereInput | GameWhereInput[]
+    id?: IntFilter<"Game"> | number
+    game?: StringFilter<"Game"> | string
+    gameId?: StringFilter<"Game"> | string
+    winner?: StringFilter<"Game"> | string
+    score?: StringFilter<"Game"> | string
+    replay?: StringFilter<"Game"> | string
+    metadataId?: StringNullableFilter<"Game"> | string | null
+    players?: UserListRelationFilter
+    metadata?: XOR<MetadataNullableScalarRelationFilter, MetadataWhereInput> | null
+  }
+
+  export type GameOrderByWithRelationInput = {
+    id?: SortOrder
+    game?: SortOrder
+    gameId?: SortOrder
+    winner?: SortOrder
+    score?: SortOrder
+    replay?: SortOrder
+    metadataId?: SortOrderInput | SortOrder
+    players?: UserOrderByRelationAggregateInput
+    metadata?: MetadataOrderByWithRelationInput
+  }
+
+  export type GameWhereUniqueInput = Prisma.AtLeast<{
+    id?: number
+    metadataId?: string
+    AND?: GameWhereInput | GameWhereInput[]
+    OR?: GameWhereInput[]
+    NOT?: GameWhereInput | GameWhereInput[]
+    game?: StringFilter<"Game"> | string
+    gameId?: StringFilter<"Game"> | string
+    winner?: StringFilter<"Game"> | string
+    score?: StringFilter<"Game"> | string
+    replay?: StringFilter<"Game"> | string
+    players?: UserListRelationFilter
+    metadata?: XOR<MetadataNullableScalarRelationFilter, MetadataWhereInput> | null
+  }, "id" | "metadataId">
+
+  export type GameOrderByWithAggregationInput = {
+    id?: SortOrder
+    game?: SortOrder
+    gameId?: SortOrder
+    winner?: SortOrder
+    score?: SortOrder
+    replay?: SortOrder
+    metadataId?: SortOrderInput | SortOrder
+    _count?: GameCountOrderByAggregateInput
+    _avg?: GameAvgOrderByAggregateInput
+    _max?: GameMaxOrderByAggregateInput
+    _min?: GameMinOrderByAggregateInput
+    _sum?: GameSumOrderByAggregateInput
+  }
+
+  export type GameScalarWhereWithAggregatesInput = {
+    AND?: GameScalarWhereWithAggregatesInput | GameScalarWhereWithAggregatesInput[]
+    OR?: GameScalarWhereWithAggregatesInput[]
+    NOT?: GameScalarWhereWithAggregatesInput | GameScalarWhereWithAggregatesInput[]
+    id?: IntWithAggregatesFilter<"Game"> | number
+    game?: StringWithAggregatesFilter<"Game"> | string
+    gameId?: StringWithAggregatesFilter<"Game"> | string
+    winner?: StringWithAggregatesFilter<"Game"> | string
+    score?: StringWithAggregatesFilter<"Game"> | string
+    replay?: StringWithAggregatesFilter<"Game"> | string
+    metadataId?: StringNullableWithAggregatesFilter<"Game"> | string | null
+  }
+
   export type UserWhereInput = {
     AND?: UserWhereInput | UserWhereInput[]
     OR?: UserWhereInput[]
@@ -2181,6 +4787,7 @@ export namespace Prisma {
     friendOf?: UserListRelationFilter
     incomingRequests?: UserListRelationFilter
     outgoingRequests?: UserListRelationFilter
+    history?: GameListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -2192,6 +4799,7 @@ export namespace Prisma {
     friendOf?: UserOrderByRelationAggregateInput
     incomingRequests?: UserOrderByRelationAggregateInput
     outgoingRequests?: UserOrderByRelationAggregateInput
+    history?: GameOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -2206,6 +4814,7 @@ export namespace Prisma {
     friendOf?: UserListRelationFilter
     incomingRequests?: UserListRelationFilter
     outgoingRequests?: UserListRelationFilter
+    history?: GameListRelationFilter
   }, "id" | "linkId">
 
   export type UserOrderByWithAggregationInput = {
@@ -2230,6 +4839,129 @@ export namespace Prisma {
     avatarUrl?: StringNullableWithAggregatesFilter<"User"> | string | null
   }
 
+  export type MetadataCreateInput = {
+    id?: string
+    origin: string
+    originId: string
+    room?: string | null
+    game?: GameCreateNestedOneWithoutMetadataInput
+  }
+
+  export type MetadataUncheckedCreateInput = {
+    id?: string
+    origin: string
+    originId: string
+    room?: string | null
+    game?: GameUncheckedCreateNestedOneWithoutMetadataInput
+  }
+
+  export type MetadataUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    origin?: StringFieldUpdateOperationsInput | string
+    originId?: StringFieldUpdateOperationsInput | string
+    room?: NullableStringFieldUpdateOperationsInput | string | null
+    game?: GameUpdateOneWithoutMetadataNestedInput
+  }
+
+  export type MetadataUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    origin?: StringFieldUpdateOperationsInput | string
+    originId?: StringFieldUpdateOperationsInput | string
+    room?: NullableStringFieldUpdateOperationsInput | string | null
+    game?: GameUncheckedUpdateOneWithoutMetadataNestedInput
+  }
+
+  export type MetadataCreateManyInput = {
+    id?: string
+    origin: string
+    originId: string
+    room?: string | null
+  }
+
+  export type MetadataUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    origin?: StringFieldUpdateOperationsInput | string
+    originId?: StringFieldUpdateOperationsInput | string
+    room?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type MetadataUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    origin?: StringFieldUpdateOperationsInput | string
+    originId?: StringFieldUpdateOperationsInput | string
+    room?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type GameCreateInput = {
+    game: string
+    gameId: string
+    winner: string
+    score: string
+    replay: string
+    players?: UserCreateNestedManyWithoutHistoryInput
+    metadata?: MetadataCreateNestedOneWithoutGameInput
+  }
+
+  export type GameUncheckedCreateInput = {
+    id?: number
+    game: string
+    gameId: string
+    winner: string
+    score: string
+    replay: string
+    metadataId?: string | null
+    players?: UserUncheckedCreateNestedManyWithoutHistoryInput
+  }
+
+  export type GameUpdateInput = {
+    game?: StringFieldUpdateOperationsInput | string
+    gameId?: StringFieldUpdateOperationsInput | string
+    winner?: StringFieldUpdateOperationsInput | string
+    score?: StringFieldUpdateOperationsInput | string
+    replay?: StringFieldUpdateOperationsInput | string
+    players?: UserUpdateManyWithoutHistoryNestedInput
+    metadata?: MetadataUpdateOneWithoutGameNestedInput
+  }
+
+  export type GameUncheckedUpdateInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    game?: StringFieldUpdateOperationsInput | string
+    gameId?: StringFieldUpdateOperationsInput | string
+    winner?: StringFieldUpdateOperationsInput | string
+    score?: StringFieldUpdateOperationsInput | string
+    replay?: StringFieldUpdateOperationsInput | string
+    metadataId?: NullableStringFieldUpdateOperationsInput | string | null
+    players?: UserUncheckedUpdateManyWithoutHistoryNestedInput
+  }
+
+  export type GameCreateManyInput = {
+    id?: number
+    game: string
+    gameId: string
+    winner: string
+    score: string
+    replay: string
+    metadataId?: string | null
+  }
+
+  export type GameUpdateManyMutationInput = {
+    game?: StringFieldUpdateOperationsInput | string
+    gameId?: StringFieldUpdateOperationsInput | string
+    winner?: StringFieldUpdateOperationsInput | string
+    score?: StringFieldUpdateOperationsInput | string
+    replay?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type GameUncheckedUpdateManyInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    game?: StringFieldUpdateOperationsInput | string
+    gameId?: StringFieldUpdateOperationsInput | string
+    winner?: StringFieldUpdateOperationsInput | string
+    score?: StringFieldUpdateOperationsInput | string
+    replay?: StringFieldUpdateOperationsInput | string
+    metadataId?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
   export type UserCreateInput = {
     linkId: number
     username?: string | null
@@ -2238,6 +4970,7 @@ export namespace Prisma {
     friendOf?: UserCreateNestedManyWithoutFriendsInput
     incomingRequests?: UserCreateNestedManyWithoutOutgoingRequestsInput
     outgoingRequests?: UserCreateNestedManyWithoutIncomingRequestsInput
+    history?: GameCreateNestedManyWithoutPlayersInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -2249,6 +4982,7 @@ export namespace Prisma {
     friendOf?: UserUncheckedCreateNestedManyWithoutFriendsInput
     incomingRequests?: UserUncheckedCreateNestedManyWithoutOutgoingRequestsInput
     outgoingRequests?: UserUncheckedCreateNestedManyWithoutIncomingRequestsInput
+    history?: GameUncheckedCreateNestedManyWithoutPlayersInput
   }
 
   export type UserUpdateInput = {
@@ -2259,6 +4993,7 @@ export namespace Prisma {
     friendOf?: UserUpdateManyWithoutFriendsNestedInput
     incomingRequests?: UserUpdateManyWithoutOutgoingRequestsNestedInput
     outgoingRequests?: UserUpdateManyWithoutIncomingRequestsNestedInput
+    history?: GameUpdateManyWithoutPlayersNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -2270,6 +5005,7 @@ export namespace Prisma {
     friendOf?: UserUncheckedUpdateManyWithoutFriendsNestedInput
     incomingRequests?: UserUncheckedUpdateManyWithoutOutgoingRequestsNestedInput
     outgoingRequests?: UserUncheckedUpdateManyWithoutIncomingRequestsNestedInput
+    history?: GameUncheckedUpdateManyWithoutPlayersNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -2292,15 +5028,18 @@ export namespace Prisma {
     avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
-  export type IntFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[]
-    notIn?: number[]
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntFilter<$PrismaModel> | number
+  export type StringFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel>
+    in?: string[]
+    notIn?: string[]
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    not?: NestedStringFilter<$PrismaModel> | string
   }
 
   export type StringNullableFilter<$PrismaModel = never> = {
@@ -2317,10 +5056,9 @@ export namespace Prisma {
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
   }
 
-  export type UserListRelationFilter = {
-    every?: UserWhereInput
-    some?: UserWhereInput
-    none?: UserWhereInput
+  export type GameNullableScalarRelationFilter = {
+    is?: GameWhereInput | null
+    isNot?: GameWhereInput | null
   }
 
   export type SortOrderInput = {
@@ -2328,7 +5066,148 @@ export namespace Prisma {
     nulls?: NullsOrder
   }
 
+  export type MetadataCountOrderByAggregateInput = {
+    id?: SortOrder
+    origin?: SortOrder
+    originId?: SortOrder
+    room?: SortOrder
+  }
+
+  export type MetadataMaxOrderByAggregateInput = {
+    id?: SortOrder
+    origin?: SortOrder
+    originId?: SortOrder
+    room?: SortOrder
+  }
+
+  export type MetadataMinOrderByAggregateInput = {
+    id?: SortOrder
+    origin?: SortOrder
+    originId?: SortOrder
+    room?: SortOrder
+  }
+
+  export type StringWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel>
+    in?: string[]
+    notIn?: string[]
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    not?: NestedStringWithAggregatesFilter<$PrismaModel> | string
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedStringFilter<$PrismaModel>
+    _max?: NestedStringFilter<$PrismaModel>
+  }
+
+  export type StringNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | null
+    notIn?: string[] | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    not?: NestedStringNullableWithAggregatesFilter<$PrismaModel> | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedStringNullableFilter<$PrismaModel>
+    _max?: NestedStringNullableFilter<$PrismaModel>
+  }
+
+  export type IntFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[]
+    notIn?: number[]
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntFilter<$PrismaModel> | number
+  }
+
+  export type UserListRelationFilter = {
+    every?: UserWhereInput
+    some?: UserWhereInput
+    none?: UserWhereInput
+  }
+
+  export type MetadataNullableScalarRelationFilter = {
+    is?: MetadataWhereInput | null
+    isNot?: MetadataWhereInput | null
+  }
+
   export type UserOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type GameCountOrderByAggregateInput = {
+    id?: SortOrder
+    game?: SortOrder
+    gameId?: SortOrder
+    winner?: SortOrder
+    score?: SortOrder
+    replay?: SortOrder
+    metadataId?: SortOrder
+  }
+
+  export type GameAvgOrderByAggregateInput = {
+    id?: SortOrder
+  }
+
+  export type GameMaxOrderByAggregateInput = {
+    id?: SortOrder
+    game?: SortOrder
+    gameId?: SortOrder
+    winner?: SortOrder
+    score?: SortOrder
+    replay?: SortOrder
+    metadataId?: SortOrder
+  }
+
+  export type GameMinOrderByAggregateInput = {
+    id?: SortOrder
+    game?: SortOrder
+    gameId?: SortOrder
+    winner?: SortOrder
+    score?: SortOrder
+    replay?: SortOrder
+    metadataId?: SortOrder
+  }
+
+  export type GameSumOrderByAggregateInput = {
+    id?: SortOrder
+  }
+
+  export type IntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[]
+    notIn?: number[]
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedIntFilter<$PrismaModel>
+    _min?: NestedIntFilter<$PrismaModel>
+    _max?: NestedIntFilter<$PrismaModel>
+  }
+
+  export type GameListRelationFilter = {
+    every?: GameWhereInput
+    some?: GameWhereInput
+    none?: GameWhereInput
+  }
+
+  export type GameOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -2363,37 +5242,106 @@ export namespace Prisma {
     linkId?: SortOrder
   }
 
-  export type IntWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[]
-    notIn?: number[]
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
-    _count?: NestedIntFilter<$PrismaModel>
-    _avg?: NestedFloatFilter<$PrismaModel>
-    _sum?: NestedIntFilter<$PrismaModel>
-    _min?: NestedIntFilter<$PrismaModel>
-    _max?: NestedIntFilter<$PrismaModel>
+  export type GameCreateNestedOneWithoutMetadataInput = {
+    create?: XOR<GameCreateWithoutMetadataInput, GameUncheckedCreateWithoutMetadataInput>
+    connectOrCreate?: GameCreateOrConnectWithoutMetadataInput
+    connect?: GameWhereUniqueInput
   }
 
-  export type StringNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel> | null
-    in?: string[] | null
-    notIn?: string[] | null
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    contains?: string | StringFieldRefInput<$PrismaModel>
-    startsWith?: string | StringFieldRefInput<$PrismaModel>
-    endsWith?: string | StringFieldRefInput<$PrismaModel>
-    not?: NestedStringNullableWithAggregatesFilter<$PrismaModel> | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedStringNullableFilter<$PrismaModel>
-    _max?: NestedStringNullableFilter<$PrismaModel>
+  export type GameUncheckedCreateNestedOneWithoutMetadataInput = {
+    create?: XOR<GameCreateWithoutMetadataInput, GameUncheckedCreateWithoutMetadataInput>
+    connectOrCreate?: GameCreateOrConnectWithoutMetadataInput
+    connect?: GameWhereUniqueInput
+  }
+
+  export type StringFieldUpdateOperationsInput = {
+    set?: string
+  }
+
+  export type NullableStringFieldUpdateOperationsInput = {
+    set?: string | null
+  }
+
+  export type GameUpdateOneWithoutMetadataNestedInput = {
+    create?: XOR<GameCreateWithoutMetadataInput, GameUncheckedCreateWithoutMetadataInput>
+    connectOrCreate?: GameCreateOrConnectWithoutMetadataInput
+    upsert?: GameUpsertWithoutMetadataInput
+    disconnect?: GameWhereInput | boolean
+    delete?: GameWhereInput | boolean
+    connect?: GameWhereUniqueInput
+    update?: XOR<XOR<GameUpdateToOneWithWhereWithoutMetadataInput, GameUpdateWithoutMetadataInput>, GameUncheckedUpdateWithoutMetadataInput>
+  }
+
+  export type GameUncheckedUpdateOneWithoutMetadataNestedInput = {
+    create?: XOR<GameCreateWithoutMetadataInput, GameUncheckedCreateWithoutMetadataInput>
+    connectOrCreate?: GameCreateOrConnectWithoutMetadataInput
+    upsert?: GameUpsertWithoutMetadataInput
+    disconnect?: GameWhereInput | boolean
+    delete?: GameWhereInput | boolean
+    connect?: GameWhereUniqueInput
+    update?: XOR<XOR<GameUpdateToOneWithWhereWithoutMetadataInput, GameUpdateWithoutMetadataInput>, GameUncheckedUpdateWithoutMetadataInput>
+  }
+
+  export type UserCreateNestedManyWithoutHistoryInput = {
+    create?: XOR<UserCreateWithoutHistoryInput, UserUncheckedCreateWithoutHistoryInput> | UserCreateWithoutHistoryInput[] | UserUncheckedCreateWithoutHistoryInput[]
+    connectOrCreate?: UserCreateOrConnectWithoutHistoryInput | UserCreateOrConnectWithoutHistoryInput[]
+    connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+  }
+
+  export type MetadataCreateNestedOneWithoutGameInput = {
+    create?: XOR<MetadataCreateWithoutGameInput, MetadataUncheckedCreateWithoutGameInput>
+    connectOrCreate?: MetadataCreateOrConnectWithoutGameInput
+    connect?: MetadataWhereUniqueInput
+  }
+
+  export type UserUncheckedCreateNestedManyWithoutHistoryInput = {
+    create?: XOR<UserCreateWithoutHistoryInput, UserUncheckedCreateWithoutHistoryInput> | UserCreateWithoutHistoryInput[] | UserUncheckedCreateWithoutHistoryInput[]
+    connectOrCreate?: UserCreateOrConnectWithoutHistoryInput | UserCreateOrConnectWithoutHistoryInput[]
+    connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+  }
+
+  export type UserUpdateManyWithoutHistoryNestedInput = {
+    create?: XOR<UserCreateWithoutHistoryInput, UserUncheckedCreateWithoutHistoryInput> | UserCreateWithoutHistoryInput[] | UserUncheckedCreateWithoutHistoryInput[]
+    connectOrCreate?: UserCreateOrConnectWithoutHistoryInput | UserCreateOrConnectWithoutHistoryInput[]
+    upsert?: UserUpsertWithWhereUniqueWithoutHistoryInput | UserUpsertWithWhereUniqueWithoutHistoryInput[]
+    set?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    disconnect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    delete?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    update?: UserUpdateWithWhereUniqueWithoutHistoryInput | UserUpdateWithWhereUniqueWithoutHistoryInput[]
+    updateMany?: UserUpdateManyWithWhereWithoutHistoryInput | UserUpdateManyWithWhereWithoutHistoryInput[]
+    deleteMany?: UserScalarWhereInput | UserScalarWhereInput[]
+  }
+
+  export type MetadataUpdateOneWithoutGameNestedInput = {
+    create?: XOR<MetadataCreateWithoutGameInput, MetadataUncheckedCreateWithoutGameInput>
+    connectOrCreate?: MetadataCreateOrConnectWithoutGameInput
+    upsert?: MetadataUpsertWithoutGameInput
+    disconnect?: MetadataWhereInput | boolean
+    delete?: MetadataWhereInput | boolean
+    connect?: MetadataWhereUniqueInput
+    update?: XOR<XOR<MetadataUpdateToOneWithWhereWithoutGameInput, MetadataUpdateWithoutGameInput>, MetadataUncheckedUpdateWithoutGameInput>
+  }
+
+  export type IntFieldUpdateOperationsInput = {
+    set?: number
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
+  export type UserUncheckedUpdateManyWithoutHistoryNestedInput = {
+    create?: XOR<UserCreateWithoutHistoryInput, UserUncheckedCreateWithoutHistoryInput> | UserCreateWithoutHistoryInput[] | UserUncheckedCreateWithoutHistoryInput[]
+    connectOrCreate?: UserCreateOrConnectWithoutHistoryInput | UserCreateOrConnectWithoutHistoryInput[]
+    upsert?: UserUpsertWithWhereUniqueWithoutHistoryInput | UserUpsertWithWhereUniqueWithoutHistoryInput[]
+    set?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    disconnect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    delete?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    update?: UserUpdateWithWhereUniqueWithoutHistoryInput | UserUpdateWithWhereUniqueWithoutHistoryInput[]
+    updateMany?: UserUpdateManyWithWhereWithoutHistoryInput | UserUpdateManyWithWhereWithoutHistoryInput[]
+    deleteMany?: UserScalarWhereInput | UserScalarWhereInput[]
   }
 
   export type UserCreateNestedManyWithoutFriendOfInput = {
@@ -2420,6 +5368,12 @@ export namespace Prisma {
     connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
   }
 
+  export type GameCreateNestedManyWithoutPlayersInput = {
+    create?: XOR<GameCreateWithoutPlayersInput, GameUncheckedCreateWithoutPlayersInput> | GameCreateWithoutPlayersInput[] | GameUncheckedCreateWithoutPlayersInput[]
+    connectOrCreate?: GameCreateOrConnectWithoutPlayersInput | GameCreateOrConnectWithoutPlayersInput[]
+    connect?: GameWhereUniqueInput | GameWhereUniqueInput[]
+  }
+
   export type UserUncheckedCreateNestedManyWithoutFriendOfInput = {
     create?: XOR<UserCreateWithoutFriendOfInput, UserUncheckedCreateWithoutFriendOfInput> | UserCreateWithoutFriendOfInput[] | UserUncheckedCreateWithoutFriendOfInput[]
     connectOrCreate?: UserCreateOrConnectWithoutFriendOfInput | UserCreateOrConnectWithoutFriendOfInput[]
@@ -2444,16 +5398,10 @@ export namespace Prisma {
     connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
   }
 
-  export type IntFieldUpdateOperationsInput = {
-    set?: number
-    increment?: number
-    decrement?: number
-    multiply?: number
-    divide?: number
-  }
-
-  export type NullableStringFieldUpdateOperationsInput = {
-    set?: string | null
+  export type GameUncheckedCreateNestedManyWithoutPlayersInput = {
+    create?: XOR<GameCreateWithoutPlayersInput, GameUncheckedCreateWithoutPlayersInput> | GameCreateWithoutPlayersInput[] | GameUncheckedCreateWithoutPlayersInput[]
+    connectOrCreate?: GameCreateOrConnectWithoutPlayersInput | GameCreateOrConnectWithoutPlayersInput[]
+    connect?: GameWhereUniqueInput | GameWhereUniqueInput[]
   }
 
   export type UserUpdateManyWithoutFriendOfNestedInput = {
@@ -2508,6 +5456,19 @@ export namespace Prisma {
     deleteMany?: UserScalarWhereInput | UserScalarWhereInput[]
   }
 
+  export type GameUpdateManyWithoutPlayersNestedInput = {
+    create?: XOR<GameCreateWithoutPlayersInput, GameUncheckedCreateWithoutPlayersInput> | GameCreateWithoutPlayersInput[] | GameUncheckedCreateWithoutPlayersInput[]
+    connectOrCreate?: GameCreateOrConnectWithoutPlayersInput | GameCreateOrConnectWithoutPlayersInput[]
+    upsert?: GameUpsertWithWhereUniqueWithoutPlayersInput | GameUpsertWithWhereUniqueWithoutPlayersInput[]
+    set?: GameWhereUniqueInput | GameWhereUniqueInput[]
+    disconnect?: GameWhereUniqueInput | GameWhereUniqueInput[]
+    delete?: GameWhereUniqueInput | GameWhereUniqueInput[]
+    connect?: GameWhereUniqueInput | GameWhereUniqueInput[]
+    update?: GameUpdateWithWhereUniqueWithoutPlayersInput | GameUpdateWithWhereUniqueWithoutPlayersInput[]
+    updateMany?: GameUpdateManyWithWhereWithoutPlayersInput | GameUpdateManyWithWhereWithoutPlayersInput[]
+    deleteMany?: GameScalarWhereInput | GameScalarWhereInput[]
+  }
+
   export type UserUncheckedUpdateManyWithoutFriendOfNestedInput = {
     create?: XOR<UserCreateWithoutFriendOfInput, UserUncheckedCreateWithoutFriendOfInput> | UserCreateWithoutFriendOfInput[] | UserUncheckedCreateWithoutFriendOfInput[]
     connectOrCreate?: UserCreateOrConnectWithoutFriendOfInput | UserCreateOrConnectWithoutFriendOfInput[]
@@ -2560,15 +5521,31 @@ export namespace Prisma {
     deleteMany?: UserScalarWhereInput | UserScalarWhereInput[]
   }
 
-  export type NestedIntFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[]
-    notIn?: number[]
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntFilter<$PrismaModel> | number
+  export type GameUncheckedUpdateManyWithoutPlayersNestedInput = {
+    create?: XOR<GameCreateWithoutPlayersInput, GameUncheckedCreateWithoutPlayersInput> | GameCreateWithoutPlayersInput[] | GameUncheckedCreateWithoutPlayersInput[]
+    connectOrCreate?: GameCreateOrConnectWithoutPlayersInput | GameCreateOrConnectWithoutPlayersInput[]
+    upsert?: GameUpsertWithWhereUniqueWithoutPlayersInput | GameUpsertWithWhereUniqueWithoutPlayersInput[]
+    set?: GameWhereUniqueInput | GameWhereUniqueInput[]
+    disconnect?: GameWhereUniqueInput | GameWhereUniqueInput[]
+    delete?: GameWhereUniqueInput | GameWhereUniqueInput[]
+    connect?: GameWhereUniqueInput | GameWhereUniqueInput[]
+    update?: GameUpdateWithWhereUniqueWithoutPlayersInput | GameUpdateWithWhereUniqueWithoutPlayersInput[]
+    updateMany?: GameUpdateManyWithWhereWithoutPlayersInput | GameUpdateManyWithWhereWithoutPlayersInput[]
+    deleteMany?: GameScalarWhereInput | GameScalarWhereInput[]
+  }
+
+  export type NestedStringFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel>
+    in?: string[]
+    notIn?: string[]
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    not?: NestedStringFilter<$PrismaModel> | string
   }
 
   export type NestedStringNullableFilter<$PrismaModel = never> = {
@@ -2585,7 +5562,24 @@ export namespace Prisma {
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
   }
 
-  export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
+  export type NestedStringWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel>
+    in?: string[]
+    notIn?: string[]
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    not?: NestedStringWithAggregatesFilter<$PrismaModel> | string
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedStringFilter<$PrismaModel>
+    _max?: NestedStringFilter<$PrismaModel>
+  }
+
+  export type NestedIntFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel>
     in?: number[]
     notIn?: number[]
@@ -2593,23 +5587,7 @@ export namespace Prisma {
     lte?: number | IntFieldRefInput<$PrismaModel>
     gt?: number | IntFieldRefInput<$PrismaModel>
     gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
-    _count?: NestedIntFilter<$PrismaModel>
-    _avg?: NestedFloatFilter<$PrismaModel>
-    _sum?: NestedIntFilter<$PrismaModel>
-    _min?: NestedIntFilter<$PrismaModel>
-    _max?: NestedIntFilter<$PrismaModel>
-  }
-
-  export type NestedFloatFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel>
-    in?: number[]
-    notIn?: number[]
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatFilter<$PrismaModel> | number
+    not?: NestedIntFilter<$PrismaModel> | number
   }
 
   export type NestedStringNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -2640,6 +5618,183 @@ export namespace Prisma {
     not?: NestedIntNullableFilter<$PrismaModel> | number | null
   }
 
+  export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[]
+    notIn?: number[]
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedIntFilter<$PrismaModel>
+    _min?: NestedIntFilter<$PrismaModel>
+    _max?: NestedIntFilter<$PrismaModel>
+  }
+
+  export type NestedFloatFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[]
+    notIn?: number[]
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatFilter<$PrismaModel> | number
+  }
+
+  export type GameCreateWithoutMetadataInput = {
+    game: string
+    gameId: string
+    winner: string
+    score: string
+    replay: string
+    players?: UserCreateNestedManyWithoutHistoryInput
+  }
+
+  export type GameUncheckedCreateWithoutMetadataInput = {
+    id?: number
+    game: string
+    gameId: string
+    winner: string
+    score: string
+    replay: string
+    players?: UserUncheckedCreateNestedManyWithoutHistoryInput
+  }
+
+  export type GameCreateOrConnectWithoutMetadataInput = {
+    where: GameWhereUniqueInput
+    create: XOR<GameCreateWithoutMetadataInput, GameUncheckedCreateWithoutMetadataInput>
+  }
+
+  export type GameUpsertWithoutMetadataInput = {
+    update: XOR<GameUpdateWithoutMetadataInput, GameUncheckedUpdateWithoutMetadataInput>
+    create: XOR<GameCreateWithoutMetadataInput, GameUncheckedCreateWithoutMetadataInput>
+    where?: GameWhereInput
+  }
+
+  export type GameUpdateToOneWithWhereWithoutMetadataInput = {
+    where?: GameWhereInput
+    data: XOR<GameUpdateWithoutMetadataInput, GameUncheckedUpdateWithoutMetadataInput>
+  }
+
+  export type GameUpdateWithoutMetadataInput = {
+    game?: StringFieldUpdateOperationsInput | string
+    gameId?: StringFieldUpdateOperationsInput | string
+    winner?: StringFieldUpdateOperationsInput | string
+    score?: StringFieldUpdateOperationsInput | string
+    replay?: StringFieldUpdateOperationsInput | string
+    players?: UserUpdateManyWithoutHistoryNestedInput
+  }
+
+  export type GameUncheckedUpdateWithoutMetadataInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    game?: StringFieldUpdateOperationsInput | string
+    gameId?: StringFieldUpdateOperationsInput | string
+    winner?: StringFieldUpdateOperationsInput | string
+    score?: StringFieldUpdateOperationsInput | string
+    replay?: StringFieldUpdateOperationsInput | string
+    players?: UserUncheckedUpdateManyWithoutHistoryNestedInput
+  }
+
+  export type UserCreateWithoutHistoryInput = {
+    linkId: number
+    username?: string | null
+    avatarUrl?: string | null
+    friends?: UserCreateNestedManyWithoutFriendOfInput
+    friendOf?: UserCreateNestedManyWithoutFriendsInput
+    incomingRequests?: UserCreateNestedManyWithoutOutgoingRequestsInput
+    outgoingRequests?: UserCreateNestedManyWithoutIncomingRequestsInput
+  }
+
+  export type UserUncheckedCreateWithoutHistoryInput = {
+    id?: number
+    linkId: number
+    username?: string | null
+    avatarUrl?: string | null
+    friends?: UserUncheckedCreateNestedManyWithoutFriendOfInput
+    friendOf?: UserUncheckedCreateNestedManyWithoutFriendsInput
+    incomingRequests?: UserUncheckedCreateNestedManyWithoutOutgoingRequestsInput
+    outgoingRequests?: UserUncheckedCreateNestedManyWithoutIncomingRequestsInput
+  }
+
+  export type UserCreateOrConnectWithoutHistoryInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutHistoryInput, UserUncheckedCreateWithoutHistoryInput>
+  }
+
+  export type MetadataCreateWithoutGameInput = {
+    id?: string
+    origin: string
+    originId: string
+    room?: string | null
+  }
+
+  export type MetadataUncheckedCreateWithoutGameInput = {
+    id?: string
+    origin: string
+    originId: string
+    room?: string | null
+  }
+
+  export type MetadataCreateOrConnectWithoutGameInput = {
+    where: MetadataWhereUniqueInput
+    create: XOR<MetadataCreateWithoutGameInput, MetadataUncheckedCreateWithoutGameInput>
+  }
+
+  export type UserUpsertWithWhereUniqueWithoutHistoryInput = {
+    where: UserWhereUniqueInput
+    update: XOR<UserUpdateWithoutHistoryInput, UserUncheckedUpdateWithoutHistoryInput>
+    create: XOR<UserCreateWithoutHistoryInput, UserUncheckedCreateWithoutHistoryInput>
+  }
+
+  export type UserUpdateWithWhereUniqueWithoutHistoryInput = {
+    where: UserWhereUniqueInput
+    data: XOR<UserUpdateWithoutHistoryInput, UserUncheckedUpdateWithoutHistoryInput>
+  }
+
+  export type UserUpdateManyWithWhereWithoutHistoryInput = {
+    where: UserScalarWhereInput
+    data: XOR<UserUpdateManyMutationInput, UserUncheckedUpdateManyWithoutHistoryInput>
+  }
+
+  export type UserScalarWhereInput = {
+    AND?: UserScalarWhereInput | UserScalarWhereInput[]
+    OR?: UserScalarWhereInput[]
+    NOT?: UserScalarWhereInput | UserScalarWhereInput[]
+    id?: IntFilter<"User"> | number
+    linkId?: IntFilter<"User"> | number
+    username?: StringNullableFilter<"User"> | string | null
+    avatarUrl?: StringNullableFilter<"User"> | string | null
+  }
+
+  export type MetadataUpsertWithoutGameInput = {
+    update: XOR<MetadataUpdateWithoutGameInput, MetadataUncheckedUpdateWithoutGameInput>
+    create: XOR<MetadataCreateWithoutGameInput, MetadataUncheckedCreateWithoutGameInput>
+    where?: MetadataWhereInput
+  }
+
+  export type MetadataUpdateToOneWithWhereWithoutGameInput = {
+    where?: MetadataWhereInput
+    data: XOR<MetadataUpdateWithoutGameInput, MetadataUncheckedUpdateWithoutGameInput>
+  }
+
+  export type MetadataUpdateWithoutGameInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    origin?: StringFieldUpdateOperationsInput | string
+    originId?: StringFieldUpdateOperationsInput | string
+    room?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type MetadataUncheckedUpdateWithoutGameInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    origin?: StringFieldUpdateOperationsInput | string
+    originId?: StringFieldUpdateOperationsInput | string
+    room?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
   export type UserCreateWithoutFriendOfInput = {
     linkId: number
     username?: string | null
@@ -2647,6 +5802,7 @@ export namespace Prisma {
     friends?: UserCreateNestedManyWithoutFriendOfInput
     incomingRequests?: UserCreateNestedManyWithoutOutgoingRequestsInput
     outgoingRequests?: UserCreateNestedManyWithoutIncomingRequestsInput
+    history?: GameCreateNestedManyWithoutPlayersInput
   }
 
   export type UserUncheckedCreateWithoutFriendOfInput = {
@@ -2657,6 +5813,7 @@ export namespace Prisma {
     friends?: UserUncheckedCreateNestedManyWithoutFriendOfInput
     incomingRequests?: UserUncheckedCreateNestedManyWithoutOutgoingRequestsInput
     outgoingRequests?: UserUncheckedCreateNestedManyWithoutIncomingRequestsInput
+    history?: GameUncheckedCreateNestedManyWithoutPlayersInput
   }
 
   export type UserCreateOrConnectWithoutFriendOfInput = {
@@ -2671,6 +5828,7 @@ export namespace Prisma {
     friendOf?: UserCreateNestedManyWithoutFriendsInput
     incomingRequests?: UserCreateNestedManyWithoutOutgoingRequestsInput
     outgoingRequests?: UserCreateNestedManyWithoutIncomingRequestsInput
+    history?: GameCreateNestedManyWithoutPlayersInput
   }
 
   export type UserUncheckedCreateWithoutFriendsInput = {
@@ -2681,6 +5839,7 @@ export namespace Prisma {
     friendOf?: UserUncheckedCreateNestedManyWithoutFriendsInput
     incomingRequests?: UserUncheckedCreateNestedManyWithoutOutgoingRequestsInput
     outgoingRequests?: UserUncheckedCreateNestedManyWithoutIncomingRequestsInput
+    history?: GameUncheckedCreateNestedManyWithoutPlayersInput
   }
 
   export type UserCreateOrConnectWithoutFriendsInput = {
@@ -2695,6 +5854,7 @@ export namespace Prisma {
     friends?: UserCreateNestedManyWithoutFriendOfInput
     friendOf?: UserCreateNestedManyWithoutFriendsInput
     incomingRequests?: UserCreateNestedManyWithoutOutgoingRequestsInput
+    history?: GameCreateNestedManyWithoutPlayersInput
   }
 
   export type UserUncheckedCreateWithoutOutgoingRequestsInput = {
@@ -2705,6 +5865,7 @@ export namespace Prisma {
     friends?: UserUncheckedCreateNestedManyWithoutFriendOfInput
     friendOf?: UserUncheckedCreateNestedManyWithoutFriendsInput
     incomingRequests?: UserUncheckedCreateNestedManyWithoutOutgoingRequestsInput
+    history?: GameUncheckedCreateNestedManyWithoutPlayersInput
   }
 
   export type UserCreateOrConnectWithoutOutgoingRequestsInput = {
@@ -2719,6 +5880,7 @@ export namespace Prisma {
     friends?: UserCreateNestedManyWithoutFriendOfInput
     friendOf?: UserCreateNestedManyWithoutFriendsInput
     outgoingRequests?: UserCreateNestedManyWithoutIncomingRequestsInput
+    history?: GameCreateNestedManyWithoutPlayersInput
   }
 
   export type UserUncheckedCreateWithoutIncomingRequestsInput = {
@@ -2729,11 +5891,36 @@ export namespace Prisma {
     friends?: UserUncheckedCreateNestedManyWithoutFriendOfInput
     friendOf?: UserUncheckedCreateNestedManyWithoutFriendsInput
     outgoingRequests?: UserUncheckedCreateNestedManyWithoutIncomingRequestsInput
+    history?: GameUncheckedCreateNestedManyWithoutPlayersInput
   }
 
   export type UserCreateOrConnectWithoutIncomingRequestsInput = {
     where: UserWhereUniqueInput
     create: XOR<UserCreateWithoutIncomingRequestsInput, UserUncheckedCreateWithoutIncomingRequestsInput>
+  }
+
+  export type GameCreateWithoutPlayersInput = {
+    game: string
+    gameId: string
+    winner: string
+    score: string
+    replay: string
+    metadata?: MetadataCreateNestedOneWithoutGameInput
+  }
+
+  export type GameUncheckedCreateWithoutPlayersInput = {
+    id?: number
+    game: string
+    gameId: string
+    winner: string
+    score: string
+    replay: string
+    metadataId?: string | null
+  }
+
+  export type GameCreateOrConnectWithoutPlayersInput = {
+    where: GameWhereUniqueInput
+    create: XOR<GameCreateWithoutPlayersInput, GameUncheckedCreateWithoutPlayersInput>
   }
 
   export type UserUpsertWithWhereUniqueWithoutFriendOfInput = {
@@ -2750,16 +5937,6 @@ export namespace Prisma {
   export type UserUpdateManyWithWhereWithoutFriendOfInput = {
     where: UserScalarWhereInput
     data: XOR<UserUpdateManyMutationInput, UserUncheckedUpdateManyWithoutFriendOfInput>
-  }
-
-  export type UserScalarWhereInput = {
-    AND?: UserScalarWhereInput | UserScalarWhereInput[]
-    OR?: UserScalarWhereInput[]
-    NOT?: UserScalarWhereInput | UserScalarWhereInput[]
-    id?: IntFilter<"User"> | number
-    linkId?: IntFilter<"User"> | number
-    username?: StringNullableFilter<"User"> | string | null
-    avatarUrl?: StringNullableFilter<"User"> | string | null
   }
 
   export type UserUpsertWithWhereUniqueWithoutFriendsInput = {
@@ -2810,6 +5987,63 @@ export namespace Prisma {
     data: XOR<UserUpdateManyMutationInput, UserUncheckedUpdateManyWithoutIncomingRequestsInput>
   }
 
+  export type GameUpsertWithWhereUniqueWithoutPlayersInput = {
+    where: GameWhereUniqueInput
+    update: XOR<GameUpdateWithoutPlayersInput, GameUncheckedUpdateWithoutPlayersInput>
+    create: XOR<GameCreateWithoutPlayersInput, GameUncheckedCreateWithoutPlayersInput>
+  }
+
+  export type GameUpdateWithWhereUniqueWithoutPlayersInput = {
+    where: GameWhereUniqueInput
+    data: XOR<GameUpdateWithoutPlayersInput, GameUncheckedUpdateWithoutPlayersInput>
+  }
+
+  export type GameUpdateManyWithWhereWithoutPlayersInput = {
+    where: GameScalarWhereInput
+    data: XOR<GameUpdateManyMutationInput, GameUncheckedUpdateManyWithoutPlayersInput>
+  }
+
+  export type GameScalarWhereInput = {
+    AND?: GameScalarWhereInput | GameScalarWhereInput[]
+    OR?: GameScalarWhereInput[]
+    NOT?: GameScalarWhereInput | GameScalarWhereInput[]
+    id?: IntFilter<"Game"> | number
+    game?: StringFilter<"Game"> | string
+    gameId?: StringFilter<"Game"> | string
+    winner?: StringFilter<"Game"> | string
+    score?: StringFilter<"Game"> | string
+    replay?: StringFilter<"Game"> | string
+    metadataId?: StringNullableFilter<"Game"> | string | null
+  }
+
+  export type UserUpdateWithoutHistoryInput = {
+    linkId?: IntFieldUpdateOperationsInput | number
+    username?: NullableStringFieldUpdateOperationsInput | string | null
+    avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    friends?: UserUpdateManyWithoutFriendOfNestedInput
+    friendOf?: UserUpdateManyWithoutFriendsNestedInput
+    incomingRequests?: UserUpdateManyWithoutOutgoingRequestsNestedInput
+    outgoingRequests?: UserUpdateManyWithoutIncomingRequestsNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutHistoryInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    linkId?: IntFieldUpdateOperationsInput | number
+    username?: NullableStringFieldUpdateOperationsInput | string | null
+    avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    friends?: UserUncheckedUpdateManyWithoutFriendOfNestedInput
+    friendOf?: UserUncheckedUpdateManyWithoutFriendsNestedInput
+    incomingRequests?: UserUncheckedUpdateManyWithoutOutgoingRequestsNestedInput
+    outgoingRequests?: UserUncheckedUpdateManyWithoutIncomingRequestsNestedInput
+  }
+
+  export type UserUncheckedUpdateManyWithoutHistoryInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    linkId?: IntFieldUpdateOperationsInput | number
+    username?: NullableStringFieldUpdateOperationsInput | string | null
+    avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
   export type UserUpdateWithoutFriendOfInput = {
     linkId?: IntFieldUpdateOperationsInput | number
     username?: NullableStringFieldUpdateOperationsInput | string | null
@@ -2817,6 +6051,7 @@ export namespace Prisma {
     friends?: UserUpdateManyWithoutFriendOfNestedInput
     incomingRequests?: UserUpdateManyWithoutOutgoingRequestsNestedInput
     outgoingRequests?: UserUpdateManyWithoutIncomingRequestsNestedInput
+    history?: GameUpdateManyWithoutPlayersNestedInput
   }
 
   export type UserUncheckedUpdateWithoutFriendOfInput = {
@@ -2827,6 +6062,7 @@ export namespace Prisma {
     friends?: UserUncheckedUpdateManyWithoutFriendOfNestedInput
     incomingRequests?: UserUncheckedUpdateManyWithoutOutgoingRequestsNestedInput
     outgoingRequests?: UserUncheckedUpdateManyWithoutIncomingRequestsNestedInput
+    history?: GameUncheckedUpdateManyWithoutPlayersNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutFriendOfInput = {
@@ -2843,6 +6079,7 @@ export namespace Prisma {
     friendOf?: UserUpdateManyWithoutFriendsNestedInput
     incomingRequests?: UserUpdateManyWithoutOutgoingRequestsNestedInput
     outgoingRequests?: UserUpdateManyWithoutIncomingRequestsNestedInput
+    history?: GameUpdateManyWithoutPlayersNestedInput
   }
 
   export type UserUncheckedUpdateWithoutFriendsInput = {
@@ -2853,6 +6090,7 @@ export namespace Prisma {
     friendOf?: UserUncheckedUpdateManyWithoutFriendsNestedInput
     incomingRequests?: UserUncheckedUpdateManyWithoutOutgoingRequestsNestedInput
     outgoingRequests?: UserUncheckedUpdateManyWithoutIncomingRequestsNestedInput
+    history?: GameUncheckedUpdateManyWithoutPlayersNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutFriendsInput = {
@@ -2869,6 +6107,7 @@ export namespace Prisma {
     friends?: UserUpdateManyWithoutFriendOfNestedInput
     friendOf?: UserUpdateManyWithoutFriendsNestedInput
     incomingRequests?: UserUpdateManyWithoutOutgoingRequestsNestedInput
+    history?: GameUpdateManyWithoutPlayersNestedInput
   }
 
   export type UserUncheckedUpdateWithoutOutgoingRequestsInput = {
@@ -2879,6 +6118,7 @@ export namespace Prisma {
     friends?: UserUncheckedUpdateManyWithoutFriendOfNestedInput
     friendOf?: UserUncheckedUpdateManyWithoutFriendsNestedInput
     incomingRequests?: UserUncheckedUpdateManyWithoutOutgoingRequestsNestedInput
+    history?: GameUncheckedUpdateManyWithoutPlayersNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutOutgoingRequestsInput = {
@@ -2895,6 +6135,7 @@ export namespace Prisma {
     friends?: UserUpdateManyWithoutFriendOfNestedInput
     friendOf?: UserUpdateManyWithoutFriendsNestedInput
     outgoingRequests?: UserUpdateManyWithoutIncomingRequestsNestedInput
+    history?: GameUpdateManyWithoutPlayersNestedInput
   }
 
   export type UserUncheckedUpdateWithoutIncomingRequestsInput = {
@@ -2905,6 +6146,7 @@ export namespace Prisma {
     friends?: UserUncheckedUpdateManyWithoutFriendOfNestedInput
     friendOf?: UserUncheckedUpdateManyWithoutFriendsNestedInput
     outgoingRequests?: UserUncheckedUpdateManyWithoutIncomingRequestsNestedInput
+    history?: GameUncheckedUpdateManyWithoutPlayersNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutIncomingRequestsInput = {
@@ -2912,6 +6154,35 @@ export namespace Prisma {
     linkId?: IntFieldUpdateOperationsInput | number
     username?: NullableStringFieldUpdateOperationsInput | string | null
     avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type GameUpdateWithoutPlayersInput = {
+    game?: StringFieldUpdateOperationsInput | string
+    gameId?: StringFieldUpdateOperationsInput | string
+    winner?: StringFieldUpdateOperationsInput | string
+    score?: StringFieldUpdateOperationsInput | string
+    replay?: StringFieldUpdateOperationsInput | string
+    metadata?: MetadataUpdateOneWithoutGameNestedInput
+  }
+
+  export type GameUncheckedUpdateWithoutPlayersInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    game?: StringFieldUpdateOperationsInput | string
+    gameId?: StringFieldUpdateOperationsInput | string
+    winner?: StringFieldUpdateOperationsInput | string
+    score?: StringFieldUpdateOperationsInput | string
+    replay?: StringFieldUpdateOperationsInput | string
+    metadataId?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type GameUncheckedUpdateManyWithoutPlayersInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    game?: StringFieldUpdateOperationsInput | string
+    gameId?: StringFieldUpdateOperationsInput | string
+    winner?: StringFieldUpdateOperationsInput | string
+    score?: StringFieldUpdateOperationsInput | string
+    replay?: StringFieldUpdateOperationsInput | string
+    metadataId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
 

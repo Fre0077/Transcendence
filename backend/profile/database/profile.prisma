@@ -8,6 +8,27 @@ datasource db {
   url = "file:./profile.db"
 }
 
+model Metadata {
+  id        String @id @default(uuid())
+  origin    String         //casual-lobby oppure tournament
+  originId  String         //id della origin, o casual o torneo
+  room      String?        //serve per il grafico piramidale del torneo
+  game      Game?
+}
+
+model Game {
+  id      Int   @id @default(autoincrement())
+  game    String
+  gameId  String
+  winner  String
+  score   String
+  replay  String
+
+  players User[]
+  metadata Metadata? @relation(fields: [metadataId], references: [id])
+  metadataId String? @unique
+}
+
 model User {
   id       Int     @id @default(autoincrement())
   linkId   Int     @unique
@@ -23,4 +44,6 @@ model User {
   incomingRequests User[] @relation("requests")
   // A chi ho chiesto io l'amicizia
   outgoingRequests User[] @relation("requests")
+
+  history Game[]
 }

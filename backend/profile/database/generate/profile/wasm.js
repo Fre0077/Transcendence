@@ -117,6 +117,23 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
   Serializable: 'Serializable'
 });
 
+exports.Prisma.MetadataScalarFieldEnum = {
+  id: 'id',
+  origin: 'origin',
+  originId: 'originId',
+  room: 'room'
+};
+
+exports.Prisma.GameScalarFieldEnum = {
+  id: 'id',
+  game: 'game',
+  gameId: 'gameId',
+  winner: 'winner',
+  score: 'score',
+  replay: 'replay',
+  metadataId: 'metadataId'
+};
+
 exports.Prisma.UserScalarFieldEnum = {
   id: 'id',
   linkId: 'linkId',
@@ -136,6 +153,8 @@ exports.Prisma.NullsOrder = {
 
 
 exports.Prisma.ModelName = {
+  Metadata: 'Metadata',
+  Game: 'Game',
   User: 'User'
 };
 
