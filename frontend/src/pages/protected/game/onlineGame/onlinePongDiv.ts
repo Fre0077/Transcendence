@@ -77,6 +77,8 @@ export function loadPongDiv(socket:WebSocket): HTMLElement {
 	</div>
 	`;
 
+	// socket.onmessage(message)
+
 	return div;
 }
 

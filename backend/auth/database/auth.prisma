@@ -34,11 +34,11 @@ model Account {
 	passwordHash    String?
 	googleId        String? @unique
 
-	wins            Int @default(0)
-	losses          Int @default(0)
+	wins            Int @default(0)  //spostare nel db di profile
+	losses          Int @default(0)  //
 
-	tournamentWins   Int @default(0)
-	tournamentLosses Int @default(0)
+	tournamentWins   Int @default(0) //
+	tournamentLosses Int @default(0) //
 
 	twoFactorEnabled Boolean @default(false)
     twoFactorSecret  String?
