@@ -131,6 +131,7 @@ exports.Prisma.GameScalarFieldEnum = {
   winner: 'winner',
   score: 'score',
   replay: 'replay',
+  gamePlayers: 'gamePlayers',
   metadataId: 'metadataId'
 };
 

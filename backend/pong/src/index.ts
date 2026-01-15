@@ -1,7 +1,6 @@
 import Fastify from 'fastify';
 import { Game } from './Game.js'
 import { WebSocket } from "ws";
-import { publishGameHistory } from './publisher.js';
 
 // Where the Queue will listen
 const PORT = Number(process.env.PORT) || 3040;
@@ -233,7 +232,6 @@ export function deleteGame(gameID:string, reason:string | void)
 
 		// #todo send to RabbitMQ and ft_bunny
 		bunnyPublish('history', history);
-		publishGameHistory(history);
 	}
 
 	// send to lobby that all the players left the game

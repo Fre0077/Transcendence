@@ -2223,6 +2223,7 @@ export namespace Prisma {
     winner: string | null
     score: string | null
     replay: string | null
+    gamePlayers: string | null
     metadataId: string | null
   }
 
@@ -2233,6 +2234,7 @@ export namespace Prisma {
     winner: string | null
     score: string | null
     replay: string | null
+    gamePlayers: string | null
     metadataId: string | null
   }
 
@@ -2243,6 +2245,7 @@ export namespace Prisma {
     winner: number
     score: number
     replay: number
+    gamePlayers: number
     metadataId: number
     _all: number
   }
@@ -2263,6 +2266,7 @@ export namespace Prisma {
     winner?: true
     score?: true
     replay?: true
+    gamePlayers?: true
     metadataId?: true
   }
 
@@ -2273,6 +2277,7 @@ export namespace Prisma {
     winner?: true
     score?: true
     replay?: true
+    gamePlayers?: true
     metadataId?: true
   }
 
@@ -2283,6 +2288,7 @@ export namespace Prisma {
     winner?: true
     score?: true
     replay?: true
+    gamePlayers?: true
     metadataId?: true
     _all?: true
   }
@@ -2380,6 +2386,7 @@ export namespace Prisma {
     winner: string
     score: string
     replay: string
+    gamePlayers: string
     metadataId: string | null
     _count: GameCountAggregateOutputType | null
     _avg: GameAvgAggregateOutputType | null
@@ -2409,6 +2416,7 @@ export namespace Prisma {
     winner?: boolean
     score?: boolean
     replay?: boolean
+    gamePlayers?: boolean
     metadataId?: boolean
     players?: boolean | Game$playersArgs<ExtArgs>
     metadata?: boolean | Game$metadataArgs<ExtArgs>
@@ -2422,6 +2430,7 @@ export namespace Prisma {
     winner?: boolean
     score?: boolean
     replay?: boolean
+    gamePlayers?: boolean
     metadataId?: boolean
     metadata?: boolean | Game$metadataArgs<ExtArgs>
   }, ExtArgs["result"]["game"]>
@@ -2433,6 +2442,7 @@ export namespace Prisma {
     winner?: boolean
     score?: boolean
     replay?: boolean
+    gamePlayers?: boolean
     metadataId?: boolean
     metadata?: boolean | Game$metadataArgs<ExtArgs>
   }, ExtArgs["result"]["game"]>
@@ -2444,10 +2454,11 @@ export namespace Prisma {
     winner?: boolean
     score?: boolean
     replay?: boolean
+    gamePlayers?: boolean
     metadataId?: boolean
   }
 
-  export type GameOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "game" | "gameId" | "winner" | "score" | "replay" | "metadataId", ExtArgs["result"]["game"]>
+  export type GameOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "game" | "gameId" | "winner" | "score" | "replay" | "gamePlayers" | "metadataId", ExtArgs["result"]["game"]>
   export type GameInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     players?: boolean | Game$playersArgs<ExtArgs>
     metadata?: boolean | Game$metadataArgs<ExtArgs>
@@ -2473,6 +2484,7 @@ export namespace Prisma {
       winner: string
       score: string
       replay: string
+      gamePlayers: string
       metadataId: string | null
     }, ExtArgs["result"]["game"]>
     composites: {}
@@ -2905,6 +2917,7 @@ export namespace Prisma {
     readonly winner: FieldRef<"Game", 'String'>
     readonly score: FieldRef<"Game", 'String'>
     readonly replay: FieldRef<"Game", 'String'>
+    readonly gamePlayers: FieldRef<"Game", 'String'>
     readonly metadataId: FieldRef<"Game", 'String'>
   }
     
@@ -4594,6 +4607,7 @@ export namespace Prisma {
     winner: 'winner',
     score: 'score',
     replay: 'replay',
+    gamePlayers: 'gamePlayers',
     metadataId: 'metadataId'
   };
 
@@ -4715,6 +4729,7 @@ export namespace Prisma {
     winner?: StringFilter<"Game"> | string
     score?: StringFilter<"Game"> | string
     replay?: StringFilter<"Game"> | string
+    gamePlayers?: StringFilter<"Game"> | string
     metadataId?: StringNullableFilter<"Game"> | string | null
     players?: UserListRelationFilter
     metadata?: XOR<MetadataNullableScalarRelationFilter, MetadataWhereInput> | null
@@ -4727,6 +4742,7 @@ export namespace Prisma {
     winner?: SortOrder
     score?: SortOrder
     replay?: SortOrder
+    gamePlayers?: SortOrder
     metadataId?: SortOrderInput | SortOrder
     players?: UserOrderByRelationAggregateInput
     metadata?: MetadataOrderByWithRelationInput
@@ -4743,6 +4759,7 @@ export namespace Prisma {
     winner?: StringFilter<"Game"> | string
     score?: StringFilter<"Game"> | string
     replay?: StringFilter<"Game"> | string
+    gamePlayers?: StringFilter<"Game"> | string
     players?: UserListRelationFilter
     metadata?: XOR<MetadataNullableScalarRelationFilter, MetadataWhereInput> | null
   }, "id" | "metadataId">
@@ -4754,6 +4771,7 @@ export namespace Prisma {
     winner?: SortOrder
     score?: SortOrder
     replay?: SortOrder
+    gamePlayers?: SortOrder
     metadataId?: SortOrderInput | SortOrder
     _count?: GameCountOrderByAggregateInput
     _avg?: GameAvgOrderByAggregateInput
@@ -4772,6 +4790,7 @@ export namespace Prisma {
     winner?: StringWithAggregatesFilter<"Game"> | string
     score?: StringWithAggregatesFilter<"Game"> | string
     replay?: StringWithAggregatesFilter<"Game"> | string
+    gamePlayers?: StringWithAggregatesFilter<"Game"> | string
     metadataId?: StringNullableWithAggregatesFilter<"Game"> | string | null
   }
 
@@ -4898,6 +4917,7 @@ export namespace Prisma {
     winner: string
     score: string
     replay: string
+    gamePlayers: string
     players?: UserCreateNestedManyWithoutHistoryInput
     metadata?: MetadataCreateNestedOneWithoutGameInput
   }
@@ -4909,6 +4929,7 @@ export namespace Prisma {
     winner: string
     score: string
     replay: string
+    gamePlayers: string
     metadataId?: string | null
     players?: UserUncheckedCreateNestedManyWithoutHistoryInput
   }
@@ -4919,6 +4940,7 @@ export namespace Prisma {
     winner?: StringFieldUpdateOperationsInput | string
     score?: StringFieldUpdateOperationsInput | string
     replay?: StringFieldUpdateOperationsInput | string
+    gamePlayers?: StringFieldUpdateOperationsInput | string
     players?: UserUpdateManyWithoutHistoryNestedInput
     metadata?: MetadataUpdateOneWithoutGameNestedInput
   }
@@ -4930,6 +4952,7 @@ export namespace Prisma {
     winner?: StringFieldUpdateOperationsInput | string
     score?: StringFieldUpdateOperationsInput | string
     replay?: StringFieldUpdateOperationsInput | string
+    gamePlayers?: StringFieldUpdateOperationsInput | string
     metadataId?: NullableStringFieldUpdateOperationsInput | string | null
     players?: UserUncheckedUpdateManyWithoutHistoryNestedInput
   }
@@ -4941,6 +4964,7 @@ export namespace Prisma {
     winner: string
     score: string
     replay: string
+    gamePlayers: string
     metadataId?: string | null
   }
 
@@ -4950,6 +4974,7 @@ export namespace Prisma {
     winner?: StringFieldUpdateOperationsInput | string
     score?: StringFieldUpdateOperationsInput | string
     replay?: StringFieldUpdateOperationsInput | string
+    gamePlayers?: StringFieldUpdateOperationsInput | string
   }
 
   export type GameUncheckedUpdateManyInput = {
@@ -4959,6 +4984,7 @@ export namespace Prisma {
     winner?: StringFieldUpdateOperationsInput | string
     score?: StringFieldUpdateOperationsInput | string
     replay?: StringFieldUpdateOperationsInput | string
+    gamePlayers?: StringFieldUpdateOperationsInput | string
     metadataId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
@@ -5154,6 +5180,7 @@ export namespace Prisma {
     winner?: SortOrder
     score?: SortOrder
     replay?: SortOrder
+    gamePlayers?: SortOrder
     metadataId?: SortOrder
   }
 
@@ -5168,6 +5195,7 @@ export namespace Prisma {
     winner?: SortOrder
     score?: SortOrder
     replay?: SortOrder
+    gamePlayers?: SortOrder
     metadataId?: SortOrder
   }
 
@@ -5178,6 +5206,7 @@ export namespace Prisma {
     winner?: SortOrder
     score?: SortOrder
     replay?: SortOrder
+    gamePlayers?: SortOrder
     metadataId?: SortOrder
   }
 
@@ -5651,6 +5680,7 @@ export namespace Prisma {
     winner: string
     score: string
     replay: string
+    gamePlayers: string
     players?: UserCreateNestedManyWithoutHistoryInput
   }
 
@@ -5661,6 +5691,7 @@ export namespace Prisma {
     winner: string
     score: string
     replay: string
+    gamePlayers: string
     players?: UserUncheckedCreateNestedManyWithoutHistoryInput
   }
 
@@ -5686,6 +5717,7 @@ export namespace Prisma {
     winner?: StringFieldUpdateOperationsInput | string
     score?: StringFieldUpdateOperationsInput | string
     replay?: StringFieldUpdateOperationsInput | string
+    gamePlayers?: StringFieldUpdateOperationsInput | string
     players?: UserUpdateManyWithoutHistoryNestedInput
   }
 
@@ -5696,6 +5728,7 @@ export namespace Prisma {
     winner?: StringFieldUpdateOperationsInput | string
     score?: StringFieldUpdateOperationsInput | string
     replay?: StringFieldUpdateOperationsInput | string
+    gamePlayers?: StringFieldUpdateOperationsInput | string
     players?: UserUncheckedUpdateManyWithoutHistoryNestedInput
   }
 
@@ -5905,6 +5938,7 @@ export namespace Prisma {
     winner: string
     score: string
     replay: string
+    gamePlayers: string
     metadata?: MetadataCreateNestedOneWithoutGameInput
   }
 
@@ -5915,6 +5949,7 @@ export namespace Prisma {
     winner: string
     score: string
     replay: string
+    gamePlayers: string
     metadataId?: string | null
   }
 
@@ -6013,6 +6048,7 @@ export namespace Prisma {
     winner?: StringFilter<"Game"> | string
     score?: StringFilter<"Game"> | string
     replay?: StringFilter<"Game"> | string
+    gamePlayers?: StringFilter<"Game"> | string
     metadataId?: StringNullableFilter<"Game"> | string | null
   }
 
@@ -6162,6 +6198,7 @@ export namespace Prisma {
     winner?: StringFieldUpdateOperationsInput | string
     score?: StringFieldUpdateOperationsInput | string
     replay?: StringFieldUpdateOperationsInput | string
+    gamePlayers?: StringFieldUpdateOperationsInput | string
     metadata?: MetadataUpdateOneWithoutGameNestedInput
   }
 
@@ -6172,6 +6209,7 @@ export namespace Prisma {
     winner?: StringFieldUpdateOperationsInput | string
     score?: StringFieldUpdateOperationsInput | string
     replay?: StringFieldUpdateOperationsInput | string
+    gamePlayers?: StringFieldUpdateOperationsInput | string
     metadataId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
@@ -6182,6 +6220,7 @@ export namespace Prisma {
     winner?: StringFieldUpdateOperationsInput | string
     score?: StringFieldUpdateOperationsInput | string
     replay?: StringFieldUpdateOperationsInput | string
+    gamePlayers?: StringFieldUpdateOperationsInput | string
     metadataId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 

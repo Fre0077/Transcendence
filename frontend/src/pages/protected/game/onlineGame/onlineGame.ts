@@ -11,7 +11,7 @@ export function loadOnlineGamePage(): HTMLElement {
     // const { matchId } = router.getParams();
 
     // connect socket
-    const playerID = localStorage.getItem('playerID') || sessionStorage.getItem('guestID');
+    const playerID = localStorage.getItem('userId') || sessionStorage.getItem('guestID');
     if (playerID === null) {
         return load404Page();
     }

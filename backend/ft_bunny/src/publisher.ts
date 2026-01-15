@@ -2,7 +2,7 @@ import amqp from "amqplib";
 
 import { getChannel } from "./rabbit.js"
 
-export async function publishGameHistory(history: any) {
+export async function publishGameHistory(history: string) {
   // Reuse existing channel; if missing, create connection/channel using env/default
   let channel = await getChannel();
   if (!channel) {

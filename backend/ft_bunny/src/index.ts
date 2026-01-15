@@ -183,7 +183,7 @@ fastify.post<{ Body: PublishQuery }>(
 		if (ID === undefined || queue === undefined || message === undefined) {
 			return reply.status(400).send({
 				status: 'failure',
-				reason: 'Missing quety field'
+				reason: 'Missing query field'
 			});
 		}
 
@@ -272,6 +272,8 @@ function leave(ID:string, name:string): boolean
 	return true;
 }
 
+import {publishGameHistory} from "./publisher.js"
+
 function publish(ID:string, name:string, message:string): boolean
 {
 	/* #debug */
@@ -284,6 +286,7 @@ function publish(ID:string, name:string, message:string): boolean
 	const mq = mqueues.get(name);
 	if (mq === undefined) return false;
 
+	if (name === "history") publishGameHistory(message);
 	// perform the action
 	return mq.publish(ID, message);
 }

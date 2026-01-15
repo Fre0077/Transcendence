@@ -96,6 +96,7 @@ export async function startprofileConsumer() {
 							players: {
 								connect: validLinkIds.map(linkId => ({ linkId }))
 							},
+							gamePlayers: JSON.stringify(historyData.players),
 							metadata: {
 								create: {
 									origin: historyData.metadata?.origin || "unknown",

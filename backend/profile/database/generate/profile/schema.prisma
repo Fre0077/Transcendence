@@ -17,12 +17,13 @@ model Metadata {
 }
 
 model Game {
-  id     Int    @id @default(autoincrement())
-  game   String
-  gameId String
-  winner String
-  score  String
-  replay String
+  id          Int    @id @default(autoincrement())
+  game        String
+  gameId      String
+  winner      String
+  score       String
+  replay      String
+  gamePlayers String
 
   players    User[]
   metadata   Metadata? @relation(fields: [metadataId], references: [id])

@@ -7,6 +7,48 @@ interface Player {
     name: string;
     status?: string;
 }
+//ritorna il linkid di un utente
+// async function checkAuth() : Promise<number> {
+//     console.log("Controllo autorizzazione per giocare...");
+
+//     const token = localStorage.getItem('authToken');
+
+//     if (!token) {
+//         console.warn("Nessun token trovato. L'utente deve fare il login.");
+//         alert("Devi essere loggato per giocare!");
+//         router.push('/login'); // Reindirizza al login
+//         return -1;
+//     }
+
+//     try {
+//         const response = await fetch(`http://${window.location.hostname}:3001/api/profile`, {
+//             method: 'GET',
+//             headers: {
+//                 'Content-Type': 'application/json',
+//                 'Authorization': `Bearer ${token}`
+//             }
+//         });
+
+//         const data = await response.json();
+
+//         if (!response.ok) {
+//             throw new Error(data.error || "Sessione non valida");
+//         }
+
+//         // === SUCCESSO ===
+//         console.log("Autorizzazione confermata! Avvio del gioco...");
+//         return data.id;
+
+//     } catch (error) {
+//         // === FALLIMENTO ===
+//         console.error("Autorizzazione fallita:", error);
+//         alert("La tua sessione è scaduta o non è valida. Effettua nuovamente il login.");
+//         localStorage.removeItem('authToken');
+//         localStorage.removeItem('user');
+//         router.push('/login');
+//     }
+//     return -1;
+// }
 
 export function loadOnlineLobbyPage(): HTMLElement {
     let lobby_code = '';
@@ -14,7 +56,7 @@ export function loadOnlineLobbyPage(): HTMLElement {
 
     // @topiana- we need playerID to authenticate the connection, so I passed it to createWebSocketConnection 
 
-    const playerID = localStorage.getItem('playerID') || sessionStorage.getItem('guestID') || 'Guest_' + Math.floor(Math.random() * 1000);
+    const playerID = localStorage.getItem('userId') || sessionStorage.getItem('guestID') || 'Guest_' + Math.floor(Math.random() * 1000);
     const format = 3; // Best of 3 rounds
     
     let lobbyWS = createWebSocketConnection(playerID, lobby_code, connected_players);
