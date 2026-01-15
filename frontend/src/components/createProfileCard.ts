@@ -1,6 +1,6 @@
 const PROFILE_BASE_URL = `http://${window.location.hostname}:3003/api`;
 
-export function loadProfileCard(linkid: string): HTMLElement {
+export function createProfileCard(linkid: string): HTMLElement {
     const container = document.createElement('div');
     
     // Classi Tailwind come da tua richiesta
@@ -44,7 +44,7 @@ export function loadProfileCard(linkid: string): HTMLElement {
             const username = data.username || linkid;
             const avatar = data.avatarUrl || data.image || "";
             // 4. Aggiorniamo l'HTML con i dati reali
-            container.innerHTML = `
+            container.innerHTML = /* html */`
                 <div class="flex flex-col items-center p-8 z-10 w-full">
                     <div class="relative group mb-4">
                         <div class="absolute -inset-1 bg-gradient-to-r from-pink-600 to-purple-600 rounded-full opacity-70 blur transition duration-200"></div>
@@ -82,17 +82,17 @@ export function loadProfileCard(linkid: string): HTMLElement {
 
 function loadErrorCard(linkid:string): string
 {
-    return `<div class="flex flex-col items-center justify-center h-full p-6 text-red-400 text-center">
-                    <span class="text-4xl mb-2">⚠️</span>
-                    <p class="font-bold">Impossibile caricare il profilo</p>
-                    <p class="text-xs opacity-70 mt-1">${linkid}</p>
-                </div>
-            `;
+    return /* html */`<div class="flex flex-col items-center justify-center h-full p-6 text-red-400 text-center">
+                <span class="text-4xl mb-2">⚠️</span>
+                <p class="font-bold">Impossibile caricare il profilo</p>
+                <p class="text-xs opacity-70 mt-1">${linkid}</p>
+            </div>
+        `;
 }
 
 function loadBotCard(botid:string): string
 {
-    return `<div class="flex flex-col items-center justify-center h-full p-6 text-red-400 text-center">
+    return /* html */`<div class="flex flex-col items-center justify-center h-full p-6 text-red-400 text-center">
                 <span class="text-4xl mb-2">🤖</span>
                 <p class="font-bold">${botid}</p>
                 <p class="text-indigo-200 text-sm mb-6 font-medium tracking-wider uppercase">
@@ -104,7 +104,7 @@ function loadBotCard(botid:string): string
 
 function loadGuestCard(guestid:string): string
 {
-    return `<div class="flex flex-col items-center justify-center h-full p-6 text-red-400 text-center">
+    return /* html */`<div class="flex flex-col items-center justify-center h-full p-6 text-red-400 text-center">
                 <span class="text-4xl mb-2">🥷</span>
                 <p class="font-bold">${guestid}</p>
                 <p class="text-indigo-200 text-sm mb-6 font-medium tracking-wider uppercase">

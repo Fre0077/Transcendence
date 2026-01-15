@@ -1,0 +1,109 @@
+// loadPongPlayerPage.ts
+import { router } from "@/router";
+import { load404Page } from "@/pages/errors/404";
+import { createPlayerSocket } from "@components/PongBoards/PongSocket";
+import { createPongBoard } from "@components/PongBoards/createPongBoard";
+
+
+const PONG_BACKEND_URL = `ws://${window.location.hostname}:3040/gamesocket`;
+
+export function loadPongPlayerPage(): HTMLElement {
+
+	const playerID = localStorage.getItem('userId') || sessionStorage.getItem('guestID');
+	if (playerID === null) {
+		return load404Page();
+	}
+
+	/* ------ BUILD THE BOARD ------ */
+	// 1. create raw websocket
+	const ws = new WebSocket(PONG_BACKEND_URL);
+
+	// 2. wrap it
+	const socket = createPlayerSocket(ws, playerID);
+
+	// 3. create UI
+	const board = createPongBoard(socket);
+
+	// 4. connect socket → board
+	socket.onmessage((state) => {
+		// forward game state to board
+		board.update(state);
+	});
+
+	// 5. handshake when ready
+	ws.onopen = () => {
+		socket.handshake();
+	};
+
+	ws.onclose = () => {
+		console.log("Disconnected from game");
+	};
+
+	/* --------- BUILD THE PAGE ----------- */
+
+	// #todo pls fix back button
+
+	const div = document.createElement('div');
+    // div.className = 'min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex flex-col';
+	div.className = 'min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative flex flex-col';
+	div.innerHTML = /*html*/ `
+
+		<!-- Centered board -->
+		<div class="flex-1 container mx-auto px-4 flex flex-col items-center justify-center gap-8 pb-8">
+			<!-- PONG BOARD -->
+			<div id="pong-board-slot"></div>
+		</div>
+
+		<!-- Back button at bottom -->
+		<button
+			id="leaveGameBtn"
+			class="px-6 py-2 bg-red-600/20 border border-red-500/30 rounded-lg text-sm text-white hover:bg-red-600/30 transition shadow-lg active:scale-95"
+		>
+			Back
+		</button>
+	`;
+
+	// mount board BEFORE socket updates
+	const slot = div.querySelector("#pong-board-slot")!;
+	slot.appendChild(board.element);
+
+	// Add event listener for create game button
+	const leaveGameBtn = div.querySelector('#leaveGameBtn');
+	if (leaveGameBtn) {
+		leaveGameBtn.addEventListener('click', () => {
+			socket.send({ method: 'LEAVE' });
+
+			// destroy board
+			board.destroy();
+
+			// back in history
+			router.back();
+		});
+	}
+
+	/* --- REGISTER INPUTS --- */
+
+	// inputs
+    document.addEventListener("keydown", (e) => {
+		if (e.repeat) return;
+		e.preventDefault(); // 🚫 stop page scrolling
+		switch (e.key) {
+			case "w": socket.send({ method: "MOVE", value: "UP_PRESS" }); break;
+			case "s": socket.send({ method: "MOVE", value: "DW_PRESS" }); break;
+			case "ArrowUp": socket.send({ method: "MOVE", value: "UP_PRESS" }); break;
+			case "ArrowDown": socket.send({ method: "MOVE", value: "DW_PRESS" }); break;
+			case " ": socket.send({ method: "MOVE", value: "START_PRESS" }); break;
+		}
+	});
+  
+	document.addEventListener("keyup", (e) => {
+		switch (e.key) {
+			case "w": socket.send({ method: "MOVE", value: "UP_RELEASE" }); break;
+			case "s": socket.send({ method: "MOVE", value: "DW_RELEASE" }); break;
+			case "ArrowUp": socket.send({ method: "MOVE", value: "UP_RELEASE" }); break;
+			case "ArrowDown": socket.send({ method: "MOVE", value: "DW_RELEASE" }); break;
+		}
+	});
+
+	return div;
+}

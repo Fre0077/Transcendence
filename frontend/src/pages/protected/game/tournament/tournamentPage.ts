@@ -1,5 +1,6 @@
 import { loadNavbar } from "@/components/navbar";
-import { loadSpectateGamePage } from "../onlineGame/spectateGame";
+// import { loadSpectateGamePage } from "../online/spectateGame";
+import { loadPongSpectatorDiv } from "@pages/protected/game/online/loadPongSpectatorDiv";
 
 const basePath = `http://${window.location.hostname}:3032/`;
 
@@ -38,7 +39,7 @@ export function loadOnlineTournamentPage(): HTMLElement {
 
 	const playerID = localStorage.getItem('playerID') || sessionStorage.getItem('guestID') || 'Guest_' + Math.floor(Math.random() * 1000);
 	
-	let tournamentWS = createWebSocketConnection(playerID);
+	/* const tournamentWS =  */createWebSocketConnection(playerID);
 
 	//----
 
@@ -46,7 +47,7 @@ export function loadOnlineTournamentPage(): HTMLElement {
 	div.className = 'min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex flex-col';
 	div.innerHTML = /*html*/ `
 	${loadNavbar().outerHTML}
-	<!-- Online Lobby Page Content -->
+	<!-- Online Tournament Page Content -->
 	<div class="flex-1 container mx-auto px-4 flex flex-col items-center justify-center gap-8">
 		<div class="text-center mb-8">
 			<h1 class="text-5xl font-bold text-white mb-4">Online Tournament</h1>
@@ -78,21 +79,6 @@ export function loadOnlineTournamentPage(): HTMLElement {
 
 	</div>
 	`;
-
-	
-	const leaveBtn = div.querySelector('#leaveBtn');
-	if (leaveBtn) {
-		leaveBtn.addEventListener('click', () => {
-			console.log('Leave Tournament Button clicked');
-			if (leave(tournamentWS) === false) return;
-
-			// close socket while leaving the page
-			tournamentWS.close();
-			
-			// backc to tournament HUB
-			router.back();
-		});
-	}
 
 	return div;
 }
@@ -152,7 +138,7 @@ function spectate(gameid: string) {
     }
 
     // Create spectate view
-    const spectateDiv = loadSpectateGamePage(gameid);
+    const spectateDiv = loadPongSpectatorDiv(gameid);
 
     spectateDiv.classList.add(
         'mt-10',
@@ -168,7 +154,7 @@ function spectate(gameid: string) {
     spectateDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
     // Optional: If spectateDiv has a close button, remove game from set when closed
-    const closeBtn = spectateDiv.querySelector('.close-btn');
+    const closeBtn = spectateDiv.querySelector('#close-btn');
     if (closeBtn) {
         closeBtn.addEventListener('click', () => {
             container.removeChild(spectateDiv);

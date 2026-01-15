@@ -1,5 +1,5 @@
 import { loadNavbar } from "@/components/navbar";
-import { loadProfileCard } from "@pages/protected/game/loadProfileCard"
+import { createProfileCard } from "@components/createProfileCard.js";
 
 const baseLobbyPath = `http://${window.location.hostname}:3031/`;
 
@@ -361,7 +361,7 @@ function updateLobbyInfo(lobby_code?: string, connected_players: Player[] = []) 
         // 3. Itera e "appendi" gli elementi DOM reali
         connected_players.forEach(player => {
             // Qui ottieni l'elemento HTML vivo
-            const cardDOM = loadProfileCard(player.id); 
+            const cardDOM = createProfileCard(player.id); 
             
             // Lo inserisci nella pagina
             playersListElem.appendChild(cardDOM);

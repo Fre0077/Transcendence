@@ -1,11 +1,12 @@
 import { load404Page } from "./pages/errors/404";
 import { load500Page } from "./pages/errors/500";
 import { ChatsPage } from "./pages/protected/chats/chats";
-import { loadGamePage } from "./pages/protected/game/game";
+import { loadGameHub } from "./pages/protected/game/game";
 import { loadOnlineLobbyPage } from "./pages/protected/game/lobby/lobby";
 import { loadTournamentHubPage } from "./pages/protected/game/tournament/tournamentHub";
 import { loadOnlineTournamentPage } from "./pages/protected/game/tournament/tournamentPage";
-import { loadOnlineGamePage } from "./pages/protected/game/onlineGame/onlineGame";
+// import { loadOnlineGamePage } from "./pages/protected/game/online/onlineGame";
+import { loadPongPlayerPage } from '@pages/protected/game/online/loadPongPlayerPage';
 import { loadLocalGamePage } from "./pages/protected/game/localGame";
 import { loadHomePage } from "./pages/protected/home/home";
 import { loadProfilePage } from "./pages/protected/profile/profile";
@@ -80,6 +81,7 @@ class Router {
 
   // Go back in history
   back() {
+    // #todo remove event listeners
     window.history.back();
   }
 
@@ -320,7 +322,7 @@ const routes: RouteConfig[] = [
     path: '/game',
     name: 'game-lobby',
     component: () => {
-      return loadGamePage();
+      return loadGameHub();
     },
     meta: { title: 'Game Lobby - ft_transcendence', requiresAuth: true, requires2FA: true },
   },
@@ -345,7 +347,7 @@ const routes: RouteConfig[] = [
     path: '/game/:matchId',
     name: 'game-match',
     component: () => {
-      return loadOnlineGamePage();
+      return loadPongPlayerPage();
     },
     meta: { title: 'Game Match - ft_transcendence', requiresAuth: true, requires2FA: true },
   },

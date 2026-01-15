@@ -286,9 +286,19 @@ function publish(ID:string, name:string, message:string): boolean
 	const mq = mqueues.get(name);
 	if (mq === undefined) return false;
 
-	if (name === "history") publishGameHistory(message);
 	// perform the action
-	return mq.publish(ID, message);
+	const ok = mq.publish(ID, message);
+
+	// check outcome
+	if (ok === false) return false;
+
+	/* --- FORWARD --- */
+	const fwd = forwards.get(name);
+	if (fwd) fwd(message);
+	/* --------------- */
+
+	// successful return
+	return true;
 }
 
 function get(ID:string, name:string): string | undefined
@@ -508,6 +518,9 @@ function MonitorQueues()
  - store all messages
  - single MQueue with multiple 'head's, once per sub  */
 
+// forward messages to other services
+let forwards:Map<string, (msg:string) => void> = new Map();
+
 /* ------------------------------------------ */
 const start = async () => {
 	try {
@@ -518,6 +531,9 @@ const start = async () => {
 		mqueues.set('lobby', new MQueue());
 		mqueues.set('history', new MQueue());
 		mqueues.set('bot', new MQueue());
+
+		// add forwards
+		forwards.set('history', publishGameHistory);
 
 		// load users backup if present
 		await laodBackup();

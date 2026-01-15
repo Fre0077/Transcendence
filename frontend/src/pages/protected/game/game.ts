@@ -1,7 +1,7 @@
 import { loadNavbar } from "@/components/navbar";
 
 
-export function loadGamePage(): HTMLElement {
+export function loadGameHub(): HTMLElement {
 	const div = document.createElement('div');
 	div.className = 'min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex flex-col';
 	div.innerHTML = /* html */`
