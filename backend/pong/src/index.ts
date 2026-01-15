@@ -1,7 +1,7 @@
 import Fastify from 'fastify';
 import { Game } from './Game.js'
 import { WebSocket } from "ws";
-
+import { publishGameHistory } from './publisher.js';
 
 // Where the Queue will listen
 const PORT = Number(process.env.PORT) || 3040;

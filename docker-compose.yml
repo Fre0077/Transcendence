@@ -134,8 +134,13 @@ services:
     container_name: pong
     ports:
       - "3040:3040"
+    environment:
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
     depends_on:
-      - ft_bunny
+      rabbitmq:
+        condition: service_healthy
+      ft_bunny:
+          condition: service_started
     networks:
       - transcendence
     restart: always
