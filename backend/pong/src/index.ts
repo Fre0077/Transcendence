@@ -218,6 +218,9 @@ export function deleteGame(gameID:string, reason:string | void)
 	// check if game is finished
 	const winner = game.game.end();
 
+	// #todo send to RabbitMQ and ft_bunny
+	if (winner !== -1)
+	{
 	// what will be sent to RabbitMQ and ft_bunnyMQ @ecarbona
 	const history = {
 		game: 'pong',
@@ -228,8 +231,9 @@ export function deleteGame(gameID:string, reason:string | void)
 		metadata: game.metadata
 	}
 
-	// #todo send to RabbitMQ, not ft_bunny
-	if (winner !== -1) bunnyPublish('history', history);
+		// #todo send to RabbitMQ and ft_bunny
+		bunnyPublish('history', history);
+	}
 
 	// send to lobby that all the players left the game
 	bunnyPublish('lobby', {
