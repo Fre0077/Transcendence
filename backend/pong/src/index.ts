@@ -221,15 +221,15 @@ export function deleteGame(gameID:string, reason:string | void)
 	// #todo send to RabbitMQ and ft_bunny
 	if (winner !== -1)
 	{
-	// what will be sent to RabbitMQ and ft_bunnyMQ @ecarbona
-	const history = {
-		game: 'pong',
-		ID: gameID,
-		winner: [game.players[winner].ID],
-		players: game.players.map(player => player.ID),
-		score: game.game.state.score,
-		metadata: game.metadata
-	}
+		// what will be sent to RabbitMQ and ft_bunnyMQ @ecarbona
+		const history = {
+			game: 'pong',
+			ID: gameID,
+			winner: [game.players[winner].ID],
+			players: game.players.map(player => player.ID),
+			score: game.game.state.score,
+			metadata: game.metadata
+		}
 
 		// #todo send to RabbitMQ and ft_bunny
 		bunnyPublish('history', history);
