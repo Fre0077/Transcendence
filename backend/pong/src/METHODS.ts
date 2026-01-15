@@ -262,3 +262,46 @@ export function MOVE(msg:object, outgame:string | undefined, outplayer:string | 
 	// no reply
 	return "no-reply";
 }
+
+/*
+Request:
+{
+  method: 'SPECTATE',
+  value: <gameID>
+}
+
+Description: asks to receive the gamee updates
+
+Reply:
+{
+	method: 'SPECTATE_REPLY',
+	status: 'failure/success',
+	comment: <comment>			(only if status === failure)
+}
+*/
+export function SPECTATE(msg:object, outplayer:string | undefined, listener:(state:string) => void): string
+{
+	// check auth
+	if (outplayer === undefined) {
+		return JSON.stringify({ method: 'SPECTATE_REPLY', status: 'failure', comment: 'Authenticate before spectating' });
+	}
+
+	// check if the obj has value
+	if (!("value" in msg) || typeof msg.value !== "string") {
+		console.log('invalid JSON message: ' + msg);
+		return JSON.stringify({ method: 'SPECTATE_REPLY', status: 'failure', comment: 'invalid JSON message: ' + msg });
+	}
+
+	// searches the game
+	const { game, /* player */ } = findGame(msg.value);
+
+	// checck if game found
+	if (game === undefined) {
+		return JSON.stringify({ method: 'SPECTATE_REPLY', status: 'failure', comment: 'game not found' });
+	}
+
+	// add listner to the game
+	game.subscribe(outplayer, listener);
+
+	return JSON.stringify({ method: 'SPECTATE_REPLY', status: 'success' });
+}

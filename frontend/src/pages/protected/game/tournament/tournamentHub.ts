@@ -77,6 +77,44 @@ export function loadTournamentHubPage(): HTMLElement
                         </p>
                     </div>
 
+                    <!-- Bots Section -->
+                    <div class="mb-4 border-t border-white/10 pt-4">
+                        <label class="block text-sm text-white/70 mb-1">
+                            Bots (<span id="botCountLabel">0</span>)
+                        </label>
+
+                        <input
+                            id="botCountInput"
+                            type="range"
+                            min="0"
+                            value="0"
+                            class="w-full accent-cyan-500"/>
+
+                        <p class="text-xs text-white/50 mt-1">
+                            Max bots: <span id="botMaxLabel">7</span>
+                        </p>
+
+                        <!-- Bot Level -->
+                        <div class="mt-3">
+                            <label class="block text-sm text-white/70 mb-1">
+                                Bot Strength
+                            </label>
+
+                            <input
+                                id="botLevelInput"
+                                type="range"
+                                min="0"
+                                max="100"
+                                value="50"
+                                class="w-full accent-cyan-500"/>
+
+                            <p class="text-xs text-white/50 mt-1">
+                                Level: <span id="botLevelLabel">50</span>
+                                <span class="ml-2">(0 = strong, 100 = weak)</span>
+                            </p>
+                        </div>
+                    </div>
+
                     <!-- Create Button -->
                     <button
                         id="confirmCreateTourn" class="w-full mt-4 rounded-lg bg-cyan-600 py-2 text-white font-semibold hover:bg-cyan-500">
@@ -103,6 +141,7 @@ export function loadTournamentHubPage(): HTMLElement
             const tourn_conde = prompt('Enter Tournament Code:');
             if (tourn_conde) {
                 join(tourn_conde, tournamentWS);
+
             }
         });
     }
@@ -113,6 +152,42 @@ export function loadTournamentHubPage(): HTMLElement
     const playerCountInput = div.querySelector('#playerCountInput') as HTMLInputElement;
     const selectedFormatSpan = div.querySelector('#selectedFormat')!;
     let selectedFormat = 'single-elimination';
+
+    /* -------------------- BOTS (ChatGPT) --------------------- */
+    const botCountInput = div.querySelector('#botCountInput') as HTMLInputElement;
+    const botCountLabel = div.querySelector('#botCountLabel')!;
+    const botMaxLabel = div.querySelector('#botMaxLabel')!;
+    const botLevelInput = div.querySelector('#botLevelInput') as HTMLInputElement;
+    const botLevelLabel = div.querySelector('#botLevelLabel')!;
+
+
+    function updateBotLimits() {
+        const maxBots = Math.max(0, Number(playerCountInput.value) - 1);
+        botCountInput.max = String(maxBots);
+        botMaxLabel.textContent = String(maxBots);
+    
+        if (Number(botCountInput.value) > maxBots) {
+            botCountInput.value = String(maxBots);
+        }
+    
+        botCountLabel.textContent = botCountInput.value;
+    }
+    
+    // Initial sync
+    updateBotLimits();
+    
+    playerCountInput.addEventListener('input', updateBotLimits);    
+
+
+    botCountInput.addEventListener('input', () => {
+        botCountLabel.textContent = botCountInput.value;
+    });
+    
+    botLevelInput.addEventListener('input', () => {
+        botLevelLabel.textContent = botLevelInput.value;
+    });
+
+    /* -------------------------------------------------------- */
 
     // Expand / collapse
     createHeader.addEventListener('click', () => {
@@ -147,6 +222,8 @@ export function loadTournamentHubPage(): HTMLElement
     // Create tournament
     div.querySelector('#confirmCreateTourn')?.addEventListener('click', () => {
         const playerCount = Number(playerCountInput.value);
+        const botCount = Number(botCountInput.value);
+        const botLevel = Number(botLevelInput.value);
 
         // check on the player count
         if (playerCount < 2) {
@@ -173,61 +250,25 @@ export function loadTournamentHubPage(): HTMLElement
 
         // assemble and send the create ruequest
         create(playerCount, selectedFormat, tournamentWS);
+
+        // add bots if requested
+        for (let i = 0; i < botCount; i++) {
+            addbot(botLevel, tournamentWS);
+        }
+        
     });
-
-    
-    /* const leaveTournBtn = div.querySelector('#leaveTournBtn');
-    if (leaveTournBtn) {
-        leaveTournBtn.addEventListener('click', () => {
-            console.log('Leave Lobby Button clicked');
-            leaveTourn(tournament_code, connected_players, tournamentWS);
-            tournamentWS = createWebSocketConnection(playerID, tournament_code, connected_players);
-        });
-        console.log('Leave Lobby Button found and event listener added');
-    } */
-
-    /* const startGameBtn = div.querySelector('#startGameBtn');
-    if (startGameBtn) {
-        startGameBtn.addEventListener('click', () => {
-            startGame(tournamentWS);
-        });
-    } */
-
-    //----------------------
-    // @topiana-
-    /* const slider = div.querySelector("#botLevelSlider") as HTMLInputElement;
-    const addBotBtn = div.querySelector('#addBotBtn');
-    if (addBotBtn && slider) {
-        addBotBtn.addEventListener('click', () => {
-            const level = slider.value;
-            addBot(Number(level), tournamentWS);
-        });
-    }
-
-    const remBotBtn = div.querySelector('#remBotBtn');
-    if (remBotBtn) {
-        remBotBtn.addEventListener('click', () => {
-            remBot(tournamentWS);
-        });
-    } */
 
     return div;
 }
 
-// @topiana- (outdated, now sending lobbystate only on update)
-/* function checkPlayerListChanged(oldList: Player[], newList: any[]): boolean {
-    if (oldList.length !== newList.length) {
-        return true;
-    }
-    const oldIds = oldList.map(p => p.id).sort();
-    const newIds = newList.map(p => p.ID).sort();
-    for (let i = 0; i < oldIds.length; i++) {
-        if (oldIds[i] !== newIds[i]) {
-            return true;
-        }
-    }
-    return false;
-} */
+// @topiana- add a bot
+function addbot(level:number, ws:WebSocket)
+{
+	if (ws.readyState === WebSocket.OPEN) {
+		ws.send(JSON.stringify({ method: 'BOT', value: 'ADD', level: level }))
+	}
+}
+
 
 /* 
     Request:
@@ -267,47 +308,17 @@ function join(code: string, socket:WebSocket)
     }
 }
 
-/* function leave(code: string, connected_players: Player[], socket:WebSocket) {
-    
-    // @topiana- check on socket state
-    if (socket.readyState === WebSocket.OPEN) {
-        socket.send(JSON.stringify({ method: 'LEAVE' }));
-    } else {
-        console.log("Socket closed, couldn't leave lobby");
-        return ;
-    }
+// move to tournament page
+function pushToTournament(socket:WebSocket, playerID:string, tournamentID:string)
+{
+    // #remove
+    window.sessionStorage.setItem('guestID', playerID);
 
-    // cleanup
+    // disconnect the websocket
     socket.close();
-    code = '';
-    connected_players = [];
-    // updateLobbyInfo(code, connected_players);
+    
+    router.push(`/tournament/${tournamentID}`);
 }
-
-// message received: {"method":"START_REPLY","status":"success","value":"00d78701-cb70-4535-81f3-c7b96bcd757b","comment":"The lobby is now in game"}
-function ready(socket: WebSocket) {
-    const startGameRequest = {
-        method: 'READY',
-        // lobbyID: lobby_code // outdated
-    };
-    socket.send(JSON.stringify(startGameRequest));
-}
-
-// @topiana- add a bot
-function addBot(level:number, socket:WebSocket)
-{
-    if (socket.readyState === WebSocket.OPEN) {
-        socket.send(JSON.stringify({ method: 'BOT', value: 'ADD', level: level }))
-    }
-}
-
-// @topiana- remove a bot
-function remBot(socket:WebSocket)
-{
-    if (socket.readyState === WebSocket.OPEN) {
-        socket.send(JSON.stringify({ method: 'BOT', value: 'REMOVE'}))
-    }
-} */
 
 // #review pls (ChatGPT)
 import { router } from "@/router";
@@ -330,48 +341,26 @@ function createWebSocketConnection(playerID:string): WebSocket
             console.log('Tournament WebSocket message received:', data);
             // let updateNeeded = false; // (outdated)
             const method = data.method || '';
+
+            /* go to the created tournament */
             if (method === 'CREATE_REPLY' && data.status === 'success') {
                 console.log('Tournament created:', data.comment);
 
-
-                // @topiana- load the game page #review pls
-                // window.location.href = `/game:${data.value}`;
-
-                // #remove
-                window.sessionStorage.setItem('guestID', playerID);
-
-                
-                router.push(`/tournament/${data.value}`);
+                pushToTournament(ws, playerID, data.value);
 
             }
-            // @topiana-
+            /* go to the joined tournament */
+            else if (method === 'JOIN_REPLY' && data.status === 'success') {
+                console.log('Tournament joined:', data.comment);
+
+                pushToTournament(ws, playerID, data.value);
+
+            }
+            // just logging
             else if (method === 'AUTH_REPLY' && data.status === 'success') {
                 console.log('Authenticatd successfully');
 
-
-                // reset lobbycode
-                // lobby_code = ''; // (not necessary)
-
             }
-            /* interface TournamentState {
-                ID:string;
-                // gameID:string;
-                players: {
-                    ID:string;
-                    status:string;
-                }[];
-                rooms: {
-                    // id room
-                    layer:number;
-                    idx:number;
-
-                    players:string[];
-
-                    // outcome
-                    winner:string[];
-                    score:number[];
-                }[]
-            } */
 
         } catch (e) {
             console.log("message received:", event.data);

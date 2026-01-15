@@ -364,7 +364,9 @@ function createWebSocketConnection(playerID:string, lobby_code: string, connecte
                 // #remove
                 window.sessionStorage.setItem('guestID', playerID);
 
-                
+                // close socket when leaving window
+                ws.close();
+
                 router.push(`/game/${data.value}`);
 
             }

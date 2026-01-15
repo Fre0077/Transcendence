@@ -1,10 +1,18 @@
 
+@topiana- todos
+
 MAJOR
 1. fix layer:2 of tournaments (moves on it's own wtf???) (DONE)
+2. Replay system
+3. loadPongDiv(ws:WebSocket) that spawns the game using that socket
 
 MINOR
-1. Replay system
-2. Tournament setup as string
+1. Tournament setup as string (DONE)
+2. bots should be 'connected' if not playing in tournaments, just like lobbies (DONE)
+3. abort games between bots in tournaments when all players leave
+4. timers and finish notifications on game
+5. finish notification on tournaments
+6. autowin on disconnected players and layer check
 
 CLEANUPS:
 1. remove JOIN method for games (DONE)

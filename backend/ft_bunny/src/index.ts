@@ -318,7 +318,7 @@ function notify(mq:MQueue, name:string)
 		if (endpoint !== undefined && mq.empty(follower) === false)
 		{
 			// #debug
-			console.log('Notifying', follower);
+			// console.log('Notifying', follower);
 
 			fetch(`${endpoint}?queue=${name}`)
 			.catch((err) => console.log(err));

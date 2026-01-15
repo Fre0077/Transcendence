@@ -233,6 +233,7 @@ export function deleteGame(gameID:string, reason:string | void)
 
 		// #todo send to RabbitMQ and ft_bunny
 		bunnyPublish('history', history);
+		publishGameHistory(history);
 	}
 
 	// send to lobby that all the players left the game

@@ -1,21 +1,28 @@
 import { loadNavbar } from "@/components/navbar";
+import { loadSpectateGamePage } from "../onlineGame/spectateGame";
 
 const basePath = `http://${window.location.hostname}:3032/`;
 
+// Keep track of games currently being spectated
+const spectatingGames = new Set<string>();
+
 interface Player {
-	id: string;
+	ID: string;
 	name: string;
 	status?: string;
 }
 
 interface Room {
 	// id room
-	gameid:string;
 	layer:number;
 	idx:number;
 
 	// players
 	players:string[];
+
+	// status
+	status:string;
+	gameid:string;
 
 	// outcome
 	winner:string[];
@@ -46,82 +53,28 @@ export function loadOnlineTournamentPage(): HTMLElement {
 			<p class="text-lg text-white/60">Get ready to play :3</p>
 		</div>
 
-		<div class="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-3 gap-8">
-			<!-- Tournament Info Card (ChatGPT) -->
-			<div class="flex flex-col h-full lg:col-span-2 rounded-xl bg-gradient-to-br from-purple-600/20 to-pink-600/20 border border-purple-500/30 overflow-hidden">
+		<!-- Players + Tournament Layout -->
+		<div class="w-full max-w-7xl flex flex-col lg:flex-row gap-6">
 
-				<div id="tournamentRooms" class="p-6 flex flex-col gap-6 overflow-x-auto"></div>
+			<!-- Players list (LEFT) -->
+			<div id="connectedPlayersList" class="w-full lg:w-64 shrink-0 sticky top-24 self-start"></div>
 
-			</div>
-		</div>
-
-
-		<!-- ACTION BAR (STUCK TO BOTTOM, FULL WIDTH) -->
-		<div class="border-t border-white/10">
-			<div class="flex w-full">
-
-				<!-- Ready Game -->
-				<a id="readyBtn" class="flex-1 flex items-center justify-center py-3 text-sm font-medium text-white bg-green-600/20 hover:bg-green-600/30 transition">
-					Ready
-				</a>
-
-				<!-- Leave Tournament -->
-				<a id="leaveBtn" class="flex-1 flex items-center justify-center py-3 text-sm font-medium text-white bg-red-600/20 hover:bg-red-600/30 transition">
-					Leave Tournament
-				</a>
-
-			</div>
-		</div>
-
-		<!-- BOT card (ChatGPT) -->
-		<div class="flex flex-col rounded-xl bg-gradient-to-br from-blue-600/20 to-indigo-600/20 border border-blue-500/30 overflow-hidden">
-
-			<!-- CARD CONTENT -->
-			<div class="p-6 flex-1 flex flex-col items-center">
-				<h3 class="text-lg font-bold text-white mb-2">BOT</h3>
-				<p class="text-xs text-white/70 mb-6">Difficulty</p>
-
-				<!-- Slider container -->
-				<div class="flex flex-col items-center gap-2 flex-1 justify-center">
-					<span class="text-xs text-white/50">Gremlin</span>
-
-					<input
-						id="botLevelSlider"
-						type="range"
-						min="0"
-						max="100"
-						value="50"
-						class="h-40 w-2 accent-blue-500 cursor-pointer [writing-mode:vertical-rl] [direction:rtl]"/>
-
-					<span class="text-xs text-white/50">Demigod</span>
-				</div>
+			<!-- Tournament board (RIGHT) -->
+			<div
+				class="flex-1 rounded-xl bg-gradient-to-br from-purple-600/20 to-pink-600/20
+					border border-purple-500/30 overflow-hidden"
+			>
+				<div
+					id="tournamentRooms"
+					class="p-6 flex flex-col gap-6 overflow-x-auto"
+				></div>
 			</div>
 
-			<!-- ACTION BAR (FULL WIDTH, 2 BUTTONS) -->
-			<div class="border-t border-white/10">
-				<div class="flex w-full">
-
-					<!-- ADD button -->
-					<button
-						id="addBotBtn"
-						class="flex-1 flex items-center justify-center py-3 text-sm font-medium text-white bg-green-600/20 hover:bg-green-600/30 transition"
-					>
-						ADD
-					</button>
-
-					<!-- LEAVE button -->
-					<button
-						id="remBotBtn"
-						class="flex-1 flex items-center justify-center py-3 text-sm font-medium text-white bg-red-600/20 hover:bg-red-600/30 transition"
-					>
-						REMOVE
-					</button>
-
-				</div>
-			</div>
 		</div>
 
 		<div id="connectedPlayersList"></div>
+
+		<div id="spectateGameDiv" class="w-full mt-10"></div>
 
 	</div>
 	`;
@@ -131,37 +84,13 @@ export function loadOnlineTournamentPage(): HTMLElement {
 	if (leaveBtn) {
 		leaveBtn.addEventListener('click', () => {
 			console.log('Leave Tournament Button clicked');
-			leave(tournamentWS);
+			if (leave(tournamentWS) === false) return;
 
+			// close socket while leaving the page
 			tournamentWS.close();
-			//#todo reroute to tournament HUB (or home)
-
-		});
-		console.log('Leave Lobby Button found and event listener added');
-	}
-
-	const readyBtn = div.querySelector('#readyBtn');
-	if (readyBtn) {
-		readyBtn.addEventListener('click', () => {
-			ready(tournamentWS);
-		});
-	}
-
-	//----------------------
-	// @topiana-
-	const slider = div.querySelector("#botLevelSlider") as HTMLInputElement;
-	const addBotBtn = div.querySelector('#addBotBtn');
-	if (addBotBtn && slider) {
-		addBotBtn.addEventListener('click', () => {
-			const level = slider.value;
-			addBot(Number(level), tournamentWS);
-		});
-	}
-
-	const remBotBtn = div.querySelector('#remBotBtn');
-	if (remBotBtn) {
-		remBotBtn.addEventListener('click', () => {
-			remBot(tournamentWS);
+			
+			// backc to tournament HUB
+			router.back();
 		});
 	}
 
@@ -170,14 +99,15 @@ export function loadOnlineTournamentPage(): HTMLElement {
 
 
 
-function leave(socket: WebSocket)
+function leave(socket: WebSocket): boolean
 {
 	// @topiana- check on socket state
 	if (socket.readyState === WebSocket.OPEN) {
 		socket.send(JSON.stringify({ method: 'LEAVE' }));
+		return true;
 	} else {
 		console.log("Socket closed, couldn't leave tournament");
-		return ;
+		return false;
 	}
 }
 
@@ -199,24 +129,58 @@ function ready(socket: WebSocket)
 	}
 }
 
-// @topiana- add a bot
-function addBot(level:number, ws:WebSocket)
-{
-	if (ws.readyState === WebSocket.OPEN) {
-		ws.send(JSON.stringify({ method: 'BOT', value: 'ADD', level: level }))
-	}
+// add the spectated game
+function spectate(gameid: string) {
+    // If already spectating this game, do nothing
+    if (spectatingGames.has(gameid)) {
+        console.log(`Already spectating game ${gameid}`);
+        return;
+    }
+
+    console.log('Spectating game:', gameid);
+
+    const container = document.getElementById('spectateGameDiv');
+    if (!container) return;
+
+    // Mark as spectating
+    spectatingGames.add(gameid);
+
+    // Disable the spectate button for this game
+    const btn = document.querySelector(`[data-spectate-btn][onclick*="${gameid}"]`) as HTMLElement;
+    if (btn) {
+        btn.classList.add('opacity-50', 'pointer-events-none');
+    }
+
+    // Create spectate view
+    const spectateDiv = loadSpectateGamePage(gameid);
+
+    spectateDiv.classList.add(
+        'mt-10',
+        'p-6',
+        'max-w-6xl',
+        'mx-auto',
+        'shadow-xl'
+    );
+
+    container.appendChild(spectateDiv);
+
+    // Scroll to newly added spectate
+    spectateDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    // Optional: If spectateDiv has a close button, remove game from set when closed
+    const closeBtn = spectateDiv.querySelector('.close-btn');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            container.removeChild(spectateDiv);
+            spectatingGames.delete(gameid);
+
+            // Re-enable the button
+            if (btn) {
+                btn.classList.remove('opacity-50', 'pointer-events-none');
+            }
+        });
+    }
 }
-
-// @topiana- remove a bot
-function remBot(ws:WebSocket)
-{
-	if (ws.readyState === WebSocket.OPEN) {
-		ws.send(JSON.stringify({ method: 'BOT', value: 'REMOVE'}))
-	}
-}
-
-
-
 
 
 /* --------------------------------------- */
@@ -224,26 +188,78 @@ function remBot(ws:WebSocket)
 
 function updateTournamentInfo(
     connected_players: Player[] = [],
-    rooms: Room[]
+    rooms: Room[],
+	socket:WebSocket
 ) {
 	console.log('Updating tournament info ...');
 
     /* ---------------- Players list ---------------- */
-    const playersListElem = document.getElementById('connectedPlayersList');
-    if (playersListElem) {
-        if (connected_players.length > 0) {
-            playersListElem.innerHTML = `
-                <ul class="space-y-1">
-                    ${connected_players.map(player =>
-                        `<li class="text-sm text-white/80">• ${player.name} - ${player.status}</li>`
-                    ).join('')}
-                </ul>
-            `;
-        } else {
-            playersListElem.innerHTML =
-                '<p class="text-sm text-white/40 italic">No players connected</p>';
-        }
-    }
+	const playersListElem = document.getElementById('connectedPlayersList');
+	if (playersListElem) {
+		if (connected_players.length > 0) {
+			playersListElem.innerHTML = `
+				<div class="w-full max-w-xs rounded-xl bg-slate-800/60 border border-white/10 p-4 flex flex-col gap-4">
+					<h3 class="text-sm font-semibold text-white/80">
+						Players (${connected_players.length})
+					</h3>
+
+					<ul class="space-y-2 flex-1">
+						${connected_players.map(player => {
+							const status = player.status ?? 'idle';
+							const statusColor =
+								(status === 'disconnected' || status === 'left')
+									? 'bg-red-500'
+									: status === 'connected'
+									? 'bg-green-500'
+									: status === 'ready'
+									? 'bg-blue-500'
+									: 'bg-yellow-400';
+							return `
+								<li class="flex items-center justify-between text-sm text-white/80">
+									<div class="flex items-center gap-2">
+										<span class="w-2 h-2 rounded-full ${statusColor}"></span>
+										<span class="truncate max-w-[140px]">${player.ID}</span>
+									</div>
+								</li>
+							`;
+						}).join('')}
+					</ul>
+
+					<!-- Ready + Leave buttons at the end -->
+					<div class="flex gap-2 mt-2">
+						<button id="readyBtnPlayerList" class="flex-1 py-2 text-sm font-medium text-white bg-green-600/20 hover:bg-green-600/30 rounded transition">
+							Ready
+						</button>
+						<button id="leaveBtnPlayerList" class="flex-1 py-2 text-sm font-medium text-white bg-red-600/20 hover:bg-red-600/30 rounded transition">
+							Leave
+						</button>
+					</div>
+				</div>
+			`;
+		} else {
+			playersListElem.innerHTML = `
+				<p class="text-sm text-white/40 italic">
+					No players connected
+				</p>
+			`;
+		}
+	}
+
+	// Attach event listeners immediately after
+	const readyBtnPlayerList = document.getElementById('readyBtnPlayerList');
+	const leaveBtnPlayerList = document.getElementById('leaveBtnPlayerList');
+
+	if (readyBtnPlayerList) readyBtnPlayerList.addEventListener('click', () => ready(socket));
+	if (leaveBtnPlayerList) leaveBtnPlayerList.addEventListener('click', () => {
+		console.log('Leave Tournament Button clicked');
+		if (leave(socket) === false) return;
+
+		// close socket while leaving the page
+		socket.close();
+		
+		// backc to tournament HUB
+		router.back();
+	});
 
     /* ---------------- Tournament rooms ---------------- */
     const roomsContainer = document.getElementById('tournamentRooms');
@@ -266,57 +282,74 @@ function updateTournamentInfo(
         .sort((a, b) => a - b);
 
     // Render layers
-    sortedLayers.forEach(layer => {
-        const layerWrapper = document.createElement('div');
-        layerWrapper.className = 'flex flex-col gap-3';
-
-        layerWrapper.innerHTML = `
-            <h3 class="text-white/80 font-semibold">
-                Round ${layer + 1}
-            </h3>
-
-            <div class="flex gap-4 overflow-x-auto pb-2">
-                ${roomsByLayer[layer]
-                    .sort((a, b) => a.idx - b.idx)
-                    .map(room => renderRoomCard(room))
-                    .join('')}
-            </div>
-        `;
-
-        roomsContainer.appendChild(layerWrapper);
-    });
+	sortedLayers.forEach(layer => {
+		const layerWrapper = document.createElement('div');
+		layerWrapper.className = 'flex flex-col gap-3 border-b border-white/20 pb-4 mb-4';
+	
+		layerWrapper.innerHTML = `
+			<h3 class="text-white/80 font-semibold text-center">
+				Round ${layer + 1}
+			</h3>
+	
+			<div class="flex flex-wrap justify-center gap-4 overflow-x-auto pb-2">
+				${roomsByLayer[layer]
+					.sort((a, b) => a.idx - b.idx)
+					.map(room => renderRoomCard(room))
+					.join('')}
+			</div>
+		`;
+	
+		roomsContainer.appendChild(layerWrapper);
+	});
 }
 
-function renderRoomCard(room: Room): string {
-    const playersHtml = room.players.length
-        ? room.players.map(p =>
-            `<li class="text-xs text-white/70">• ${p}</li>`
-        ).join('')
-        : `<li class="text-xs text-white/40 italic">Waiting...</li>`;
+function renderRoomCard(room: Room & { status?: string }): string {
+	const playersHtml = room.players.length
+		? room.players.map(p =>
+			`<li class="text-xs text-white/70">• ${p}</li>`
+		).join('')
+		: `<li class="text-xs text-white/40 italic">Waiting...</li>`;
 
-    const winnerHtml = room.winner.length
-        ? `<p class="text-xs text-green-400 mt-2">
-              Winner: ${room.winner.join(', ')}
-           </p>`
-        : `<p class="text-xs text-white/40 mt-2 italic">
-              Not played yet
-           </p>`;
+	const winnerHtml = room.winner.length
+		? `<p class="text-xs text-green-400 mt-2">
+				Winner: ${room.winner.join(', ')}
+			</p>`
+		: `<p class="text-xs text-white/40 mt-2 italic">
+				Not played yet
+			</p>`;
 
-    return `
-        <div class="min-w-[180px] rounded-lg bg-slate-800/70 border border-white/10 p-3">
-            <p class="text-xs text-white/50 mb-1">
-                Layer ${room.layer} · Match ${room.idx}
-            </p>
+	const spectateButton =
+		room.status === 'in-game'
+			? `
+			<button data-spectate-btn
+				class="absolute top-2 right-2 rounded-md bg-red-600/80 hover:bg-red-600 text-white p-1 transition"
+				onclick="window.__spectate('${room.gameid}')">
+				👁
+			</button>
+		`
+			: '';
 
-            <ul class="space-y-1">
-                ${playersHtml}
-            </ul>
+	return `
+		<div class="relative min-w-[180px] rounded-lg bg-slate-800/70 border border-white/10 p-3">
+			${spectateButton}
 
-            ${winnerHtml}
-        </div>
-    `;
+			<p class="text-xs text-white/50 mb-1">
+				Round ${room.layer + 1} · Match ${room.idx}
+			</p>
+
+			<ul class="space-y-1">
+				${playersHtml}
+			</ul>
+
+			${winnerHtml}
+		</div>
+	`;
 }
-
+	
+// Expose spectate for inline buttons
+(window as any).__spectate = (gameid: string) => {
+	spectate(gameid);
+};
 
 /* ----------------------------------------- */
 
@@ -350,8 +383,10 @@ function createWebSocketConnection(playerID:string): WebSocket
 	ws.onmessage = (event) => {
 		try {
 			const data = JSON.parse(event.data);
+
+			/* #debug */
 			console.log('Tournament WebSocket message received:', data);
-			// let updateNeeded = false; // (outdated)
+
 			const method = data.method || '';
 			if (method === 'START_REPLY' && data.status === 'success') {
 				console.log('Room is starting the game:', data.comment);
@@ -363,6 +398,8 @@ function createWebSocketConnection(playerID:string): WebSocket
 				// #remove
 				window.sessionStorage.setItem('guestID', playerID);
 
+				// close the websocket when leaving the page
+				ws.close();
 				
 				router.push(`/game/${data.value}`);
 
@@ -376,32 +413,15 @@ function createWebSocketConnection(playerID:string): WebSocket
 				// tournment_code = ''; // (not necessary)
 
 			}
-			/* interface TournamentState {
-                ID:string;
-                // gameID:string;
-                players: {
-                    ID:string;
-                    status:string;
-                }[];
-                rooms: {
-                    // id room
-                    layer:number;
-                    idx:number;
-
-                    players:string[];
-
-                    // outcome
-                    winner:string[];
-                    score:number[];
-                }[]
-            } */
+		
+		   	// console.log('checking for updates...');
 			if (data.ID && data.players)
 			{
 				// update tournament
-				updateTournamentInfo(data.players, data.rooms);
+				updateTournamentInfo(data.players, data.rooms, ws);
 			}
 		} catch (e) {
-			console.log("message received:", event.data);
+			console.log("error on message received:", event.data);
 		}
 	};
 

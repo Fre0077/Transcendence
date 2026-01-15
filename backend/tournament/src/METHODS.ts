@@ -287,7 +287,7 @@ Reply:
 }
 */
 
-import { bunnyPublish } from './bunny.js';
+// import { bunnyPublish } from './bunny.js';
 
 export async function READY(outplayer:string | undefined, outournament:string | undefined): Promise<StandardReturn>
 {
@@ -328,37 +328,24 @@ export async function READY(outplayer:string | undefined, outournament:string | 
 	}
 
 	// just another player readyed
-	if (ret.gameid === undefined) {
+	// if (ret.gameid === undefined) {
 		return {
 			status: "success",
 			reply: JSON.stringify({ method: 'READY_REPLY', status: 'success', comment: "Readyed successfully"})
 		};
-	}
+	// }
 
 	// build successful reply
-	const reply:string = JSON.stringify({ method: 'START_REPLY', status: 'success', value: ret.gameid, comment: "The room is now in game"});
+	// const reply:string = JSON.stringify({ method: 'START_REPLY', status: 'success', value: ret.gameid, comment: "The room is now in game"});
 	
-	// send to all players in room
-	tournament.roomcast(outplayer, reply);
+	// // send to all players in room
+	// tournament.roomcast(outplayer, reply);
 
-	// ask bots to join the game
-	for (const id of tournament.roomates(outplayer)) {
-		if (id.startsWith('BOT')) {
-			bunnyPublish('bot', {
-				method: 'CREATE',
-				game: 'pong', 				// #todo: flexible
-				gameid: ret.gameid,
-				botid: id,
-				level: Number(id.substring(id.lastIndexOf('_') + 1))
-			});
-		}
-	}
-
-	// send game started reply
-	return {
-		status: "success",
-		reply: reply,
-	};
+	// // send game started reply
+	// return {
+	// 	status: "success",
+	// 	reply: reply,
+	// };
 
 }
 

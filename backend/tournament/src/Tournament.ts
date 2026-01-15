@@ -3,7 +3,8 @@
 /* ----------------- */
 
 import { v4 as uuidv4 } from "uuid";
-import { Player, MySocket } from './Player.js'
+import { Player, MySocket } from './Player.js';
+import { Room, RoomPlayerController } from './Room.js';
 
 
 /* what you will receive from the /your-lobby endpoint @aleborghi */
@@ -21,6 +22,10 @@ interface TournamentState
 		idx:number;
 
 		players:string/* , boolean */[];
+
+		// status
+		status:string;
+		gameid:string;
 
 		// outcome
 		winner:string[];
@@ -186,34 +191,6 @@ function keyToIdx(key: RoomKey): RoomIdx
 }
 /* --------------------------------------------------------------- */
 
-/* this is basicall a struct with steroids, having all properties
-public and with default initializations. */
-class Room
-{
-	private _rsize = 2;
-
-	public gameid:string = uuidv4();
-	public ingame:boolean = false;
-	public played:boolean = false;
-	public score:number[] = [];							// final score of the room
-	public winner:string[] = ["unkown"];
-
-	public players:Set<string> = new Set();				// set of players ids
-
-	constructor(__rsize:number = 2)
-	{
-		this._rsize = __rsize;
-	}
-
-	public has(playerid:string) {
-		return this.players.has(playerid);
-	}
-
-	public full() {
-		return this.players.size === this._rsize;
-	}
-}
-
 /* TOURNAMENT CLASS */
 
 export class Tournament<T extends MySocket>
@@ -233,10 +210,13 @@ export class Tournament<T extends MySocket>
 	private _players:Map<string, Player<T>>;	// unique identifier for each player, sent at th beginning of every move. NOTE: the ID is generated when the websocket is connected
 	private _rooms:Map<RoomKey, Room>;			// each room has multiple players
 	
-	private _gamecallback: (gameID:string, players:string[], metadata:any) => Promise<boolean>;
+	private _gamecallback: (gameid:string, players:string[], metadata:any) => Promise<boolean>;
+	private _botcallback: (gameid:string, botid:string) => Promise<boolean>;
+
 
 	constructor(
-		__gamecallback:(gameID:string, players:string[], metadata:any) => Promise<boolean>,
+		__gamecallback:(gameid:string, players:string[], metadata:any) => Promise<boolean>,
+		__botcallback: (gameid:string, botid:string) => Promise<boolean>,
 		__size:number = 4,
 		__rsize = 2,
 		__format:string = 'single-elimination')
@@ -244,6 +224,7 @@ export class Tournament<T extends MySocket>
 		if (__size <= 0 || __size % __rsize !== 0) throw `Tournament::Error: Invalid player size '${__size}'`;
 		
 		this._gamecallback = __gamecallback;
+		this._botcallback = __botcallback;
 		this._size = __size;					// 4 player
 		this._rsize = __rsize;					// 2 players
 		this._format = buildformat(__format, __size, __rsize);
@@ -320,7 +301,9 @@ export class Tournament<T extends MySocket>
 			layer: keyToIdx(key).layer,
 			idx: keyToIdx(key).idx,
 			players: Array.from(room.players),
-			winner: room.winner,
+			status: (room.ingame === true) ? 'in-game' : 'waiting',
+			gameid: room.gameid,
+			winner: room.winners,
 			score: room.score
 		}));
 
@@ -377,88 +360,174 @@ export class Tournament<T extends MySocket>
 	}
 
 	/* ---------------------------------------------------- */
+	/* 		  STATUS UPDATER and OPRATION EXECUTER	 	    */
+	/* ---------------------------------------------------- */
+
+	private async routine()
+	{
+		let changed = false;
+
+		changed ||= await this.startReadyRooms();
+		changed ||= this.advanceFinishedRooms();
+		changed ||= this.checkTournamentEnd();
+
+		if (changed) this.sync();
+	}
+
+	private async startReadyRooms(): Promise<boolean>
+	{
+		let changed = false;
+
+		for (const room of this._rooms.values())
+		{
+			/* ------ IS ROOM READY? ------ */
+			if (room.ingame || room.played) continue;
+			if (!room.full()) continue;
+
+			const players = Array.from(room.players);
+
+			const allReady = players.every(id => {
+				const p = this._players.get(id);
+				return p && (p.isBot() || p.status === "ready");
+			});
+
+			if (!allReady) continue;
+			/* ---------------------------- */
+
+			// spawn the room
+			const ok = await room.play(
+				this.roomPlayerController(),
+				this._gamecallback
+			);
+
+			// if room spawnned ...
+			if (ok.status === "success")
+			{
+				// new stuff to send
+				changed = true;
+
+				// ...spawn the bots
+				for (const id of room.players) {
+					const p = this._players.get(id);
+					if (p && p.isBot()) this._botcallback(room.gameid, id);
+				}
+			}
+
+		}
+
+		return changed;
+	}
+
+	// move the players if they played a match
+	private advanceFinishedRooms(): boolean
+	{
+		let changed = false;
+
+		for (const [key, room] of this._rooms)
+		{
+			/* check if the room is played */
+			if (!room.played) continue;
+			if (room.winners.length === 0) continue;
+			if (room.advanced) continue;
+
+			// gets the next room
+			const idx = keyToIdx(key);
+			const next = this.nextRoom(idx);
+
+			// move the players
+			room.players.forEach(player => {
+				if (room.winners.includes(player)) {
+					this.move(player, key, idxToKey(next.winner));
+				} else {
+					this.move(player, key, idxToKey(next.loser));
+				}
+			});
+
+			// set the room as advanced
+			room.advanced = true;
+			changed = true;
+		}
+
+		return changed;
+	}
+
+	// checks if the tournament finished
+	private checkTournamentEnd(): boolean
+	{
+		const finalskey = [...this._rooms.keys()].sort((a:string, b:string) => {
+			const aidx = keyToIdx(a);
+			const bidx = keyToIdx(b);
+
+			return aidx.layer - bidx.layer;
+		})[0];
+
+		const finals = this._rooms.get(finalskey);
+		if (finals === undefined) return false;
+
+		this._finished = true;
+		this._winner = finals.winners[0];
+		return true;
+	}
+
+	/* ---------------------------------------------------- */
 	/* ----------- TOURNAMENT STATUS OPERATIONS ----------- */
 	/* ---------------------------------------------------- */
 
-	// force the room start (for bots)
-	public forcePlayRoom(roomkey:RoomKey) { this.playRoom(roomkey);}
-
-	// startup procedure for a room if the room is full
-	private async playRoom(roomkey:RoomKey):
-		Promise<{ status: 'success' | 'failure', reason:string }>
+	// let's the room understand statuses of the player
+	private roomPlayerController(): RoomPlayerController
 	{
-		// get the room roomkey'ed
-		const room = this._rooms.get(roomkey);
-		if (room === undefined) {
-			return {
-				status: 'failure',
-				reason: "Room not found"
-			};
-		}
-
-		// check if room already played
-		if (room.played === true) {
-			return {
-				status: 'failure',
-				reason: "Room already played"
-			};
-		}
-
-		// is room full?
-		if (room.players.size !== this._rsize) {
-			return {
-				status: 'failure',
-				reason: "Room not full"
-			};
-		}
-
-		// check if all the players are connected
-		room.players.forEach((player) => {
-			const p = this._players.get(player);
-			if (p?.status !== "ready") {
-				return {
-					status: 'failure',
-					reason: "Not all players connected, or ready"
-				};
-			}
-		});
-
-		// Prepare object to send to GameService
-		const players = Array.from(room.players);
-
-		// callback for external porpouses (send to GameService)
-		if (await this._gamecallback(room.gameid, players, {
-			origin: 'tournament',
-			ID: this._ID,
-			room: roomkey
-		}) === false)
-		{
-			// room.gameID = "empty";
-			return {
-				status: 'failure',
-				reason: "Failed to connect to the Game Service"
-			};
-		}
-
-		// YEA BOYY
-		room.ingame = true;
-
-		// set all the players to away
-		room.players.forEach((player) => {
-			// room.players.set(player, false);
-			this._players.get(player)?.away();
-
-		});
-
 		return {
-			status: 'success',
-			reason: "Room launched successfully"
-		};
+			// routine check for a room to start
+			canStart: (players: Set<string>) => {
+				for (const id of players)
+				{
+					const p = this._players.get(id);
+					if (!p) return false;
+					return (p.status === "ready" || p.isBot());
+				}
+
+				return false;
+			},
+	  
+			// what to do once the room started
+			onGameStart: (players: Set<string>) => {
+				for (const id of players)
+				{
+					this._players.get(id)?.away();
+				}
+			}
+		}
 	}
 
+	// // force the room start (for bots)
+	// public async forcePlayRoom(roomkey:RoomKey): Promise<boolean>
+	// {
+	// 	const room = this._rooms.get(roomkey);
+	// 	if (room === undefined) {
+	// 		console.log('Trying to forcePlay() an undefined room', roomkey);
+	// 		return false;
+	// 	}
+
+	// 	// play the room
+	// 	const ok = await room.play(
+	// 		this.roomPlayerController(),
+	// 		this._gamecallback
+	// 	);
+
+	// 	// failed to start room
+	// 	if (ok.status === 'failure') {
+	// 		return false;
+	// 	}
+
+	// 	// sync state
+	// 	this.sync();
+
+	// 	// successful return
+	// 	return true;
+	// }
+
 	// reset the room (hardcoded 1 winner)
-	@SyncTournament
-	public finalizeRoom(winners:string[], score:number[])
+	public finalizeRoom(gameid:string, winners:string[], score:number[])
 	{
 		/* ---------- BASE CHECK --------- */
 		// check if tournament finished
@@ -472,94 +541,24 @@ export class Tournament<T extends MySocket>
 		}
 		/* ------------------------------ */
 
-		// gets the room
-		const roomkey = this.roomOf(winners[0]);
-		if (roomkey === undefined) {
-			console.log('Tournament::finalizeRoom::Error: Player not found');
-			return ;
-		}
-		const roomidx = keyToIdx(roomkey) as RoomIdx;
-
-		const room = this._rooms.get(roomkey);
+		const room = [...this._rooms.values()].find(r => r.gameid === gameid);
 		if (room === undefined) {
 			console.log('Tournament::finalizeRoom::Error: Room not found');
 			return ;
 		}
 
-		// check if room already played
-		if (room.played === true) {
-			console.log('Tournament::finalizeRoom::Error: Room already played');
-			return ;
-		}
+		// set the scores
+		room.finalize(winners, score);
 
-		// check if not ingame
-		if (room.ingame === false) {
-			console.log('Tournament::finalizeRoom::Error: Room not in-game');
-			return ;
-		}
-
-		// 1. read the game outcome // from bunny (callback maybe?)
-		// 2. write the score
-		// 3. move players accordingly
-
-		// 1.
-		room.winner = winners;
-		// 2.
-		room.score = score;
-		// 3.
-		const nextroom = this.nextRoom(roomidx);
-		if (/* finals */nextroom.winner.layer === -1)
+		// 'connect' bots
+		for (const id of room.players)
 		{
-			console.log('Tournament finished, winner', winners);
-		}
-		else
-		{
-			// move players
-			room.players.forEach(player => {
-				if (room.winner.find(p => p === player)) {
-					this.movePlayer(player, roomkey, idxToKey(nextroom.winner));
-				}
-				else this.movePlayer(player, roomkey, idxToKey(nextroom.loser))
-			})
+			const p = this._players.get(id);
+			if (p?.isBot()) p?.connect();
 		}
 
-		// no game linked to lobby
-		room.ingame = false;
-		room.played = true;
-	}
-
-	// moves the player from a room to another (checks on start and end room)
-	private movePlayer(playerid:string, from:RoomKey, to:RoomKey)
-	{
-		// check player existance
-		const player = this._players.get(playerid);
-		if (player === undefined) {
-			console.log('Error::movePlayer: Player not found');
-			return ;
-		}
-
-		// check 'from' and 'to' room existance
-		const fromRoom = this._rooms.get(from);
-		const toRoom = this._rooms.get(to);
-		if (!fromRoom || !toRoom) {
-			console.log('Error::movePlayer: Room(s) not found');
-			return ;
-		}
-
-		/* // check if 'from' is played
-		if (fromRoom.played === false) {
-			console.log("Error::movePlayer: Origin Room didn't playe yet");
-			return ;
-		}
-
-		// check if 'to' isn't played
-		if (toRoom.played === true) {
-			console.log("Error::movePlayer: Destination Room already player");
-			return ;
-		} */
-
-		console.log(`Moved player ${playerid} from '${from}' to '${to}'`);
-		toRoom.players.add(playerid);
+		// routine check
+		this.routine();
 	}
 
 	// All players joined the torunament, no more joins
@@ -570,21 +569,15 @@ export class Tournament<T extends MySocket>
 			return ;
 		}
 
-		/* build all rooms for a single elimination tournament */
-		/* const layers = this._size / this._rsize;
-		for (let i = 0; i < layers - 1; ++i)
-		{
-			const rooms = layers / Math.pow(2, i);
-			for (let r = 0; r < rooms; ++r)
-			{
-				console.log(`Adding room { layer:${i}, idx:${r} }`);
-				this._rooms.set(idxToKey({ layer:i, idx:r }), new Room(this._rsize));
-			}
-		} */
+		/* build all rooms for the tournament */
 		for (const r of allrooms(this._format))
 		{
 			console.log(`Adding room ${r}`);
-			this._rooms.set(r, new Room(this._rsize));
+			this._rooms.set(r, new Room(this._rsize, {
+				origin: 'tournament',
+				ID: this._ID,
+				room: r
+			}));
 
 		}
 
@@ -609,13 +602,38 @@ export class Tournament<T extends MySocket>
 		// closed tournament
 		this._closed = true;
 		console.log(`Closed tournament ${this._ID}, no more player allowed, games can now start`);
+
+		// send the rooms
+		this.routine();
 	}
 
 	/* ----------------------------------------------------- */
 	/* ------------------ USER MANAGEMENT ------------------ */
 	/* ----------------------------------------------------- */
 
-	public ready(playerid:string): { status: "success" | "failure", reason:string, gameid?:string }
+	// moves the player from a room to another (checks on start and end room)
+	private move(playerid:string, from:RoomKey, to:RoomKey)
+	{
+		// check player existance
+		const player = this._players.get(playerid);
+		if (player === undefined) {
+			console.log('Error::movePlayer: Player not found');
+			return ;
+		}
+
+		// check 'from' and 'to' room existance
+		const fromRoom = this._rooms.get(from);
+		const toRoom = this._rooms.get(to);
+		if (!fromRoom || !toRoom) {
+			console.log('Error::movePlayer: Room(s) not found');
+			return ;
+		}
+
+		console.log(`Moved player ${playerid} from '${from}' to '${to}'`);
+		toRoom.players.add(playerid);
+	}
+
+	public ready(playerid:string): { status: "success" | "failure", reason:string }
 	{
 		/* ---------- BASE CHECK --------- */
 		// check if tournament finished
@@ -668,32 +686,8 @@ export class Tournament<T extends MySocket>
 		const player = this._players.get(playerid);
 		player?.ready();
 
-		// if all players ready, play room
-		// #todo layer check, don't start a layer 2 game if layer 1 games are still to be played
-		let allready = true;
-		for (const player of room.players)
-		{
-			const p = this._players.get(player);
-			if (p?.isBot() === false && p?.status !== "ready") {
-				allready = false;
-				break;
-			}
-		}
-
-		if (room.players.size === this._rsize && allready === true)
-		{
-			// #todo loop if failed
-			// prepare the Game Service
-			const ret = this.playRoom(roomIdx);
-			console.log('PlayRoom', ret);
-
-			// also the room is full ready
-			return {
-				status: "success",
-				reason: 'Successful readyed',
-				gameid: room.gameid
-			};
-		}
+		// routine check
+		this.routine();
 
 		// successful ready
 		return {
@@ -703,7 +697,6 @@ export class Tournament<T extends MySocket>
 	}
 
 	// function to join the lobby, syntax: 'playerID'
-	@SyncTournament
 	public join(outPlayerID:string, ws:T | null): boolean {
 		// if (this._ingame === true) {return false;}
 
@@ -718,16 +711,20 @@ export class Tournament<T extends MySocket>
 			}
 			else
 			{
-				// add player
+				// update player
 				this._players.set(outPlayerID, new Player(ws));
+
+				// update status
+				this.sync();
+
 				return true;
 			}
 		}
 
-		// check if lobby is full
+		// check if tournament is full
 		if (this._players.size === this._size)
 		{
-			console.log('The lobby is full');
+			console.log('The tournament is full');
 			return false;
 		}
 
@@ -737,6 +734,9 @@ export class Tournament<T extends MySocket>
 		// check if we got all players
 		if (this._players.size === this._size) this.close();
 
+		// update status
+		this.sync();
+
 		// update state
 		return true;
 	}
@@ -744,7 +744,6 @@ export class Tournament<T extends MySocket>
 
 	// The player temporarly left the lobby
 	// (connection closed but still inside the lobby)
-	@SyncTournament
 	public disconnect(playerID:string): boolean
 	{
 		// check if the player is inside
@@ -764,18 +763,24 @@ export class Tournament<T extends MySocket>
 				if (r.ingame === false) player.disconnect();
 				else player.away();
 
+				// update status
+				this.sync();
+
 				return true;
 			}
 		}
 	
 		console.log(`Player ${playerID} didn't join a room yet`);
 		player.disconnect();
+
+		// update status
+		this.sync();
+
 		return true;
 	}
 
 
 	// Remove a player from the lobby
-	@SyncTournament
 	public leave(playerID:string): boolean
 	{
 		// check if the player is inside
@@ -795,6 +800,9 @@ export class Tournament<T extends MySocket>
 		// logging
 		console.log(`${playerID} left the tournament...`);
 
+		// update status
+		this.sync();
+
 		return true;
 	}
 
@@ -807,11 +815,8 @@ export class Tournament<T extends MySocket>
 	}
 
 	// send messages to all players in the same room of 'player'
-	public roomcast(playerid:string, message:string)
+	public roomcast(roomkey:string, message:string)
 	{
-		// get the room
-		const roomkey = this.roomOf(playerid);
-		if (roomkey === undefined) return;
 		const room = this._rooms.get(roomkey);
 		if (room === undefined) return ;
 	
@@ -826,34 +831,3 @@ export class Tournament<T extends MySocket>
 	}
 
 }
-
-/* function SyncTournament<T extends MySocket>(
-  _target: any,
-  _propertyKey: string,
-  descriptor: PropertyDescriptor
-) {
-  const original = descriptor.value;
-
-  descriptor.value = function (this: Lobby<T>, ...args: any[]) {
-    const result = original.apply(this, args);
-    this.sync();
-    return result;
-  };
-} */
-
-function SyncTournament(
-  originalMethod: Function,
-  /* context: ClassMethodDecoratorContext */
-) {
-  return function (this: { sync(): void, players:Map<string, Player<WebSocket>> }, ...args: any[]) {
-    const result = originalMethod.apply(this, args);
-    this.sync();
-
-	// ready all bots // #todo lame, make it better
-	// for (const p of this.players.values()) {
-	// 	if (p.isBot()) p.ready();
-	// }
-    return result;
-  };
-}
-

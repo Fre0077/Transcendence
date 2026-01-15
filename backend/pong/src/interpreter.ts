@@ -1,5 +1,5 @@
 
-import { AUTH, /* JOIN, */ LEAVE, MOVE } from './METHODS.js'
+import { AUTH, /* JOIN, */ LEAVE, MOVE, SPECTATE } from './METHODS.js'
 
 // check if the string is a JSON obj with the 'method' property
 function isValidObj(message:string): { method: string } | undefined
@@ -97,6 +97,12 @@ export async function interpreter(
 			let mret = MOVE(msg, outgame, outplayer);
 
 			return mret;
+		
+		case "SPECTATE":
+			// process SPECTATE request
+			let sret = SPECTATE(msg, outplayer, listener);
+
+			return sret;
 		
 		default:
 			console.log(`Unhandled method ${msg.method}`);

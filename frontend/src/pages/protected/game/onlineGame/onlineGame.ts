@@ -61,7 +61,7 @@ export function loadOnlineGamePage(): HTMLElement {
                     id="leaveGameBtn"
                     class="mt-2 px-6 py-2 bg-red-600/20 border border-red-500/30 rounded-lg text-sm text-white hover:bg-red-600/30 transition"
                 >
-                    Back to Lobby
+                    Back
                 </button>
             </div>
 
@@ -96,14 +96,14 @@ export function loadOnlineGamePage(): HTMLElement {
                 // IMPORTANT becouse some browse open 1231234 sockets
                 socket.close();
             }
-            router.push('/lobby/online');
+            router.back();
         });
     }
 
     // inputs
     document.addEventListener("keydown", (e) => {
         if (e.repeat) return;
-        if (e.code === "Space") e.preventDefault(); // 🚫 stop page scrolling
+        if (e.code === "Space" || e.code === "ArrowUp" || e.code === "ArrowDown") e.preventDefault(); // 🚫 stop page scrolling
         switch (e.key) {
           case "w": socket.send(JSON.stringify({ method: "MOVE", value: "UP_PRESS" })); break;
           case "s": socket.send(JSON.stringify({ method: "MOVE", value: "DW_PRESS" })); break;
@@ -156,9 +156,10 @@ function createWebSocketConnection(playerID:string/* , game_code: string */): We
     ws.onmessage = (event) => {
         try {
             const data = JSON.parse(event.data);
-            console.log('Lobby WebSocket message received:', data);
             const method = data.method || '';
-             
+            
+            /* #debug */
+            if (data.method) console.log('Lobby WebSocket message received:', data);
 
             if (method === "JOIN_REPLY")
             {

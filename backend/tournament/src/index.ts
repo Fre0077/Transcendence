@@ -62,8 +62,7 @@ fastify.get<{ Querystring: BunnyQuery }>(
 				|| !msg.winner.every((n:unknown) => typeof n === "string")
 				|| !("score" in msg)
 				|| !Array.isArray(msg.score)
-				|| !msg.score.every((n:unknown) => typeof n === "number"))
-			{
+				|| !msg.score.every((n:unknown) => typeof n === "number"))			{
 				console.log('Invalid JSON (with successful get)', message);
 				// throw 'Invalid JSON (with successful get)';
 				return { status: 'ko' };
@@ -76,7 +75,7 @@ fastify.get<{ Querystring: BunnyQuery }>(
 
 			// finalize the room
 			if (tournament !== undefined) {
-				tournament.finalizeRoom(msg.winner, msg.score);
+				tournament.finalizeRoom(msg.ID, msg.winner, msg.score);
 			}
 			
 			// successful get
@@ -125,12 +124,23 @@ fastify.get('/pong', async (request, reply) => {
 
 
 
-const sendgame = async (gameid:string, players:string[], metadata:any): Promise<boolean> => {
+const spawngame = async (gameid:string, players:string[], metadata:any): Promise<boolean> => {
 	// signal the GameService to create a Game
 	return bunnyPublish('game', {
 		ID: gameid,
 		players: players,
 		metadata: metadata
+	});
+}
+
+const spawnbot = async (/* game:string */gameid:string, botid:string): Promise<boolean> => {
+	// signal the GameService to create a Game
+	return bunnyPublish('bot', {
+		method: 'CREATE',
+		game: 'pong', 				// #todo: flexible
+		gameid: gameid,
+		botid: botid,
+		level: Number(botid.substring(botid.lastIndexOf('_') + 1))
 	});
 } 
 
@@ -145,7 +155,7 @@ export function createTournament(/* game:string,  */ size:number = 4, format:str
 
 	try
 	{
-		tournament = new Tournament(sendgame, size, 2, format);
+		tournament = new Tournament(spawngame, spawnbot, size, 2, format);
 
 	} catch (err) {
 		console.log('Error while creating tournament');
@@ -181,6 +191,9 @@ export function joinTournament(ID:string, playerID:string, ws:WebSocket)
 	// join lobby
 	const { tournament } = e;
 	tournament.join(playerID, ws);
+
+	// get the tournament status
+	ws.send(tournament.stateJSON);
 }
 
 // set's the update property to true, meaning that the state was updated
@@ -235,11 +248,6 @@ fastify.register(async function (fastify) {
 		connection.on('message', (message:string) => {
 			
 			interpreter(message, tournament, player, connection, (retLobby:string | undefined, retPlayer:string | undefined) => {
-				// new stuff on lobby
-				// if (retUpdate === true) {	/* #ugly */
-				// 	if (lobby !== undefined) updateLobby(lobby);
-				// 	else if (retLobby !== undefined) updateLobby(retLobby);
-				// }
 
 				tournament = retLobby;
 				player = retPlayer;
@@ -284,7 +292,7 @@ fastify.register(async function (fastify) {
 
 
 
-/* =============== LobbiesManager =============== */
+/* =============== TournamenntsManager =============== */
 
 function onlyBots(tournament:Tournament<WebSocket>): boolean
 {
@@ -296,43 +304,15 @@ function onlyBots(tournament:Tournament<WebSocket>): boolean
 	return true;
 }
 
-function *getBotRooms(tournament:Tournament<WebSocket>):
-	Generator<{ roomkey: string, gameid:string, players:string[] }>
+function *startedRooms(tournament:Tournament<WebSocket>): Generator<{ roomkey:string, gameid:string }>
 {
-	for (const [key, room] of tournament.rooms)
+	for (const [id, room] of tournament.rooms)
 	{
-		if (!room.full() || room.ingame === true || room.played === true) continue;
-
-		let allbots = true;
-		for (const p of room.players)
+		// room is started
+		if (room.tosend === true)
 		{
-			if (!tournament.players.get(p)?.isBot())
-			{
-				allbots = false;
-				break ;
-			}
-		}
-
-		if (allbots === true) yield { roomkey:key, gameid:room.gameid, players:Array.from(room.players)};
-	}
-}
-
-// forcefully start a bot room
-function startBotRoom(tournament:Tournament<WebSocket>, roomkey:string, gameid:string, players:string[])
-{
-	// spawn the game
-	tournament.forcePlayRoom(roomkey);
-
-	// spawn the bots (As in READY of METHODS.js)
-	for (const id of players) {
-		if (id.startsWith('BOT')) {
-			bunnyPublish('bot', {
-				method: 'CREATE',
-				game: 'pong', 				// #todo: flexible
-				gameid: gameid,
-				botid: id,
-				level: Number(id.substring(id.lastIndexOf('_') + 1))
-			});
+			room.tosend = false;
+			yield { roomkey:id, gameid:room.gameid };
 		}
 	}
 }
@@ -353,13 +333,11 @@ function TournamentsManager()
 
 			// for convenience
 			const { tournament } = entry;
-		
-			// handle only-bot rooms
-			for (const botroom of getBotRooms(tournament)) {
-				startBotRoom(tournament,
-					botroom.roomkey,
-					botroom.gameid,
-					botroom.players);
+
+			/* --- START LOGIC --- */
+			for (const {roomkey, gameid} of startedRooms(tournament)) {
+				const reply:string = JSON.stringify({ method: 'START_REPLY', status: 'success', value: gameid, comment: "The room is now in game"});
+				tournament.roomcast(roomkey, reply);
 			}
 
 			/* --- DELETE logic --- */
@@ -369,6 +347,7 @@ function TournamentsManager()
 				return ;
 			}
 
+			// check if only bots in tournament
 			if (onlyBots(tournament)) {
 				deleteTournament(id, 'only-bots');
 				return ;
@@ -387,13 +366,6 @@ function TournamentsManager()
 			if (entry.timeout === 0) {
 				deleteTournament(id, 'timeout');
 			}
-
-			/* --- UPDATE logic --- */
-			// if (entry.update === true) {
-			// 	console.log('Broadcasting Lobby');
-			// 	lobby.broadcast(lobby.stateJSON);
-			// 	entry.update = false;
-			// }
 		});
 
 		// loop
