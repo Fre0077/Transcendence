@@ -5,6 +5,7 @@ MAJOR
 2. Replay system
 3. loadPongDiv(ws:WebSocket) that spawns the game using that socket
 4. Room stuck if player wins
+5. remove event listeners if game is finished
 
 MINOR
 3. abort games between bots in tournaments when all players leave
