@@ -1,4 +1,5 @@
 import { loadNavbar } from "@/components/navbar";
+import { loadProfileCard } from "@pages/protected/game/loadProfileCard"
 
 const baseLobbyPath = `http://${window.location.hostname}:3031/`;
 
@@ -117,9 +118,8 @@ export function loadOnlineLobbyPage(): HTMLElement {
 
                         <div>
                             <p class="text-xs text-white/50 uppercase tracking-wide mb-2">Connected Players</p>
-                            <ul id="connectedPlayersList" class="space-y-1">
-                                ${connected_players.length > 0 ? connected_players.map(player => `<li class="text-sm text-white/80">• ${player.name}</li>`).join('') : '<li class="text-sm text-white/40 italic">No players connected</li>'}
-                            </ul>
+                            <div id="connectedPlayersList" class="grid grid-cols-1 gap-4">
+                                </div>
                         </div>
                     </div>
                 </div>
@@ -348,13 +348,30 @@ function updateLobbyInfo(lobby_code?: string, connected_players: Player[] = []) 
     }
 
     const playersListElem = document.getElementById('connectedPlayersList');
+    //credito a Gemini che ci ha donato questo else/if
     if (playersListElem) {
-        if (connected_players.length > 0) {
-            playersListElem.innerHTML = connected_players.map(player => `<li class="text-sm text-white/80">• ${player.name} - ${player.status}</li>`).join('');
-        } else {
-            playersListElem.innerHTML = '<li class="text-sm text-white/40 italic">No players connected</li>';
-        }
+    // 1. Pulisci il contenitore vecchio
+    playersListElem.innerHTML = ''; 
+
+    if (connected_players.length > 0) {
+        // 2. Modifica la classe del contenitore per visualizzare le card (Grid invece di lista semplice)
+        // Rimuovi 'space-y-1' se presente, perché le card sono grandi
+        playersListElem.className = "grid grid-cols-1 md:grid-cols-2 gap-4 mt-2"; 
+
+        // 3. Itera e "appendi" gli elementi DOM reali
+        connected_players.forEach(player => {
+            // Qui ottieni l'elemento HTML vivo
+            const cardDOM = loadProfileCard(player.id); 
+            
+            // Lo inserisci nella pagina
+            playersListElem.appendChild(cardDOM);
+        });
+    } else {
+        // Caso lista vuota
+        playersListElem.className = "space-y-1"; // Ripristina stile lista semplice per il messaggio
+        playersListElem.innerHTML = '<li class="text-sm text-white/40 italic">No players connected</li>';
     }
+}
 
     const copyLobbyCodeBtn = document.getElementById('copyLobbyCodeBtn');
     if (copyLobbyCodeBtn) {

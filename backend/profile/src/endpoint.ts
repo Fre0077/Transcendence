@@ -1,4 +1,4 @@
-import type { FastifyInstance, FastifyReply } from "fastify";
+import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { authMiddleware, AuthRequest } from "./middleware";
 import { BadRequest, Unauthorized } from "../utils/exception";
 import { logError, logInfo } from "../utils/logger";
@@ -10,18 +10,28 @@ import {
     getUserData
 } from "./function";
 
+// 1. Definisci cosa ti aspetti nell'URL (?linkid=123)
+interface ProfileQuery {
+    linkid: string;
+}
+
 export async function profileEndpoint(fastify: FastifyInstance) {
     //GET /api/user -> Ottieni i dati dello user
-    fastify.get('/user', {preHandler: [authMiddleware] }, async (request: AuthRequest, reply: FastifyReply) => {
+    fastify.get<{ Querystring: ProfileQuery }>('/user', async (request, reply) => {
         try {
-            if (!request.user)
-                throw new Unauthorized("Utente non autorizzato", "profile");
-            const data = await getUserData(request.user.userId);
+            const { linkid } = request.query;
+            if (!linkid)
+                return reply.status(400).send({ error: "Parametro 'linkid' mancante" });
+            const data = await getUserData(Number(linkid));
+            if (!data)
+                return reply.status(404).send({ error: "Utente non trovato" });
             logInfo('{profile} [200] Dati utente recuperati con successo');
             return reply.status(200).send(data);
         } catch (err) {
-            if (err instanceof Error)
-                return reply.status((err as any).statusCode).send({ error: err.message });
+            if (err instanceof Error) {
+                const status = (err as any).statusCode || 500;
+                return reply.status(status).send({ error: err.message });
+            }
             logError('{profile} [500] errore interno del server');
             return reply.status(500).send({ error: "Internal server error" });
         }
