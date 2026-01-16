@@ -94,6 +94,18 @@ function buildformat(alias:string, players:number, roomsize:number): string
 	// if (alias === 'single-elimination') return buildSE(players);
 }
 
+function getfinals(format:string): RoomKey
+{
+	for (const room of format.split('|'))
+	{
+		if (room.length === 0) continue;
+		if (room.includes('W')) return room.split('-')[0];
+	}
+
+	// if this happens I resign. by @topiana-
+	return "Error";
+}
+
 /* 						FORMAT INTERPRETER 						   */
 
 /* format string example:
@@ -199,6 +211,7 @@ export class Tournament<T extends MySocket>
 	private _size:number;		// number of players
 	private	_rsize:number;		// number of players per room
 	private _format:string;		// format of the tournament
+	private _finals:RoomKey;	// key of the Finals
 
 	private	_closed:boolean;	// is the tournament closed? (no more player can join)
 	private _finished:boolean;
@@ -229,6 +242,7 @@ export class Tournament<T extends MySocket>
 		this._rsize = __rsize;					// 2 players
 		this._format = buildformat(__format, __size, __rsize);
 		// NOTE: format at this point is a valid format, no further controls needed
+		this._finals = getfinals(this._format);
 
 		this._closed = false;
 		this._finished = false;
@@ -460,15 +474,8 @@ export class Tournament<T extends MySocket>
 	// checks if the tournament finished
 	private checkTournamentEnd(): boolean
 	{
-		/* get the 'finals' */
-		const finalskey = [...this._rooms.keys()].sort((a:string, b:string) => {
-			const aidx = keyToIdx(a);
-			const bidx = keyToIdx(b);
-
-			return aidx.layer - bidx.layer;
-		})[0];
-
-		const finals = this._rooms.get(finalskey);
+		/* get the finals */
+		const finals = this._rooms.get(this._finals);
 		if (finals === undefined) return false;
 
 		/* check if played */
@@ -587,11 +594,18 @@ export class Tournament<T extends MySocket>
 		/* build all rooms for the tournament */
 		for (const r of allrooms(this._format))
 		{
+			/* #debug */
 			console.log(`Adding room ${r}`);
+
+			// setting metadata.room to 'finals' if on finals
+			const key = (r === this._finals) ? "finals" : r;
+
+			// adding room
 			this._rooms.set(r, new Room(this._rsize, {
 				origin: 'tournament',
 				ID: this._ID,
-				room: r
+				tournamentPlayers: (key === "finals") ? Array.from(this._players.keys()) : undefined,
+				room: key
 			}));
 
 		}

@@ -21,5 +21,5 @@ export async function publishGameHistory(history: string) {
     channel.sendToQueue(queue, Buffer.from(msg), { persistent: true });
   }
 
-  console.log("✔️  Messaggi inviati alle code profile/chat:");
+  console.log("✔️  Messaggi inviati alla coda 'user.history.profile'");
 }

@@ -165,8 +165,8 @@ export function createBot(gamestr:string, botid:string, gameid:string, level:num
 
 		// authentication and join game
 		socket.on('open', () => {
+			// we are not checking the reply
 			socket.send(JSON.stringify({ method: 'AUTH', playerID: botid }));
-			// socket.send(JSON.stringify({ method: 'JOIN', gameID: gameid }));
 		});
 
 		// process incoming messages (just GameState JSON)

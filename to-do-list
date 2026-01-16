@@ -12,6 +12,7 @@ MINOR
 6. autowin on disconnected players and layer check
 7. tournaments chat
 8. cheering mentre specti (come clash)
+9. Error log in lobby page
 
 STYLE
 1. spacing at the bottom of the lobby page
@@ -22,7 +23,8 @@ CLEANUPS
 3. save MQueues messages in DB
 4. Publish on RabbitMQ the history of the games
 5. Emotes
-6. Game less laggy 
+6. Game less laggy
+7, keep track of bots (better unique id not needing for manual lobby/tournament counter)
 
 DONE
 1. remove JOIN method for games (DONE)
