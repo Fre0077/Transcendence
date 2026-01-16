@@ -92,10 +92,8 @@ export function createPongBoard(socket:PongSocket): PongBoard {
 		}
 
 		// 2️⃣ score updates (cheap)
-		if (state?.playing === false) {
-			if (player1Widget) player1Widget.setScore(Number(state.score[0]));
-			if (player2Widget) player2Widget.setScore(Number(state.score[1]));
-		}
+		if (player1Widget) player1Widget.setScore(Number(state.score[0]));
+		if (player2Widget) player2Widget.setScore(Number(state.score[1]));
 
 		// 3️⃣ pure canvas draw
 		draw(state);
