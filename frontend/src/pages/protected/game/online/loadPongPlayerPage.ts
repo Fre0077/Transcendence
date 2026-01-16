@@ -67,7 +67,36 @@ export function loadPongPlayerPage(): HTMLElement {
 	const slot = div.querySelector("#pong-board-slot")!;
 	slot.appendChild(board.element);
 
-	// Add event listener for create game button
+	/* --- REGISTER INPUTS --- */
+
+	// listeners
+	const keydown = (e:KeyboardEvent) => {
+		e.preventDefault(); // 🚫 stop page scrolling
+		if (e.repeat) return;
+		switch (e.key) {
+			case "w": socket.send({ method: "MOVE", value: "UP_PRESS" }); break;
+			case "s": socket.send({ method: "MOVE", value: "DW_PRESS" }); break;
+			case "ArrowUp": socket.send({ method: "MOVE", value: "UP_PRESS" }); break;
+			case "ArrowDown": socket.send({ method: "MOVE", value: "DW_PRESS" }); break;
+			case " ": socket.send({ method: "MOVE", value: "START_PRESS" }); break;
+		}
+	}
+
+	const keyup = (e:KeyboardEvent) => {
+		switch (e.key) {
+			case "w": socket.send({ method: "MOVE", value: "UP_RELEASE" }); break;
+			case "s": socket.send({ method: "MOVE", value: "DW_RELEASE" }); break;
+			case "ArrowUp": socket.send({ method: "MOVE", value: "UP_RELEASE" }); break;
+			case "ArrowDown": socket.send({ method: "MOVE", value: "DW_RELEASE" }); break;
+		}
+	}
+	
+	// inputs
+    document.addEventListener("keydown", keydown);
+	document.addEventListener("keyup", keyup);
+
+	/* --- DESTROY LOGIC --- */
+	// Add event listener for leave game button
 	const leaveGameBtn = div.querySelector('#leaveGameBtn');
 	if (leaveGameBtn) {
 		leaveGameBtn.addEventListener('click', () => {
@@ -76,34 +105,14 @@ export function loadPongPlayerPage(): HTMLElement {
 			// destroy board
 			board.destroy();
 
+			// remove the eventlisteners
+			document.removeEventListener("keyup", keyup);
+			document.removeEventListener("keydown", keydown);
+
 			// back in history
 			router.back();
 		});
 	}
-
-	/* --- REGISTER INPUTS --- */
-
-	// inputs
-    document.addEventListener("keydown", (e) => {
-		if (e.repeat) return;
-		e.preventDefault(); // 🚫 stop page scrolling
-		switch (e.key) {
-			case "w": socket.send({ method: "MOVE", value: "UP_PRESS" }); break;
-			case "s": socket.send({ method: "MOVE", value: "DW_PRESS" }); break;
-			case "ArrowUp": socket.send({ method: "MOVE", value: "UP_PRESS" }); break;
-			case "ArrowDown": socket.send({ method: "MOVE", value: "DW_PRESS" }); break;
-			case " ": socket.send({ method: "MOVE", value: "START_PRESS" }); break;
-		}
-	});
-  
-	document.addEventListener("keyup", (e) => {
-		switch (e.key) {
-			case "w": socket.send({ method: "MOVE", value: "UP_RELEASE" }); break;
-			case "s": socket.send({ method: "MOVE", value: "DW_RELEASE" }); break;
-			case "ArrowUp": socket.send({ method: "MOVE", value: "UP_RELEASE" }); break;
-			case "ArrowDown": socket.send({ method: "MOVE", value: "DW_RELEASE" }); break;
-		}
-	});
 
 	return div;
 }

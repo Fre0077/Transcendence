@@ -367,9 +367,9 @@ export class Tournament<T extends MySocket>
 	{
 		let changed = false;
 
-		changed ||= await this.startReadyRooms();
-		changed ||= this.advanceFinishedRooms();
-		changed ||= this.checkTournamentEnd();
+		if (this.advanceFinishedRooms()) changed = true;
+		if (this.checkTournamentEnd()) changed = true;
+		if (await this.startReadyRooms()) changed = true;
 
 		if (changed) this.sync();
 	}
@@ -411,6 +411,9 @@ export class Tournament<T extends MySocket>
 					const p = this._players.get(id);
 					if (p && p.isBot()) this._botcallback(room.gameid, id);
 				}
+
+				/* #debug */
+				// console.log('Started room of', room.players);
 			}
 
 		}
@@ -443,6 +446,9 @@ export class Tournament<T extends MySocket>
 				}
 			});
 
+			/* #debug */
+			// console.log('Advanced room', key);
+
 			// set the room as advanced
 			room.advanced = true;
 			changed = true;
@@ -454,6 +460,7 @@ export class Tournament<T extends MySocket>
 	// checks if the tournament finished
 	private checkTournamentEnd(): boolean
 	{
+		/* get the 'finals' */
 		const finalskey = [...this._rooms.keys()].sort((a:string, b:string) => {
 			const aidx = keyToIdx(a);
 			const bidx = keyToIdx(b);
@@ -464,8 +471,16 @@ export class Tournament<T extends MySocket>
 		const finals = this._rooms.get(finalskey);
 		if (finals === undefined) return false;
 
+		/* check if played */
+		if (finals.played === false) return false;
+
+		/* save data */
 		this._finished = true;
 		this._winner = finals.winners[0];
+		
+		/* #debug */
+		// console.log('Tournament finished, winner(s)', this._winner);
+
 		return true;
 	}
 

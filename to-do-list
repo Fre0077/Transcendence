@@ -3,9 +3,7 @@
 
 MAJOR
 2. Replay system
-3. loadPongDiv(ws:WebSocket) that spawns the game using that socket
-4. Room stuck if player wins
-5. remove event listeners if game is finished
+6. rejoin button on tournaments and lobbies
 
 MINOR
 3. abort games between bots in tournaments when all players leave
@@ -24,10 +22,14 @@ CLEANUPS
 3. save MQueues messages in DB
 4. Publish on RabbitMQ the history of the games
 5. Emotes
+6. Game less laggy 
 
 DONE
 1. remove JOIN method for games (DONE)
 2. bots should be 'connected' if not playing in tournaments, just like lobbies (DONE)
 1. Tournament setup as string (DONE)
 1. fix layer:2 of tournaments (moves on it's own wtf???) (DONE)
+4. Room stuck if player wins (DONE)
+3. loadPongDiv(ws:WebSocket) that spawns the game using that socket (DONE)
+5. remove event listeners if game is finished (DONE)
 

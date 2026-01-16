@@ -81,6 +81,10 @@ export function createPongBoard(socket:PongSocket): PongBoard {
 			player1Slot.appendChild(player1Widget.element);
 			player2Slot.appendChild(player2Widget.element);
 
+			// save first time score
+			if (player1Widget) player1Widget.setScore(Number(state.score[0]));
+			if (player2Widget) player2Widget.setScore(Number(state.score[1]));
+
 			playersInitialized = true;
 		}
 

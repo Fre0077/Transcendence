@@ -1,13 +1,14 @@
 import { load404Page } from "./pages/errors/404";
 import { load500Page } from "./pages/errors/500";
 import { ChatsPage } from "./pages/protected/chats/chats";
-import { loadGameHub } from "./pages/protected/game/game";
+import { loadGameHub } from "./pages/protected/game/gameHub";
 import { loadOnlineLobbyPage } from "./pages/protected/game/lobby/lobby";
 import { loadTournamentHubPage } from "./pages/protected/game/tournament/tournamentHub";
 import { loadOnlineTournamentPage } from "./pages/protected/game/tournament/tournamentPage";
 // import { loadOnlineGamePage } from "./pages/protected/game/online/onlineGame";
 import { loadPongPlayerPage } from '@pages/protected/game/online/loadPongPlayerPage';
-import { loadLocalGamePage } from "./pages/protected/game/localGame";
+// import { loadLocalGamePage } from "./pages/protected/game/local/localGame";
+import { loadLocalPongPage } from "./pages/protected/game/local/loadLocalPongPage";
 import { loadHomePage } from "./pages/protected/home/home";
 import { loadProfilePage } from "./pages/protected/profile/profile";
 import { loadLoginPage } from "./pages/public/login/login";
@@ -330,7 +331,7 @@ const routes: RouteConfig[] = [
 		path: '/game/local',
 		name: 'local-game',
 		component: () => {
-			return loadLocalGamePage();
+			return loadLocalPongPage();
 		},
 		meta: { title: 'Local Game - ft_transcendence', requiresAuth: true, requires2FA: true },
 	},
