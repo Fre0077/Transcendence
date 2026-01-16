@@ -77,7 +77,7 @@ services:
     container_name: profile
     ports:
       - "3003:3003"
-      # - "5555:5555"  <-- debug prisma studio dal docker per vedere i db dei game
+      - "5555:5555"
     environment:
       - NODE_ENV=production
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672

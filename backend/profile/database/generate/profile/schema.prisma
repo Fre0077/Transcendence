@@ -36,6 +36,12 @@ model User {
   username  String?
   avatarUrl String?
 
+  wins   Int @default(0) //spostare nel db di profile
+  losses Int @default(0) //
+
+  tournamentWins   Int @default(0) //
+  tournamentLosses Int @default(0) //
+
   //Gli utenti che IO ho aggiunto come amici
   friends  User[] @relation("friends")
   //Gli utenti che hanno aggiunto ME come amico

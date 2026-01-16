@@ -126,8 +126,8 @@ export async function auth2FA(input: auth2fa): Promise<Account> {
 
 	// Verifica il codice
 	const isCodeValid = authenticator.verify({
-	token: input.code.toString(),
-	secret: user.twoFactorSecret,
+		token: input.code.toString(),
+		secret: user.twoFactorSecret,
 	});
 
 	if (!isCodeValid) 
@@ -184,7 +184,6 @@ export async function changeProfile(input: newDataProfile, userId: number): Prom
 	data: dataToUpdate,
 	select: {
 		id: true, email: true, username: true, name: true, surname: true,
-		wins: true, losses: true, tournamentWins: true, tournamentLosses: true,
 		bio: true, avatarUrl: true
 	}
 	});

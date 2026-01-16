@@ -130,9 +130,8 @@ export async function authEndpoint(fastify: FastifyInstance) {
 			const user = await authPrisma.account.findUnique({
 			where: { id: userId },
 			select: {
-				id: true, email: true, username: true, name: true, surname: true,
-				wins: true, losses: true, tournamentWins: true, tournamentLosses: true,
-				bio: true, avatarUrl: true
+				id: true, email: true, username: true,
+				name: true, surname: true, bio: true, avatarUrl: true
 			}
 			});
 			if (!user) 
