@@ -5,7 +5,7 @@ export interface InteractiveWidget {
 	setScore:(score:number) =>void;
 }
 
-export function createProfileWidget(linkid: string): InteractiveWidget {
+export async function createProfileWidget(linkid: string): Promise<InteractiveWidget> {
     const container = document.createElement('div');
     
     // Classi Tailwind come da tua richiesta
@@ -22,8 +22,7 @@ export function createProfileWidget(linkid: string): InteractiveWidget {
     }
 	// then it's a player
 	else {
-		loadPlayerWidget(linkid)
-		.then((html) => container.innerHTML = html);
+		container.innerHTML = await loadPlayerWidget(linkid);
 	}
 
 	// append dynamic editor functions
@@ -44,54 +43,56 @@ export function createProfileWidget(linkid: string): InteractiveWidget {
 async function loadPlayerWidget(linkid:string): Promise<string>
 {
 	try {
-            const url = `${PROFILE_BASE_URL}/user?linkid=${linkid}`;
-            const authToken = localStorage.getItem("authToken");
-            const response = await fetch(url, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': authToken ? `Bearer ${authToken}` : ''
-                }
-            });
-            if (!response.ok) throw new Error('Utente non trovato');
-            const data = await response.json();
-            
-            // Dati ricevuti: username e avatarUrl (o image)
-            const username = data.username || linkid;
-            const avatar = data.avatarUrl || data.image || "";
-            // 4. Aggiorniamo l'HTML con i dati reali
-            return /* html */`
-                <div class="player-widget relative flex flex-col items-center p-4 rounded-xl bg-slate-800/60 border border-white/10 shadow-lg backdrop-blur">
+		const url = `${PROFILE_BASE_URL}/user?linkid=${linkid}`;
+		const authToken = localStorage.getItem("authToken");
+		const response = await fetch(url, {
+			method: 'GET',
+			headers: {
+				'Content-Type': 'application/json',
+				'Authorization': authToken ? `Bearer ${authToken}` : ''
+			}
+		});
+		if (!response.ok) throw new Error('Utente non trovato');
+		const data = await response.json();
+		
+		console.log('Parsed data');
 
-					<!-- Avatar -->
-					<div class="relative group mb-2">
-						<img
-							data-role="avatar"
-							src="${avatar}"
-							alt="${username}"
-							class="relative w-14 h-14 rounded-full object-cover border border-slate-800"
-							onerror="this.src='https://ui-avatars.com/api/?name=${username}&background=random'"
-						/>
-					</div>
+		// Dati ricevuti: username e avatarUrl (o image)
+		const username = data.username || linkid;
+		const avatar = data.avatarUrl || data.image || "";
+		// 4. Aggiorniamo l'HTML con i dati reali
+		return /* html */`
+			<div class="player-widget relative flex flex-col items-center p-4 rounded-xl bg-slate-800/60 border border-white/10 shadow-lg backdrop-blur">
 
-					<!-- Username -->
-					<h3
-						data-role="username"
-						class="text-sm font-semibold text-white tracking-wide"
-					>
-						${username}
-					</h3>
+				<!-- Avatar -->
+				<div class="relative group mb-4">
+                        <div class="absolute -inset-1 bg-gradient-to-r from-pink-600 to-purple-600 rounded-full opacity-70 blur transition duration-200"></div>
+                        <img 
+                            src="${avatar}" 
+                            alt="${username}" 
+                            class="relative w-24 h-24 rounded-full object-cover border-2 border-slate-800 shadow-2xl"
+                            onerror="this.src='https://ui-avatars.com/api/?name=${username}&background=random'"
+                        />
+                    </div>
 
-					<!-- 📊 DATA SLOT -->
-					<div data-role="data">
-						<div data-field="score" class="text-4xl font-mono text-yellow-400">0</div>
-					</div>
-				</div>`;
-        } catch (error) {
-            console.error("Errore caricamento profilo:", error);
-            // Stato di Errore
-            return loadErrorWidget(linkid);
-        }
+				<!-- Username -->
+				<h3
+					data-role="username"
+					class="text-sm font-semibold text-white tracking-wide"
+				>
+					${username}
+				</h3>
+
+				<!-- 📊 DATA SLOT -->
+				<div data-role="data">
+					<div data-field="score" class="text-4xl font-mono text-yellow-400">0</div>
+				</div>
+			</div>`;
+	} catch (error) {
+		console.error("Errore caricamento profilo:", error);
+		// Stato di Errore
+		return loadErrorWidget(linkid);
+	}
 }
 
 function loadErrorWidget(linkid:string): string
