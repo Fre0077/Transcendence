@@ -13,16 +13,17 @@ MINOR
 7. tournaments chat
 8. cheering mentre specti (come clash)
 9. Error log in lobby page
+10. Swap history order in profile page
 
 STYLE
 1. spacing at the bottom of the lobby page
 2. pls... the back button
 3. laodPongBoard() player2's widget is too close to the border
+4. Better timer on pong page
 
 CLEANUPS
 2. Log all major messages
 3. save MQueues messages in DB
-4. Publish on RabbitMQ the history of the games
 5. Emotes
 6. Game less laggy
 7, keep track of bots (better unique id not needing for manual lobby/tournament counter)
@@ -36,3 +37,4 @@ DONE
 3. loadPongBoard(ws:WebSocket) that spawns the game using that socket (DONE)
 5. remove event listeners if game is finished (DONE)
 10. NON AGGIORNA SCORE LA PRIMA PARTITA CHE FAI
+4. Publish on RabbitMQ the history of the games
