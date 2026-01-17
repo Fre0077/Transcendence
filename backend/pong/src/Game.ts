@@ -561,8 +561,6 @@ export class Game
 		// advance the tick
 		++this.tick;
 
-		if (this.timeout > 0) {this.timeout--; return;}
-
 		// Move players
 		this.players.forEach((player) => {
 			if (player.Up === true) player.posY -= playerStep;
@@ -572,6 +570,8 @@ export class Game
 			player.posY = Math.max(0 + paddleHeight_2, Math.min(1 - paddleHeight_2, player.posY));
 		});
 
+		// decrease for timeout
+		if (this.timeout > 0) {this.timeout--;}
 
 		if (this.roundStart === true) {
 			

@@ -45,9 +45,11 @@ fastify.get<{ Querystring: BunnyQuery }>(
 	async (request) => {
 		const { queue } = request.query;
 
+		// gets the message
+		const message = await bunnyGet(queue);
+
 		// a new message in game means new game to create
 		if (queue === 'game') {
-			const message = await bunnyGet('game');
 			const msg = Object(message);
 
 			// check if we got the gameID ad the players

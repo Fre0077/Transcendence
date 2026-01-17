@@ -11,10 +11,6 @@ import argon2 from "argon2";
 const PORT = Number(process.env.PORT) || 3030;
 const VERSION:string = "1.0.4";
 
-// timeout between notifications of any queue (unit = 10 ms)
-const TIMEOUT:number = 1;
-
-
 const fastify = Fastify({ 
 	logger: false //too much stuff... 
 });
@@ -31,7 +27,6 @@ fastify.get('/health', async () => ({ status: 'ok' }));
 
 type User = {
 	notify:boolean;
-	notifytimeout:number;	// ms of breathing room
 	endpoint:string;
 	password:string;
 	subs:Set<string>
@@ -98,7 +93,7 @@ fastify.get<{ Querystring: RegisterQuery }>(
 			})
 			
 			// save in db
-			users.set(ID, { notify: true, notifytimeout:TIMEOUT, endpoint:endp, password:hash, subs: new Set() });
+			users.set(ID, { notify: true, endpoint:endp, password:hash, subs: new Set() });
 
 			// #debug
 			console.log(`Client ${ID} successfully registered with endpoint`, endp);
@@ -110,7 +105,7 @@ fastify.get<{ Querystring: RegisterQuery }>(
 			// assign the ID
 			const ID = uuidv4();
 
-			users.set(ID, { notify: false, notifytimeout:0, endpoint:'-', password:'-', subs: new Set() });
+			users.set(ID, { notify: false, endpoint:'-', password:'-', subs: new Set() });
 
 			// #debug
 			console.log(`Client ${ID} successfully registered with no endpoint`);
@@ -333,8 +328,6 @@ function notify(mq:MQueue, name:string)
 
 		// no notification if disabled
 		if (user.notify === false) return;
-		// diminish timeout
-		if (user.notifytimeout > 0) {user.notifytimeout--; return ;}
 
 		// get endpoint
 		const endpoint = user.endpoint;
@@ -342,13 +335,10 @@ function notify(mq:MQueue, name:string)
 		if (endpoint !== undefined && mq.empty(follower) === false)
 		{
 			// #debug
-			// console.log('Notifying', follower);
+			console.log('Notifying \'' + follower + '\' for \'' + name + '\'');
 
 			fetch(`${endpoint}?queue=${name}`)
 			.catch((err) => console.log(err));
-
-			// reset timeout
-			user.notifytimeout = TIMEOUT;
 		}
 	}
 
@@ -521,7 +511,7 @@ function MonitorQueues()
 
 		// loop
 		MonitorQueues();
-	}, 10);
+	}, 100);
 }
 
 // backup user file once in a while

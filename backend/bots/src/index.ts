@@ -59,9 +59,11 @@ fastify.get<{ Querystring: BunnyQuery }>(
 	async (request) => {
 		const { queue } = request.query;
 
+		// gets the message
+		const message = await bunnyGet(queue);
+
 		// a new message in bot means new bot to create
 		if (queue === 'bot') {
-			const message = await bunnyGet('bot');
 			const msg = Object(message);
 
 			// check if the method is present
@@ -175,9 +177,39 @@ export function createBot(gamestr:string, botid:string, gameid:string, level:num
 			{
 				const msg = Object(JSON.parse(message.toString()));
 
+				/* --- RETRY AUTHENTICATION --- */
+				let tries:number = 2;
+
+				if (("status" in msg) && ("method" in msg) && msg.method === "AUTH_REPLY")
+				{
+					// if success, all good
+					if (msg.status === "success") {return ;}
+					// if we still got tries to do
+					else if (tries > 0)
+					{
+						// retry authentication
+						if (socket.readyState === WebSocket.OPEN) {
+							socket.send(JSON.stringify({ method: 'AUTH', playerID: botid }));
+						}
+
+						tries--;
+					
+					}
+					// if no more tries
+					else
+					{
+						// authentication failed
+						socket.close();
+					}
+					
+					return ;
+				}
+				/* ------------------------------ */
+
 				// game behaviour depending on wich game is played
 				if (!("playing" in msg) || typeof msg.playing !== "boolean"
-					|| !("winner" in msg) || typeof msg.winner !== "number")
+					|| !("winner" in msg) || typeof msg.winner !== "number"
+					|| !("players" in msg) || !Array.isArray(msg.players) || !msg.players.every((p:any) => "ID" in p))
 					throw 'Invalid GameState: ' + message;
 			
 				// check if game is finished
@@ -186,6 +218,9 @@ export function createBot(gamestr:string, botid:string, gameid:string, level:num
 					return ;
 				}
 				
+				/* #debug */
+				console.log('valid state message', msg);
+
 				// check if we are playing
 				if (msg.playing === true)
 				{
@@ -207,8 +242,11 @@ export function createBot(gamestr:string, botid:string, gameid:string, level:num
 				{
 					// reset the bot's data
 					bot.reset();
+					console.log('a');
 					// auto start // #todo maybe wait a bit
-					socket.send(JSON.stringify({ method: "MOVE", value: "START_PRESS" }));
+					// console.log('everyone is bot?', msg.players.every((p:string) => p.startsWith("BOT")));
+					if (msg.players.every((p:any) => p.ID.startsWith("BOT")))
+						socket.send(JSON.stringify({ method: "MOVE", value: "START_PRESS" }));
 				}
 
 			} catch (err) {
