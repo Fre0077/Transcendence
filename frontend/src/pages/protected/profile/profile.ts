@@ -2,6 +2,8 @@ import { loadNavbar } from "@/components/navbar";
 import { sendGetRequest } from "@/services/api/sendRequests";
 import { generateInitialsAvatar } from "@/components/createDefaultImage";
 
+import { GameData, createHistoryBar } from "@/components/historyBar";
+
 export function loadProfilePage(): HTMLElement {
 	const div = document.createElement('div');
 	div.className = 'min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex flex-col';
@@ -35,6 +37,9 @@ export function loadProfilePage(): HTMLElement {
 				</div>
 			</div>
 		</div>
+		<!-- MATCH HISTORY -->
+		<div id="match-history" class="mt-12 w-full max-w-4xl flex flex-col space-y-3 font-mono">
+		</div>
 	</div>
 	`;
 
@@ -48,7 +53,7 @@ export function loadProfilePage(): HTMLElement {
 
 		// Update avatar
 		const avatarImg = div.querySelector('img');
-		if (avatarImg) avatarImg.src = user.avatarUrl /* || generateInitialsAvatar(user.name, user.surname) */ || "";
+		if (avatarImg) avatarImg.src = user.avatarUrl || generateInitialsAvatar(user.name, user.surname) || "";
 
 		// Update stats
 		const statsDiv = div.querySelector('#userStats');
@@ -75,6 +80,20 @@ export function loadProfilePage(): HTMLElement {
 		console.error("Error loading user profile:", error);
 	});
 	
+	getUserGames().then(games => {
+		console.log("game response:", games);
+
+		const history = div.querySelector('#match-history');
+		if (!history) throw Error("History div not found");
+
+		// loops through games and adds them
+		for (const g of games.history) {
+			history.appendChild(createHistoryBar(g));
+		}
+	}).catch(error => {
+		console.error("Error loading user profile:", error);
+	});
+
 	return div;
 }
 
@@ -93,15 +112,28 @@ interface UserProfile {
 }
 
 export async function getUserProfile(): Promise<UserProfile> {
-  const token = localStorage.getItem('authToken');
-  const linkid = localStorage.getItem('userId');
+	const token = localStorage.getItem('authToken');
+	const linkid = localStorage.getItem('userId');
 
-  if (!token || !linkid) {
-    throw new Error('No authentication token found');
-  }
+	if (!token || !linkid) {
+	throw new Error('No authentication token found');
+	}
 
-  const response = await sendGetRequest(`http://localhost:3003/api/user?linkid=${linkid}`, token);
-  return response;
+	const profileResponse = await sendGetRequest(`http://localhost:3003/api/user?linkid=${linkid}`, token);
+	const authResponse = await sendGetRequest(`http://localhost:3001/api/profile`, token);
+	return {
+		id: profileResponse.id,
+		email: authResponse.email,
+		username: profileResponse.username,
+		name: authResponse.name,
+		surname: authResponse.surname,
+		wins: profileResponse.wins,
+		losses: profileResponse.losses,
+		tournamentWins: profileResponse.tournamentWins,
+		tournamentLosses: profileResponse.tournamentLosses,
+		bio: authResponse.bio,
+		avatarUrl: profileResponse.avatarUrl
+	};
 }
 
 export function createDonutChart(wins: number, losses: number, text:string): HTMLElement {
@@ -154,3 +186,17 @@ export function createDonutChart(wins: number, losses: number, text:string): HTM
 
 	return chart;
 }
+
+// @topiana- ecarbona collab
+export async function getUserGames(): Promise<{ history: GameData[] }> {
+	const token = localStorage.getItem('authToken');
+	const linkid = localStorage.getItem('userId');
+
+	if (!token || !linkid) {
+		throw new Error('No authentication token found');
+	}
+
+	const response = await sendGetRequest(`http://localhost:3003/api/game?linkid=${linkid}`, token);
+	return response;
+}
+

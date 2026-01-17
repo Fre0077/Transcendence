@@ -28,8 +28,6 @@ export async function profileEndpoint(fastify: FastifyInstance) {
             if (!linkid)
                 return reply.status(400).send({ error: "Parametro 'linkid' mancante" });
             const data = await getUserData(Number(linkid));
-            if (!data)
-                return reply.status(404).send({ error: "Utente non trovato" });
             logInfo('{profile} [200] Dati utente recuperati con successo');
             return reply.status(200).send(data);
         } catch (err) {
@@ -42,14 +40,13 @@ export async function profileEndpoint(fastify: FastifyInstance) {
         }
     });
 
+    // get game history (all the arrays of the requestd user (linkid in query))
     fastify.get<{ Querystring: ProfileQuery }>('/game', { preHandler: [authMiddleware] }, async (request, reply) => {
         try {
             const { linkid } = request.query;
             if (!linkid)
                 return reply.status(400).send({ error: "Parametro 'linkid' mancante" });
             const data = await getUserGames(Number(linkid));
-            if (!data)
-                return reply.status(404).send({ error: "Utente non trovato" });
             logInfo('{profile} [200] Dati game utente recuperati con successo');
             return reply.status(200).send(data);
         } catch (err) {

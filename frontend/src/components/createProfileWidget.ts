@@ -1,3 +1,5 @@
+import { generateInitialsAvatar } from "@/components/createDefaultImage";
+
 const PROFILE_BASE_URL = `http://${window.location.hostname}:3003/api`;
 
 export interface InteractiveWidget {
@@ -69,7 +71,7 @@ async function loadPlayerWidget(linkid:string): Promise<string>
                             src="${avatar}" 
                             alt="${username}" 
                             class="relative w-24 h-24 rounded-full object-cover border-2 border-slate-800 shadow-2xl"
-                            onerror="this.src='https://ui-avatars.com/api/?name=${username}&background=random'"
+                            onerror="this.src=${generateInitialsAvatar(username, 'player')}"
                         />
                     </div>
 
