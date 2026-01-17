@@ -3,6 +3,9 @@ import { router } from "@/router";
 import { sendPostRequest } from "@/services/api/sendRequests";
 import { persistSession } from "@/services/session";
 
+
+import { butlerSocket } from '@/services/butlerSocket';
+
 export function loadLoginPage(): HTMLElement {
     const div = document.createElement('div');
     div.className = 'min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex flex-col';
@@ -98,6 +101,7 @@ export function loadLoginPage(): HTMLElement {
         try {
             const response = await fetch('http://localhost:3001/api/login',{ 
                 method: 'POST',
+                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -110,9 +114,21 @@ export function loadLoginPage(): HTMLElement {
 
             // === SUCCESSO ===
             console.log('Login riuscito:', data);
+
+
+            /* @ecarbona @topiana business */
+            /* const socket =  */butlerSocket();
+            /* 	#TODO mettere il router sul butler e fare che ogni PAGE sia
+                cleanable quindi con procedura di chiusura (distruzione div, 
+                chiusura socket, rimozione eventListeners)
+            */
+
+
             const accessToken = data.accessToken || data.token;
             persistSession(accessToken, data.user, data.refreshToken);
-            window.location.pathname = '/home'; 
+            // window.location.pathname = '/home';
+            router.push('/home') 
+
         } catch (error) {
             // === ERRORE ===
             let errorMessage = "Si è verificato un errore sconosciuto.";

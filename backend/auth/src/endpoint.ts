@@ -10,7 +10,12 @@ import { authMiddleware, AuthRequest } from "./middleware";
 import { logError, logInfo } from "../utils/logger";
 import { backup } from "node:sqlite";
 import { BadRequest, NotFound, Unauthorized } from "../utils/exception";
+
+
+
+/* security */
 import { NotBeforeError } from "jsonwebtoken";
+import fastifyCookie from '@fastify/cookie';
 
 export async function authEndpoint(fastify: FastifyInstance) {
 	// Endpoint POST per fare il login
@@ -25,8 +30,20 @@ export async function authEndpoint(fastify: FastifyInstance) {
 				return reply.code(401).send({ message: "Verifica 2FA richiesta", twoFactorRequired: true });
 			}
 			const tokens = await generateTokens(user);
+			
+			// write reply
+			reply
+				.code(200)
+				/* adding cookies for auth */
+				.setCookie('token', tokens.accessToken, {
+					httpOnly: true,
+					secure: false,        // true in production (HTTPS)
+					sameSite: 'lax',
+					path: '/',
+				})
+				.send({ ...tokens, user, ok: true });
+		
 			logInfo('{auth} [200] token generato con successo');
-			reply.code(200).send({ ...tokens, user });
 
 		} catch (err) {
 			if (err instanceof Error) {

@@ -10,21 +10,21 @@ export const fastify = Fastify({
     logger: false
 });
 
-// Registro cors
+// CORS
 fastify.register(cors, {
-    // origin: (origin, cb) => {
-    //     const allowedOrigins = [
-    //         "http://localhost:4269",
-    //         "http://localhost:3000",
-    //     ];
 
-    //     if (!origin || allowedOrigins.includes(origin)) {
-    //         cb(null, true);
-    //     } else {
-    //         cb(new Error("Not allowed by CORS"), false);
-    //     }
-    // },
-    credentials: true, // se usi cookie o autenticazione
+    // (ChatGPT)
+    origin: (origin, cb) => {
+        // allow requests with no origin (Postman, curl, mobile apps)
+        if (!origin) {
+            cb(null, true);
+            return ;
+        }
+
+        // allow ANY origin
+        cb(null, origin);
+    },
+    credentials: true,  // 🔥 REQUIRED 4 Cookies
     methods: ["GET", "POST", "PATCH", "PUT", "DELETE"],
 });
 

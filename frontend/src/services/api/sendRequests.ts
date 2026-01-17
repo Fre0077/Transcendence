@@ -6,6 +6,9 @@ export function sendPostRequest(
     return new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         xhr.open("POST", url, true);
+
+        // xhr.withCredentials = true; // 🔥 REQUIRED 4 Cookies (maybe?)
+
         xhr.setRequestHeader("Content-Type", type);
         xhr.onreadystatechange = function () {
             if (xhr.readyState === XMLHttpRequest.DONE) {

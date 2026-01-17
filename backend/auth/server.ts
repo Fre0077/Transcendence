@@ -2,6 +2,7 @@ import Fastify from "fastify";
 import cors from "@fastify/cors";
 import fastifyMultipart from "@fastify/multipart";
 import fastifyStatic from "@fastify/static";
+import fastifyCookie from '@fastify/cookie';
 import path from "path";
 
 import { startRabbit } from "./rabbit";
@@ -14,19 +15,19 @@ export const fastify = Fastify({
 
 // CORS
 fastify.register(cors, {
-    // origin: (origin, cb) => {
-    //     const allowedOrigins = [
-    //         "http://localhost:4269",
-    //         "http://localhost:3000"
-    //     ];
 
-    //     if (!origin || allowedOrigins.includes(origin)) {
-    //         cb(null, true);
-    //     } else {
-    //         cb(new Error("Not allowed by CORS"), false);
-    //     }
-    // },
-    credentials: true,
+    // (ChatGPT)
+    origin: (origin, cb) => {
+        // allow requests with no origin (Postman, curl, mobile apps)
+        if (!origin) {
+            cb(null, true);
+            return ;
+        }
+
+        // allow ANY origin
+        cb(null, origin);
+    },
+    credentials: true,  // 🔥 REQUIRED
     methods: ["GET", "POST", "PATCH", "PUT", "DELETE"],
 });
 
@@ -41,12 +42,15 @@ fastify.addContentTypeParser(
 
 // Upload avatar
 fastify.register(fastifyMultipart);
+// add cookies!!!!
+fastify.register(fastifyCookie);
 
 // Static files (serve avatar salvati)
 fastify.register(fastifyStatic, {
     root: path.join(process.cwd(), 'database/public/uploads'),
     prefix: '/uploads/',
 });
+
 
 // ENDPOINT SOLO AUTH
 fastify.register(authEndpoint, { prefix: "/api" });
