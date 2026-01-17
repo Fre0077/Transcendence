@@ -25,8 +25,8 @@ model Game {
   replay      String
   gamePlayers String
 
-  createdAt DateTime @default(now()) @db.Timestamp(6)
-  updatedAt DateTime @updatedAt @db.Timestamp(6)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   
   players User[]
   metadata Metadata? @relation(fields: [metadataId], references: [id])
