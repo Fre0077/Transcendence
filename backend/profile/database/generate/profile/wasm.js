@@ -139,7 +139,11 @@ exports.Prisma.UserScalarFieldEnum = {
   id: 'id',
   linkId: 'linkId',
   username: 'username',
-  avatarUrl: 'avatarUrl'
+  avatarUrl: 'avatarUrl',
+  wins: 'wins',
+  losses: 'losses',
+  tournamentWins: 'tournamentWins',
+  tournamentLosses: 'tournamentLosses'
 };
 
 exports.Prisma.SortOrder = {

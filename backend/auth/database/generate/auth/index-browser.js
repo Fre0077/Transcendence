@@ -135,10 +135,6 @@ exports.Prisma.AccountScalarFieldEnum = {
   email: 'email',
   passwordHash: 'passwordHash',
   googleId: 'googleId',
-  wins: 'wins',
-  losses: 'losses',
-  tournamentWins: 'tournamentWins',
-  tournamentLosses: 'tournamentLosses',
   twoFactorEnabled: 'twoFactorEnabled',
   twoFactorSecret: 'twoFactorSecret'
 };

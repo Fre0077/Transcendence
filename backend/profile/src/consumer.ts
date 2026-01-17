@@ -85,6 +85,20 @@ export async function startprofileConsumer() {
 						channel!.ack(msg);
 						return;
 					}
+					for (const player of validLinkIds){
+						if (historyData.winner.includes(String(player))){
+							await profilePrisma.user.update({
+								where: { linkId: player},
+								data: {wins: {increment: 1}}
+							})
+						}
+						else {
+							await profilePrisma.user.update({
+								where: { linkId: player},
+								data: {losses: {increment: 1}}
+							})
+						}
+					}
 					await profilePrisma.game.create({
 						data: {
 							game: historyData.game,
@@ -106,6 +120,41 @@ export async function startprofileConsumer() {
 							}
 						}
 					});
+					if (historyData.metadata?.room === 'finals') {
+                        const rawTourneyPlayers = historyData.metadata.tournamentPlayers; 
+                        if (Array.isArray(rawTourneyPlayers)) {
+                            const potentialTourneyIds = rawTourneyPlayers.map((id: any) => {
+                                if (typeof id === 'string' && (id.startsWith('Guest') || id.startsWith('BOT'))) {
+                                    return null;
+                                }
+                                const parsed = parseInt(id, 10);
+                                return isNaN(parsed) ? null : parsed;
+                            }).filter((id: number | null): id is number => id !== null);
+                            if (potentialTourneyIds.length > 0) {
+                                const validTourneyUsers = await profilePrisma.user.findMany({
+                                    where: { linkId: { in: potentialTourneyIds } },
+                                    select: { linkId: true }
+                                });
+                                const tourneyUpdates = validTourneyUsers.map(user => {
+                                    const isWinner = historyData.winner.some((w: any) => w == user.linkId);
+                                    if (isWinner) {
+                                        return profilePrisma.user.update({
+                                            where: { linkId: user.linkId },
+                                            data: { tournamentWins: { increment: 1 } }
+                                        });
+                                    } else {
+                                        return profilePrisma.user.update({
+                                            where: { linkId: user.linkId },
+                                            data: { tournamentLosses: { increment: 1 } }
+                                        });
+                                    }
+                                });
+                                await Promise.all(tourneyUpdates);
+                            }
+                        } else {
+                            console.warn("Room senza array dei player.");
+                        }
+					}
 					console.log(`✅ Game ${historyData.ID} salvato. Collegato agli utenti: ${validLinkIds.join(", ")}`);
 					channel!.ack(msg);
 				} catch (err) {

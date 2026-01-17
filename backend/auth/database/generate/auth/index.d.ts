@@ -2077,18 +2077,10 @@ export namespace Prisma {
 
   export type AccountAvgAggregateOutputType = {
     id: number | null
-    wins: number | null
-    losses: number | null
-    tournamentWins: number | null
-    tournamentLosses: number | null
   }
 
   export type AccountSumAggregateOutputType = {
     id: number | null
-    wins: number | null
-    losses: number | null
-    tournamentWins: number | null
-    tournamentLosses: number | null
   }
 
   export type AccountMinAggregateOutputType = {
@@ -2101,10 +2093,6 @@ export namespace Prisma {
     email: string | null
     passwordHash: string | null
     googleId: string | null
-    wins: number | null
-    losses: number | null
-    tournamentWins: number | null
-    tournamentLosses: number | null
     twoFactorEnabled: boolean | null
     twoFactorSecret: string | null
   }
@@ -2119,10 +2107,6 @@ export namespace Prisma {
     email: string | null
     passwordHash: string | null
     googleId: string | null
-    wins: number | null
-    losses: number | null
-    tournamentWins: number | null
-    tournamentLosses: number | null
     twoFactorEnabled: boolean | null
     twoFactorSecret: string | null
   }
@@ -2137,10 +2121,6 @@ export namespace Prisma {
     email: number
     passwordHash: number
     googleId: number
-    wins: number
-    losses: number
-    tournamentWins: number
-    tournamentLosses: number
     twoFactorEnabled: number
     twoFactorSecret: number
     _all: number
@@ -2149,18 +2129,10 @@ export namespace Prisma {
 
   export type AccountAvgAggregateInputType = {
     id?: true
-    wins?: true
-    losses?: true
-    tournamentWins?: true
-    tournamentLosses?: true
   }
 
   export type AccountSumAggregateInputType = {
     id?: true
-    wins?: true
-    losses?: true
-    tournamentWins?: true
-    tournamentLosses?: true
   }
 
   export type AccountMinAggregateInputType = {
@@ -2173,10 +2145,6 @@ export namespace Prisma {
     email?: true
     passwordHash?: true
     googleId?: true
-    wins?: true
-    losses?: true
-    tournamentWins?: true
-    tournamentLosses?: true
     twoFactorEnabled?: true
     twoFactorSecret?: true
   }
@@ -2191,10 +2159,6 @@ export namespace Prisma {
     email?: true
     passwordHash?: true
     googleId?: true
-    wins?: true
-    losses?: true
-    tournamentWins?: true
-    tournamentLosses?: true
     twoFactorEnabled?: true
     twoFactorSecret?: true
   }
@@ -2209,10 +2173,6 @@ export namespace Prisma {
     email?: true
     passwordHash?: true
     googleId?: true
-    wins?: true
-    losses?: true
-    tournamentWins?: true
-    tournamentLosses?: true
     twoFactorEnabled?: true
     twoFactorSecret?: true
     _all?: true
@@ -2314,10 +2274,6 @@ export namespace Prisma {
     email: string
     passwordHash: string | null
     googleId: string | null
-    wins: number
-    losses: number
-    tournamentWins: number
-    tournamentLosses: number
     twoFactorEnabled: boolean
     twoFactorSecret: string | null
     _count: AccountCountAggregateOutputType | null
@@ -2351,10 +2307,6 @@ export namespace Prisma {
     email?: boolean
     passwordHash?: boolean
     googleId?: boolean
-    wins?: boolean
-    losses?: boolean
-    tournamentWins?: boolean
-    tournamentLosses?: boolean
     twoFactorEnabled?: boolean
     twoFactorSecret?: boolean
     refreshTokens?: boolean | Account$refreshTokensArgs<ExtArgs>
@@ -2371,10 +2323,6 @@ export namespace Prisma {
     email?: boolean
     passwordHash?: boolean
     googleId?: boolean
-    wins?: boolean
-    losses?: boolean
-    tournamentWins?: boolean
-    tournamentLosses?: boolean
     twoFactorEnabled?: boolean
     twoFactorSecret?: boolean
   }, ExtArgs["result"]["account"]>
@@ -2389,10 +2337,6 @@ export namespace Prisma {
     email?: boolean
     passwordHash?: boolean
     googleId?: boolean
-    wins?: boolean
-    losses?: boolean
-    tournamentWins?: boolean
-    tournamentLosses?: boolean
     twoFactorEnabled?: boolean
     twoFactorSecret?: boolean
   }, ExtArgs["result"]["account"]>
@@ -2407,15 +2351,11 @@ export namespace Prisma {
     email?: boolean
     passwordHash?: boolean
     googleId?: boolean
-    wins?: boolean
-    losses?: boolean
-    tournamentWins?: boolean
-    tournamentLosses?: boolean
     twoFactorEnabled?: boolean
     twoFactorSecret?: boolean
   }
 
-  export type AccountOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "surname" | "username" | "bio" | "avatarUrl" | "email" | "passwordHash" | "googleId" | "wins" | "losses" | "tournamentWins" | "tournamentLosses" | "twoFactorEnabled" | "twoFactorSecret", ExtArgs["result"]["account"]>
+  export type AccountOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "surname" | "username" | "bio" | "avatarUrl" | "email" | "passwordHash" | "googleId" | "twoFactorEnabled" | "twoFactorSecret", ExtArgs["result"]["account"]>
   export type AccountInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     refreshTokens?: boolean | Account$refreshTokensArgs<ExtArgs>
     _count?: boolean | AccountCountOutputTypeDefaultArgs<ExtArgs>
@@ -2438,10 +2378,6 @@ export namespace Prisma {
       email: string
       passwordHash: string | null
       googleId: string | null
-      wins: number
-      losses: number
-      tournamentWins: number
-      tournamentLosses: number
       twoFactorEnabled: boolean
       twoFactorSecret: string | null
     }, ExtArgs["result"]["account"]>
@@ -2877,10 +2813,6 @@ export namespace Prisma {
     readonly email: FieldRef<"Account", 'String'>
     readonly passwordHash: FieldRef<"Account", 'String'>
     readonly googleId: FieldRef<"Account", 'String'>
-    readonly wins: FieldRef<"Account", 'Int'>
-    readonly losses: FieldRef<"Account", 'Int'>
-    readonly tournamentWins: FieldRef<"Account", 'Int'>
-    readonly tournamentLosses: FieldRef<"Account", 'Int'>
     readonly twoFactorEnabled: FieldRef<"Account", 'Boolean'>
     readonly twoFactorSecret: FieldRef<"Account", 'String'>
   }
@@ -3342,10 +3274,6 @@ export namespace Prisma {
     email: 'email',
     passwordHash: 'passwordHash',
     googleId: 'googleId',
-    wins: 'wins',
-    losses: 'losses',
-    tournamentWins: 'tournamentWins',
-    tournamentLosses: 'tournamentLosses',
     twoFactorEnabled: 'twoFactorEnabled',
     twoFactorSecret: 'twoFactorSecret'
   };
@@ -3477,10 +3405,6 @@ export namespace Prisma {
     email?: StringFilter<"Account"> | string
     passwordHash?: StringNullableFilter<"Account"> | string | null
     googleId?: StringNullableFilter<"Account"> | string | null
-    wins?: IntFilter<"Account"> | number
-    losses?: IntFilter<"Account"> | number
-    tournamentWins?: IntFilter<"Account"> | number
-    tournamentLosses?: IntFilter<"Account"> | number
     twoFactorEnabled?: BoolFilter<"Account"> | boolean
     twoFactorSecret?: StringNullableFilter<"Account"> | string | null
     refreshTokens?: RefreshTokenListRelationFilter
@@ -3496,10 +3420,6 @@ export namespace Prisma {
     email?: SortOrder
     passwordHash?: SortOrderInput | SortOrder
     googleId?: SortOrderInput | SortOrder
-    wins?: SortOrder
-    losses?: SortOrder
-    tournamentWins?: SortOrder
-    tournamentLosses?: SortOrder
     twoFactorEnabled?: SortOrder
     twoFactorSecret?: SortOrderInput | SortOrder
     refreshTokens?: RefreshTokenOrderByRelationAggregateInput
@@ -3518,10 +3438,6 @@ export namespace Prisma {
     bio?: StringNullableFilter<"Account"> | string | null
     avatarUrl?: StringNullableFilter<"Account"> | string | null
     passwordHash?: StringNullableFilter<"Account"> | string | null
-    wins?: IntFilter<"Account"> | number
-    losses?: IntFilter<"Account"> | number
-    tournamentWins?: IntFilter<"Account"> | number
-    tournamentLosses?: IntFilter<"Account"> | number
     twoFactorEnabled?: BoolFilter<"Account"> | boolean
     twoFactorSecret?: StringNullableFilter<"Account"> | string | null
     refreshTokens?: RefreshTokenListRelationFilter
@@ -3537,10 +3453,6 @@ export namespace Prisma {
     email?: SortOrder
     passwordHash?: SortOrderInput | SortOrder
     googleId?: SortOrderInput | SortOrder
-    wins?: SortOrder
-    losses?: SortOrder
-    tournamentWins?: SortOrder
-    tournamentLosses?: SortOrder
     twoFactorEnabled?: SortOrder
     twoFactorSecret?: SortOrderInput | SortOrder
     _count?: AccountCountOrderByAggregateInput
@@ -3563,10 +3475,6 @@ export namespace Prisma {
     email?: StringWithAggregatesFilter<"Account"> | string
     passwordHash?: StringNullableWithAggregatesFilter<"Account"> | string | null
     googleId?: StringNullableWithAggregatesFilter<"Account"> | string | null
-    wins?: IntWithAggregatesFilter<"Account"> | number
-    losses?: IntWithAggregatesFilter<"Account"> | number
-    tournamentWins?: IntWithAggregatesFilter<"Account"> | number
-    tournamentLosses?: IntWithAggregatesFilter<"Account"> | number
     twoFactorEnabled?: BoolWithAggregatesFilter<"Account"> | boolean
     twoFactorSecret?: StringNullableWithAggregatesFilter<"Account"> | string | null
   }
@@ -3625,10 +3533,6 @@ export namespace Prisma {
     email: string
     passwordHash?: string | null
     googleId?: string | null
-    wins?: number
-    losses?: number
-    tournamentWins?: number
-    tournamentLosses?: number
     twoFactorEnabled?: boolean
     twoFactorSecret?: string | null
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
@@ -3644,10 +3548,6 @@ export namespace Prisma {
     email: string
     passwordHash?: string | null
     googleId?: string | null
-    wins?: number
-    losses?: number
-    tournamentWins?: number
-    tournamentLosses?: number
     twoFactorEnabled?: boolean
     twoFactorSecret?: string | null
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
@@ -3662,10 +3562,6 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
     googleId?: NullableStringFieldUpdateOperationsInput | string | null
-    wins?: IntFieldUpdateOperationsInput | number
-    losses?: IntFieldUpdateOperationsInput | number
-    tournamentWins?: IntFieldUpdateOperationsInput | number
-    tournamentLosses?: IntFieldUpdateOperationsInput | number
     twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
@@ -3681,10 +3577,6 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
     googleId?: NullableStringFieldUpdateOperationsInput | string | null
-    wins?: IntFieldUpdateOperationsInput | number
-    losses?: IntFieldUpdateOperationsInput | number
-    tournamentWins?: IntFieldUpdateOperationsInput | number
-    tournamentLosses?: IntFieldUpdateOperationsInput | number
     twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
@@ -3700,10 +3592,6 @@ export namespace Prisma {
     email: string
     passwordHash?: string | null
     googleId?: string | null
-    wins?: number
-    losses?: number
-    tournamentWins?: number
-    tournamentLosses?: number
     twoFactorEnabled?: boolean
     twoFactorSecret?: string | null
   }
@@ -3717,10 +3605,6 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
     googleId?: NullableStringFieldUpdateOperationsInput | string | null
-    wins?: IntFieldUpdateOperationsInput | number
-    losses?: IntFieldUpdateOperationsInput | number
-    tournamentWins?: IntFieldUpdateOperationsInput | number
-    tournamentLosses?: IntFieldUpdateOperationsInput | number
     twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
   }
@@ -3735,10 +3619,6 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
     googleId?: NullableStringFieldUpdateOperationsInput | string | null
-    wins?: IntFieldUpdateOperationsInput | number
-    losses?: IntFieldUpdateOperationsInput | number
-    tournamentWins?: IntFieldUpdateOperationsInput | number
-    tournamentLosses?: IntFieldUpdateOperationsInput | number
     twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
   }
@@ -3906,20 +3786,12 @@ export namespace Prisma {
     email?: SortOrder
     passwordHash?: SortOrder
     googleId?: SortOrder
-    wins?: SortOrder
-    losses?: SortOrder
-    tournamentWins?: SortOrder
-    tournamentLosses?: SortOrder
     twoFactorEnabled?: SortOrder
     twoFactorSecret?: SortOrder
   }
 
   export type AccountAvgOrderByAggregateInput = {
     id?: SortOrder
-    wins?: SortOrder
-    losses?: SortOrder
-    tournamentWins?: SortOrder
-    tournamentLosses?: SortOrder
   }
 
   export type AccountMaxOrderByAggregateInput = {
@@ -3932,10 +3804,6 @@ export namespace Prisma {
     email?: SortOrder
     passwordHash?: SortOrder
     googleId?: SortOrder
-    wins?: SortOrder
-    losses?: SortOrder
-    tournamentWins?: SortOrder
-    tournamentLosses?: SortOrder
     twoFactorEnabled?: SortOrder
     twoFactorSecret?: SortOrder
   }
@@ -3950,20 +3818,12 @@ export namespace Prisma {
     email?: SortOrder
     passwordHash?: SortOrder
     googleId?: SortOrder
-    wins?: SortOrder
-    losses?: SortOrder
-    tournamentWins?: SortOrder
-    tournamentLosses?: SortOrder
     twoFactorEnabled?: SortOrder
     twoFactorSecret?: SortOrder
   }
 
   export type AccountSumOrderByAggregateInput = {
     id?: SortOrder
-    wins?: SortOrder
-    losses?: SortOrder
-    tournamentWins?: SortOrder
-    tournamentLosses?: SortOrder
   }
 
   export type StringNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -4229,10 +4089,6 @@ export namespace Prisma {
     email: string
     passwordHash?: string | null
     googleId?: string | null
-    wins?: number
-    losses?: number
-    tournamentWins?: number
-    tournamentLosses?: number
     twoFactorEnabled?: boolean
     twoFactorSecret?: string | null
   }
@@ -4247,10 +4103,6 @@ export namespace Prisma {
     email: string
     passwordHash?: string | null
     googleId?: string | null
-    wins?: number
-    losses?: number
-    tournamentWins?: number
-    tournamentLosses?: number
     twoFactorEnabled?: boolean
     twoFactorSecret?: string | null
   }
@@ -4280,10 +4132,6 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
     googleId?: NullableStringFieldUpdateOperationsInput | string | null
-    wins?: IntFieldUpdateOperationsInput | number
-    losses?: IntFieldUpdateOperationsInput | number
-    tournamentWins?: IntFieldUpdateOperationsInput | number
-    tournamentLosses?: IntFieldUpdateOperationsInput | number
     twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
   }
@@ -4298,10 +4146,6 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
     googleId?: NullableStringFieldUpdateOperationsInput | string | null
-    wins?: IntFieldUpdateOperationsInput | number
-    losses?: IntFieldUpdateOperationsInput | number
-    tournamentWins?: IntFieldUpdateOperationsInput | number
-    tournamentLosses?: IntFieldUpdateOperationsInput | number
     twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
     twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
   }

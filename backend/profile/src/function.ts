@@ -189,7 +189,11 @@ export async function getUserData(myLinkId: number) {
         where: { linkId: myLinkId },
         select: {
             username: true,
-            avatarUrl: true
+            avatarUrl: true,
+            wins: true,
+            losses: true,
+            tournamentWins: true,
+            tournamentLosses: true
         }
     });
     if (!data)

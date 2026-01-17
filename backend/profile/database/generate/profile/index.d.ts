@@ -3389,11 +3389,19 @@ export namespace Prisma {
   export type UserAvgAggregateOutputType = {
     id: number | null
     linkId: number | null
+    wins: number | null
+    losses: number | null
+    tournamentWins: number | null
+    tournamentLosses: number | null
   }
 
   export type UserSumAggregateOutputType = {
     id: number | null
     linkId: number | null
+    wins: number | null
+    losses: number | null
+    tournamentWins: number | null
+    tournamentLosses: number | null
   }
 
   export type UserMinAggregateOutputType = {
@@ -3401,6 +3409,10 @@ export namespace Prisma {
     linkId: number | null
     username: string | null
     avatarUrl: string | null
+    wins: number | null
+    losses: number | null
+    tournamentWins: number | null
+    tournamentLosses: number | null
   }
 
   export type UserMaxAggregateOutputType = {
@@ -3408,6 +3420,10 @@ export namespace Prisma {
     linkId: number | null
     username: string | null
     avatarUrl: string | null
+    wins: number | null
+    losses: number | null
+    tournamentWins: number | null
+    tournamentLosses: number | null
   }
 
   export type UserCountAggregateOutputType = {
@@ -3415,6 +3431,10 @@ export namespace Prisma {
     linkId: number
     username: number
     avatarUrl: number
+    wins: number
+    losses: number
+    tournamentWins: number
+    tournamentLosses: number
     _all: number
   }
 
@@ -3422,11 +3442,19 @@ export namespace Prisma {
   export type UserAvgAggregateInputType = {
     id?: true
     linkId?: true
+    wins?: true
+    losses?: true
+    tournamentWins?: true
+    tournamentLosses?: true
   }
 
   export type UserSumAggregateInputType = {
     id?: true
     linkId?: true
+    wins?: true
+    losses?: true
+    tournamentWins?: true
+    tournamentLosses?: true
   }
 
   export type UserMinAggregateInputType = {
@@ -3434,6 +3462,10 @@ export namespace Prisma {
     linkId?: true
     username?: true
     avatarUrl?: true
+    wins?: true
+    losses?: true
+    tournamentWins?: true
+    tournamentLosses?: true
   }
 
   export type UserMaxAggregateInputType = {
@@ -3441,6 +3473,10 @@ export namespace Prisma {
     linkId?: true
     username?: true
     avatarUrl?: true
+    wins?: true
+    losses?: true
+    tournamentWins?: true
+    tournamentLosses?: true
   }
 
   export type UserCountAggregateInputType = {
@@ -3448,6 +3484,10 @@ export namespace Prisma {
     linkId?: true
     username?: true
     avatarUrl?: true
+    wins?: true
+    losses?: true
+    tournamentWins?: true
+    tournamentLosses?: true
     _all?: true
   }
 
@@ -3542,6 +3582,10 @@ export namespace Prisma {
     linkId: number
     username: string | null
     avatarUrl: string | null
+    wins: number
+    losses: number
+    tournamentWins: number
+    tournamentLosses: number
     _count: UserCountAggregateOutputType | null
     _avg: UserAvgAggregateOutputType | null
     _sum: UserSumAggregateOutputType | null
@@ -3568,6 +3612,10 @@ export namespace Prisma {
     linkId?: boolean
     username?: boolean
     avatarUrl?: boolean
+    wins?: boolean
+    losses?: boolean
+    tournamentWins?: boolean
+    tournamentLosses?: boolean
     friends?: boolean | User$friendsArgs<ExtArgs>
     friendOf?: boolean | User$friendOfArgs<ExtArgs>
     incomingRequests?: boolean | User$incomingRequestsArgs<ExtArgs>
@@ -3581,6 +3629,10 @@ export namespace Prisma {
     linkId?: boolean
     username?: boolean
     avatarUrl?: boolean
+    wins?: boolean
+    losses?: boolean
+    tournamentWins?: boolean
+    tournamentLosses?: boolean
   }, ExtArgs["result"]["user"]>
 
   export type UserSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -3588,6 +3640,10 @@ export namespace Prisma {
     linkId?: boolean
     username?: boolean
     avatarUrl?: boolean
+    wins?: boolean
+    losses?: boolean
+    tournamentWins?: boolean
+    tournamentLosses?: boolean
   }, ExtArgs["result"]["user"]>
 
   export type UserSelectScalar = {
@@ -3595,9 +3651,13 @@ export namespace Prisma {
     linkId?: boolean
     username?: boolean
     avatarUrl?: boolean
+    wins?: boolean
+    losses?: boolean
+    tournamentWins?: boolean
+    tournamentLosses?: boolean
   }
 
-  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "linkId" | "username" | "avatarUrl", ExtArgs["result"]["user"]>
+  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "linkId" | "username" | "avatarUrl" | "wins" | "losses" | "tournamentWins" | "tournamentLosses", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     friends?: boolean | User$friendsArgs<ExtArgs>
     friendOf?: boolean | User$friendOfArgs<ExtArgs>
@@ -3623,6 +3683,10 @@ export namespace Prisma {
       linkId: number
       username: string | null
       avatarUrl: string | null
+      wins: number
+      losses: number
+      tournamentWins: number
+      tournamentLosses: number
     }, ExtArgs["result"]["user"]>
     composites: {}
   }
@@ -4055,6 +4119,10 @@ export namespace Prisma {
     readonly linkId: FieldRef<"User", 'Int'>
     readonly username: FieldRef<"User", 'String'>
     readonly avatarUrl: FieldRef<"User", 'String'>
+    readonly wins: FieldRef<"User", 'Int'>
+    readonly losses: FieldRef<"User", 'Int'>
+    readonly tournamentWins: FieldRef<"User", 'Int'>
+    readonly tournamentLosses: FieldRef<"User", 'Int'>
   }
     
 
@@ -4618,7 +4686,11 @@ export namespace Prisma {
     id: 'id',
     linkId: 'linkId',
     username: 'username',
-    avatarUrl: 'avatarUrl'
+    avatarUrl: 'avatarUrl',
+    wins: 'wins',
+    losses: 'losses',
+    tournamentWins: 'tournamentWins',
+    tournamentLosses: 'tournamentLosses'
   };
 
   export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
@@ -4802,6 +4874,10 @@ export namespace Prisma {
     linkId?: IntFilter<"User"> | number
     username?: StringNullableFilter<"User"> | string | null
     avatarUrl?: StringNullableFilter<"User"> | string | null
+    wins?: IntFilter<"User"> | number
+    losses?: IntFilter<"User"> | number
+    tournamentWins?: IntFilter<"User"> | number
+    tournamentLosses?: IntFilter<"User"> | number
     friends?: UserListRelationFilter
     friendOf?: UserListRelationFilter
     incomingRequests?: UserListRelationFilter
@@ -4814,6 +4890,10 @@ export namespace Prisma {
     linkId?: SortOrder
     username?: SortOrderInput | SortOrder
     avatarUrl?: SortOrderInput | SortOrder
+    wins?: SortOrder
+    losses?: SortOrder
+    tournamentWins?: SortOrder
+    tournamentLosses?: SortOrder
     friends?: UserOrderByRelationAggregateInput
     friendOf?: UserOrderByRelationAggregateInput
     incomingRequests?: UserOrderByRelationAggregateInput
@@ -4829,6 +4909,10 @@ export namespace Prisma {
     NOT?: UserWhereInput | UserWhereInput[]
     username?: StringNullableFilter<"User"> | string | null
     avatarUrl?: StringNullableFilter<"User"> | string | null
+    wins?: IntFilter<"User"> | number
+    losses?: IntFilter<"User"> | number
+    tournamentWins?: IntFilter<"User"> | number
+    tournamentLosses?: IntFilter<"User"> | number
     friends?: UserListRelationFilter
     friendOf?: UserListRelationFilter
     incomingRequests?: UserListRelationFilter
@@ -4841,6 +4925,10 @@ export namespace Prisma {
     linkId?: SortOrder
     username?: SortOrderInput | SortOrder
     avatarUrl?: SortOrderInput | SortOrder
+    wins?: SortOrder
+    losses?: SortOrder
+    tournamentWins?: SortOrder
+    tournamentLosses?: SortOrder
     _count?: UserCountOrderByAggregateInput
     _avg?: UserAvgOrderByAggregateInput
     _max?: UserMaxOrderByAggregateInput
@@ -4856,6 +4944,10 @@ export namespace Prisma {
     linkId?: IntWithAggregatesFilter<"User"> | number
     username?: StringNullableWithAggregatesFilter<"User"> | string | null
     avatarUrl?: StringNullableWithAggregatesFilter<"User"> | string | null
+    wins?: IntWithAggregatesFilter<"User"> | number
+    losses?: IntWithAggregatesFilter<"User"> | number
+    tournamentWins?: IntWithAggregatesFilter<"User"> | number
+    tournamentLosses?: IntWithAggregatesFilter<"User"> | number
   }
 
   export type MetadataCreateInput = {
@@ -4992,6 +5084,10 @@ export namespace Prisma {
     linkId: number
     username?: string | null
     avatarUrl?: string | null
+    wins?: number
+    losses?: number
+    tournamentWins?: number
+    tournamentLosses?: number
     friends?: UserCreateNestedManyWithoutFriendOfInput
     friendOf?: UserCreateNestedManyWithoutFriendsInput
     incomingRequests?: UserCreateNestedManyWithoutOutgoingRequestsInput
@@ -5004,6 +5100,10 @@ export namespace Prisma {
     linkId: number
     username?: string | null
     avatarUrl?: string | null
+    wins?: number
+    losses?: number
+    tournamentWins?: number
+    tournamentLosses?: number
     friends?: UserUncheckedCreateNestedManyWithoutFriendOfInput
     friendOf?: UserUncheckedCreateNestedManyWithoutFriendsInput
     incomingRequests?: UserUncheckedCreateNestedManyWithoutOutgoingRequestsInput
@@ -5015,6 +5115,10 @@ export namespace Prisma {
     linkId?: IntFieldUpdateOperationsInput | number
     username?: NullableStringFieldUpdateOperationsInput | string | null
     avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    wins?: IntFieldUpdateOperationsInput | number
+    losses?: IntFieldUpdateOperationsInput | number
+    tournamentWins?: IntFieldUpdateOperationsInput | number
+    tournamentLosses?: IntFieldUpdateOperationsInput | number
     friends?: UserUpdateManyWithoutFriendOfNestedInput
     friendOf?: UserUpdateManyWithoutFriendsNestedInput
     incomingRequests?: UserUpdateManyWithoutOutgoingRequestsNestedInput
@@ -5027,6 +5131,10 @@ export namespace Prisma {
     linkId?: IntFieldUpdateOperationsInput | number
     username?: NullableStringFieldUpdateOperationsInput | string | null
     avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    wins?: IntFieldUpdateOperationsInput | number
+    losses?: IntFieldUpdateOperationsInput | number
+    tournamentWins?: IntFieldUpdateOperationsInput | number
+    tournamentLosses?: IntFieldUpdateOperationsInput | number
     friends?: UserUncheckedUpdateManyWithoutFriendOfNestedInput
     friendOf?: UserUncheckedUpdateManyWithoutFriendsNestedInput
     incomingRequests?: UserUncheckedUpdateManyWithoutOutgoingRequestsNestedInput
@@ -5039,12 +5147,20 @@ export namespace Prisma {
     linkId: number
     username?: string | null
     avatarUrl?: string | null
+    wins?: number
+    losses?: number
+    tournamentWins?: number
+    tournamentLosses?: number
   }
 
   export type UserUpdateManyMutationInput = {
     linkId?: IntFieldUpdateOperationsInput | number
     username?: NullableStringFieldUpdateOperationsInput | string | null
     avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    wins?: IntFieldUpdateOperationsInput | number
+    losses?: IntFieldUpdateOperationsInput | number
+    tournamentWins?: IntFieldUpdateOperationsInput | number
+    tournamentLosses?: IntFieldUpdateOperationsInput | number
   }
 
   export type UserUncheckedUpdateManyInput = {
@@ -5052,6 +5168,10 @@ export namespace Prisma {
     linkId?: IntFieldUpdateOperationsInput | number
     username?: NullableStringFieldUpdateOperationsInput | string | null
     avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    wins?: IntFieldUpdateOperationsInput | number
+    losses?: IntFieldUpdateOperationsInput | number
+    tournamentWins?: IntFieldUpdateOperationsInput | number
+    tournamentLosses?: IntFieldUpdateOperationsInput | number
   }
 
   export type StringFilter<$PrismaModel = never> = {
@@ -5245,11 +5365,19 @@ export namespace Prisma {
     linkId?: SortOrder
     username?: SortOrder
     avatarUrl?: SortOrder
+    wins?: SortOrder
+    losses?: SortOrder
+    tournamentWins?: SortOrder
+    tournamentLosses?: SortOrder
   }
 
   export type UserAvgOrderByAggregateInput = {
     id?: SortOrder
     linkId?: SortOrder
+    wins?: SortOrder
+    losses?: SortOrder
+    tournamentWins?: SortOrder
+    tournamentLosses?: SortOrder
   }
 
   export type UserMaxOrderByAggregateInput = {
@@ -5257,6 +5385,10 @@ export namespace Prisma {
     linkId?: SortOrder
     username?: SortOrder
     avatarUrl?: SortOrder
+    wins?: SortOrder
+    losses?: SortOrder
+    tournamentWins?: SortOrder
+    tournamentLosses?: SortOrder
   }
 
   export type UserMinOrderByAggregateInput = {
@@ -5264,11 +5396,19 @@ export namespace Prisma {
     linkId?: SortOrder
     username?: SortOrder
     avatarUrl?: SortOrder
+    wins?: SortOrder
+    losses?: SortOrder
+    tournamentWins?: SortOrder
+    tournamentLosses?: SortOrder
   }
 
   export type UserSumOrderByAggregateInput = {
     id?: SortOrder
     linkId?: SortOrder
+    wins?: SortOrder
+    losses?: SortOrder
+    tournamentWins?: SortOrder
+    tournamentLosses?: SortOrder
   }
 
   export type GameCreateNestedOneWithoutMetadataInput = {
@@ -5736,6 +5876,10 @@ export namespace Prisma {
     linkId: number
     username?: string | null
     avatarUrl?: string | null
+    wins?: number
+    losses?: number
+    tournamentWins?: number
+    tournamentLosses?: number
     friends?: UserCreateNestedManyWithoutFriendOfInput
     friendOf?: UserCreateNestedManyWithoutFriendsInput
     incomingRequests?: UserCreateNestedManyWithoutOutgoingRequestsInput
@@ -5747,6 +5891,10 @@ export namespace Prisma {
     linkId: number
     username?: string | null
     avatarUrl?: string | null
+    wins?: number
+    losses?: number
+    tournamentWins?: number
+    tournamentLosses?: number
     friends?: UserUncheckedCreateNestedManyWithoutFriendOfInput
     friendOf?: UserUncheckedCreateNestedManyWithoutFriendsInput
     incomingRequests?: UserUncheckedCreateNestedManyWithoutOutgoingRequestsInput
@@ -5801,6 +5949,10 @@ export namespace Prisma {
     linkId?: IntFilter<"User"> | number
     username?: StringNullableFilter<"User"> | string | null
     avatarUrl?: StringNullableFilter<"User"> | string | null
+    wins?: IntFilter<"User"> | number
+    losses?: IntFilter<"User"> | number
+    tournamentWins?: IntFilter<"User"> | number
+    tournamentLosses?: IntFilter<"User"> | number
   }
 
   export type MetadataUpsertWithoutGameInput = {
@@ -5832,6 +5984,10 @@ export namespace Prisma {
     linkId: number
     username?: string | null
     avatarUrl?: string | null
+    wins?: number
+    losses?: number
+    tournamentWins?: number
+    tournamentLosses?: number
     friends?: UserCreateNestedManyWithoutFriendOfInput
     incomingRequests?: UserCreateNestedManyWithoutOutgoingRequestsInput
     outgoingRequests?: UserCreateNestedManyWithoutIncomingRequestsInput
@@ -5843,6 +5999,10 @@ export namespace Prisma {
     linkId: number
     username?: string | null
     avatarUrl?: string | null
+    wins?: number
+    losses?: number
+    tournamentWins?: number
+    tournamentLosses?: number
     friends?: UserUncheckedCreateNestedManyWithoutFriendOfInput
     incomingRequests?: UserUncheckedCreateNestedManyWithoutOutgoingRequestsInput
     outgoingRequests?: UserUncheckedCreateNestedManyWithoutIncomingRequestsInput
@@ -5858,6 +6018,10 @@ export namespace Prisma {
     linkId: number
     username?: string | null
     avatarUrl?: string | null
+    wins?: number
+    losses?: number
+    tournamentWins?: number
+    tournamentLosses?: number
     friendOf?: UserCreateNestedManyWithoutFriendsInput
     incomingRequests?: UserCreateNestedManyWithoutOutgoingRequestsInput
     outgoingRequests?: UserCreateNestedManyWithoutIncomingRequestsInput
@@ -5869,6 +6033,10 @@ export namespace Prisma {
     linkId: number
     username?: string | null
     avatarUrl?: string | null
+    wins?: number
+    losses?: number
+    tournamentWins?: number
+    tournamentLosses?: number
     friendOf?: UserUncheckedCreateNestedManyWithoutFriendsInput
     incomingRequests?: UserUncheckedCreateNestedManyWithoutOutgoingRequestsInput
     outgoingRequests?: UserUncheckedCreateNestedManyWithoutIncomingRequestsInput
@@ -5884,6 +6052,10 @@ export namespace Prisma {
     linkId: number
     username?: string | null
     avatarUrl?: string | null
+    wins?: number
+    losses?: number
+    tournamentWins?: number
+    tournamentLosses?: number
     friends?: UserCreateNestedManyWithoutFriendOfInput
     friendOf?: UserCreateNestedManyWithoutFriendsInput
     incomingRequests?: UserCreateNestedManyWithoutOutgoingRequestsInput
@@ -5895,6 +6067,10 @@ export namespace Prisma {
     linkId: number
     username?: string | null
     avatarUrl?: string | null
+    wins?: number
+    losses?: number
+    tournamentWins?: number
+    tournamentLosses?: number
     friends?: UserUncheckedCreateNestedManyWithoutFriendOfInput
     friendOf?: UserUncheckedCreateNestedManyWithoutFriendsInput
     incomingRequests?: UserUncheckedCreateNestedManyWithoutOutgoingRequestsInput
@@ -5910,6 +6086,10 @@ export namespace Prisma {
     linkId: number
     username?: string | null
     avatarUrl?: string | null
+    wins?: number
+    losses?: number
+    tournamentWins?: number
+    tournamentLosses?: number
     friends?: UserCreateNestedManyWithoutFriendOfInput
     friendOf?: UserCreateNestedManyWithoutFriendsInput
     outgoingRequests?: UserCreateNestedManyWithoutIncomingRequestsInput
@@ -5921,6 +6101,10 @@ export namespace Prisma {
     linkId: number
     username?: string | null
     avatarUrl?: string | null
+    wins?: number
+    losses?: number
+    tournamentWins?: number
+    tournamentLosses?: number
     friends?: UserUncheckedCreateNestedManyWithoutFriendOfInput
     friendOf?: UserUncheckedCreateNestedManyWithoutFriendsInput
     outgoingRequests?: UserUncheckedCreateNestedManyWithoutIncomingRequestsInput
@@ -6056,6 +6240,10 @@ export namespace Prisma {
     linkId?: IntFieldUpdateOperationsInput | number
     username?: NullableStringFieldUpdateOperationsInput | string | null
     avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    wins?: IntFieldUpdateOperationsInput | number
+    losses?: IntFieldUpdateOperationsInput | number
+    tournamentWins?: IntFieldUpdateOperationsInput | number
+    tournamentLosses?: IntFieldUpdateOperationsInput | number
     friends?: UserUpdateManyWithoutFriendOfNestedInput
     friendOf?: UserUpdateManyWithoutFriendsNestedInput
     incomingRequests?: UserUpdateManyWithoutOutgoingRequestsNestedInput
@@ -6067,6 +6255,10 @@ export namespace Prisma {
     linkId?: IntFieldUpdateOperationsInput | number
     username?: NullableStringFieldUpdateOperationsInput | string | null
     avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    wins?: IntFieldUpdateOperationsInput | number
+    losses?: IntFieldUpdateOperationsInput | number
+    tournamentWins?: IntFieldUpdateOperationsInput | number
+    tournamentLosses?: IntFieldUpdateOperationsInput | number
     friends?: UserUncheckedUpdateManyWithoutFriendOfNestedInput
     friendOf?: UserUncheckedUpdateManyWithoutFriendsNestedInput
     incomingRequests?: UserUncheckedUpdateManyWithoutOutgoingRequestsNestedInput
@@ -6078,12 +6270,20 @@ export namespace Prisma {
     linkId?: IntFieldUpdateOperationsInput | number
     username?: NullableStringFieldUpdateOperationsInput | string | null
     avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    wins?: IntFieldUpdateOperationsInput | number
+    losses?: IntFieldUpdateOperationsInput | number
+    tournamentWins?: IntFieldUpdateOperationsInput | number
+    tournamentLosses?: IntFieldUpdateOperationsInput | number
   }
 
   export type UserUpdateWithoutFriendOfInput = {
     linkId?: IntFieldUpdateOperationsInput | number
     username?: NullableStringFieldUpdateOperationsInput | string | null
     avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    wins?: IntFieldUpdateOperationsInput | number
+    losses?: IntFieldUpdateOperationsInput | number
+    tournamentWins?: IntFieldUpdateOperationsInput | number
+    tournamentLosses?: IntFieldUpdateOperationsInput | number
     friends?: UserUpdateManyWithoutFriendOfNestedInput
     incomingRequests?: UserUpdateManyWithoutOutgoingRequestsNestedInput
     outgoingRequests?: UserUpdateManyWithoutIncomingRequestsNestedInput
@@ -6095,6 +6295,10 @@ export namespace Prisma {
     linkId?: IntFieldUpdateOperationsInput | number
     username?: NullableStringFieldUpdateOperationsInput | string | null
     avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    wins?: IntFieldUpdateOperationsInput | number
+    losses?: IntFieldUpdateOperationsInput | number
+    tournamentWins?: IntFieldUpdateOperationsInput | number
+    tournamentLosses?: IntFieldUpdateOperationsInput | number
     friends?: UserUncheckedUpdateManyWithoutFriendOfNestedInput
     incomingRequests?: UserUncheckedUpdateManyWithoutOutgoingRequestsNestedInput
     outgoingRequests?: UserUncheckedUpdateManyWithoutIncomingRequestsNestedInput
@@ -6106,12 +6310,20 @@ export namespace Prisma {
     linkId?: IntFieldUpdateOperationsInput | number
     username?: NullableStringFieldUpdateOperationsInput | string | null
     avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    wins?: IntFieldUpdateOperationsInput | number
+    losses?: IntFieldUpdateOperationsInput | number
+    tournamentWins?: IntFieldUpdateOperationsInput | number
+    tournamentLosses?: IntFieldUpdateOperationsInput | number
   }
 
   export type UserUpdateWithoutFriendsInput = {
     linkId?: IntFieldUpdateOperationsInput | number
     username?: NullableStringFieldUpdateOperationsInput | string | null
     avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    wins?: IntFieldUpdateOperationsInput | number
+    losses?: IntFieldUpdateOperationsInput | number
+    tournamentWins?: IntFieldUpdateOperationsInput | number
+    tournamentLosses?: IntFieldUpdateOperationsInput | number
     friendOf?: UserUpdateManyWithoutFriendsNestedInput
     incomingRequests?: UserUpdateManyWithoutOutgoingRequestsNestedInput
     outgoingRequests?: UserUpdateManyWithoutIncomingRequestsNestedInput
@@ -6123,6 +6335,10 @@ export namespace Prisma {
     linkId?: IntFieldUpdateOperationsInput | number
     username?: NullableStringFieldUpdateOperationsInput | string | null
     avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    wins?: IntFieldUpdateOperationsInput | number
+    losses?: IntFieldUpdateOperationsInput | number
+    tournamentWins?: IntFieldUpdateOperationsInput | number
+    tournamentLosses?: IntFieldUpdateOperationsInput | number
     friendOf?: UserUncheckedUpdateManyWithoutFriendsNestedInput
     incomingRequests?: UserUncheckedUpdateManyWithoutOutgoingRequestsNestedInput
     outgoingRequests?: UserUncheckedUpdateManyWithoutIncomingRequestsNestedInput
@@ -6134,12 +6350,20 @@ export namespace Prisma {
     linkId?: IntFieldUpdateOperationsInput | number
     username?: NullableStringFieldUpdateOperationsInput | string | null
     avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    wins?: IntFieldUpdateOperationsInput | number
+    losses?: IntFieldUpdateOperationsInput | number
+    tournamentWins?: IntFieldUpdateOperationsInput | number
+    tournamentLosses?: IntFieldUpdateOperationsInput | number
   }
 
   export type UserUpdateWithoutOutgoingRequestsInput = {
     linkId?: IntFieldUpdateOperationsInput | number
     username?: NullableStringFieldUpdateOperationsInput | string | null
     avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    wins?: IntFieldUpdateOperationsInput | number
+    losses?: IntFieldUpdateOperationsInput | number
+    tournamentWins?: IntFieldUpdateOperationsInput | number
+    tournamentLosses?: IntFieldUpdateOperationsInput | number
     friends?: UserUpdateManyWithoutFriendOfNestedInput
     friendOf?: UserUpdateManyWithoutFriendsNestedInput
     incomingRequests?: UserUpdateManyWithoutOutgoingRequestsNestedInput
@@ -6151,6 +6375,10 @@ export namespace Prisma {
     linkId?: IntFieldUpdateOperationsInput | number
     username?: NullableStringFieldUpdateOperationsInput | string | null
     avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    wins?: IntFieldUpdateOperationsInput | number
+    losses?: IntFieldUpdateOperationsInput | number
+    tournamentWins?: IntFieldUpdateOperationsInput | number
+    tournamentLosses?: IntFieldUpdateOperationsInput | number
     friends?: UserUncheckedUpdateManyWithoutFriendOfNestedInput
     friendOf?: UserUncheckedUpdateManyWithoutFriendsNestedInput
     incomingRequests?: UserUncheckedUpdateManyWithoutOutgoingRequestsNestedInput
@@ -6162,12 +6390,20 @@ export namespace Prisma {
     linkId?: IntFieldUpdateOperationsInput | number
     username?: NullableStringFieldUpdateOperationsInput | string | null
     avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    wins?: IntFieldUpdateOperationsInput | number
+    losses?: IntFieldUpdateOperationsInput | number
+    tournamentWins?: IntFieldUpdateOperationsInput | number
+    tournamentLosses?: IntFieldUpdateOperationsInput | number
   }
 
   export type UserUpdateWithoutIncomingRequestsInput = {
     linkId?: IntFieldUpdateOperationsInput | number
     username?: NullableStringFieldUpdateOperationsInput | string | null
     avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    wins?: IntFieldUpdateOperationsInput | number
+    losses?: IntFieldUpdateOperationsInput | number
+    tournamentWins?: IntFieldUpdateOperationsInput | number
+    tournamentLosses?: IntFieldUpdateOperationsInput | number
     friends?: UserUpdateManyWithoutFriendOfNestedInput
     friendOf?: UserUpdateManyWithoutFriendsNestedInput
     outgoingRequests?: UserUpdateManyWithoutIncomingRequestsNestedInput
@@ -6179,6 +6415,10 @@ export namespace Prisma {
     linkId?: IntFieldUpdateOperationsInput | number
     username?: NullableStringFieldUpdateOperationsInput | string | null
     avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    wins?: IntFieldUpdateOperationsInput | number
+    losses?: IntFieldUpdateOperationsInput | number
+    tournamentWins?: IntFieldUpdateOperationsInput | number
+    tournamentLosses?: IntFieldUpdateOperationsInput | number
     friends?: UserUncheckedUpdateManyWithoutFriendOfNestedInput
     friendOf?: UserUncheckedUpdateManyWithoutFriendsNestedInput
     outgoingRequests?: UserUncheckedUpdateManyWithoutIncomingRequestsNestedInput
@@ -6190,6 +6430,10 @@ export namespace Prisma {
     linkId?: IntFieldUpdateOperationsInput | number
     username?: NullableStringFieldUpdateOperationsInput | string | null
     avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    wins?: IntFieldUpdateOperationsInput | number
+    losses?: IntFieldUpdateOperationsInput | number
+    tournamentWins?: IntFieldUpdateOperationsInput | number
+    tournamentLosses?: IntFieldUpdateOperationsInput | number
   }
 
   export type GameUpdateWithoutPlayersInput = {

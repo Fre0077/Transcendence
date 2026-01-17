@@ -9,11 +9,11 @@ datasource db {
 }
 
 model Metadata {
-  id        String @id @default(uuid())
-  origin    String         //casual-lobby oppure tournament
-  originId  String         //id della origin, o casual o torneo
-  room      String?        //serve per il grafico piramidale del torneo
-  game      Game?
+  id                String @id @default(uuid())
+  origin            String         //casual-lobby oppure tournament
+  originId          String         //id della origin, o casual o torneo
+  room              String?        //serve per il grafico piramidale del torneo
+  game              Game?
 }
 
 model Game {
@@ -35,6 +35,12 @@ model User {
   linkId   Int     @unique
   username String?
   avatarUrl String?
+
+  wins            Int @default(0)  //spostare nel db di profile
+	losses          Int @default(0)  //
+
+	tournamentWins   Int @default(0) //
+	tournamentLosses Int @default(0) //
 
   //Gli utenti che IO ho aggiunto come amici
   friends   User[] @relation("friends")
