@@ -52,12 +52,10 @@ export async function profileEndpoint(fastify: FastifyInstance) {
                 return reply.status(400).send({ error: "Parametro 'linkid' mancante" });
                 
             // get the user info (username and avarat url)
-            const data = getUserInfo(Number(linkid));
-            if (!data) 
-                throw new NotFound('Profilo utente non trovato', 'auth');
+            const data = await getUserInfo(Number(linkid));
             
             // successfule return
-            logInfo('{auth} [200] Account trovato');
+            logInfo('{profile} [200] Account trovato');
             reply.code(200).send(data);
         } catch (err) {
             if (err instanceof Error) {

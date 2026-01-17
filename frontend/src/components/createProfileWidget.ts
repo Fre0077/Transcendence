@@ -55,8 +55,6 @@ async function loadPlayerWidget(linkid:string): Promise<string>
 		if (!response.ok) throw new Error('Utente non trovato');
 		const data = await response.json();
 		
-		console.log('Parsed data');
-
 		// Dati ricevuti: username e avatarUrl (o image)
 		const username = data.username || linkid;
 		const avatar = data.avatarUrl || data.image || "";

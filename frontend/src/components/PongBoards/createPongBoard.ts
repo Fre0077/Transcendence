@@ -65,28 +65,22 @@ export function createPongBoard(socket:PongSocket): PongBoard {
 	async function update(state: any)
 	{
 		/* #debug */
-		console.log('Updating board...');
+		// console.log('Updating board...');
 
 		// 1️⃣ one-time player setup
 		if (!playersInitialized && state.players.length === 2) {
 
 			/* #debug */
-			console.log('Drawing cards...');
+			// console.log('Drawing cards...');
 
 			// save widgets
 			player1Widget = await createProfileWidget(state.players[0].ID);
 			player2Widget = await createProfileWidget(state.players[1].ID);
 
-			console.log('got widget of', state.players[0].ID, state.players[1].ID);
-
 			// append elements (the check on child is for sync problems)
 			if (player1Slot.childElementCount === 0) player1Slot.appendChild(player1Widget.element);
 			if (player2Slot.childElementCount === 0) player2Slot.appendChild(player2Widget.element);
 			
-			// save first time score
-			if (player1Widget) player1Widget.setScore(Number(state.score[0]));
-			if (player2Widget) player2Widget.setScore(Number(state.score[1]));
-
 			// block further things
 			playersInitialized = true;
 		}

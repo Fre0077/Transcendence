@@ -39,6 +39,9 @@ export function createProfileCard(linkid: string): HTMLElement {
             });
             if (!response.ok) throw new Error('Utente non trovato');
             const data = await response.json();
+
+            /* #debug */
+            // console.log('/userinfo', response, data);
             
             // Dati ricevuti: username e avatarUrl (o image)
             const username = data.username || linkid;
