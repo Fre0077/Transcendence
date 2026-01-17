@@ -237,6 +237,19 @@ export async function getUserData(myLinkId: number) {
     return data;
 }
 
+//Ottieni la lista dei games
+export async function getUserGames(myLinkId: number) {
+    const data = await profilePrisma.user.findUnique({
+        where: { linkId: myLinkId },
+        select: {
+            history: true
+        }
+    });
+    if (!data)
+        throw new NotFound("Profilo utente non trovato.", "profile");
+    return data;
+}
+
 //Ottieni username e avatarUrl
 export async function getUserInfo(myLinkId: number) {
     const data = await profilePrisma.user.findUnique({
