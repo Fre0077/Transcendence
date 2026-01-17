@@ -28,7 +28,7 @@ export function createProfileCard(linkid: string): HTMLElement {
     `;
     (async () => {
         try {
-            const url = `${PROFILE_BASE_URL}/user?linkid=${linkid}`;
+            const url = `${PROFILE_BASE_URL}/userinfo?linkid=${linkid}`;
             const authToken = localStorage.getItem("authToken");
             const response = await fetch(url, {
                 method: 'GET',

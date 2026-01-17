@@ -43,7 +43,7 @@ export async function createProfileWidget(linkid: string): Promise<InteractiveWi
 async function loadPlayerWidget(linkid:string): Promise<string>
 {
 	try {
-		const url = `${PROFILE_BASE_URL}/user?linkid=${linkid}`;
+		const url = `${PROFILE_BASE_URL}/userinfo?linkid=${linkid}`;
 		const authToken = localStorage.getItem("authToken");
 		const response = await fetch(url, {
 			method: 'GET',
