@@ -738,6 +738,11 @@ export class Tournament<T extends MySocket>
 				console.log('Player already joined');
 				return false;
 			}
+			else if (target.status === "left")
+			{
+				console.log('Player previously left the tournament');
+				return false;
+			}
 			else
 			{
 				// update player

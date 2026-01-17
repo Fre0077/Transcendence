@@ -48,7 +48,7 @@ export function loadProfilePage(): HTMLElement {
 
 		// Update avatar
 		const avatarImg = div.querySelector('img');
-		if (avatarImg) avatarImg.src = user.avatarUrl || generateInitialsAvatar(user.name, user.surname);
+		if (avatarImg) avatarImg.src = user.avatarUrl /* || generateInitialsAvatar(user.name, user.surname) */ || "";
 
 		// Update stats
 		const statsDiv = div.querySelector('#userStats');
@@ -94,12 +94,13 @@ interface UserProfile {
 
 export async function getUserProfile(): Promise<UserProfile> {
   const token = localStorage.getItem('authToken');
+  const linkid = localStorage.getItem('userId');
 
-  if (!token) {
+  if (!token || !linkid) {
     throw new Error('No authentication token found');
   }
 
-  const response = await sendGetRequest(`http://localhost:3001/api/profile`, token);
+  const response = await sendGetRequest(`http://localhost:3003/api/user?linkid=${linkid}`, token);
   return response;
 }
 
