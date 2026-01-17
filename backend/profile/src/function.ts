@@ -3,6 +3,42 @@ import { NotFound, Conflict, BadRequest } from "../utils/exception";
 import { PrismaClient as ProfileClient } from "../database/generate/profile";
 const profilePrisma = new ProfileClient();
 
+export async function setTournamentScore(historyData: any){
+    const rawTourneyPlayers = historyData.metadata.tournamentPlayers; 
+    if (Array.isArray(rawTourneyPlayers)) {
+        const potentialTourneyIds = rawTourneyPlayers.map((id: any) => {
+            if (typeof id === 'string' && (id.startsWith('Guest') || id.startsWith('BOT'))) {
+                return null;
+            }
+            const parsed = parseInt(id, 10);
+            return isNaN(parsed) ? null : parsed;
+        }).filter((id: number | null): id is number => id !== null);
+        if (potentialTourneyIds.length > 0) {
+            const validTourneyUsers = await profilePrisma.user.findMany({
+                where: { linkId: { in: potentialTourneyIds } },
+                select: { linkId: true }
+            });
+            const tourneyUpdates = validTourneyUsers.map(user => {
+                const isWinner = historyData.winner.some((w: any) => w == user.linkId);
+                if (isWinner) {
+                    return profilePrisma.user.update({
+                        where: { linkId: user.linkId },
+                        data: { tournamentWins: { increment: 1 } }
+                    });
+                } else {
+                    return profilePrisma.user.update({
+                        where: { linkId: user.linkId },
+                        data: { tournamentLosses: { increment: 1 } }
+                    });
+                }
+            });
+            await Promise.all(tourneyUpdates);
+        }
+    } else {
+        console.warn("Room senza array dei player.");
+    }
+}
+
 //Crea un utente linkato nel database Profile.
 export async function createProfileUser(linkId: number, username: string, avatarUrl: string | null = null) {
     try {

@@ -1,4 +1,5 @@
 import { loadNavbar } from "@/components/navbar";
+import { load404Page } from "@/pages/errors/404";
 
 const baseTournamentPath = `http://${window.location.hostname}:3032/`;
 
@@ -7,8 +8,10 @@ export function loadTournamentHubPage(): HTMLElement
 
     // @topiana- we need playerID to authenticate the connection, so I passed it to createWebSocketConnection 
 
-    const playerID = localStorage.getItem('playerID') || sessionStorage.getItem('guestID') || 'Guest_' + Math.floor(Math.random() * 1000);
-    
+    const playerID = localStorage.getItem('userId'/* ) || sessionStorage.getItem('guestID') || 'Guest_' + Math.floor(Math.random() * 1000 */);
+        if (!playerID)
+                return load404Page();
+            
     let tournamentWS = createWebSocketConnection(playerID);
 
     //----
@@ -309,10 +312,10 @@ function join(code: string, socket:WebSocket)
 }
 
 // move to tournament page
-function pushToTournament(socket:WebSocket, playerID:string, tournamentID:string)
+function pushToTournament(socket:WebSocket, /* playerID:string, */ tournamentID:string)
 {
     // #remove
-    window.sessionStorage.setItem('guestID', playerID);
+    // window.sessionStorage.setItem('guestID', playerID);
 
     // disconnect the websocket
     socket.close();
@@ -346,14 +349,14 @@ function createWebSocketConnection(playerID:string): WebSocket
             if (method === 'CREATE_REPLY' && data.status === 'success') {
                 console.log('Tournament created:', data.comment);
 
-                pushToTournament(ws, playerID, data.value);
+                pushToTournament(ws, /* playerID, */ data.value);
 
             }
             /* go to the joined tournament */
             else if (method === 'JOIN_REPLY' && data.status === 'success') {
                 console.log('Tournament joined:', data.comment);
 
-                pushToTournament(ws, playerID, data.value);
+                pushToTournament(ws, /* playerID, */ data.value);
 
             }
             // just logging

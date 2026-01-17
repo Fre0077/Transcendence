@@ -57,7 +57,10 @@ export function loadOnlineLobbyPage(): HTMLElement {
 
     // @topiana- we need playerID to authenticate the connection, so I passed it to createWebSocketConnection 
 
-    const playerID = localStorage.getItem('userId') || sessionStorage.getItem('guestID') || 'Guest_' + Math.floor(Math.random() * 1000);
+    const playerID = localStorage.getItem('userId'/* ) || sessionStorage.getItem('guestID') || 'Guest_' + Math.floor(Math.random() * 1000 */);
+    if (!playerID)
+            return load404Page();
+        
     const format = 3; // Best of 3 rounds
     
     let lobbyWS = createWebSocketConnection(playerID, lobby_code, connected_players);
@@ -395,6 +398,7 @@ function updateLobbyInfo(lobby_code?: string, connected_players: Player[] = []) 
 
 // #review pls (ChatGPT)
 import { router } from "@/router";
+import { load404Page } from "@/pages/errors/404";
 
 function createWebSocketConnection(playerID:string, lobby_code: string, connected_players: Player[]): WebSocket {
     const ws = new WebSocket(baseLobbyPath.replace('http', 'ws') + 'lobbysocket');

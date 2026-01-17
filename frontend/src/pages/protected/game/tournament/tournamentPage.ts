@@ -1,6 +1,7 @@
 import { loadNavbar } from "@/components/navbar";
 // import { loadSpectateGamePage } from "../online/spectateGame";
 import { loadPongSpectatorDiv } from "@pages/protected/game/online/loadPongSpectatorDiv";
+import { load404Page } from "@/pages/errors/404";
 
 const basePath = `http://${window.location.hostname}:3032/`;
 
@@ -37,7 +38,10 @@ export function loadOnlineTournamentPage(): HTMLElement {
 
 	// @topiana- we need playerID to authenticate the connection, so I passed it to createWebSocketConnection 
 
-	const playerID = localStorage.getItem('playerID') || sessionStorage.getItem('guestID') || 'Guest_' + Math.floor(Math.random() * 1000);
+	const playerID = localStorage.getItem('userId'/* ) || sessionStorage.getItem('guestID') || 'Guest_' + Math.floor(Math.random() * 1000 */);
+		if (!playerID)
+				return load404Page();
+			
 	
 	/* const tournamentWS =  */createWebSocketConnection(playerID);
 

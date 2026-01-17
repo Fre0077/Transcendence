@@ -21,7 +21,7 @@ interface ProfileQuery {
 
 export async function profileEndpoint(fastify: FastifyInstance) {
     //GET /api/user -> Ottieni i dati dello user
-    fastify.get<{ Querystring: ProfileQuery }>('/user', async (request, reply) => {
+    fastify.get<{ Querystring: ProfileQuery }>('/user', { preHandler: [authMiddleware] }, async (request, reply) => {
         try {
             const { linkid } = request.query;
             if (!linkid)
@@ -52,7 +52,7 @@ export async function profileEndpoint(fastify: FastifyInstance) {
                 return reply.status(400).send({ error: "Parametro 'linkid' mancante" });
                 
             // get the user info (username and avarat url)
-            const data = getUserInfo(linkid);
+            const data = getUserInfo(Number(linkid));
             if (!data) 
                 throw new NotFound('Profilo utente non trovato', 'auth');
             

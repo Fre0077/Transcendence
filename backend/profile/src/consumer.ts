@@ -2,6 +2,7 @@ import amqp from "amqplib";
 import { PrismaClient as profilePrismaClient, Prisma} from "../database/generate/profile"
 const profilePrisma = new profilePrismaClient()
 import { getChannel } from "../rabbit"
+import { setTournamentScore } from "./function"
 
 const RABBIT_URL = "amqp://guest:guest@rabbitmq:5672";
 
@@ -68,7 +69,6 @@ export async function startprofileConsumer() {
 							return isNaN(parsed) ? null : parsed;
 						})
 						.filter((id: number | null): id is number => id !== null);
-					console.log(`🔍 ID estratti dal pacchetto: ${potentialUserIds.join(", ")}`);
 					// Eseguiamo la query solo se abbiamo trovato almeno un numero valido
 					let validLinkIds: number[] = [];
 					if (potentialUserIds.length > 0) {
@@ -83,6 +83,8 @@ export async function startprofileConsumer() {
 					if (validLinkIds.length === 0) {
 						console.log("ℹ️ Nessun utente registrato coinvolto (es. Guest vs Bot). History non salvata su Profile.");
 						channel!.ack(msg);
+						if (historyData.metadata?.room === 'finals')
+							setTournamentScore(historyData);
 						return;
 					}
 					for (const player of validLinkIds){
@@ -120,41 +122,8 @@ export async function startprofileConsumer() {
 							}
 						}
 					});
-					if (historyData.metadata?.room === 'finals') {
-                        const rawTourneyPlayers = historyData.metadata.tournamentPlayers; 
-                        if (Array.isArray(rawTourneyPlayers)) {
-                            const potentialTourneyIds = rawTourneyPlayers.map((id: any) => {
-                                if (typeof id === 'string' && (id.startsWith('Guest') || id.startsWith('BOT'))) {
-                                    return null;
-                                }
-                                const parsed = parseInt(id, 10);
-                                return isNaN(parsed) ? null : parsed;
-                            }).filter((id: number | null): id is number => id !== null);
-                            if (potentialTourneyIds.length > 0) {
-                                const validTourneyUsers = await profilePrisma.user.findMany({
-                                    where: { linkId: { in: potentialTourneyIds } },
-                                    select: { linkId: true }
-                                });
-                                const tourneyUpdates = validTourneyUsers.map(user => {
-                                    const isWinner = historyData.winner.some((w: any) => w == user.linkId);
-                                    if (isWinner) {
-                                        return profilePrisma.user.update({
-                                            where: { linkId: user.linkId },
-                                            data: { tournamentWins: { increment: 1 } }
-                                        });
-                                    } else {
-                                        return profilePrisma.user.update({
-                                            where: { linkId: user.linkId },
-                                            data: { tournamentLosses: { increment: 1 } }
-                                        });
-                                    }
-                                });
-                                await Promise.all(tourneyUpdates);
-                            }
-                        } else {
-                            console.warn("Room senza array dei player.");
-                        }
-					}
+					if (historyData.metadata?.room === 'finals')
+                        setTournamentScore(historyData);
 					console.log(`✅ Game ${historyData.ID} salvato. Collegato agli utenti: ${validLinkIds.join(", ")}`);
 					channel!.ack(msg);
 				} catch (err) {
