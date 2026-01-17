@@ -7,7 +7,8 @@ import {
     acceptFriendRequest, 
     removeFriendRequest, 
     getProfileData,
-    getUserData
+    getUserData,
+    getUserInfo
 } from "./function";
 
 // @topiana-
@@ -15,7 +16,7 @@ import { NotFound } from "../utils/exception";
 
 // 1. Definisci cosa ti aspetti nell'URL (?linkid=123)
 interface ProfileQuery {
-    linkid: string;
+    linkid?: string;
 }
 
 export async function profileEndpoint(fastify: FastifyInstance) {
@@ -41,16 +42,17 @@ export async function profileEndpoint(fastify: FastifyInstance) {
     });
 
     // @topiana-
-    fastify.get('/myself', { preHandler: [authMiddleware] }, async (request: AuthRequest, reply: FastifyReply) => {
+    fastify.get<{ Querystring: ProfileQuery }>('/userinfo', async (request, reply) => {
         
         try {
 
-            // check del middleware
-            if (!request.user) 
-                    throw new Unauthorized("Utente non autorizzato", "profile");
+            // check della query
+            const { linkid } = request.query;
+            if (!linkid)
+                return reply.status(400).send({ error: "Parametro 'linkid' mancante" });
                 
-            // get the user data
-            const data = getProfileData(request.user.userId);
+            // get the user info (username and avarat url)
+            const data = getUserInfo(linkid);
             if (!data) 
                 throw new NotFound('Profilo utente non trovato', 'auth');
             

@@ -200,3 +200,17 @@ export async function getUserData(myLinkId: number) {
         throw new NotFound("Profilo utente non trovato.", "profile");
     return data;
 }
+
+//Ottieni username e avatarUrl
+export async function getUserInfo(myLinkId: number) {
+    const data = await profilePrisma.user.findUnique({
+        where: { linkId: myLinkId },
+        select: {
+            username: true,
+            avatarUrl: true
+        }
+    });
+    if (!data)
+        throw new NotFound("Profilo utente non trovato.", "profile");
+    return data;
+}
