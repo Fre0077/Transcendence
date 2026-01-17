@@ -9,7 +9,8 @@ import {
     getProfileData,
     getUserData,
     getUserInfo,
-    getUserGames
+    getUserGames,
+    replaceAllData
 } from "./function";
 
 // @topiana-
@@ -47,8 +48,9 @@ export async function profileEndpoint(fastify: FastifyInstance) {
             if (!linkid)
                 return reply.status(400).send({ error: "Parametro 'linkid' mancante" });
             const data = await getUserGames(Number(linkid));
+            const validUsername = await replaceAllData(data)
             logInfo('{profile} [200] Dati game utente recuperati con successo');
-            return reply.status(200).send(data);
+            return reply.status(200).send(validUsername);
         } catch (err) {
             if (err instanceof Error) {
                 const status = (err as any).statusCode || 500;

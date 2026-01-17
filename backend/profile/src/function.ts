@@ -237,8 +237,76 @@ export async function getUserData(myLinkId: number) {
     return data;
 }
 
+export interface GameData {
+	id:number;			// id nella tabella delle history
+	createdAt:string; 
+	game:string;		// pong, chess, ...
+	gameId:string;		// id della partita lato backend
+	gamePlayers:string;	// who played the game (parse as string array)
+	metadataId:string;	// id del metadata
+	replay:string;		// replay (duh)
+	score:string		// score (parse number array)
+	updatedAt:string;	// time updated
+	winner:string;		// winner as a string array
+}
+
+export async function replaceLinkId(data: GameData) {
+    try {
+        const winnerid:string[] = JSON.parse(data.winner);
+        const players = JSON.parse(data.gamePlayers);
+
+        const idToUser:Map<string, string> = new Map();
+        // save bot
+        for (const p of players)
+        {
+            if (isNaN(Number(p)))
+                idToUser.set(p, p);
+        }
+
+        const maybeLinkIds: number[] = players
+            .filter((p: string) => !isNaN(Number(p)))
+            .map((p: string) => Number(p));
+
+        // get usernames
+        if (data.gamePlayers.length > 0) {
+            const existingUsers = await profilePrisma.user.findMany({
+                where: {
+                    linkId: { in: maybeLinkIds }
+                },
+                select: { linkId: true, username: true }
+            });
+
+            // save usernames
+            for (const user of existingUsers) {
+                idToUser.set(String(user.linkId), String(user.username));
+            }
+        }
+
+        // swap players
+        data.gamePlayers = JSON.stringify(Array.from(idToUser.values()));
+
+        // swap winners
+        const replaceWinners = winnerid
+            .map(id => idToUser.get(id))
+            .filter((v): v is string => v !== undefined);
+        data.winner = JSON.stringify(replaceWinners);
+
+        console.log("replaced linkids with usernames:", data);
+    } catch (err) {
+        console.log("⚠️:", err);
+    }
+    return data;
+}
+
+export async function replaceAllData(GameData: GameData[]) {
+    for (let i = 0; i < GameData.length; i++){
+        GameData[i] = await replaceLinkId(GameData[i]);
+    }
+    return GameData;
+}
+
 //Ottieni la lista dei games
-export async function getUserGames(myLinkId: number) {
+export async function getUserGames(myLinkId: number) : Promise<GameData[]> {
     const data = await profilePrisma.user.findUnique({
         where: { linkId: myLinkId },
         select: {
@@ -247,7 +315,7 @@ export async function getUserGames(myLinkId: number) {
     });
     if (!data)
         throw new NotFound("Profilo utente non trovato.", "profile");
-    return data;
+    return data.history as GameData[];
 }
 
 //Ottieni username e avatarUrl

@@ -87,7 +87,7 @@ export function loadProfilePage(): HTMLElement {
 		if (!history) throw Error("History div not found");
 
 		// loops through games and adds them
-		for (const g of games.history) {
+		for (const g of games/* .history */) {
 			history.appendChild(createHistoryBar(g));
 		}
 	}).catch(error => {
@@ -188,7 +188,7 @@ export function createDonutChart(wins: number, losses: number, text:string): HTM
 }
 
 // @topiana- ecarbona collab
-export async function getUserGames(): Promise<{ history: GameData[] }> {
+export async function getUserGames(): Promise</* { history:  */GameData[]/*  } */> {
 	const token = localStorage.getItem('authToken');
 	const linkid = localStorage.getItem('userId');
 
