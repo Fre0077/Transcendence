@@ -18,6 +18,7 @@ MINOR
 STYLE
 1. spacing at the bottom of the lobby page
 2. pls... the back button
+3. laodPongBoard() player2's widget is too close to the border
 
 CLEANUPS
 2. Log all major messages
@@ -33,6 +34,6 @@ DONE
 1. Tournament setup as string (DONE)
 1. fix layer:2 of tournaments (moves on it's own wtf???) (DONE)
 4. Room stuck if player wins (DONE)
-3. loadPongDiv(ws:WebSocket) that spawns the game using that socket (DONE)
+3. loadPongBoard(ws:WebSocket) that spawns the game using that socket (DONE)
 5. remove event listeners if game is finished (DONE)
 

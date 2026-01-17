@@ -10,6 +10,9 @@ import {
     getUserData
 } from "./function";
 
+// @topiana-
+import { NotFound } from "../utils/exception";
+
 // 1. Definisci cosa ti aspetti nell'URL (?linkid=123)
 interface ProfileQuery {
     linkid: string;
@@ -27,6 +30,33 @@ export async function profileEndpoint(fastify: FastifyInstance) {
                 return reply.status(404).send({ error: "Utente non trovato" });
             logInfo('{profile} [200] Dati utente recuperati con successo');
             return reply.status(200).send(data);
+        } catch (err) {
+            if (err instanceof Error) {
+                const status = (err as any).statusCode || 500;
+                return reply.status(status).send({ error: err.message });
+            }
+            logError('{profile} [500] errore interno del server');
+            return reply.status(500).send({ error: "Internal server error" });
+        }
+    });
+
+    // @topiana-
+    fastify.get('/myself', { preHandler: [authMiddleware] }, async (request: AuthRequest, reply: FastifyReply) => {
+        
+        try {
+
+            // check del middleware
+            if (!request.user) 
+                    throw new Unauthorized("Utente non autorizzato", "profile");
+                
+            // get the user data
+            const data = getProfileData(request.user.userId);
+            if (!data) 
+                throw new NotFound('Profilo utente non trovato', 'auth');
+            
+            // successfule return
+            logInfo('{auth} [200] Account trovato');
+            reply.code(200).send(data);
         } catch (err) {
             if (err instanceof Error) {
                 const status = (err as any).statusCode || 500;
