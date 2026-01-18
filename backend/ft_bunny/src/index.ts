@@ -543,6 +543,7 @@ const start = async () => {
 		mqueues.set('test', new MQueue());
 		mqueues.set('game', new MQueue());
 		mqueues.set('lobby', new MQueue());
+		mqueues.set('tournament', new MQueue());
 		mqueues.set('history', new MQueue());
 		mqueues.set('bot', new MQueue());
 

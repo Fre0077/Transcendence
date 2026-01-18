@@ -5,7 +5,7 @@ import { createPlayerSocket } from "@components/PongBoards/PongSocket";
 import { createPongBoard } from "@components/PongBoards/createPongBoard";
 
 
-const PONG_BACKEND_URL = `ws://${window.location.hostname}:3040/gamesocket`;
+const PONG_BACKEND_URL = `ws://${window.location.hostname}:3029/ws/pong/play`;
 
 export function loadPongPlayerPage(): HTMLElement {
 
@@ -19,7 +19,7 @@ export function loadPongPlayerPage(): HTMLElement {
 	const ws = new WebSocket(PONG_BACKEND_URL);
 
 	// 2. wrap it
-	const socket = createPlayerSocket(ws, playerID);
+	const socket = createPlayerSocket(ws/* , playerID */);
 
 	// 3. create UI
 	const board = createPongBoard(socket);

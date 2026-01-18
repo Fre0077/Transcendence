@@ -443,22 +443,39 @@ export class Tournament<T extends MySocket>
 		for (const [key, room] of this._rooms)
 		{
 			/* check if the room is played */
-			if (!room.played) continue;
-			if (room.winners.length === 0) continue;
 			if (room.advanced) continue;
-
+			if (!room.played) continue;
+			// if (room.winners.length === 0) continue;
+			
 			// gets the next room
 			const idx = keyToIdx(key);
 			const next = this.nextRoom(idx);
-
-			// move the players
-			room.players.forEach(player => {
-				if (room.winners.includes(player)) {
+			
+			// set the winner room to 'justwin' room
+			if (room.aborted === true)
+			{
+				const win = this._rooms.get(idxToKey(next.winner));
+				if (win) win.justwin = true;
+			}
+			// move all the players to the win room
+			else if (room.justwin === true)
+			{
+				room.players.forEach(player => {
 					this.move(player, key, idxToKey(next.winner));
-				} else {
-					this.move(player, key, idxToKey(next.loser));
-				}
-			});
+				});
+			}
+			// move the winner players and the loser players
+			else
+			{
+				// move the players
+				room.players.forEach(player => {
+					if (room.winners.includes(player)) {
+						this.move(player, key, idxToKey(next.winner));
+					} else {
+						this.move(player, key, idxToKey(next.loser));
+					}
+				});
+			}
 
 			/* #debug */
 			// console.log('Advanced room', key);
@@ -565,7 +582,7 @@ export class Tournament<T extends MySocket>
 
 		const room = [...this._rooms.values()].find(r => r.gameid === gameid);
 		if (room === undefined) {
-			console.log('Tournament::finalizeRoom::Error: Room not found');
+			console.log('Tournament::finalizeRoom::Error(): Room not found');
 			return ;
 		}
 
@@ -578,6 +595,42 @@ export class Tournament<T extends MySocket>
 			const p = this._players.get(id);
 			if (p?.isBot()) p?.connect();
 		}
+
+		// routine check
+		this.routine();
+	}
+
+	// all the players in the room disconnected or the game was aborted
+	public killRoom(gameid:string)
+	{
+		/* ---------- BASE CHECK --------- */
+		// check if tournament finished
+		if (this._finished === true) {
+			return ;
+		}
+
+		// check if the tournament is closed
+		if (this._closed === false) {
+			return ;
+		}
+		/* ------------------------------ */
+
+		const room = [...this._rooms.values()].find(r => r.gameid === gameid);
+		if (room === undefined) {
+			console.log('Tournament::killRoom()::Error: Room not found');
+			return ;
+		}
+
+		// 'connect' bots
+		for (const id of room.players)
+		{
+			const p = this._players.get(id);
+			if (p?.isBot()) p?.connect();
+		}
+
+		// set the room to aborted
+		room.aborted = true;
+		room.played = true;
 
 		// routine check
 		this.routine();

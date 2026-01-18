@@ -1,5 +1,8 @@
 
-import { AUTH, /* JOIN, */ LEAVE, MOVE, SPECTATE } from './METHODS.js'
+import { /* AUTH,  *//* JOIN, */ LEAVE, MOVE/* , SPECTATE */ } from './METHODS.js'
+import { Game } from './Game.js';
+// import { GameEntry } from './index.js';
+
 
 // check if the string is a JSON obj with the 'method' property
 function isValidObj(message:string): { method: string } | undefined
@@ -29,10 +32,10 @@ function isValidObj(message:string): { method: string } | undefined
 
 export async function interpreter(
 	message:string,
-	outgame:string | undefined,
-	outplayer:string | undefined,
-	listener:(state:string) => void,
-	callback :(game:string | undefined, player:string | undefined) => void): Promise<string>
+	outgame:Game,
+	outplayer:string,
+	/* listener:(state:string) => void *//* ,
+	callback :(game:string | undefined) => void */): Promise<string>
 {
 			
 	// Format and log message
@@ -53,16 +56,17 @@ export async function interpreter(
 				@playerID: the ID you are logging in
 				Description: AUTHenticates the connection, just once per connection.
 			*/
-			let aret = AUTH(msg, outplayer, listener);
+			// let aret = AUTH(msg, outplayer, listener);
 
-			// welp...
-			if (aret.status === "success") {
-				// save variables
-				callback(aret.game, aret.player);
-			}
+			// // welp...
+			// if (aret.status === "success") {
+			// 	// save variables
+			// 	callback(aret.game, aret.player);
+			// }
 
 			// send reply
-			return aret.reply;
+			// return aret.reply;
+			return JSON.stringify({ method: 'AUTH_REPLY', status: "failure", cause: 'deprecated', comment: "AUTH method deprecated"})
 
 		case "JOIN":
 			// process JOIN request
@@ -83,11 +87,11 @@ export async function interpreter(
 			// process LEAVE request
 			let lret = LEAVE(outgame, outplayer);
 
-			if (lret.status === "success")
-			{
-				//---
-				callback(lret.game, lret.player);
-			}
+			// if (lret.status === "success")
+			// {
+			// 	//---
+			// 	callback(lret.game/* , lret.player */);
+			// }
 
 			// send reply to frontend
 			return lret.reply;
@@ -100,9 +104,10 @@ export async function interpreter(
 		
 		case "SPECTATE":
 			// process SPECTATE request
-			let sret = SPECTATE(msg, outplayer, listener);
+			// let sret = SPECTATE(msg, outplayer, listener);
 
-			return sret;
+			// return sret;
+			return JSON.stringify({ method: 'SPECTATE_REPLY', status: "failure", cause: 'deprecated', comment: "SPECTATE method deprecated (check different endpoint)"})
 		
 		default:
 			console.log(`Unhandled method ${msg.method}`);

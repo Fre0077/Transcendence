@@ -9,6 +9,9 @@ export const BUNNYURL = process.env.BUNNYURL ?? 'http://ft_bunny:3030';
 export const MYURL = process.env.MYURL ?? `http://tournament:${PORT}`;
 export const MYPASS = process.env.MYPASS ?? 'password';
 
+// per controllare che i messaggi vengano dal gateway
+const GATEWAY_SECRET = process.env.GATEWAY_SECRET ?? 'biscottini';
+
 // service varaibles
 const TIMEOUT:number = 120;	// timeout in seconds to wait before deleting the lobby
 
@@ -45,7 +48,7 @@ fastify.get<{ Querystring: BunnyQuery }>(
 		// gets the message
 		const message = await bunnyGet(queue);
 
-		// a new message in game means new game to create
+		// a new message in history means the match concluded
 		if (queue === 'history') {
 			const msg = Object(message);
 
@@ -83,6 +86,37 @@ fastify.get<{ Querystring: BunnyQuery }>(
 			// successful get
 			return { status: 'ok' };
 		}
+
+		// a new message in tournament means the match was aborted
+		if (queue === 'tournament') {
+			const msg = Object(message);
+
+			// check if we got the gameID and the status
+			if ("gameID" in msg === false
+				|| typeof msg.gameID !== "string"
+				|| "status" in msg === false
+				|| typeof msg.status !== "string")
+			{
+				console.log('Invalid JSON (with successful get)', message);
+				// throw 'Invalid JSON (with successful get)';
+				return { status: 'ko' };
+			}
+
+			// find the tournament
+			const tournament = findTournament((t:Tournament<WebSocket>) => {
+				return t.game(msg.ID);
+			})
+
+			// kill the room
+			if (tournament !== undefined) {
+				tournament.killRoom(msg.ID);
+			}
+
+
+			// successful get
+			return { status: 'ok' };
+		}
+
 		// not expected
 		return { status: 'ko' };
 	}
@@ -232,27 +266,46 @@ import { interpreter } from './interpreter.js';
 
 // WebSocket route handler
 fastify.register(async function (fastify) {
-	fastify.get('/tournamentsocket', { websocket: true }, (connection, request) => {
+	fastify.get('/ws', { websocket: true }, (connection, request) => {
 
 		// Logging the connection
 		const clientIP = request.socket.remoteAddress;
 		console.log(`Client connected from ${clientIP}`);
 
+
+		/* --------- CHECK AUTH --------- */
+		const userid = request.headers['x-user-id'] as string;
+  		const secret = request.headers['x-gateway-secret'];
+
+		if (!userid || secret !== GATEWAY_SECRET) {
+			connection.close(1008, "Invalid user authentication");
+			return ;
+		}
+
+		/* --------- AUTO JOIN  --------- */
+
+		const checktour = findTournament((t) => t.has(userid));
+		checktour?.join(userid, connection);
+
+		/* ------------------------------ */
+
 		// playerID not verified with JWT yet
-		let player:string | undefined = undefined;
+		const player:string = userid;
 		// lobbyID
-		let tournament:string | undefined = undefined;
+		let tournament:string | undefined = checktour?.ID;
 
 		// Send welcome message
-		connection.send('Connected to Fastify WebSocket server!');
+		connection.on('open', () => {
+			connection.send('Connected to Tournament WebSocket server!');
+		});
 
 		// Handle incoming messages
 		connection.on('message', (message:string) => {
 			
-			interpreter(message, tournament, player, connection, (retLobby:string | undefined, retPlayer:string | undefined) => {
+			interpreter(message, tournament, player, connection, (retlobby:string | undefined) => {
 
-				tournament = retLobby;
-				player = retPlayer;
+				tournament = retlobby;
+				// player = retPlayer;
 			})
 			.then((reply) => {
 				// send reply
@@ -388,7 +441,7 @@ const start = async () => {
 		if (await bunnyRegister() === false) throw 'Failed to register';
 
 		// subscribe to bunny queues
-		if (await bunnySubscribe([ 'game', 'history', 'bot' ]) === false) throw 'Failed to subscribe';
+		if (await bunnySubscribe([ 'tournament', 'game', 'history', 'bot' ]) === false) throw 'Failed to subscribe';
 
 		// start fastify server
 		await fastify.listen({ port: PORT, host: '0.0.0.0' });

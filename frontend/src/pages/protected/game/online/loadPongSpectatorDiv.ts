@@ -3,7 +3,7 @@ import { load404Page } from "@/pages/errors/404";
 import { createSpectatorSocket } from "@components/PongBoards/PongSocket";
 import { createPongBoard } from "@components/PongBoards/createPongBoard";
 
-const PONG_BACKEND_URL = `ws://${window.location.hostname}:3040/gamesocket`;
+const PONG_SPECTATE_URL = `ws://${window.location.hostname}:3029/ws/pong/spectate`;
 
 export function loadPongSpectatorDiv(matchid:string): HTMLElement {
 
@@ -14,10 +14,10 @@ export function loadPongSpectatorDiv(matchid:string): HTMLElement {
 
 	/* ------ BUILD THE BOARD ------ */
 	// 1. create raw websocket
-	const ws = new WebSocket(PONG_BACKEND_URL);
+	const ws = new WebSocket(PONG_SPECTATE_URL);
 
 	// 2. wrap it
-	const socket = createSpectatorSocket(ws, playerid, matchid);
+	const socket = createSpectatorSocket(ws, /* playerid, */ matchid);
 
 	// 3. create UI
 	const board = createPongBoard(socket);

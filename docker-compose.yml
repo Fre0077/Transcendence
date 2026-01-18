@@ -137,6 +137,13 @@ services:
       - transcendence
     restart: always
 
+
+
+
+
+
+
+
   # GAME RELATED SERVICES
   ft_bunny:
     build:

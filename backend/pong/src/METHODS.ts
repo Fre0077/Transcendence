@@ -1,4 +1,4 @@
-// import type { Game } from './Game.js';
+import type { Game } from './Game.js';
 
 type StandardReturn = {
 	status: "success" | "failure";
@@ -23,45 +23,45 @@ Reply:
 }
 */
 
-import type { Player } from './index.js'
-import { findPlayer, joinGame } from './index.js'
+// import type { Player } from './index.js'
+// import { findPlayer, joinGame } from './index.js'
 
-export function AUTH(msg:object, outplayer:string | undefined, listener:(state:string) => void): StandardReturn
-{
-	// check if already authenticated
-	if (outplayer !== undefined) {
-		return {
-			status: "failure",
-			reply: JSON.stringify({ method: 'AUTH_REPLY', status: "failure", comment: "Already authenticated"})
-		}
-	}
+// export function AUTH(msg:object, outplayer:string | undefined, listener:(state:string) => void): StandardReturn
+// {
+// 	// check if already authenticated
+// 	if (outplayer !== undefined) {
+// 		return {
+// 			status: "failure",
+// 			reply: JSON.stringify({ method: 'AUTH_REPLY', status: "failure", comment: "Already authenticated"})
+// 		}
+// 	}
 
-	// check for playerID
-	if (!("playerID" in msg) || typeof msg.playerID !== "string") {
-		return {
-			status: "failure",
-			reply: JSON.stringify({ method: 'AUTH_REPLY', status: "failure", comment: "missing playerID"}),
-		}
-	}
+// 	// check for playerID
+// 	if (!("playerID" in msg) || typeof msg.playerID !== "string") {
+// 		return {
+// 			status: "failure",
+// 			reply: JSON.stringify({ method: 'AUTH_REPLY', status: "failure", comment: "missing playerID"}),
+// 		}
+// 	}
 
-	/* ! ! ! authentication procedure here ! ! ! */
+// 	/* ! ! ! authentication procedure here ! ! ! */
 	
-	// if already joined previously get the lobby ID
-	const game = findPlayer((players:Player[]) => { return (players.find(p => p.ID === msg.playerID as string) !== undefined) ? true : false;})
-	const retgame = (game === undefined) ? undefined : game.ID;
-	if (retgame) {
-		// update the websocket if already in a lobby
-		joinGame(retgame, msg.playerID, listener);
-	}
+// 	// if already joined previously get the lobby ID
+// 	const game = findPlayer((players:Player[]) => { return (players.find(p => p.ID === msg.playerID as string) !== undefined) ? true : false;})
+// 	const retgame = (game === undefined) ? undefined : game.ID;
+// 	if (retgame) {
+// 		// update the websocket if already in a lobby
+// 		joinGame(retgame, msg.playerID, listener);
+// 	}
 
-	// success return
-	return {
-		status: "success",
-		reply: JSON.stringify({ method: 'AUTH_REPLY', status: "success", comment: "Successfully authenticated"}),
-		player: msg.playerID,
-		game: retgame
-	};
-}
+// 	// success return
+// 	return {
+// 		status: "success",
+// 		reply: JSON.stringify({ method: 'AUTH_REPLY', status: "success", comment: "Successfully authenticated"}),
+// 		player: msg.playerID,
+// 		game: retgame
+// 	};
+// }
 
 /* {
 	method: 'JOIN',       (mandatory)
@@ -143,36 +143,13 @@ Reply:
 	comment: <comment>
 }
 */
-import { leaveGame } from './index.js';
+// import { GameEntry, leaveGame } from './index.js';
 
-export function LEAVE(outgame:string | undefined, outplayer:string | undefined): StandardReturn
+export function LEAVE(outgame:Game, outplayer:string): StandardReturn
 {
-	// check auth
-	if (outplayer === undefined) {
-		return {
-			status: "failure",
-			reply: JSON.stringify({ method: 'LEAVE_REPLY', status: "failure", comment: "Not authenticated yet"})
-		};
-	}
-
-	// check if in game
-	if (outgame === undefined) {
-		return {
-			status: "failure",
-			reply: JSON.stringify({ method: 'LEAVE_REPLY', status: "failure", comment: "Not in a game"})
-		};
-	}
 
 	// leave the game
-	const ret = leaveGame(outgame, outplayer);
-
-	// join failure
-	if (ret.status === "failure") {
-		return {
-			status: "failure",
-			reply: JSON.stringify({ method: 'LEAVE_REPLY', status: "failure", comment: ret.reason })
-		};
-	}
+	outgame.leave(outplayer);
 
 	// successfful reply
 	return {
@@ -206,20 +183,10 @@ Reply:
 Only replies in case of failure
 */
 
-import { findGame } from './index.js';
+// import { findGame } from './index.js';
 
-export function MOVE(msg:object, outgame:string | undefined, outplayer:string | undefined): string
+export function MOVE(msg:object, outgame:Game, outplayer:string): string
 {
-	// check auth
-	if (outplayer === undefined) {
-		return JSON.stringify({ method: 'MOVE_REPLY', status: 'failure', comment: 'Authenticate before moving' });
-	}
-
-	// ignore other inputs if game not found yet
-	if (outgame === undefined) {
-		return JSON.stringify({ method: 'MOVE_REPLY', status: 'failure', comment: 'Join a game before moving' });
-	}
-
 	// check if the game is started
 	// if (entry.status !== "ongoing") {
 	// 	console.log(`The game ${entry.ID} status is '${entry.status}'`);
@@ -233,10 +200,10 @@ export function MOVE(msg:object, outgame:string | undefined, outplayer:string | 
 	}
 
 	// get the game instance
-	const { game, player } = findGame(outgame, outplayer);
+	const player = outgame.players.find(p => p.ID === outplayer);
 
 	// check if the game is found
-	if (game === undefined) {
+	if (outgame === undefined) {
 		return JSON.stringify({ method: 'MOVE_REPLY', status: 'failure', comment: "The game was deleted while you where still inside, im sorry" })
 	}
 
@@ -245,14 +212,12 @@ export function MOVE(msg:object, outgame:string | undefined, outplayer:string | 
 		return JSON.stringify({ method: 'MOVE_REPLY', status: 'failure', comment: "somehow you got this game's ID, but you aren't in the game" })
 	}
 
-	// check if the player is found
-
 	// process sent input
-	if (msg.value == "UP_PRESS") game.press(player.idx, "Up");
-	else if (msg.value == "DW_PRESS") game.press(player.idx, "Down");
-	else if (msg.value == "UP_RELEASE") game.release(player.idx, "Up");
-	else if (msg.value == "DW_RELEASE") game.release(player.idx, "Down");
-	else if (msg.value == "START_PRESS") game.launch();
+	if (msg.value == "UP_PRESS") outgame.press(player.idx, "Up");
+	else if (msg.value == "DW_PRESS") outgame.press(player.idx, "Down");
+	else if (msg.value == "UP_RELEASE") outgame.release(player.idx, "Up");
+	else if (msg.value == "DW_RELEASE") outgame.release(player.idx, "Down");
+	else if (msg.value == "START_PRESS") outgame.launch();
 	else if (msg.value == "RESET_PRESS") {
 		console.log('User reset disabled');
 
@@ -279,29 +244,29 @@ Reply:
 	comment: <comment>			(only if status === failure)
 }
 */
-export function SPECTATE(msg:object, outplayer:string | undefined, listener:(state:string) => void): string
-{
-	// check auth
-	if (outplayer === undefined) {
-		return JSON.stringify({ method: 'SPECTATE_REPLY', status: 'failure', comment: 'Authenticate before spectating' });
-	}
+// export function SPECTATE(msg:object, outplayer:string | undefined, listener:(state:string) => void): string
+// {
+// 	// check auth
+// 	if (outplayer === undefined) {
+// 		return JSON.stringify({ method: 'SPECTATE_REPLY', status: 'failure', comment: 'Authenticate before spectating' });
+// 	}
 
-	// check if the obj has value
-	if (!("value" in msg) || typeof msg.value !== "string") {
-		console.log('invalid JSON message: ' + msg);
-		return JSON.stringify({ method: 'SPECTATE_REPLY', status: 'failure', comment: 'invalid JSON message: ' + msg });
-	}
+// 	// check if the obj has value
+// 	if (!("value" in msg) || typeof msg.value !== "string") {
+// 		console.log('invalid JSON message: ' + msg);
+// 		return JSON.stringify({ method: 'SPECTATE_REPLY', status: 'failure', comment: 'invalid JSON message: ' + msg });
+// 	}
 
-	// searches the game
-	const { game, /* player */ } = findGame(msg.value);
+// 	// searches the game
+// 	const { game, /* player */ } = findGame(msg.value);
 
-	// checck if game found
-	if (game === undefined) {
-		return JSON.stringify({ method: 'SPECTATE_REPLY', status: 'failure', comment: 'game not found' });
-	}
+// 	// checck if game found
+// 	if (game === undefined) {
+// 		return JSON.stringify({ method: 'SPECTATE_REPLY', status: 'failure', comment: 'game not found' });
+// 	}
 
-	// add listner to the game
-	game.subscribe(outplayer, listener);
+// 	// add listner to the game
+// 	game.subscribe(outplayer, listener);
 
-	return JSON.stringify({ method: 'SPECTATE_REPLY', status: 'success' });
-}
+// 	return JSON.stringify({ method: 'SPECTATE_REPLY', status: 'success' });
+// }

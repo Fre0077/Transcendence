@@ -1,5 +1,5 @@
 import Fastify from 'fastify';
-import { Game } from './Game.js'
+import { Game/* , Player */ } from './Game.js'
 import { WebSocket } from "ws";
 
 // Where the Queue will listen
@@ -9,7 +9,7 @@ export const MYURL = process.env.MYURL ?? `http://pong:${PORT}`;
 export const MYPASS = process.env.MYPASS ?? 'password';
 
 // gateway auth
-// const GATEWAY_SECRET = process.env.GATEWAY_SECRET ?? 'biscottini';
+const GATEWAY_SECRET = process.env.GATEWAY_SECRET ?? 'biscottini';
 
 // bunny client
 import { bunnyRegister, bunnySubscribe, bunnyGet, bunnyPublish } from './bunny.js'
@@ -84,143 +84,131 @@ fastify.get<{ Querystring: BunnyQuery }>(
 
 /* ----------- GAMES DataBase ---------- */
 
-export type Player = {
-	ID:string;
-	idx:number;
-	status: "connected" | "disconnected" | "left";
+// export type Player = {
+// 	ID:string;
+// 	idx:number;
+// 	status: "connected" | "disconnected" | "left";
+// }
+
+export type GameEntry = {
+	game: Game,
+	// players:Player[],
+	timeout:number,
+	metadata:any
 }
 
-let games:Map<string, {game: Game, players:Player[], timeout:number, metadata:any }> = new Map();
+let games:Map<string, GameEntry> = new Map();
 
-export function createGame(gameID:string, playersID:string[], metadata: any): Game
+export function createGame(gameid:string, playerid:string[], metadata: any): Game
 {
 	// #debug
-	console.log(`Creating game ${gameID} ...`);
+	console.log(`Creating game ${gameid} with players ${playerid}...`);
 
-	const players = Array.from(playersID, (id, idx) => ({
+	const players = Array.from(playerid, (id, idx) => ({
 		ID: id,
 		idx: idx,
 		status: "disconnected" as "connected" | "disconnected" | "left"
 	}));
 
 	const game:Game = new Game(players.map(({ idx, ID }) => ({ idx, ID })));
-	games.set(gameID, { game: game, players: players, timeout:TIMEOUT, metadata:metadata });
+	games.set(gameid, { game: game, /* players: players, */ timeout:TIMEOUT, metadata:metadata });
 	return game;
 }
 
-export function findGame(gameID:string, playerID:string | void): {game: Game | undefined, player:Player | undefined}
+// checks if a player is expected in a game, if so returns the gameid
+function findGameOf(playerid:string): Game | undefined
 {
-	// check if game is there
-	const game = games.get(gameID);
-	if (game === undefined) return { game: undefined, player: undefined };
-
-	// check if also the player is asked
-	if (!playerID) return { game: game.game, player: undefined };
-
-	// check if player is there
-	const player = game.players.find(p => p.ID === playerID);
-	if (player === undefined) return { game: game.game, player: undefined };
-
-	// return the player
-	return { game: game.game, player: player };
-}
-
-export function findPlayer(fn: (players:Player[]) => boolean): { ID:string, game:Game, players:Player[]} | undefined
-{
-	for (const [ID, { game, players } ] of games) {
-		if (fn(players) === true) return { ID:ID, game:game, players:players};
+	for (const entry of games.values()) {
+		if (entry.game.has(playerid) !== undefined) return entry.game;
 	}
 	return undefined;
 }
 
-export function joinGame(gameID:string, playerID:string, listener:(state:string) => void): { status:"success" | "failure", reason:string }
-{
-	// check if game with ID is found
-	const entry = games.get(gameID);
-	if (entry === undefined) {
-		return {
-			status: "failure",
-			reason: "Game not found"
-		};
-	}
+// export function findPlayer(fn: (players:Player[]) => boolean): { ID:string, game:Game, players:Player[]} | undefined
+// {
+// 	for (const [ID, { game } ] of games) {
+// 		if (fn(game.players) === true) return { ID:ID, game:game, players:game.players};
+// 	}
+// 	return undefined;
+// }
 
-	// for convenience
-	const { game } = entry;
+// export function joinGame(gameid:string, playerid:string, listener:(state:string) => void): { status:"success" | "failure", reason:string }
+// {
+// 	// check if game with ID is found
+// 	const entry = games.get(gameid);
+// 	if (entry === undefined) {
+// 		return {
+// 			status: "failure",
+// 			reason: "Game not found"
+// 		};
+// 	}
+
+// 	// for convenience
+// 	const { game } = entry;
 	
-	// check if player is expected
-	const player = entry.players.find(p => p.ID === playerID);
-	if (player === undefined) {
-		return {
-			status: "failure",
-			reason: "Player not expected"
-		};
-	}
+// 	// check if player is expected
+// 	const player = entry.players.find(p => p.ID === playerid);
+// 	if (player === undefined) {
+// 		return {
+// 			status: "failure",
+// 			reason: "Player not expected"
+// 		};
+// 	}
 
-	// remove listener if another socket is connected
-	// #todo inndagare sul perche' dei multi socket
-	if (player.status === 'connected') game.unsubscribe(playerID);
+// 	// remove listener if another socket is connected
+// 	// #todo inndagare sul perche' dei multi socket
+// 	if (player.status === 'connected') game.unsubscribe(playerid);
 
-	// adds notify callback for game-state update
-	game.subscribe(playerID, listener);
+// 	// adds notify callback for game-state update
+// 	game.subscribe(playerid, listener);
 
-	// start game if first player
-	if (entry.players.find(p => p.status === "connected") === undefined) {
-		console.log(`Starting game ${gameID} ...`);
-		entry.game.start();
-	}
+// 	// start game if first player
+// 	if (entry.players.find(p => p.status === "connected") === undefined) {
+// 		console.log(`Starting game ${gameid} ...`);
+// 		entry.game.start();
+// 	}
 
-	// set status to connected
-	player.status = "connected";
-	return {
-		status: "success",
-		reason: "Player joined successfully"
-	};
-}
+// 	// set status to connected
+// 	player.status = "connected";
+// 	return {
+// 		status: "success",
+// 		reason: "Player joined successfully"
+// 	};
+// }
 
-export function leaveGame(gameID:string, playerID:string): { status:"success" | "failure", reason:string }
-{
-	// check if game with ID is found
-	const entry = games.get(gameID);
-	if (entry === undefined) {
-		return {
-			status: "failure",
-			reason: "Game not found"
-		};
-	}
+// export function leaveGame(game:Game, playerid:string): { status:"success" | "failure", reason:string }
+// {
 
-	// for convenience
-	const { game } = entry;
+// 	// check if player is expected
+// 	const player = game.players.find(p => p.ID === playerid);
+// 	if (player === undefined) {
+// 		return {
+// 			status: "failure",
+// 			reason: "Player not expected"
+// 		};
+// 	}
 
-	// check if player is expected
-	const player = entry.players.find(p => p.ID === playerID);
-	if (player === undefined) {
-		return {
-			status: "failure",
-			reason: "Player not expected"
-		};
-	}
+// 	// remove listener
+// 	game.unsubscribe(playerid);
 
-	// remove listener
-	game.unsubscribe(playerID);
+// 	// set status to disconnected
+// 	player.status = "left";
 
-	// set status to disconnected
-	player.status = "left";
+// 	// successful return
+// 	return {
+// 		status: "success",
+// 		reason: "Player left successfully"
+// 	};
+// }
 
-	// successful return
-	return {
-		status: "success",
-		reason: "Player left successfully"
-	};
-}
-
-export function deleteGame(gameID:string, reason:string | void)
+export function deleteGame(gameid:string, reason:string | void)
 {
 	// check if game is present
-	const game = games.get(gameID);
-	if (game === undefined) return;
+	const entry = games.get(gameid);
+	if (entry === undefined) return;
 
 	// check if game is finished
-	const winner = game.game.end();
+	const winner = entry.game.end();
 
 	// #todo send to RabbitMQ and ft_bunny
 	if (winner !== -1)
@@ -228,11 +216,11 @@ export function deleteGame(gameID:string, reason:string | void)
 		// what will be sent to RabbitMQ and ft_bunnyMQ @ecarbona
 		const history = {
 			game: 'pong',
-			ID: gameID,
-			winner: [game.players[winner].ID],
-			players: game.players.map(player => player.ID),
-			score: game.game.state.score,
-			metadata: game.metadata
+			ID: gameid,
+			winner: [entry.game.players[winner].ID],
+			players: entry.game.players.map(player => player.ID),
+			score: entry.game.state.score,
+			metadata: entry.metadata
 		}
 
 		// #todo send to RabbitMQ and ft_bunny
@@ -240,15 +228,22 @@ export function deleteGame(gameID:string, reason:string | void)
 	}
 
 	// send to lobby that all the players left the game
-	bunnyPublish('lobby', {
-		gameID: gameID,
-		status: 'finished'
-	});
+	// #outdated, let lobby read from history
+	if (entry.metadata.origin && typeof entry.metadata.origin === "string") {
+		bunnyPublish(entry.metadata.origin, {
+			gameID: gameid,
+			status: 'finished'
+		});
+	}
+
+	// close all sockets
+	entry.game.close();
 
 	// delete the game
-	console.log(`Deleting game ${gameID}, reason: '${reason}' ...`);
-	games.delete(gameID);
+	console.log(`Deleting game ${gameid}, reason: '${reason}' ...`);
+	games.delete(gameid);
 }
+
 
 
 
@@ -263,46 +258,82 @@ export function deleteGame(gameID:string, reason:string | void)
 
 import { interpreter } from './interpreter.js';
 
-// WebSocket route handler
+/* interface SpectateQuery {
+	gameid?: string;
+}
+ */
+// Websocket rout handler
 fastify.register(async function (fastify) {
-	fastify.get('/gamesocket', { websocket: true }, (connection, request) => {
+
+	/* === PLAYERS ENDPOINT === */
+	fastify.get('/play', { websocket: true }, (connection, request) => {
 
 		// Logging the connection
 		const clientIP = request.socket.remoteAddress;
-		console.log(`Client connected from ${clientIP}`);
+		console.log(`New connection from ${clientIP}`);
+		
 
-		// /* --- CHECK AUTH --- */
-		// const userid = request.headers['x-user-id'];
-  		// const secret = request.headers['x-gateway-secret'];
 
-		// if (!userid || secret !== GATEWAY_SECRET) {
-		// 	connection.close(1008, "Invalid user authentication");
-		// 	return ;
-		// }
-		// /* ----------------- */
+		/* --------- CHECK AUTH --------- */
+		const userid = request.headers['x-user-id'] as string;	// danerous?
+		const secret = request.headers['x-gateway-secret'];
+		
+		if (!userid || secret !== GATEWAY_SECRET) {
+			console.log('Invalid user authentication', userid);
+			connection.close(1008, "Invalid user authentication");
+			return ;
+		}
+		/* ----- CHECK if EXPECTED ----- */
 
-		// playerID not verified with JWT yet
-		let playerID:string | undefined = undefined;
-		// gameID
-		let gameID:string | undefined = undefined;
+		const gamecheck = findGameOf(userid);
+		if (!gamecheck) {
+			console.log('Game not found', userid);
+			connection.close(3000, "Game not found");
+			return ;
+		}
 
+		/* --------- AUTO JOIN --------- */
 		// listener for updates on the gamestate
 		const listener = (state:string) => {
-			if (connection.readyState === WebSocket.OPEN) {
+			if (state === "close") {
+				connection.close(undefined, "Game closed");
+			}
+			else if (connection.readyState === WebSocket.OPEN) {
 				connection.send(state);
 			}
 		};
 
+		// join game
+		gamecheck.subscribe(userid, listener);
+		// start game (double start protected)
+		gamecheck.start();
+
+		/* ----------------------------- */
+
+
+
+
+		/* #debug */
+		console.log(`Client '${userid} 'connected from ${clientIP}`);
+
+		// playerID not verified with JWT yet
+		const playerid:string = userid;
+		// game reference
+		const game:Game = gamecheck;
+
 		// Send welcome message
-		connection.send('Connected to Fastify WebSocket server!');
+		connection.on('open', () => {
+			connection.send('Connected to Pong-Player WebSocket server!');
+		});
+
+		
+
+
 
 		// Handle incoming messages
 		connection.on('message', (message:string) => {
 			
-			interpreter(message, gameID, playerID, listener, (retGame:string | undefined, retPlayer:string | undefined) => {
-				gameID = retGame;
-				playerID = retPlayer;
-			})
+			interpreter(message, game, playerid)
 			.then((reply) => {
 				// check if no reply needed
 				if (reply === "no-reply") return;
@@ -318,30 +349,119 @@ fastify.register(async function (fastify) {
 
 		// Handle WebSocket errors
 		connection.on('error', (error:string) => {
+			// remove listener
+			game.unsubscribe(playerid);
+
 			console.error(`WebSocket error for ${clientIP}:`, error);
 		});
 
 		// Handle connection close
 		connection.on('close', (code:number, reason:string) => {
-
-			// disconnect procedure (just leave from the connected sockets, not from the lobby)
-			if (gameID !== undefined && playerID !== undefined) {
-				const { game, player } = findGame(gameID, playerID);
-
-				if (player !== undefined) {
-					player.status = "disconnected";
-					console.log(player);
-
-					// remove listener
-					game?.unsubscribe(player.ID);
-
-				}
-			}
+			// remove listener
+			game.unsubscribe(playerid);
 
 			console.log(`Client ${clientIP} disconnected - Code: ${code}, Reason: ${reason?.toString() || 'none'}`);
 		});
 	});
+
+
+
+
+
+	/* === SPECTATORS ENDPOINT === */
+	fastify.get/* <{ Querystring: SpectateQuery }> */('/spectate', { websocket: true }, (connection, request) => {
+		
+		// Logging the connection
+		const clientIP = request.socket.remoteAddress;
+		console.log(`New connection from ${clientIP}`);
+		
+
+
+		/* --------- CHECK AUTH --------- */
+		const userid = request.headers['x-user-id'] as string;	// danerous?
+		const secret = request.headers['x-gateway-secret'];
+		// const query = JSON.parse(request.headers['x-ws-query'] as string);	// !dangerous not catching it, but im wild @topiana-
+		
+		if (!userid || secret !== GATEWAY_SECRET) {
+			console.log('Sus player', userid);
+			connection.close(1008, "Invalid user authentication");
+			return ;
+		}
+
+		let match:Game | undefined = undefined;
+
+		// Send welcome message
+		connection.on('open', () => {
+			connection.send('Connected to Pong-Spectator WebSocket server!');
+		});
+
+		connection.on('message', (message:string) => {
+
+			try
+			{
+				/* ------- CHECK GAMEID ------- */
+
+				const { matchid } = JSON.parse(message);
+
+				if (!matchid) {
+					console.log('Forgot matchid for', userid);
+					connection.close(3001, "Missing matchid");
+					return ;
+				}
+
+				/* -------- FIND GAME -------- */
+				const entry = games.get(matchid);
+				if (!entry) {
+					console.log('Game not found', userid);
+					connection.close(3000, "Game not found");
+					return ;
+				}
+				/* -------- JOIN GAME -------- */
+
+				// save game
+				match = entry.game;
+
+				// listener for updates on the gamestate
+				const listener = (state:string) => {
+					if (state === "close") {
+						connection.close(undefined, "Game closed");
+					}
+					else if (connection.readyState === WebSocket.OPEN) {
+						connection.send(state);
+					}
+				};
+
+				// add listener, even if not expected AS PLAYER
+				entry.game.subscribe(userid, listener);
+				/* --------------------------- */
+			}
+			catch (err)
+			{
+				console.log('Error while connecting the spectator socket');
+				connection.close(1011, "Internal server error");
+				return ;
+			}
+		})
+
+		// Handle connection close
+		connection.on('close', (code:number, reason:string) => {
+			console.log(`Client ${clientIP} disconnected - Code: ${code}, Reason: ${reason?.toString() || 'none'}`);
+			
+			// remove listener
+			if (match) match.unsubscribe(userid);
+		});
+	
+		// Handle WebSocket errors
+		connection.on('error', (error:string) => {
+			console.error(`WebSocket error for ${clientIP}:`, error);
+
+			// remove listener
+			if (match) match.unsubscribe(userid);
+		});
+
+	});
 });
+
 
 
 
@@ -364,7 +484,8 @@ function GamesManager()
 		games.forEach((entry, id) => {
 
 			// for convenience
-			const { game, players } = entry;
+			const { game } = entry;
+			const players = game.players;
 
 			// delete game if it's over
 			if (game.end() !== -1) {
@@ -418,7 +539,7 @@ const start = async () => {
 		if (await bunnyRegister() === false) throw 'Failed to register';
 
 		// subscribe to bunny queues
-		if (await bunnySubscribe([ 'game', 'lobby', 'history' ]) === false) throw 'Failed to subscribe';
+		if (await bunnySubscribe([ 'game', 'tournament', 'lobby', 'history' ]) === false) throw 'Failed to subscribe';
 
 		// start fastify server
 		await fastify.listen({ port: PORT, host: '0.0.0.0' });

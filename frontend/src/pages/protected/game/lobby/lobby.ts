@@ -2,7 +2,7 @@ import { loadNavbar } from "@/components/navbar";
 import { createProfileCard } from "@components/createProfileCard.js";
 
 // const baseLobbyPath = `http://${window.location.hostname}:3031/`;
-const LOBBY_WEBSOCKET_URL = `ws://${window.location.hostname}:3029/ws/lobbysocket`;
+const LOBBY_WEBSOCKET_URL = `ws://${window.location.hostname}:3029/ws/lobby`;
 
 interface Player {
     id: string;
@@ -64,7 +64,7 @@ export function loadOnlineLobbyPage(): HTMLElement {
         
     const format = 3; // Best of 3 rounds
     
-    let lobbyWS = createWebSocketConnection(playerID, lobby_code, connected_players);
+    let lobbyWS = createWebSocketConnection(/* playerID,  */lobby_code, connected_players);
 
     //----
 
@@ -228,7 +228,7 @@ export function loadOnlineLobbyPage(): HTMLElement {
         leaveLobbyBtn.addEventListener('click', () => {
             console.log('Leave Lobby Button clicked');
             leaveLobby(lobby_code, connected_players, lobbyWS);
-            lobbyWS = createWebSocketConnection(playerID, lobby_code, connected_players);
+            lobbyWS = createWebSocketConnection(/* playerID,  */lobby_code, connected_players);
         });
         console.log('Leave Lobby Button found and event listener added');
     }
@@ -401,47 +401,31 @@ function updateLobbyInfo(lobby_code?: string, connected_players: Player[] = []) 
 import { router } from "@/router";
 import { load404Page } from "@/pages/errors/404";
 
-function createWebSocketConnection(playerID:string, lobby_code: string, connected_players: Player[]): WebSocket {
+function createWebSocketConnection(lobby_code: string, connected_players: Player[]): WebSocket {
     const ws = new WebSocket(LOBBY_WEBSOCKET_URL);
     console.log("Websocketing to", LOBBY_WEBSOCKET_URL);
 
     ws.onopen = () => {
         console.log('Connected to lobby WebSocket');
-
-        // @topiana- aggiunta la AUTH call all'inizio della connesione #review pls
-        // ws.send(JSON.stringify({ method: 'AUTH', playerID: playerID }));
     };
 
     ws.onmessage = (event) => {
         try {
             const data = JSON.parse(event.data);
             console.log('Lobby WebSocket message received:', data);
-            // let updateNeeded = false; // (outdated)
+
+
             const method = data.method || '';
-            if (method === 'START_REPLY' && data.status === 'success') {
-                console.log('Lobby is starting the game:', data.comment);
+            if (method === 'START_REPLY') {
+                if (data.status === 'success')
+                {
+                    console.log('Lobby is starting the game:', data.comment);
+                    // close socket when leaving window
+                    ws.close();
 
-
-                // @topiana- load the game page #review pls
-                // window.location.href = `/game:${data.value}`;
-
-                // #remove
-                window.sessionStorage.setItem('guestID', playerID);
-
-                // close socket when leaving window
-                ws.close();
-
-                router.push(`/game/${data.value}`);
-
-            }
-            // @topiana-
-            else if (method === 'AUTH_REPLY' && data.status === 'success') {
-                console.log('Authenticatd successfully');
-
-
-                // reset lobbycode
-                // lobby_code = ''; // (not necessary)
-
+                    router.push(`/game/${data.value}`);
+                }
+                else console.log('Failed to start lobby');
             }
             /* interface LobbyState {
                 ID:string;
@@ -451,7 +435,7 @@ function createWebSocketConnection(playerID:string, lobby_code: string, connecte
                     status:string;
                 }[];
             } */
-            if (data.ID && data.players)
+            else if (data.ID && data.players)
             {
                 // save lobbyID
                 if (lobby_code !== data.ID) {

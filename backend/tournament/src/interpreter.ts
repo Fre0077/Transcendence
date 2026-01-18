@@ -1,4 +1,4 @@
-import { AUTH, CREATE, JOIN, LEAVE, READY, BOT } from './METHODS.js';
+import { /* AUTH, */ CREATE, JOIN, LEAVE, READY, BOT } from './METHODS.js';
 
 import type { WebSocket } from "ws";
 
@@ -34,10 +34,10 @@ and process the input. Reurns the reply to send to the client as a Promise */
 export async function interpreter(
 	message:string,
 	tournament:string | undefined,
-	player:string | undefined,
+	player:string,
 	ws:WebSocket,
 	/* the parameters of the callback are the new tournamentID or playerID, or if the tournament was updated (something changed) */
-	callback :(tournament:string | undefined, player:string | undefined) => void): Promise<string>
+	callback :(tournament:string | undefined) => void): Promise<string>
 {
 	// Format and log message
 	let msg = isValidObj(message.toString());
@@ -57,16 +57,17 @@ export async function interpreter(
 				@playerID: the ID you are logging in
 				Description: AUTHenticates the connection, just once per connection.
 			*/
-			let aret = AUTH(msg, player, ws);
+			// let aret = AUTH(msg, player, ws);
 
-			// welp...
-			if (aret.status === "success") {
-				// save variables
-				callback(aret.tournament, aret.player);
-			}
+			// // welp...
+			// if (aret.status === "success") {
+			// 	// save variables
+			// 	callback(aret.tournament, aret.player);
+			// }
 
 			// send reply
-			return aret.reply;
+			// return aret.reply;
+			return JSON.stringify({ method: 'AUTH_REPLY', status: "failure", cause: 'deprecated', comment: "AUTH method deprecated"})
 
 		case "CREATE":
 			/* { method: 'CREATE', playerID: <playerID>, format: <format> }
@@ -78,7 +79,7 @@ export async function interpreter(
 			// welp...
 			if (cret.status === "success") {
 				// save variables
-				callback(cret.tournament, cret.player);
+				callback(cret.tournament/* , cret.player */);
 			}
 
 			// send reply
@@ -93,7 +94,7 @@ export async function interpreter(
 			// welp...
 			if (jret.status === "success") {
 				// save variables
-				callback(jret.tournament, jret.player);
+				callback(jret.tournament/* , jret.player */);
 			}
 			
 			// send reply
@@ -109,7 +110,7 @@ export async function interpreter(
 			// welp...
 			if (lret.status === "success") {
 				// save variables
-				callback(lret.tournament, lret.player);
+				callback(lret.tournament/* , lret.player */);
 			}
 
 			// send reply
@@ -122,7 +123,7 @@ export async function interpreter(
 			let bret = BOT(msg, tournament);
 			
 			// just for the update
-			callback(tournament, player);
+			callback(tournament/* , player */);
 
 			// send reply
 			return bret.reply;
@@ -137,7 +138,7 @@ export async function interpreter(
 			let sret = await READY(player, tournament);
 
 			// just for the update
-			callback(tournament, player);
+			callback(tournament/* , player */);
 
 			// send reply
 			return sret.reply;

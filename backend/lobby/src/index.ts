@@ -8,6 +8,8 @@ const PORT = Number(process.env.PORT) || 3031;
 export const BUNNYURL = process.env.BUNNYURL ?? 'http://ft_bunny:3030';
 export const MYURL = process.env.MYURL ?? `http://lobby:${PORT}`;
 export const MYPASS = process.env.MYPASS ?? 'password';
+
+// per controllare che i messaggi vengano dal gateway
 const GATEWAY_SECRET = process.env.GATEWAY_SECRET ?? 'biscottini';
 
 // service varaibles
@@ -257,23 +259,35 @@ fastify.register(async function (fastify) {
 		const clientIP = request.socket.remoteAddress;
 		console.log(`Client connected from ${clientIP}`);
 
-		/* --- CHECK AUTH --- */
-		const userid = request.headers['x-user-id'];
+		/* --------- CHECK AUTH --------- */
+		const userid = request.headers['x-user-id'] as string;
   		const secret = request.headers['x-gateway-secret'];
 
 		if (!userid || secret !== GATEWAY_SECRET) {
 			connection.close(1008, "Invalid user authentication");
 			return ;
 		}
-		/* ----------------- */
+
+		/* --------- AUTO JOIN  --------- */
+
+		const checklobby = findLobby((l) => l.has(userid));
+		checklobby?.join(userid, connection);
+
+		/* ------------------------------ */
 
 		// playerID not verified with JWT yet
-		const player:string = userid[0];
+		const player:string = userid;
 		// lobbyID
-		let lobby:string | undefined = undefined;
+		let lobby:string | undefined = checklobby?.ID;
+
+
+
+
 
 		// Send welcome message
-		connection.send('Connected to Fastify WebSocket server!');
+		connection.on('open', () => {
+			connection.send('Connected to Lobby WebSocket server!');
+		});
 
 		// Handle incoming messages
 		connection.on('message', (message:string) => {

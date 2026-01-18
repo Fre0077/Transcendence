@@ -2,6 +2,9 @@ import { FastifyReply, FastifyRequest/* , FastifyReply */ } from 'fastify';
 // import { SocketStream } from '@fastify/websocket';
 import { isCookieAuthenticated, getCookieUser } from './middleware.js';
 
+
+const GATEWAY_SECRET = process.env.GATEWAY_SECRET ?? 'biscottini';
+
 /* ------------------------ */
 /* 		  WEBSOCKETS		*/
 /* ------------------------ */
@@ -77,7 +80,8 @@ export function fwdWebSocket(connection:WebSocket, request:FastifyRequest, endpo
 		{
 			headers: {
 				'x-user-id': String(auth.userId),
-				'x-gateway-secret': process.env.GATEWAY_SECRET ?? 'biscottini',
+				'x-gateway-secret': String(GATEWAY_SECRET),
+				// 'x-ws-query': JSON.stringify(request.query),
 			}
 		}
 	);
@@ -175,7 +179,7 @@ export async function authForward(request:FastifyRequest, reply:FastifyReply, en
 
 	// Add your auth info to backend
 	headers['x-user-id'] = String(auth.userId);
-	headers['x-gateway-secret'] = String('biscottini');
+	headers['x-gateway-secret'] = String(GATEWAY_SECRET);
 
 	// set options as fetch() likes it
 	const fetchOptions: any = {

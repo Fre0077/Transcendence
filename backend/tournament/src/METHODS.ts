@@ -168,17 +168,9 @@ Reply:
 
 export function JOIN(msg:object,
 	outournament:string | undefined,
-	outplayer:string | undefined,
+	outplayer:string,
 	ws:WebSocket): StandardReturn
 {
-	// check if AUTHenticated
-	if (outplayer === undefined) {
-		return {
-			status: "failure",
-			reply: JSON.stringify({ method: 'JOIN_REPLY', status: "failure", comment: "Not authenticated"})
-		}
-	}
-
 	// check if we already in lobby
 	if (outournament !== undefined) {
 		return {
@@ -239,16 +231,8 @@ Reply:
 }
 */
 
-export function LEAVE(outournament:string | undefined, outplayer:string | undefined): StandardReturn
+export function LEAVE(outournament:string | undefined, outplayer:string): StandardReturn
 {
-	// check auth
-	if (outplayer === undefined) {
-		return {
-			status: "failure",
-			reply: JSON.stringify({ method: 'LEAVE_REPLY', status: 'failure', comment: "Not authenticated yet" })
-		};
-	}
-
 	// check if you joined a lobby
 	if (outournament === undefined) {
 		return {
@@ -289,16 +273,8 @@ Reply:
 
 // import { bunnyPublish } from './bunny.js';
 
-export async function READY(outplayer:string | undefined, outournament:string | undefined): Promise<StandardReturn>
+export async function READY(outplayer:string, outournament:string | undefined): Promise<StandardReturn>
 {
-	// check if authenticated
-	if (outplayer === undefined) {
-		return {
-			status: "failure",
-			reply: JSON.stringify({ method: 'READY_REPLY', status: 'failure', comment: 'Authenticate before getting ready' })
-		}
-	}
-
 	// check if you joined a tournament
 	if (outournament === undefined) {
 		return {

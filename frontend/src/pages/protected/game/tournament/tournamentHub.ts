@@ -1,7 +1,7 @@
 import { loadNavbar } from "@/components/navbar";
 import { load404Page } from "@/pages/errors/404";
 
-const baseTournamentPath = `http://${window.location.hostname}:3032/`;
+const TOURNAMENT_WEBSOCKET_URL = `ws://${window.location.hostname}:3029/ws/tournament`;
 
 export function loadTournamentHubPage(): HTMLElement
 {
@@ -328,8 +328,8 @@ import { router } from "@/router";
 
 function createWebSocketConnection(playerID:string): WebSocket
 {
-    const ws = new WebSocket(baseTournamentPath.replace('http', 'ws') + 'tournamentsocket');
-    console.log(baseTournamentPath.replace('http', 'ws') + 'tournamentsocket');
+    const ws = new WebSocket(TOURNAMENT_WEBSOCKET_URL);
+    console.log('Websocketing to', TOURNAMENT_WEBSOCKET_URL);
 
     ws.onopen = () => {
         console.log('Connected to tournament WebSocket');

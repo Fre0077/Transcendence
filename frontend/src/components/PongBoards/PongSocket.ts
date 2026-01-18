@@ -6,7 +6,6 @@
 
 // PongSocket.ts
 export interface PongSocket {
-	playerid:string;
 	matchid?:string;
 	send(data: unknown): void;
 	handshake(): void;
@@ -25,33 +24,19 @@ function sleep(ms:number) {
 
 // already parsed message
 const playerSecretary = (data:any, ws:WebSocket) => {
-	const method = data.method;
-	
-	if (method === 'AUTH_REPLY')
-	{
-		if (data.status === "success") console.log("Authenticated successfully");
-		else if (data.status === "failure")
-		{
-			console.log("Couldn't Authenticate to Game Service");
-
-			// stop this shit??
-			ws.close(); // #todo maybe not?
-		}
-	}
+	console.log('Player Socket got', data);
+	ws;
 }
 
 // behaviour of the player socket
-export function createPlayerSocket(ws: WebSocket, playerid:string): PongSocket
+export function createPlayerSocket(ws: WebSocket/* , playerid:string */): PongSocket
 {
 	return {
 		// data
-		playerid: playerid,
+		// playerid: playerid,
 
 		// functions
-		handshake() {
-			sleep(1100)
-			.then(() => ws.send(JSON.stringify({ method: 'AUTH', playerID: playerid })));
-		},
+		handshake() {},
 		send(data) {
 			ws.send(JSON.stringify(data));
 		},
@@ -84,39 +69,26 @@ export function createPlayerSocket(ws: WebSocket, playerid:string): PongSocket
 
 // already parsed message
 const spectateSecretary = (data:any, ws:WebSocket) => {
-	const method = data.method;
-	if (method === 'AUTH_REPLY')
-	{
-		if (data.status === "success") console.log("Authenticated successfully");
-		else if (data.status === "failure")
-		{
-			console.log("Couldn't Authenticate to Game Service");
-
-			// stop this shit??
-			ws.close();
-		}
-	}
+	console.log('Spectator Socket got', data);
+	ws;
 }
 
 // behaviour of the spectator socket
-export function createSpectatorSocket(ws: WebSocket, playerid:string, matchid:string): PongSocket
+export function createSpectatorSocket(ws: WebSocket/* , playerid:string */, matchid:string): PongSocket
 {
 	return {
 		// data
-		playerid: playerid,
+		// playerid: playerid,
 		matchid: matchid,
 
 		// functions
 		handshake() {
-			sleep(1100)
+			sleep(200)
 			.then(() => {
-				ws.send(JSON.stringify({ method: 'AUTH', playerID: playerid }));
-				ws.send(JSON.stringify({ method: 'SPECTATE', value: matchid }));
+				ws.send(JSON.stringify({ matchid: matchid }));
 			});
 		},
-		send(data) {
-			ws.send(JSON.stringify(data));
-		},
+		send() {},
 		onmessage(handler) {
 			ws.onmessage = (e) => {
 				try {

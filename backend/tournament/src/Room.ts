@@ -20,6 +20,9 @@ export class Room
 	public played:boolean = false;
 	public advanced:boolean = false;
 
+	public aborted:boolean = false;						// if both the players of the room quitted
+	public justwin:boolean = false;						// if a contender for this room quitted
+
 	public score:number[] = [];							// final score of the room
 	public winners:string[] = [];
 

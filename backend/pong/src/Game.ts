@@ -87,10 +87,12 @@ class Ball
 	}
 }
 
-class Player
+export class Player
 {
 	// ID
-	public _ID:string;
+	private _ID:string;
+	private _idx:number;
+	public status: "connected" | "disconnected" | "left";
 
 	// position data
 	public posY:number;
@@ -104,9 +106,11 @@ class Player
 	public Up:boolean;		/* key held by the player */
 	public Down:boolean;
 
-	constructor (__ID:string)
+	constructor (__ID:string, __idx:number)
 	{
 		this._ID = __ID;
+		this._idx = __idx;
+		this.status = "disconnected";
 		this.posY = 0.5;
 		this._height = paddleHeight;
 		this._width = paddleWidth;
@@ -128,6 +132,10 @@ class Player
 
 	public get ID() {
 		return this._ID;
+	}
+
+	public get idx() {
+		return this._idx;
 	}
 
 	public get height() {
@@ -201,7 +209,7 @@ export class Game
 	private directions:number[];	/* array of launch directions (length = targetScore * 2 - 1) */
 
 	// players variables
-	private players:[Player, Player];
+	private _players:[Player, Player];
 
 	private running:boolean;	/* :D */
 
@@ -210,6 +218,8 @@ export class Game
 
 	// last time a player moved
 	private lastmovetime:number;
+
+	private gameLoopInterval:NodeJS.Timeout | undefined = undefined;
 
 	/* ======================== CONSTRUCTORS ======================== */
 	// the constructor expliccitly wants the variables initialized
@@ -228,7 +238,7 @@ export class Game
 		this.directions = randomAngle((this.targetScore * 2) - 1);
 
 		// players
-		this.players = [new Player(players[0].ID), new Player(players[1].ID)]
+		this._players = [new Player(players[0].ID, players[0].idx), new Player(players[1].ID, players[1].idx)]
 
 		//--- do not reset
 		this.running = false;
@@ -262,11 +272,20 @@ export class Game
 		return this.lastmovetime;
 	}
 
+	// gets the player array
+	public get players() {
+		return this._players;
+	}
+
+	public has(playerid:string) {
+		return this._players.find(p => p.ID === playerid);
+	}
+
 	// state non JSON
 	// @aleborghi qui' viene formattato il gamestate per il frontend.
 	public get state(): GameState
 	{
-		const players = Array.from(this.players, (player) => ({
+		const players = Array.from(this._players, (player) => ({
 			ID: player.ID,
 			paddle: {
 				posY: player.posY,
@@ -329,16 +348,16 @@ export class Game
 	public press(player:number, direction: string) {
 		
 		if (player !== 0 && player !== 1) return;
-		if (direction === 'Up') this.players[player].Up = true;
-		if (direction === 'Down')this.players[player].Down = true;
+		if (direction === 'Up') this._players[player].Up = true;
+		if (direction === 'Down')this._players[player].Down = true;
 		this.lastmovetime = Date.now();
 	}
 
 	public release(player:number, direction: string) {
 		
 		if (player !== 0 && player !== 1) return;
-		if (direction === 'Up') this.players[player].Up = false;
-		if (direction === 'Down') this.players[player].Down = false;
+		if (direction === 'Up') this._players[player].Up = false;
+		if (direction === 'Down') this._players[player].Down = false;
 		this.lastmovetime = Date.now();
 	}
 
@@ -349,11 +368,28 @@ export class Game
 	// add the send logic
 	public subscribe(ID:string, fn: (state: string) => void) {
 		this.listeners.set(ID, fn);
+
+		// change status if it was a player
+		const p = this.players.find(p => p.ID === ID);
+		if (p !== undefined) p.status = "connected";
 	}
 	
-	// remove the send
+	// remove the listener
 	public unsubscribe(ID:string/*,  fn: (state: string) => void */) {
 		this.listeners.delete(ID);
+
+		// change status if it was a player
+		const p = this.players.find(p => p.ID === ID);
+		if (p !== undefined) p.status = "disconnected";
+	}
+
+	// remove the send
+	public leave(ID:string/*,  fn: (state: string) => void */) {
+		this.listeners.delete(ID);
+
+		// change status if it was a player
+		const p = this.players.find(p => p.ID === ID);
+		if (p !== undefined) p.status = "left";
 	}
 
 	// send game state to each client
@@ -363,6 +399,17 @@ export class Game
 		for (const fn of this.listeners.values()) {
 			fn(state);
 		}
+	}
+
+	// close and clear all listeners 
+	public close()
+	{
+		for (const fn of this.listeners.values()) {
+			fn("close");
+		}
+
+		// clear listener
+		this.listeners.clear();
 	}
 
 
@@ -401,11 +448,11 @@ export class Game
 			const collisionY = expectedPos(this.ball.pos, this.ball.angle, collisionX);
 
 			// check if the paddle meets that collision point
-			if (collisionY >= this.players[0].posY - paddleHeight_2
-				&& collisionY <= this.players[0].posY + paddleHeight_2)
+			if (collisionY >= this._players[0].posY - paddleHeight_2
+				&& collisionY <= this._players[0].posY + paddleHeight_2)
 			{
 				// this.ball.angle = bounce_90_deg('x', this.ball.angle);
-				const offdeg = (collisionY - this.players[0].posY) * 90;
+				const offdeg = (collisionY - this._players[0].posY) * 90;
 				// console.log('offset deg:', offdeg);
 				this.ball.bounceX(offdeg);
 
@@ -424,11 +471,11 @@ export class Game
 			const collisionY = expectedPos(this.ball.pos, this.ball.angle, 1 - collisionX);
 			
 			// check if the paddle meets that collision point
-			if (collisionY >= this.players[1].posY - paddleHeight_2
-				&& collisionY <= this.players[1].posY + paddleHeight_2)
+			if (collisionY >= this._players[1].posY - paddleHeight_2
+				&& collisionY <= this._players[1].posY + paddleHeight_2)
 			{
 				// this.ball.angle = bounce_90_deg('x', this.ball.angle);
-				const offdeg = (collisionY - this.players[1].posY) * 90;
+				const offdeg = (collisionY - this._players[1].posY) * 90;
 				// console.log('offset deg:', -offdeg);
 				this.ball.bounceX(-offdeg);
 		
@@ -483,7 +530,7 @@ export class Game
 		this.roundStart = false;		// round not started
 		this.ball.reset();				// reset ball to default state
 
-		this.players.forEach((player) => {
+		this._players.forEach((player) => {
 			player.reset();
 		});
 
@@ -528,7 +575,7 @@ export class Game
 		this.ball = new Ball();
 		this.directions = randomAngle((this.targetScore * 2) - 1);
 
-		this.players.forEach((player) => {
+		this._players.forEach((player) => {
 			player.reset();
 		});
 		
@@ -562,7 +609,7 @@ export class Game
 		++this.tick;
 
 		// Move players
-		this.players.forEach((player) => {
+		this._players.forEach((player) => {
 			if (player.Up === true) player.posY -= playerStep;
 			if (player.Down === true) player.posY += playerStep;
 
@@ -632,7 +679,7 @@ export class Game
 			}
 	  
 			// loop again
-			setTimeout(loop, 0);
+			this.gameLoopInterval = setTimeout(loop, 0);
 		};
 	  
 		// prevent multiple loops
@@ -642,10 +689,10 @@ export class Game
 	}
 
 	// public stop() {
-	// 	if (this.gameLoopInterval) clearInterval(this.gameLoopInterval);
-	// }
-
+		// }
+		
 	public stop() {
+		if (this.gameLoopInterval) clearInterval(this.gameLoopInterval);
 		this.running = false;
 	}
 }

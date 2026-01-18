@@ -9,11 +9,14 @@ export const BUNNYURL = process.env.BUNNYURL ?? 'http://ft_bunny:3030';
 export const MYURL = process.env.MYURL ?? `http://bots:${PORT}`;
 export const MYPASS = process.env.MYPASS ?? 'password';
 
+// to authenticate on the containers
+const GATEWAY_SECRET = process.env.GATEWAY_SECRET ?? 'biscottini';
+
 // array of games
 const GAMEURL = [
 	{
 		game: 'pong',
-		url: process.env.PONGURL ?? 'ws://pong:3040/gamesocket',
+		url: process.env.PONGURL ?? 'ws://pong:3040/play',
 		type: PongBot
 	}
 ];
@@ -70,8 +73,7 @@ fastify.get<{ Querystring: BunnyQuery }>(
 			if (!("method" in msg) || typeof msg.method !== "string")
 				return { status: 'failure' };
 
-							// check if we got a 'create bot' message
-
+			// check if we got a 'create bot' message
 			if (msg.method === 'CREATE')
 			{
 				if (!("game" in msg) || typeof msg.game !== "string"
@@ -124,7 +126,10 @@ fastify.get<{ Querystring: BunnyQuery }>(
 
 
 
-
+// HELPER
+function sleep(ms:number) {
+	return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 
 /* ----------- BOT DataBase ---------- */
@@ -139,7 +144,7 @@ interface Bot {
 // botid: { bot instance, websocket instance, last time the bt moved }
 let bots:Map<string, { bot:Bot, ws:WebSocket, time:number }> = new Map();
 
-export function createBot(gamestr:string, botid:string, gameid:string, level:number | undefined): boolean
+export async function createBot(gamestr:string, botid:string, gameid:string, level:number | undefined): Promise<boolean>
 {
 	let myurl:string | undefined = undefined;
 	let bot:Bot | undefined = undefined;
@@ -158,17 +163,33 @@ export function createBot(gamestr:string, botid:string, gameid:string, level:num
 	// no game with said name
 	if (bot === undefined || myurl === undefined) return false;
 
+
+	/* IMPORTANT: if the game isn't spawned yet the bot will connect,
+		but the pong service will close the connection
+	*/
+	await sleep(200);
+	// lame, same as frontend client (better a copule of retries)
+
 	try {
 		// #debug
 		console.log('Bot connecting to', myurl);
 
 		// create and Socket
-		const socket = new WebSocket(myurl);
+		const socket = new WebSocket(myurl, {
+			headers : {
+				'x-user-id': botid,
+				'x-gateway-secret': GATEWAY_SECRET
+			}
+		});
 
 		// authentication and join game
 		socket.on('open', () => {
-			// we are not checking the reply
-			socket.send(JSON.stringify({ method: 'AUTH', playerID: botid }));
+			console.log(`Bot ${botid} connected to the game`);
+		});
+
+		// Handle connection close
+		socket.on('close', (code:number, reason:string) => {
+			console.log(`Bot ${botid} disconnected - Code: ${code}, Reason: ${reason?.toString() || 'none'}`);
 		});
 
 		// process incoming messages (just GameState JSON)
@@ -177,34 +198,8 @@ export function createBot(gamestr:string, botid:string, gameid:string, level:num
 			{
 				const msg = Object(JSON.parse(message.toString()));
 
-				/* --- RETRY AUTHENTICATION --- */
-				let tries:number = 2;
-
-				if (("status" in msg) && ("method" in msg) && msg.method === "AUTH_REPLY")
-				{
-					// if success, all good
-					if (msg.status === "success") {return ;}
-					// if we still got tries to do
-					else if (tries > 0)
-					{
-						// retry authentication
-						if (socket.readyState === WebSocket.OPEN) {
-							socket.send(JSON.stringify({ method: 'AUTH', playerID: botid }));
-						}
-
-						tries--;
-					
-					}
-					// if no more tries
-					else
-					{
-						// authentication failed
-						socket.close();
-					}
-					
-					return ;
-				}
-				/* ------------------------------ */
+				/* #debug */
+				// console.log(`Bot ${botid} got message`, msg);
 
 				// game behaviour depending on wich game is played
 				if (!("playing" in msg) || typeof msg.playing !== "boolean"
@@ -242,9 +237,7 @@ export function createBot(gamestr:string, botid:string, gameid:string, level:num
 				{
 					// reset the bot's data
 					bot.reset();
-					console.log('a');
-					// auto start // #todo maybe wait a bit
-					// console.log('everyone is bot?', msg.players.every((p:string) => p.startsWith("BOT")));
+					// auto start on only bots
 					if (msg.players.every((p:any) => p.ID.startsWith("BOT")))
 						socket.send(JSON.stringify({ method: "MOVE", value: "START_PRESS" }));
 				}
@@ -262,10 +255,14 @@ export function createBot(gamestr:string, botid:string, gameid:string, level:num
 		// #debug
 		console.log(`Created bot ${botid} of level ${level} and connecting to game of \'${gamestr}\' with id`, gameid);
 
+		// successfule return
+		return true;
+
 	} catch (err) {
 		console.log('Error creating bot', err);
 		return false;
 	}
+
 	// successful return
 	return true;
 }

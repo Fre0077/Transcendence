@@ -300,7 +300,7 @@ export async function START(outlobby:string | undefined): Promise<StandardReturn
 			ID: gameID,
 			players: players,
 			metadata: {
-				origin: 'causal-lobby',
+				origin: 'lobby',
 				ID: lobby.ID
 			}
 		});

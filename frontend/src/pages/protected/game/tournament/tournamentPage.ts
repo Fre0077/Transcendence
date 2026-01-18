@@ -3,7 +3,8 @@ import { loadNavbar } from "@/components/navbar";
 import { loadPongSpectatorDiv } from "@pages/protected/game/online/loadPongSpectatorDiv";
 import { load404Page } from "@/pages/errors/404";
 
-const basePath = `http://${window.location.hostname}:3032/`;
+const TOURNAMENT_WEBSOCKET_URL = `ws://${window.location.hostname}:3029/ws/tournament`;
+
 
 // Keep track of games currently being spectated
 const spectatingGames = new Set<string>();
@@ -360,8 +361,8 @@ import { router } from "@/router";
 
 function createWebSocketConnection(playerID:string): WebSocket
 {
-	const ws = new WebSocket(basePath.replace('http', 'ws') + 'tournamentsocket');
-	console.log(basePath.replace('http', 'ws') + 'tournamentsocket');
+    const ws = new WebSocket(TOURNAMENT_WEBSOCKET_URL);
+    console.log('Websocketing to', TOURNAMENT_WEBSOCKET_URL);
 
 	ws.onopen = () => {
 		console.log('Connected to tournament WebSocket');
@@ -386,7 +387,7 @@ function createWebSocketConnection(playerID:string): WebSocket
 				// window.location.href = `/game:${data.value}`;
 
 				// #remove
-				window.sessionStorage.setItem('guestID', playerID);
+				// window.sessionStorage.setItem('guestID', playerID);
 
 				// close the websocket when leaving the page
 				ws.close();
