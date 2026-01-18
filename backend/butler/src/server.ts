@@ -119,8 +119,8 @@ fastify.register(async function (fastify) {
 }, { prefix: '/api' });
 
 const LOBBY_URL = process.env.LOBBY_URL ?? 'http://lobby:3031';
-// const PONG_URL = process.env.LOBBY_URL ?? 'http://pong:3031';
-// const TOURNAMENT_URL = process.env.LOBBY_URL ?? 'http://tournament:3031';
+const PONG_URL = process.env.LOBBY_URL ?? 'http://pong:3040';
+// const TOURNAMENT_URL = process.env.LOBBY_URL ?? 'http://tournament:3032';
 
 // websocket endpoints
 fastify.register(async function (fastify) {
@@ -135,9 +135,9 @@ fastify.register(async function (fastify) {
 	fastify.get('/', { websocket: true }, (connection, request) => authWebSocket(connection, request));
 
 	// backend websockets
-	fastify.get('/pongsocket', { websocket: true }, wsforwarder('pong/gamesocket'));
-	fastify.get('/lobbysocket', { websocket: true }, wsforwarder(`${LOBBY_URL}/ws`));
-	fastify.get('/tournamentsocket', { websocket: true }, wsforwarder('tournament/tournamentsocket'));
+	fastify.get('/pong', { websocket: true }, wsforwarder(`${PONG_URL}/ws`));
+	fastify.get('/lobby', { websocket: true }, wsforwarder(`${LOBBY_URL}/ws`));
+	fastify.get('/tournament', { websocket: true }, wsforwarder('tournament/tournamentsocket'));
 
 }, { prefix: '/ws' });
 
