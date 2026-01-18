@@ -1,5 +1,5 @@
 
-const BUTLER_URL = `ws://${window.location.hostname}:3029/websocket`;
+const BUTLER_URL = `ws://${window.location.hostname}:3029/ws`;
 
 let socket: WebSocket | null = null
 
@@ -28,7 +28,7 @@ export function butlerSocket(): WebSocket
 		#tournament-invite
 	 */
 
-		/* notify format: { what: 'NOTIFY, type: 'friend-request/...', data:any } */
+	/* notify format: { what: 'NOTIFY, type: 'friend-request/...', data:any } */
 	socket.onmessage = (ev: MessageEvent<string>) => {
 		try
 		{

@@ -4,7 +4,6 @@
 MAJOR
 2. Replay system
 6. rejoin button on tournaments and lobbies
-7. read the websocket headers in backend (after gateway ready)
 
 MINOR
 3. abort games between bots in tournaments when all players leave
@@ -13,8 +12,9 @@ MINOR
 6. autowin on disconnected players and layer check
 7. tournaments chat
 8. cheering mentre specti (come clash)
-9. Error log in lobby page
-10. Swap history order in profile page
+9. Emotes in-game
+10. Error log in lobby page
+11. Swap history order in profile page
 
 STYLE
 1. spacing at the bottom of the lobby page
@@ -25,9 +25,9 @@ STYLE
 CLEANUPS
 2. Log all major messages
 3. save MQueues messages in DB
-5. Emotes
 6. Game less laggy
-7, keep track of bots (better unique id not needing for manual lobby/tournament counter)
+7. keep track of bots (better unique id not needing for manual lobby/tournament counter)
+8. Shared Game module for replays (and get there via url)
 
 DONE
 1. remove JOIN method for games (DONE)

@@ -6,14 +6,14 @@ import { isCookieAuthenticated, getCookieUser } from './middleware.js';
 /* 		  WEBSOCKETS		*/
 /* ------------------------ */
 
-import WebSocket from 'ws';	// importannt to use backend websockets
+import WebSocket/* , { RawData } */ from 'ws';	// important to use backend websockets
 
 
-export function authWebSocket(connection:any, request:FastifyRequest)
+export function authWebSocket(connection:WebSocket, request:FastifyRequest)
 {
 	// Logging the connection
 	const clientIP = request.socket.remoteAddress;
-	const socket:WebSocket = connection.socket;
+	const socket/* :WebSocket */ = connection/* .socket */;
 	console.log(`Client connected from ${clientIP}`);
 
 	/* --- AUTH CHECK --- */
@@ -29,17 +29,17 @@ export function authWebSocket(connection:any, request:FastifyRequest)
 	console.log('WS connected with Authorized user');
 
 	// Handle incoming messages
-	socket.on('message', (message) => {
-		console.log('Message received', message.toString());
+	socket.on('message', (message:any) => {
+		console.log(`Message received '${message.toString()}'`);
 	});
 
 	// Handle WebSocket errors
-	socket.on('error', (error) => {
+	socket.on('error', (error:any) => {
 		console.error(`WebSocket error for ${clientIP}:`, error);
 	});
 
 	// Handle connection close
-	socket.on('close', (code, reason) => {
+	socket.on('close', (code:any, reason:any) => {
 		console.log(`Client ${clientIP} disconnected - Code: ${code}, Reason: ${reason?.toString() || 'none'}`);
 	});
 }
@@ -50,11 +50,11 @@ export function authWebSocket(connection:any, request:FastifyRequest)
 		tournament
 		pong 
 */
-export function fwdWebSocket(connection:any, request:FastifyRequest, service:string)
+export function fwdWebSocket(connection:WebSocket, request:FastifyRequest, endpoint:string)
 {
 	// Logging the connection
 	const clientIP = request.socket.remoteAddress;
-	const clientSocket:WebSocket = connection.socket;
+	const clientSocket/* :WebSocket */ = connection/* .socket */;
 	console.log(`Client connected from ${clientIP}`);
 
 	/* --- AUTH CHECK --- */
@@ -67,13 +67,13 @@ export function fwdWebSocket(connection:any, request:FastifyRequest, service:str
 	/* ------------------- */
 
 	/* #debug */
-	console.log('WS connected with Authorized user:', auth.userId, auth.email);
+	console.log('WS connected with Authorized user:', {user: auth.userId, email: auth.email});
 
 	/* --- FORWARDING --- */
 
 	// connect to backend
 	const backendSocket = new WebSocket(
-		`ws://${service}`,
+		endpoint,
 		{
 			headers: {
 				'x-user-id': String(auth.userId),
@@ -87,7 +87,7 @@ export function fwdWebSocket(connection:any, request:FastifyRequest, service:str
 	// we are ready to send to backend
 	backendSocket.on('open', () => {
 		backendReady = true;
-		console.log('Connected to backend:', service);
+		console.log('Connected to backend:', endpoint);
 	});
 
 	// close client socket on backend error
@@ -110,7 +110,7 @@ export function fwdWebSocket(connection:any, request:FastifyRequest, service:str
 
 	clientSocket.on('message', (message) => {
 		if (backendReady && backendSocket.readyState === WebSocket.OPEN) {
-			backendSocket.send(message);
+			backendSocket.send(message.toString());
 		}
 	});
 	
@@ -118,7 +118,7 @@ export function fwdWebSocket(connection:any, request:FastifyRequest, service:str
 	
 	backendSocket.on('message', (data) => {
 		if (clientSocket.readyState === WebSocket.OPEN) {
-			clientSocket.send(data);
+			clientSocket.send(data.toString());
 		}
 	});
 
@@ -186,7 +186,7 @@ export async function authForward(request:FastifyRequest, reply:FastifyReply, en
 	if (['POST', 'PUT', 'PATCH'].includes(request.method)) {
 		fetchOptions.body = request.body ? JSON.stringify(request.body) : undefined;
 		headers['content-type'] = 'application/json';
-	  }
+	}
 
 	// --- CALL BACKEND ---
 	let backendResponse;
@@ -243,7 +243,7 @@ export async function noAuthForward(
 	if (['POST', 'PUT', 'PATCH'].includes(request.method)) {
 		fetchOptions.body = request.body ? JSON.stringify(request.body) : undefined;
 		headers['content-type'] = 'application/json';
-	  }
+	}
 
 	// --- CALL BACKEND ---
 	let backendResponse;
@@ -270,6 +270,9 @@ export async function noAuthForward(
 	} else {
 		data = await backendResponse.text();
 	}
+
+	/* #debug */
+	console.log('Fetched from backend', data);
 
 	// call the post-process callback
 	if (callback) callback(data, reply);

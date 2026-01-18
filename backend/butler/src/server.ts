@@ -23,7 +23,8 @@ await fastify.register(fastifyWebsocket);
 await fastify.register(fastifyCookie);
 // Register CORS policy to accept only requests with origin the frontend (localhost:3000)
 await fastify.register(cors, {
-	origin: 'http://frontend:3000', // frontend origin
+	// origin: 'http://frontend:3000', // frontend origin
+	origin: 'http://localhost:3000', // frontend origin
 	credentials: true,              // important: allows cookies to be sent
 });
 
@@ -78,24 +79,24 @@ import {
 	authWebSocket,
 	fwdWebSocket  
 }
-from './endpoints.js';
+from './forwarders.js';
 
 
 // backend urls
-const AUTH_URL:string = process.env.AUTH_URL ?? 'http://auth:3001';
-const PROFILE_URL:string = process.env.PROFILE_URL ?? 'http://auth:3001';
-const CHAT_URL:string = process.env.CHAT_URL ?? 'http://auth:3001';
+const AUTH_URL = process.env.AUTH_URL ?? 'http://auth:3001';
+const PROFILE_URL = process.env.PROFILE_URL ?? 'http://profile:3001';
+const CHAT_URL = process.env.CHAT_URL ?? 'http://chat:3001';
 
 // http gateway endpoints
 fastify.register(async function (fastify) {
 
 	// helper to forwarder for backend HTTP services
-	function httpforwarder(service:string, auth:boolean) {
+	function httpforwarder(endpoint:string, auth:boolean) {
 
 		// JWT interceptor
-		if (service === `${AUTH_URL}/api/login`) return async (request:FastifyRequest, reply:FastifyReply) => await noAuthForward(request, reply, service, attachCookies);
-		else if (auth) return async (request:FastifyRequest, reply:FastifyReply) => await authForward(request, reply, service);
-		else return async (request:FastifyRequest, reply:FastifyReply) => await noAuthForward(request, reply, service);
+		if (endpoint === `${AUTH_URL}/api/login`) return async (request:FastifyRequest, reply:FastifyReply) => await noAuthForward(request, reply, endpoint, attachCookies);
+		else if (auth) return async (request:FastifyRequest, reply:FastifyReply) => await authForward(request, reply, endpoint);
+		else return async (request:FastifyRequest, reply:FastifyReply) => await noAuthForward(request, reply, endpoint);
 	}
 
 	// authentication endpoint
@@ -117,13 +118,17 @@ fastify.register(async function (fastify) {
 
 }, { prefix: '/api' });
 
+const LOBBY_URL = process.env.LOBBY_URL ?? 'http://lobby:3031';
+// const PONG_URL = process.env.LOBBY_URL ?? 'http://pong:3031';
+// const TOURNAMENT_URL = process.env.LOBBY_URL ?? 'http://tournament:3031';
 
 // websocket endpoints
 fastify.register(async function (fastify) {
 
 	// helper to create forwarders for backend websocket services
 	function wsforwarder(service: string) {
-		return (connection:any, request:FastifyRequest) => fwdWebSocket(connection, request, service);
+		const wsurl = service.replace('http', 'ws');
+		return (connection:any, request:FastifyRequest) => fwdWebSocket(connection, request, wsurl);
 	}
 
 	// secure websocket connection
@@ -131,17 +136,20 @@ fastify.register(async function (fastify) {
 
 	// backend websockets
 	fastify.get('/pongsocket', { websocket: true }, wsforwarder('pong/gamesocket'));
-	fastify.get('/lobbysocket', { websocket: true }, wsforwarder('lobby/lobbysocket'));
+	fastify.get('/lobbysocket', { websocket: true }, wsforwarder(`${LOBBY_URL}/ws`));
 	fastify.get('/tournamentsocket', { websocket: true }, wsforwarder('tournament/tournamentsocket'));
 
 }, { prefix: '/ws' });
 
+
+
 /* ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! */
 /* CONNECT TO FRONTEND for frontend stuff (Catch-all SPA route)  */
-fastify.get('/*', async (req, rep) => {
-	console.log('Forwarding to frontend');
-	noAuthForward(req, rep, 'http://frontend:3000');
-});
+// fastify.get('/*', async (req, rep) => {
+// 	console.log('Forwarding to frontend');
+// 	noAuthForward(req, rep, 'http://frontend:3000');
+// });
+fastify.get('/', async () => "This is the Backend Gateway, turn back now");
 /* ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! */
 
 

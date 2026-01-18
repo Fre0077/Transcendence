@@ -97,7 +97,7 @@ export function loadRegisterPage(): HTMLElement {
         };
 
         try {
-            const response = await fetch(`http://${window.location}/api/register`, {
+            const response = await fetch(`http://${window.location.hostname}:3029/api/register`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -134,7 +134,7 @@ export function loadRegisterPage(): HTMLElement {
             console.log("User info received:", userInfo);
 
             // 1. Chiama il nuovo endpoint /api/auth/google
-            const data = await sendPostRequest('http://localhost:3001/api/auth/google',
+            const data = await sendPostRequest(`http://${window.location.hostname}:3029/api/auth/google`,
                 {
                     name: userInfo.given_name,
                     surname: userInfo.family_name,

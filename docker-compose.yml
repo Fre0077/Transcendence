@@ -34,6 +34,13 @@ services:
 
 
 
+
+
+
+
+
+
+
   # 2.5 BUTLER che rompe i coglioni
   butler:
     build:
@@ -45,10 +52,16 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
-      frontend:
-        condition: service_started
     networks:
       - transcendence
+    restart: always
+
+
+
+
+
+
+
 
 
 
@@ -64,10 +77,14 @@ services:
     environment:
       - NODE_ENV=production
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+    volumes:
+      - auth_db:/app/database
     depends_on:
       rabbitmq:
         condition: service_healthy
       frontend:
+        condition: service_started
+      butler:
         condition: service_started
     networks:
       - transcendence
@@ -83,10 +100,14 @@ services:
     environment:
       - NODE_ENV=production
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+    volumes:
+      - chat_db:/app/database
     depends_on:
       rabbitmq:
         condition: service_healthy
       frontend:
+        condition: service_started
+      butler:
         condition: service_started
     networks:
       - transcendence
@@ -103,10 +124,14 @@ services:
     environment:
       - NODE_ENV=production
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+    volumes:
+      - profile_db:/app/database
     depends_on:
       rabbitmq:
         condition: service_healthy
       frontend:
+        condition: service_started
+      butler:
         condition: service_started
     networks:
       - transcendence
@@ -121,6 +146,8 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
+      butler:
+        condition: service_started
     environment:
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
     ports:
@@ -137,7 +164,10 @@ services:
     ports:
       - "3031:3031"
     depends_on:
-      - ft_bunny
+      ft_bunny:
+        condition: service_started
+      butler:
+        condition: service_started
     networks:
       - transcendence
     restart: always
@@ -150,7 +180,10 @@ services:
     ports:
       - "3032:3032"
     depends_on:
-      - ft_bunny
+      ft_bunny:
+        condition: service_started
+      butler:
+        condition: service_started
     networks:
       - transcendence
     restart: always
@@ -164,7 +197,9 @@ services:
       - "3040:3040"
     depends_on:
       ft_bunny:
-          condition: service_started
+        condition: service_started
+      butler:
+        condition: service_started
     networks:
       - transcendence
     restart: always
@@ -177,7 +212,10 @@ services:
     ports:
       - "3033:3033"
     depends_on:
-      - ft_bunny
+      ft_bunny:
+        condition: service_started
+      butler:
+        condition: service_started
     networks:
       - transcendence
     restart: always
@@ -185,3 +223,9 @@ services:
 networks:
   transcendence:
     driver: bridge
+
+
+volumes:
+  auth_db:
+  chat_db:
+  profile_db:

@@ -1,7 +1,8 @@
 import { loadNavbar } from "@/components/navbar";
 import { createProfileCard } from "@components/createProfileCard.js";
 
-const baseLobbyPath = `http://${window.location.hostname}:3031/`;
+// const baseLobbyPath = `http://${window.location.hostname}:3031/`;
+const LOBBY_WEBSOCKET_URL = `ws://${window.location.hostname}:3029/ws/lobbysocket`;
 
 interface Player {
     id: string;
@@ -401,14 +402,14 @@ import { router } from "@/router";
 import { load404Page } from "@/pages/errors/404";
 
 function createWebSocketConnection(playerID:string, lobby_code: string, connected_players: Player[]): WebSocket {
-    const ws = new WebSocket(baseLobbyPath.replace('http', 'ws') + 'lobbysocket');
-    console.log(baseLobbyPath.replace('http', 'ws') + 'lobbysocket');
+    const ws = new WebSocket(LOBBY_WEBSOCKET_URL);
+    console.log("Websocketing to", LOBBY_WEBSOCKET_URL);
 
     ws.onopen = () => {
         console.log('Connected to lobby WebSocket');
 
         // @topiana- aggiunta la AUTH call all'inizio della connesione #review pls
-        ws.send(JSON.stringify({ method: 'AUTH', playerID: playerID }));
+        // ws.send(JSON.stringify({ method: 'AUTH', playerID: playerID }));
     };
 
     ws.onmessage = (event) => {
@@ -467,17 +468,10 @@ function createWebSocketConnection(playerID:string, lobby_code: string, connecte
                 // update lobby
                 updateLobbyInfo(lobby_code, connected_players);
             }
-            /* lobby_code = data.ID;
-            if (checkPlayerListChanged(connected_players, data.players)) {
-                updateNeeded = true;
-                connected_players = data.players.map((p: any) => ({
-                    id: p.ID,
-                    name: p.ID,
-                    status: p.status
-                }));
+            else
+            {
+                console.log("Received this message that I didn't understand", data);
             }
-            if (updateNeeded)
-                updateLobbyInfo(lobby_code, connected_players); */
         } catch (e) {
             console.log("message received:", event.data);
         }

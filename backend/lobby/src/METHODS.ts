@@ -1,14 +1,14 @@
 
 
 import { Lobby } from './Lobby.js';
-import { createLobby, findLobby, joinLobby } from './index.js';
+import { createLobby, findLobby/* , joinLobby */ } from './index.js';
 import type { WebSocket } from "ws";
 
 
 type StandardReturn = {
 	status: "success" | "failure";
 	reply:string;
-	player?:string;
+	// player?:string;
 	lobby?:string;
 }
 
@@ -27,43 +27,43 @@ Reply:
 	comment: <reason>
 }
 */
-export function AUTH(msg:object, outplayer:string | undefined, ws:WebSocket): StandardReturn
-{
-	// check if already authenticated
-	if (outplayer !== undefined) {
-		return {
-			status: "failure",
-			reply: JSON.stringify({ method: 'AUTH_REPLY', status: "failure", comment: "Already authenticated"})
-		}
-	}
+// export function AUTH(msg:object, outplayer:string | undefined, ws:WebSocket): StandardReturn
+// {
+// 	// check if already authenticated
+// 	if (outplayer !== undefined) {
+// 		return {
+// 			status: "failure",
+// 			reply: JSON.stringify({ method: 'AUTH_REPLY', status: "failure", comment: "Already authenticated"})
+// 		}
+// 	}
 
-	// check for playerID
-	if (!("playerID" in msg) || typeof msg.playerID !== "string") {
-		return {
-			status: "failure",
-			reply: JSON.stringify({ method: 'AUTH_REPLY', status: "failure", comment: "missing playerID"})
-		}
-	}
+// 	// check for playerID
+// 	if (!("playerID" in msg) || typeof msg.playerID !== "string") {
+// 		return {
+// 			status: "failure",
+// 			reply: JSON.stringify({ method: 'AUTH_REPLY', status: "failure", comment: "missing playerID"})
+// 		}
+// 	}
 
-	/* ! ! ! authentication procedure here ! ! ! */
+// 	/* ! ! ! authentication procedure here ! ! ! */
 	
-	// if already joined previously get the lobby ID
-	const lobby = findLobby((lobby:Lobby<WebSocket>) => { return lobby.players.has(msg.playerID as string);})
-	const retlobby = (lobby === undefined) ? undefined : lobby.ID;
-	if (retlobby) {
-		// update the websocket if already in a lobby
-		joinLobby(retlobby, msg.playerID, ws);
-	}
+// 	// if already joined previously get the lobby ID
+// 	const lobby = findLobby((lobby:Lobby<WebSocket>) => { return lobby.players.has(msg.playerID as string);})
+// 	const retlobby = (lobby === undefined) ? undefined : lobby.ID;
+// 	if (retlobby) {
+// 		// update the websocket if already in a lobby
+// 		joinLobby(retlobby, msg.playerID, ws);
+// 	}
 
 
-	// success return
-	return {
-		status: "success",
-		reply: JSON.stringify({ method: 'AUTH_REPLY', status: "success", comment: "Successfully authenticated"}),
-		player: msg.playerID,
-		lobby: retlobby
-	};
-}
+// 	// success return
+// 	return {
+// 		status: "success",
+// 		reply: JSON.stringify({ method: 'AUTH_REPLY', status: "success", comment: "Successfully authenticated"}),
+// 		player: msg.playerID,
+// 		lobby: retlobby
+// 	};
+// }
 
 /*
 {
@@ -119,7 +119,7 @@ export function CREATE(msg:object,
 	return {
 		status: "success",
 		reply: JSON.stringify({ method: 'CREATE_REPLY', status: "success", value: lobby.ID}),
-		player: outplayer,
+		// player: outplayer,
 		lobby: lobby.ID
 	};
 }
@@ -197,7 +197,7 @@ export function JOIN(msg:object,
 	return {
 		status: "success",
 		reply: JSON.stringify({ method: 'JOIN_REPLY', status: 'success', value: msg.lobbyID, comment: `Lobby ${msg.lobbyID} joined successfully!`}),
-		player: outplayer,
+		// player: outplayer,
 		lobby: lobby.ID
 	}
 }
@@ -242,8 +242,8 @@ export function LEAVE(outlobby:string | undefined, outplayer:string | undefined)
 	return {
 		status: "success",
 		reply: JSON.stringify({ method: 'LEAVE_REPLY', status: 'success', comment: "Left the lobby" }),
-		lobby: undefined,
-		player: outplayer
+		// player: outplayer,
+		lobby: undefined
 	};
 }
 

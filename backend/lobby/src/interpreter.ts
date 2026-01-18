@@ -1,4 +1,4 @@
-import { AUTH, CREATE, JOIN, LEAVE, START, BOT } from './METHODS.js';
+import { /* AUTH, */ CREATE, JOIN, LEAVE, START, BOT } from './METHODS.js';
 
 import type { WebSocket } from "ws";
 
@@ -34,10 +34,10 @@ and process the input. Reurns the reply to send to the client as a Promise */
 export async function interpreter(
 	message:string,
 	lobby:string | undefined,
-	player:string | undefined,
+	player:string,
 	ws:WebSocket,
 	/* the parameters of the callback are the new lobbyID or playerID, or if the lobby was updated (something changed) */
-	callback :(lobby:string | undefined, player:string | undefined) => void): Promise<string>
+	callback :(lobby:string | undefined/* , player:string | undefined */) => void): Promise<string>
 {
 	// Format and log message
 	let msg = isValidObj(message.toString());
@@ -57,16 +57,17 @@ export async function interpreter(
 				@playerID: the ID you are logging in
 				Description: AUTHenticates the connection, just once per connection.
 			*/
-			let aret = AUTH(msg, player, ws);
+			// let aret = AUTH(msg, player, ws);
 
-			// welp...
-			if (aret.status === "success") {
-				// save variables
-				callback(aret.lobby, aret.player);
-			}
+			// // welp...
+			// if (aret.status === "success") {
+			// 	// save variables
+			// 	callback(aret.lobby, aret.player);
+			// }
 
 			// send reply
-			return aret.reply;
+			// return aret.reply;
+			return JSON.stringify({ method: 'AUTH_REPLY', status: "failure", cause: 'deprecated', comment: "AUTH method deprecated"})
 
 		case "CREATE":
 			/* { method: 'CREATE', playerID: <playerID>, format: <format> }
@@ -78,7 +79,7 @@ export async function interpreter(
 			// welp...
 			if (cret.status === "success") {
 				// save variables
-				callback(cret.lobby, cret.player);
+				callback(cret.lobby/* , cret.player */);
 			}
 
 			// send reply
@@ -93,7 +94,7 @@ export async function interpreter(
 			// welp...
 			if (jret.status === "success") {
 				// save variables
-				callback(jret.lobby, jret.player);
+				callback(jret.lobby/* , jret.player */);
 			}
 			
 			// send reply
@@ -109,7 +110,7 @@ export async function interpreter(
 			// welp...
 			if (lret.status === "success") {
 				// save variables
-				callback(lret.lobby, lret.player);
+				callback(lret.lobby/* , lret.player */);
 			}
 
 			// send reply
@@ -122,7 +123,7 @@ export async function interpreter(
 			let bret = BOT(msg, lobby);
 			
 			// just for the update
-			callback(lobby, player);
+			callback(lobby/* , player */);
 
 			// send reply
 			return bret.reply;
@@ -137,7 +138,7 @@ export async function interpreter(
 			let sret = await START(lobby);
 
 			// just for the update
-			callback(lobby, player);
+			callback(lobby/* , player */);
 
 			// send reply
 			return sret.reply;

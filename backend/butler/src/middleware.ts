@@ -33,19 +33,21 @@ export interface AuthRequest extends FastifyRequest {
 
 export function attachCookies(data:any, reply:FastifyReply)
 {
-	// NO ACCESS TOKENN FOUND!!!
-	if (!data.tokens.accessToken) {
+	// NO ACCESS TOKEN FOUND!!!
+	if (!data.accessToken) {
 		console.log("Fatal: No 'accessToken' found when trying to attach cookies to the user");
 		return ;
 	}
 
 	// attach the cookie
-	reply.setCookie('token', data.tokens.accessToken, {
+	reply.setCookie('token', data.accessToken, {
 		httpOnly: true,
 		secure: false,		// true in production (HTTPS)
 		sameSite: 'lax',	// also check this
 		path: '/',
 	});
+
+	// remove token from output
 }
 
 export interface AuthReply {

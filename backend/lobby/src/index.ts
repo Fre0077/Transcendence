@@ -8,6 +8,7 @@ const PORT = Number(process.env.PORT) || 3031;
 export const BUNNYURL = process.env.BUNNYURL ?? 'http://ft_bunny:3030';
 export const MYURL = process.env.MYURL ?? `http://lobby:${PORT}`;
 export const MYPASS = process.env.MYPASS ?? 'password';
+const GATEWAY_SECRET = process.env.GATEWAY_SECRET ?? 'biscottini';
 
 // service varaibles
 const TIMEOUT:number = 120;	// timeout in seconds to wait before deleting the lobby
@@ -177,16 +178,16 @@ export function findLobby(fn: (lobby:Lobby<WebSocket>) => boolean): Lobby<WebSoc
 	return undefined;
 }
 
-export function joinLobby(ID:string, playerID:string, ws:WebSocket)
-{
-	// check if lobby is present
-	const e = lobbies.get(ID);
-	if (e === undefined) return;
+// export function joinLobby(ID:string, playerID:string, ws:WebSocket)
+// {
+// 	// check if lobby is present
+// 	const e = lobbies.get(ID);
+// 	if (e === undefined) return;
 
-	// join lobby
-	const { lobby } = e;
-	lobby.join(playerID, ws);
-}
+// 	// join lobby
+// 	const { lobby } = e;
+// 	lobby.join(playerID, ws);
+// }
 
 export function resetLobby(ID:string)
 {
@@ -250,14 +251,24 @@ import { interpreter } from './interpreter.js';
 
 // WebSocket route handler
 fastify.register(async function (fastify) {
-	fastify.get('/lobbysocket', { websocket: true }, (connection, request) => {
+	fastify.get('/ws', { websocket: true }, (connection, request) => {
 
 		// Logging the connection
 		const clientIP = request.socket.remoteAddress;
 		console.log(`Client connected from ${clientIP}`);
 
+		/* --- CHECK AUTH --- */
+		const userid = request.headers['x-user-id'];
+  		const secret = request.headers['x-gateway-secret'];
+
+		if (!userid || secret !== GATEWAY_SECRET) {
+			connection.close(1008, "Invalid user authentication");
+			return ;
+		}
+		/* ----------------- */
+
 		// playerID not verified with JWT yet
-		let player:string | undefined = undefined;
+		const player:string = userid[0];
 		// lobbyID
 		let lobby:string | undefined = undefined;
 
@@ -267,15 +278,9 @@ fastify.register(async function (fastify) {
 		// Handle incoming messages
 		connection.on('message', (message:string) => {
 			
-			interpreter(message, lobby, player, connection, (retLobby:string | undefined, retPlayer:string | undefined) => {
-				// new stuff on lobby
-				// if (retUpdate === true) {	/* #ugly */
-				// 	if (lobby !== undefined) updateLobby(lobby);
-				// 	else if (retLobby !== undefined) updateLobby(retLobby);
-				// }
-
+			interpreter(message, lobby, player, connection, (retLobby:string | undefined/* , retPlayer:string | undefined */) => {
+				// save lobbyid
 				lobby = retLobby;
-				player = retPlayer;
 			})
 			.then((reply) => {
 				// send reply
@@ -378,13 +383,6 @@ function LobbiesManager()
 			if (entry.timeout === 0) {
 				deleteLobby(id, 'timeout');
 			}
-
-			/* --- UPDATE logic --- */
-			// if (entry.update === true) {
-			// 	console.log('Broadcasting Lobby');
-			// 	lobby.broadcast(lobby.stateJSON);
-			// 	entry.update = false;
-			// }
 		});
 
 		// loop

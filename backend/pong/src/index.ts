@@ -8,6 +8,9 @@ export const BUNNYURL = process.env.BUNNYURL ?? 'http://ft_bunny:3030';
 export const MYURL = process.env.MYURL ?? `http://pong:${PORT}`;
 export const MYPASS = process.env.MYPASS ?? 'password';
 
+// gateway auth
+// const GATEWAY_SECRET = process.env.GATEWAY_SECRET ?? 'biscottini';
+
 // bunny client
 import { bunnyRegister, bunnySubscribe, bunnyGet, bunnyPublish } from './bunny.js'
 
@@ -267,6 +270,16 @@ fastify.register(async function (fastify) {
 		// Logging the connection
 		const clientIP = request.socket.remoteAddress;
 		console.log(`Client connected from ${clientIP}`);
+
+		// /* --- CHECK AUTH --- */
+		// const userid = request.headers['x-user-id'];
+  		// const secret = request.headers['x-gateway-secret'];
+
+		// if (!userid || secret !== GATEWAY_SECRET) {
+		// 	connection.close(1008, "Invalid user authentication");
+		// 	return ;
+		// }
+		// /* ----------------- */
 
 		// playerID not verified with JWT yet
 		let playerID:string | undefined = undefined;
