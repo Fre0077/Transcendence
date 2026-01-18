@@ -120,18 +120,19 @@ export async function getUserProfile(): Promise<UserProfile> {
 	}
 
 	const profileResponse = await sendGetRequest(`http://localhost:3003/api/user?linkid=${linkid}`, token);
-	const authResponse = await sendGetRequest(`http://localhost:3001/api/profile`, token);
+	// const authResponse = await sendGetRequest(`http://localhost:3001/api/profile`, token);
+	const butlerResponse = await sendGetRequest('http://localhost:3029/api/profile', 'token');
 	return {
 		id: profileResponse.id,
-		email: authResponse.email,
+		email: butlerResponse.email,
 		username: profileResponse.username,
-		name: authResponse.name,
-		surname: authResponse.surname,
+		name: butlerResponse.name,
+		surname: butlerResponse.surname,
 		wins: profileResponse.wins,
 		losses: profileResponse.losses,
 		tournamentWins: profileResponse.tournamentWins,
 		tournamentLosses: profileResponse.tournamentLosses,
-		bio: authResponse.bio,
+		bio: butlerResponse.bio,
 		avatarUrl: profileResponse.avatarUrl
 	};
 }

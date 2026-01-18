@@ -43,6 +43,7 @@ export function sendGetRequest(
 	return new Promise((resolve, reject) => {
 		const xhr = new XMLHttpRequest();
 		xhr.open("GET", url, true);
+        xhr.withCredentials = true;
 		xhr.setRequestHeader("Authorization", `Bearer ${token}`);
 		xhr.onreadystatechange = function () {
 			if (xhr.readyState === XMLHttpRequest.DONE) {

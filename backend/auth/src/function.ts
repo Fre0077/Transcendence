@@ -1,11 +1,12 @@
 import fs from 'fs';
+import ms from 'ms';
 import util from 'util';
 import bcrypt from 'bcrypt';
 import qrcode from 'qrcode';
+import jwt from 'jsonwebtoken';
 import { pipeline } from 'stream';
 import { authenticator } from 'otplib';
 import { publishUserRegistered } from "./publisher";
-import { verifyRefreshToken, findRefreshToken, deleteRefreshToken } from "./middleware";
 import { Account, PrismaClient as authPrismaClient } from "../database/generate/auth"
 const authPrisma = new authPrismaClient()
 
@@ -13,6 +14,21 @@ import { auth2fa, newDataProfile, userLogin } from "../utils/interface"
 import { BadRequest, Unauthorized, Forbidden, NotFound, Conflict } from "../utils/exception"
 import { fastify } from "../server";
 import { stringify } from 'querystring';
+
+export async function generateTokens(user: Account) {
+	// 1. Crea l'Access Token (breve)
+	const accessTokenPayload = { userId: user.id, email: user.email };
+	const accessToken = jwt.sign(accessTokenPayload, "ft_trans(cendence)", {
+		expiresIn: "15m",
+	});
+	const refreshToken = '';
+	return {
+		accessToken,
+		refreshToken,
+		// Restituisce anche la scadenza (in millisecondi) per il client
+		accessTokenExpires: Date.now() + ms("24h"), 
+	};
+}
 
 //check per il login
 export async function login(input:  userLogin): Promise<Account> {
@@ -132,25 +148,6 @@ export async function auth2FA(input: auth2fa): Promise<Account> {
 
 	if (!isCodeValid) 
 		throw new Unauthorized( 'Codice 2FA non valido.', "auth" );
-	return user;
-}
-
-export async function generateRefreshToken(input: string): Promise<Account> {
-	if (!input) 
-		throw new BadRequest(  'Refresh token richiesto.', "auth" );
-
-	// Verifica la firma del refresh token
-	const payload = verifyRefreshToken(input);
-	if (!payload) 
-		throw new Unauthorized( 'Refresh token non valido o scaduto.', "auth" );
-	const dbToken = await findRefreshToken(input);
-	if (!dbToken) 
-		throw new Unauthorized(  'Refresh token non valido o revocato.', "auth" );
-
-	await deleteRefreshToken(input);
-	const user = await authPrisma.account.findUnique({ where: { id: payload.userId } });
-	if (!user) 
-		throw new NotFound( 'Utente non trovato.', "auth" );
 	return user;
 }
 

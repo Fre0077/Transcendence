@@ -105,6 +105,16 @@ fastify.register(async function (fastify) {
 	// auth backend APIs
 	fastify.post('/login', httpforwarder(`${AUTH_URL}/api/login`, false));
 	fastify.post('/register', httpforwarder(`${AUTH_URL}/api/register`, false));
+	fastify.post('/auth/google', httpforwarder(`${AUTH_URL}/api/auth/google`, false));
+	fastify.post('/2fa/verify', httpforwarder(`${AUTH_URL}/api/2fa/verify`, false));
+	fastify.get('/profile',  httpforwarder(`${AUTH_URL}/api/profile`, true));
+	fastify.patch('/profile',  httpforwarder(`${AUTH_URL}/api/profile`, true));
+	fastify.post('/profile/avatar',  httpforwarder(`${AUTH_URL}/api/profile/avatar`, true));
+	fastify.post('/2fa/generate',  httpforwarder(`${AUTH_URL}/api/2fa/generate`, true));
+	fastify.post('/2fa/enable',  httpforwarder(`${AUTH_URL}/api/2fa/enable`, true));
+	fastify.post('/2fa/disable',  httpforwarder(`${AUTH_URL}/api/2fa/disable`, true));
+	fastify.post('/logout',  httpforwarder(`${AUTH_URL}/api/logout`, false));
+
 	// ... add others
 
 	// profile backend APIs

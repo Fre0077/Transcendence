@@ -175,6 +175,7 @@ export async function authForward(request:FastifyRequest, reply:FastifyReply, en
 
 	// Add your auth info to backend
 	headers['x-user-id'] = String(auth.userId);
+	headers['x-gateway-secret'] = String('biscottini');
 
 	// set options as fetch() likes it
 	const fetchOptions: any = {
