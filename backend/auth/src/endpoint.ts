@@ -1,17 +1,19 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
-import { register, login, googleAuth, auth2FA, generateRefreshToken,
-		changeProfile, changeAvatar, generateQR, enable2FA, disable2FA} from "./function";
-import { generateTokens, deleteRefreshToken } from "./middleware";
+import { register, login, generateTokens, googleAuth, auth2FA,
+		changeProfile, changeAvatar, generateQR,
+		enable2FA, disable2FA} from "./function";
 import { Account, PrismaClient as authPrismaClient } from "../database/generate/auth";
 const authPrisma = new authPrismaClient();
 
 import { userLogin, RegisterBody, LoginBody, GoogleAuthBody, auth2fa, newDataProfile } from "../utils/interface";
-import { authMiddleware, AuthRequest } from "./middleware";
 import { logError, logInfo } from "../utils/logger";
 import { backup } from "node:sqlite";
 import { BadRequest, NotFound, Unauthorized } from "../utils/exception";
 
 
+export interface AuthRequest extends FastifyRequest {
+	user?: { userId: number; email: string };
+}
 
 /* security */
 import { NotBeforeError } from "jsonwebtoken";
@@ -44,7 +46,6 @@ export async function authEndpoint(fastify: FastifyInstance) {
 				.send({ ...tokens, user, ok: true });
 		
 			logInfo('{auth} [200] token generato con successo');
-
 		} catch (err) {
 			if (err instanceof Error) {
 				reply.code((err as any).statusCode).send({ error: err.message });
@@ -120,32 +121,33 @@ export async function authEndpoint(fastify: FastifyInstance) {
 	});
 
 	//Enpoint POST per refreshare il token
-	fastify.post('/refresh', async (request: FastifyRequest, reply: FastifyReply) => {
-		const { refreshToken } = request.body as { refreshToken: string };
+	// fastify.post('/refresh', async (request: FastifyRequest, reply: FastifyReply) => {
+	// 	const { refreshToken } = request.body as { refreshToken: string };
 
-		try {
-			const user = await generateRefreshToken(refreshToken);
-			const newTokens = await generateTokens(user);
-			logInfo('{auth} [200] Nuovo token generato con successo');
-			reply.code(200).send(newTokens);
-		} catch (err) {
-			if (err instanceof Error) {
-				reply.code((err as any).statusCode).send({ error: err.message });
-			} else {
-				logError('{auth} [500] errore interno del server');
-				reply.code(500).send({ error: "Internal server error" });
-			}
-		}
-	});
+	// 	try {
+	// 		const user = await generateRefreshToken(refreshToken);
+	// 		const newTokens = await generateTokens(user);
+	// 		logInfo('{auth} [200] Nuovo token generato con successo');
+	// 		reply.code(200).send(newTokens);
+	// 	} catch (err) {
+	// 		if (err instanceof Error) {
+	// 			reply.code((err as any).statusCode).send({ error: err.message });
+	// 		} else {
+	// 			logError('{auth} [500] errore interno del server');
+	// 			reply.code(500).send({ error: "Internal server error" });
+	// 		}
+	// 	}
+	// });
 
 	//Enpoint GET per ottenere l'account dal database
-	fastify.get('/profile', { preHandler: [authMiddleware] }, async (request: AuthRequest, reply: FastifyReply) => {
+	fastify.get('/profile', async (request: AuthRequest, reply: FastifyReply) => {
 		try {
-			if (!request.user)
-				throw new Unauthorized('Utente non trovato nel token', 'auth');
-			const userId = request.user.userId;
+			const userId = Number(request.headers['x-user-id'])
+			const secret = request.headers['x-gateway-secret']
+
+			if (!userId || secret !== 'biscottini') {throw new Unauthorized('Utente non autorizzato', 'auth'); }
 			const user = await authPrisma.account.findUnique({
-			where: { id: userId },
+			where: { id: userId},
 			select: {
 				id: true, email: true, username: true,
 				name: true, surname: true, bio: true, avatarUrl: true
@@ -166,11 +168,12 @@ export async function authEndpoint(fastify: FastifyInstance) {
 	});
 
 	//Enpoint PATCH per modificare i dati dentro il database
-	fastify.patch('/profile', { preHandler: [authMiddleware] }, async (request: AuthRequest, reply: FastifyReply) => {
+	fastify.patch('/profile', async (request: AuthRequest, reply: FastifyReply) => {
 		try {
-			if (!request.user)
-				throw new Unauthorized('Utente non autorizzato', 'auth');
-			const userId = request.user.userId;
+			const userId = Number(request.headers['x-user-id'])
+			const secret = request.headers['x-gateway-secret']
+
+			if (!userId || secret !== 'biscottini') {throw new Unauthorized('Utente non autorizzato', 'auth'); }
 			const userData = request.body as newDataProfile;
 			const updatedUser = await changeProfile(userData, userId);
 			logInfo(`{auth} [200] Utente ${userId} ha aggiornato il profilo`);
@@ -186,14 +189,15 @@ export async function authEndpoint(fastify: FastifyInstance) {
 	});
 
 	//Enpoint POST per l'aggiornamento dell'avatar
-	fastify.post('/profile/avatar', { preHandler: [authMiddleware] }, async (request: AuthRequest, reply: FastifyReply) => {
+	fastify.post('/profile/avatar', async (request: AuthRequest, reply: FastifyReply) => {
 		try {
-			if (!request.user)
-				throw new Unauthorized('Non autorizzato', 'auth');
 			const data = await request.file();
 			if (!data)
 				throw new NotFound('File non trovato', 'auth');
-			const userId = request.user.userId;
+			const userId = Number(request.headers['x-user-id'])
+			const secret = request.headers['x-gateway-secret']
+
+			if (!userId || secret !== 'biscottini') {throw new Unauthorized('Utente non autorizzato', 'auth'); }
 			const updatedUser = await changeAvatar(data, userId);
 			logInfo('{auth} [201] avatar aggiornato con successo');
 			reply.code(201).send(updatedUser);
@@ -208,11 +212,14 @@ export async function authEndpoint(fastify: FastifyInstance) {
 	});
 
 	//Enpoint POST genera il qr per 2fa
-	fastify.post('/2fa/generate', { preHandler: [authMiddleware] }, async (request: AuthRequest, reply: FastifyReply) => {
+	fastify.post('/2fa/generate', async (request: AuthRequest, reply: FastifyReply) => {
 		try {
-			if (!request.user)
-				throw new Unauthorized('Utente non autorizzato', 'auth');
-			const { userId, email } = request.user;
+			const userId = Number(request.headers['x-user-id'])
+			const secretG = request.headers['x-gateway-secret']
+
+			if (!userId || secretG !== 'biscottini') {throw new Unauthorized('Utente non autorizzato', 'auth'); }
+			if (!request.user) throw new Error ("Undefined request user");
+			const email = request.user.email;
 			const [qrDataUrl, secret] = await generateQR(email, userId);
 			logInfo('{auth} [200] QR generato con successo');
 			reply.code(200).send({ qrCodeUrl: qrDataUrl, secret: secret });
@@ -227,11 +234,12 @@ export async function authEndpoint(fastify: FastifyInstance) {
 	});
 
 	//Enpoint POST controllo qr per 2fa
-	fastify.post('/2fa/enable', { preHandler: [authMiddleware] }, async (request: AuthRequest, reply: FastifyReply) => {
+	fastify.post('/2fa/enable', async (request: AuthRequest, reply: FastifyReply) => {
 		try {
-			if (!request.user)
-				throw new Unauthorized('Utente non autorizzato', 'auth');
-			const { userId } = request.user;
+			const userId = Number(request.headers['x-user-id'])
+			const secret = request.headers['x-gateway-secret']
+
+			if (!userId || secret !== 'biscottini') {throw new Unauthorized('Utente non autorizzato', 'auth'); }
 			const { code } = request.body as { code: string };
 			if (!code)
 				throw new BadRequest('Codice 2FA richiesto', 'auth');
@@ -250,11 +258,12 @@ export async function authEndpoint(fastify: FastifyInstance) {
 	});
 
 	//Enpoint POST per l'autenticazione a due fattori
-	fastify.post('/2fa/disable', { preHandler: [authMiddleware] }, async (request: AuthRequest, reply: FastifyReply) => {
+	fastify.post('/2fa/disable', async (request: AuthRequest, reply: FastifyReply) => {
 		try {
-			if (!request.user)
-				throw new Unauthorized('Utente non autorizzato', 'auth');
-			const { userId } = request.user;
+			const userId = Number(request.headers['x-user-id'])
+			const secret = request.headers['x-gateway-secret']
+
+			if (!userId || secret !== 'biscottini') {throw new Unauthorized('Utente non autorizzato', 'auth'); }
 			const { password } = request.body as { password?: string };
 			if (!password)
 				throw new BadRequest('Password richiesta per disabilitare 2FA', 'auth');
@@ -272,14 +281,8 @@ export async function authEndpoint(fastify: FastifyInstance) {
 	});
 
 	//Enpoint POST elimina i token al logout
-	fastify.post('/logout', { preHandler: [authMiddleware] }, async (request: AuthRequest, reply: FastifyReply) => {
-		// Riceve il refresh token che il client vuole invalidare.
-		const { refreshToken } = request.body as { refreshToken?: string };
-		
+	fastify.post('/logout', async (request: AuthRequest, reply: FastifyReply) => {
 		try {
-			if (!refreshToken)
-				throw new BadRequest('Refresh token richiesto', 'auth');
-			await deleteRefreshToken(refreshToken);
 			logInfo('{auth} [200] Logout effettuato con successo');
 			reply.code(200).send({ message: 'Logout effettuato con successo' });
 		} catch (err) {
