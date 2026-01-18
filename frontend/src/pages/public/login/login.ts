@@ -99,7 +99,7 @@ export function loadLoginPage(): HTMLElement {
         const password = passwordInput.value;
 
         try {
-            const response = await fetch('http://localhost:3001/api/login',{ 
+            const response = await fetch(`http://${window.location}/api/login`,{ 
                 method: 'POST',
                 credentials: 'include',
                 headers: {

@@ -15,7 +15,7 @@ import { BadRequest, NotFound, Unauthorized } from "../utils/exception";
 
 /* security */
 import { NotBeforeError } from "jsonwebtoken";
-import fastifyCookie from '@fastify/cookie';
+// import fastifyCookie from '@fastify/cookie';
 
 export async function authEndpoint(fastify: FastifyInstance) {
 	// Endpoint POST per fare il login
@@ -35,12 +35,12 @@ export async function authEndpoint(fastify: FastifyInstance) {
 			reply
 				.code(200)
 				/* adding cookies for auth */
-				.setCookie('token', tokens.accessToken, {
+				/* .setCookie('token', tokens.accessToken, {
 					httpOnly: true,
 					secure: false,        // true in production (HTTPS)
 					sameSite: 'lax',
 					path: '/',
-				})
+				}) */
 				.send({ ...tokens, user, ok: true });
 		
 			logInfo('{auth} [200] token generato con successo');

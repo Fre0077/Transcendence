@@ -9,7 +9,7 @@ RUN npm ci --silent
 COPY . .
 
 ENV NODE_ENV=development
-EXPOSE 3000
+# EXPOSE 3000
 
 # run dev server and force bind to 0.0.0.0 so container is reachable
 CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "3000"]

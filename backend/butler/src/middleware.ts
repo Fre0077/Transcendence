@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { FastifyRequest/* , FastifyReply */ } from 'fastify';
+import { FastifyRequest, FastifyReply } from 'fastify';
 
 export interface AuthRequest extends FastifyRequest {
 	user?: { userId: number; email: string };
@@ -31,7 +31,104 @@ export interface AuthRequest extends FastifyRequest {
 	}
 }; */
 
-export function verifyAccessToken(token: string) {
+export function attachCookies(data:any, reply:FastifyReply)
+{
+	// NO ACCESS TOKENN FOUND!!!
+	if (!data.tokens.accessToken) {
+		console.log("Fatal: No 'accessToken' found when trying to attach cookies to the user");
+		return ;
+	}
+
+	// attach the cookie
+	reply.setCookie('token', data.tokens.accessToken, {
+		httpOnly: true,
+		secure: false,		// true in production (HTTPS)
+		sameSite: 'lax',	// also check this
+		path: '/',
+	});
+}
+
+export interface AuthReply {
+	ok:boolean;					// status
+	reason?:string;
+}
+
+export function isCookieAuthenticated(request:FastifyRequest): AuthReply
+{
+	/* --- AUTH CHECK --- */
+	// get the token
+	const token = request.cookies.token;
+
+	/* #debug */
+	console.log('got cookie token', token);
+
+	if (!token) {
+
+		/* #debug */
+		console.log(`Closed socket for:`, 'Missing token');
+
+		return { ok:false, reason:'Missing token' };
+	}
+
+	// verify the token
+	const user = verifyAccessToken(token);
+
+	if (!user) {
+
+		/* #debug */
+		console.log(`Closed socket for:`, 'Invalid token');
+
+		return { ok:false, reason: 'Invalid token' };
+	}
+
+	// return the user
+	return { ok:true }
+
+
+	/* ------------------- */
+}
+
+interface UserReply extends AuthReply {
+	userId?:number;
+	email?:string;
+}
+
+export function getCookieUser(request:FastifyRequest): UserReply
+{
+	/* --- AUTH CHECK --- */
+	// get the token
+	const token = request.cookies.token;
+
+	/* #debug */
+	console.log('got cookie token', token);
+
+	if (!token) {
+
+		/* #debug */
+		console.log(`Closed socket for:`, 'Missing token');
+
+		return { ok:false, reason:'Missing token' };
+	}
+
+	// verify the token
+	const user = verifyAccessToken(token);
+
+	if (!user) {
+
+		/* #debug */
+		console.log(`Closed socket for:`, 'Invalid token');
+
+		return { ok:false, reason: 'Invalid token' };
+	}
+
+	// return the user
+	return { ok:true, ...user};
+
+
+	/* ------------------- */
+}
+
+function verifyAccessToken(token: string) {
 	try {
 		return jwt.verify(token, "ft_trans(cendence)") as { userId: number; email: string };
 	} catch (error) {

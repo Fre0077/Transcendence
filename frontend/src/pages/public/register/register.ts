@@ -97,7 +97,7 @@ export function loadRegisterPage(): HTMLElement {
         };
 
         try {
-            const response = await fetch('http://localhost:3001/api/register', {
+            const response = await fetch(`http://${window.location}/api/register`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

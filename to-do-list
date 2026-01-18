@@ -4,6 +4,7 @@
 MAJOR
 2. Replay system
 6. rejoin button on tournaments and lobbies
+7. read the websocket headers in backend (after gateway ready)
 
 MINOR
 3. abort games between bots in tournaments when all players leave
