@@ -84,55 +84,54 @@ from './forwarders.js';
 
 // backend urls
 const AUTH_URL = process.env.AUTH_URL ?? 'http://auth:3001';
-const PROFILE_URL = process.env.PROFILE_URL ?? 'http://profile:3001';
-const CHAT_URL = process.env.CHAT_URL ?? 'http://chat:3001';
+const CHAT_URL = process.env.CHAT_URL ?? 'http://chat:3002';
+const PROFILE_URL = process.env.PROFILE_URL ?? 'http://profile:3003';
 
 // http gateway endpoints
 fastify.register(async function (fastify) {
 
 	// helper to forwarder for backend HTTP services
-	function httpforwarder(endpoint:string, auth:boolean) {
+	function httpforwarder(endpoint:string, props?:any) {
 
 		// JWT interceptor
 		if (endpoint === `${AUTH_URL}/api/login`) return async (request:FastifyRequest, reply:FastifyReply) => await noAuthForward(request, reply, endpoint, attachCookies);
-		else if (auth) return async (request:FastifyRequest, reply:FastifyReply) => await authForward(request, reply, endpoint);
-		else return async (request:FastifyRequest, reply:FastifyReply) => await noAuthForward(request, reply, endpoint);
+		else if (props.auth === false) return async (request:FastifyRequest, reply:FastifyReply) => await noAuthForward(request, reply, endpoint);
+		else return async (request:FastifyRequest, reply:FastifyReply) => await authForward(request, reply, endpoint);
 	}
 
 	// authentication endpoint
 	fastify.get('/isauth', async (request) => isCookieAuthenticated(request));
 
 	// auth backend APIs
-	fastify.post('/login', httpforwarder(`${AUTH_URL}/api/login`, false));
-	fastify.post('/register', httpforwarder(`${AUTH_URL}/api/register`, false));
-	fastify.post('/auth/google', httpforwarder(`${AUTH_URL}/api/auth/google`, false));
-	fastify.post('/2fa/verify', httpforwarder(`${AUTH_URL}/api/2fa/verify`, false));
-	fastify.get('/profile',  httpforwarder(`${AUTH_URL}/api/profile`, true));
-	fastify.patch('/profile',  httpforwarder(`${AUTH_URL}/api/profile`, true));
-	fastify.post('/profile/avatar',  httpforwarder(`${AUTH_URL}/api/profile/avatar`, true));
-	fastify.post('/2fa/generate',  httpforwarder(`${AUTH_URL}/api/2fa/generate`, true));
-	fastify.post('/2fa/enable',  httpforwarder(`${AUTH_URL}/api/2fa/enable`, true));
-	fastify.post('/2fa/disable',  httpforwarder(`${AUTH_URL}/api/2fa/disable`, true));
-	fastify.post('/logout',  httpforwarder(`${AUTH_URL}/api/logout`, false));
-
+	fastify.post('/login', httpforwarder(`${AUTH_URL}/api/login`, { auth: false }));
+	fastify.post('/register', httpforwarder(`${AUTH_URL}/api/register`, { auth: false }));
+	fastify.post('/auth/google', httpforwarder(`${AUTH_URL}/api/auth/google`, { auth: false }));
+	fastify.post('/2fa/verify', httpforwarder(`${AUTH_URL}/api/2fa/verify`, { auth: false }));
+	fastify.get('/profile',  httpforwarder(`${AUTH_URL}/api/profile`, { auth: true }));
+	fastify.patch('/profile',  httpforwarder(`${AUTH_URL}/api/profile`, { auth: true }));
+	fastify.post('/profile/avatar',  httpforwarder(`${AUTH_URL}/api/profile/avatar`, { auth: true }));
+	fastify.post('/2fa/generate',  httpforwarder(`${AUTH_URL}/api/2fa/generate`, { auth: true }));
+	fastify.post('/2fa/enable',  httpforwarder(`${AUTH_URL}/api/2fa/enable`, { auth: true }));
+	fastify.post('/2fa/disable',  httpforwarder(`${AUTH_URL}/api/2fa/disable`, { auth: true }));
+	fastify.post('/logout',  httpforwarder(`${AUTH_URL}/api/logout`, { auth: false }));
 	// ... add others
 
 	// profile backend APIs
-	fastify.get('/user', httpforwarder(`${PROFILE_URL}/api/user`, true));
+	fastify.get('/user', httpforwarder(`${PROFILE_URL}/api/user`, { auth: true}));
 	// ... add others
 
 	// chat backend APIs
-	fastify.get('/user-list', httpforwarder(`${CHAT_URL}/api/user-list`, true));
+	fastify.get('/user-list', httpforwarder(`${CHAT_URL}/api/user-list`, { auth: true}));
 	// ... add others
 
 
 }, { prefix: '/api' });
 
 const LOBBY_URL = process.env.LOBBY_URL ?? 'http://lobby:3031';
-const PONG_URL = process.env.LOBBY_URL ?? 'http://pong:3040';
 const TOURNAMENT_URL = process.env.LOBBY_URL ?? 'http://tournament:3032';
+const PONG_URL = process.env.LOBBY_URL ?? 'http://pong:3040';
 
-// websocket endpoints
+// websocket endpoints (always need authentication)
 fastify.register(async function (fastify) {
 
 	// helper to create forwarders for backend websocket services
