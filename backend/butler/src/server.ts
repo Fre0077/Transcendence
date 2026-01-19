@@ -84,8 +84,8 @@ from './forwarders.js';
 
 // backend urls
 const AUTH_URL = process.env.AUTH_URL ?? 'http://auth:3001';
-const PROFILE_URL = process.env.PROFILE_URL ?? 'http://profile:3003';
 const CHAT_URL = process.env.CHAT_URL ?? 'http://chat:3002';
+const PROFILE_URL = process.env.PROFILE_URL ?? 'http://profile:3003';
 
 // http gateway endpoints
 fastify.register(async function (fastify) {
