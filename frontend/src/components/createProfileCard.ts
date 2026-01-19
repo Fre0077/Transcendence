@@ -1,6 +1,6 @@
 import { generateInitialsAvatar } from "@/components/createDefaultImage";
 
-const PROFILE_BASE_URL = `http://${window.location.hostname}:3003/api`;
+const PROFILE_BASE_URL = `http://${window.location.hostname}:3029/api`;
 
 export function createProfileCard(linkid: string): HTMLElement {
     const container = document.createElement('div');
@@ -34,6 +34,7 @@ export function createProfileCard(linkid: string): HTMLElement {
             const authToken = localStorage.getItem("authToken");
             const response = await fetch(url, {
                 method: 'GET',
+                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': authToken ? `Bearer ${authToken}` : ''

@@ -84,8 +84,8 @@ from './forwarders.js';
 
 // backend urls
 const AUTH_URL = process.env.AUTH_URL ?? 'http://auth:3001';
-const PROFILE_URL = process.env.PROFILE_URL ?? 'http://profile:3001';
-const CHAT_URL = process.env.CHAT_URL ?? 'http://chat:3001';
+const PROFILE_URL = process.env.PROFILE_URL ?? 'http://profile:3003';
+const CHAT_URL = process.env.CHAT_URL ?? 'http://chat:3002';
 
 // http gateway endpoints
 fastify.register(async function (fastify) {
@@ -115,11 +115,14 @@ fastify.register(async function (fastify) {
 	fastify.post('/2fa/disable',  httpforwarder(`${AUTH_URL}/api/2fa/disable`, true));
 	fastify.post('/logout',  httpforwarder(`${AUTH_URL}/api/logout`, false));
 
-	// ... add others
-
 	// profile backend APIs
 	fastify.get('/user', httpforwarder(`${PROFILE_URL}/api/user`, true));
-	// ... add others
+	fastify.get('/game', httpforwarder(`${PROFILE_URL}/api/game`, true));
+	fastify.get('/userinfo', httpforwarder(`${PROFILE_URL}/api/userinfo`, true));
+	fastify.get('/friends', httpforwarder(`${PROFILE_URL}/api/friends`, true));
+	fastify.post('/friends/request', httpforwarder(`${PROFILE_URL}/api/friends/request`, true));
+	fastify.post('/friends/accept', httpforwarder(`${PROFILE_URL}/api/friends/accept`, true));
+	fastify.delete('/friends/remove', httpforwarder(`${PROFILE_URL}/api/friends/remove`, true));
 
 	// chat backend APIs
 	fastify.get('/user-list', httpforwarder(`${CHAT_URL}/api/user-list`, true));
