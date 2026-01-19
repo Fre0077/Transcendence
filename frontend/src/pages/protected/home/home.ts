@@ -107,8 +107,9 @@ export function loadHomePage(): HTMLElement {
         }
 
         try {
-            const response = await fetch('http://localhost:3001/api/profile', {
+            const response = await fetch('http://localhost:3029/api/profile', {
                 method: 'GET',
+				credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`

@@ -1,5 +1,6 @@
 import Fastify from "fastify";
 import cors from "@fastify/cors";
+import fastifyCookie from '@fastify/cookie';
 
 
 import { startRabbit } from "./rabbit";
@@ -36,6 +37,7 @@ fastify.addContentTypeParser(
     }
 );
 
+fastify.register(fastifyCookie);
 fastify.register(profileEndpoint, { prefix: '/api' });
 
 // RICEZIONE DATI RABBITMQ (TEST)

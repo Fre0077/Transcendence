@@ -119,7 +119,7 @@ export async function getUserProfile(): Promise<UserProfile> {
 	throw new Error('No authentication token found');
 	}
 
-	const profileResponse = await sendGetRequest(`http://localhost:3003/api/user?linkid=${linkid}`, token);
+	const profileResponse = await sendGetRequest(`http://localhost:3029/api/user?linkid=${linkid}`, 'token');
 	// const authResponse = await sendGetRequest(`http://localhost:3001/api/profile`, token);
 	const butlerResponse = await sendGetRequest('http://localhost:3029/api/profile', 'token');
 	return {
@@ -197,7 +197,7 @@ export async function getUserGames(): Promise</* { history:  */GameData[]/*  } *
 		throw new Error('No authentication token found');
 	}
 
-	const response = await sendGetRequest(`http://localhost:3003/api/game?linkid=${linkid}`, token);
+	const response = await sendGetRequest(`http://localhost:3029/api/game?linkid=${linkid}`, token);
 	return response;
 }
 

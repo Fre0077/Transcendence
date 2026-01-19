@@ -115,10 +115,28 @@ fastify.register(async function (fastify) {
 	fastify.post('/2fa/disable',  httpforwarder(`${AUTH_URL}/api/2fa/disable`, { auth: true }));
 	fastify.post('/logout',  httpforwarder(`${AUTH_URL}/api/logout`, { auth: false }));
 	// ... add others
+	fastify.post('/login', httpforwarder(`${AUTH_URL}/api/login`, { auth: false }));
+	fastify.post('/register', httpforwarder(`${AUTH_URL}/api/register`, { auth: false }));
+	fastify.post('/auth/google', httpforwarder(`${AUTH_URL}/api/auth/google`, { auth: false }));
+	fastify.post('/2fa/verify', httpforwarder(`${AUTH_URL}/api/2fa/verify`, { auth: false }));
+	fastify.get('/profile',  httpforwarder(`${AUTH_URL}/api/profile`, { auth: true }));
+	fastify.patch('/profile',  httpforwarder(`${AUTH_URL}/api/profile`, { auth: true }));
+	fastify.post('/profile/avatar',  httpforwarder(`${AUTH_URL}/api/profile/avatar`, { auth: true }));
+	fastify.post('/2fa/generate',  httpforwarder(`${AUTH_URL}/api/2fa/generate`, { auth: true }));
+	fastify.post('/2fa/enable',  httpforwarder(`${AUTH_URL}/api/2fa/enable`, { auth: true }));
+	fastify.post('/2fa/disable',  httpforwarder(`${AUTH_URL}/api/2fa/disable`, { auth: true }));
+	fastify.post('/logout',  httpforwarder(`${AUTH_URL}/api/logout`, { auth: false }));
 
 	// profile backend APIs
 	fastify.get('/user', httpforwarder(`${PROFILE_URL}/api/user`, { auth: true}));
 	// ... add others
+	fastify.get('/user', httpforwarder(`${PROFILE_URL}/api/user`, {auth: true }));
+	fastify.get('/game', httpforwarder(`${PROFILE_URL}/api/game`, {auth: true }));
+	fastify.get('/userinfo', httpforwarder(`${PROFILE_URL}/api/userinfo`, {auth: true }));
+	fastify.get('/friends', httpforwarder(`${PROFILE_URL}/api/friends`, {auth: true }));
+	fastify.post('/friends/request', httpforwarder(`${PROFILE_URL}/api/friends/request`, {auth: true }));
+	fastify.post('/friends/accept', httpforwarder(`${PROFILE_URL}/api/friends/accept`, {auth: true }));
+	fastify.delete('/friends/remove', httpforwarder(`${PROFILE_URL}/api/friends/remove`, {auth: true }));
 
 	// chat backend APIs
 	fastify.get('/user-list', httpforwarder(`${CHAT_URL}/api/user-list`, { auth: true}));
