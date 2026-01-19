@@ -1,6 +1,7 @@
 import { ChatWidget } from '@/components/chatWidget';
 import { loadNavbar } from '../../../components/navbar';
 import { loadHeroContent } from './heroContent';
+import { toastNotification } from '@/services/toastNotification';
 import { router } from "@/router";
 
 
@@ -40,6 +41,16 @@ export function loadHomePage(): HTMLElement {
 
 		<!-- Quick Actions -->
 		<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
+			<!-- Test Notifications Button -->
+			<button id="test-toast-btn" class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-orange-600/30 to-yellow-600/30 p-8 border border-white/10 hover:border-orange-400/50 transition-all hover:scale-105">
+				<div class="relative z-10">
+					<div class="text-4xl mb-4">🔔</div>
+					<h3 class="text-2xl font-bold text-white mb-2">Test Notifications</h3>
+					<p class="text-white/70">Click to see toast demos</p>
+				</div>
+				<div class="absolute inset-0 bg-gradient-to-br from-orange-600/0 to-yellow-600/0 group-hover:from-orange-600/20 group-hover:to-yellow-600/20 transition"></div>
+			</button>
+
 			<a href="/game" class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-600/30 to-pink-600/30 p-8 border border-white/10 hover:border-purple-400/50 transition-all hover:scale-105">
 				<div class="relative z-10">
 					<div class="text-4xl mb-4">🎮</div>
@@ -140,6 +151,41 @@ export function loadHomePage(): HTMLElement {
     if (heroPlayButton) {
         heroPlayButton.addEventListener('click', checkAuthAndPlay);
     }
+
+	// Test toast notifications button
+	const testToastBtn = div.querySelector('#test-toast-btn');
+	if (testToastBtn) {
+		testToastBtn.addEventListener('click', () => {
+			// Show different types of notifications
+			toastNotification.success('Success!', 'Your action was completed successfully.', 5000);
+			
+			setTimeout(() => {
+				toastNotification.info('Info', 'This is an informational message.', 5000);
+			}, 500);
+			
+			setTimeout(() => {
+				toastNotification.warning('Warning', 'Please be careful with this action.', 5000);
+			}, 1000);
+			
+			setTimeout(() => {
+				toastNotification.message(
+					'New Message 💬', 
+					'John Doe: Hey, want to play a match?',
+					() => {
+						alert('Navigating to chat...');
+					},
+					5000
+				);
+			}, 1500);
+		});
+	}
+
+	// Show toast notification when home page loads
+	toastNotification.success(
+		'Welcome Back! 🎮',
+		'You are on the home page. Ready to play some games?',
+		6000
+	);
 
 	return div;
 }
