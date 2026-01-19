@@ -422,7 +422,7 @@ function createWebSocketConnection(lobby_code: string, connected_players: Player
                     console.log('Lobby is starting the game:', data.comment);
                     // close socket when leaving window
                     ws.close();
-
+                    console.log('data value', data.value);
                     router.push(`/game/${data.value}`);
                 }
                 else console.log('Failed to start lobby');

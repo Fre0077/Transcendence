@@ -24,7 +24,17 @@ await fastify.register(fastifyCookie);
 // Register CORS policy to accept only requests with origin the frontend (localhost:3000)
 await fastify.register(cors, {
 	// origin: 'http://frontend:3000', // frontend origin
-	origin: 'http://localhost:3000', // frontend origin
+	/* origin: ['http://localhost:3000', 'http://frontend:3000'], */ // frontend origin
+	origin: (origin, cb) => {
+        // allow requests with no origin (Postman, curl, mobile apps)
+        if (!origin) {
+            cb(null, true);
+            return ;
+        }
+
+        // allow ANY origin
+        cb(null, origin);
+    },
 	credentials: true,              // important: allows cookies to be sent
 });
 
@@ -117,14 +127,13 @@ fastify.register(async function (fastify) {
 	// ... add others
 
 	// profile backend APIs
-	fastify.get('/user', httpforwarder(`${PROFILE_URL}/api/user`, { auth: true}));
-	fastify.get('/user', httpforwarder(`${PROFILE_URL}/api/user`, {auth: true }));
-	fastify.get('/game', httpforwarder(`${PROFILE_URL}/api/game`, {auth: true }));
-	fastify.get('/userinfo', httpforwarder(`${PROFILE_URL}/api/userinfo`, {auth: true }));
-	fastify.get('/friends', httpforwarder(`${PROFILE_URL}/api/friends`, {auth: true }));
-	fastify.post('/friends/request', httpforwarder(`${PROFILE_URL}/api/friends/request`, {auth: true }));
-	fastify.post('/friends/accept', httpforwarder(`${PROFILE_URL}/api/friends/accept`, {auth: true }));
-	fastify.delete('/friends/remove', httpforwarder(`${PROFILE_URL}/api/friends/remove`, {auth: true }));
+	fastify.get('/user', httpforwarder(`${PROFILE_URL}/api/user`, { auth: true }));
+	fastify.get('/game', httpforwarder(`${PROFILE_URL}/api/game`, { auth: true }));
+	fastify.get('/userinfo', httpforwarder(`${PROFILE_URL}/api/userinfo`, { auth: true }));
+	fastify.get('/friends', httpforwarder(`${PROFILE_URL}/api/friends`, { auth: true }));
+	fastify.post('/friend/request', httpforwarder(`${PROFILE_URL}/api/friend/request`, { auth: true }));
+	fastify.post('/friend/accept', httpforwarder(`${PROFILE_URL}/api/friend/accept`, { auth: true }));
+	fastify.delete('/friend/remove', httpforwarder(`${PROFILE_URL}/api/friend/remove`, { auth: true }));
 	// ... add others
 
 	// chat backend APIs

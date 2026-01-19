@@ -3,6 +3,7 @@ import { sendGetRequest } from "@/services/api/sendRequests";
 import { generateInitialsAvatar } from "@/components/createDefaultImage";
 
 import { GameData, createHistoryBar } from "@/components/historyBar";
+import { createFriendsBar } from "@/components/createFriendBar";
 
 export function loadProfilePage(): HTMLElement {
 	const div = document.createElement('div');
@@ -93,6 +94,12 @@ export function loadProfilePage(): HTMLElement {
 	}).catch(error => {
 		console.error("Error loading user profile:", error);
 	});
+	// AGGIUNGI LA BAR DEGLI AMICI
+	// const friends = div.querySelector('#friend-bar');
+	// if (!friends) throw Error("FriendBar div not found");
+	// friends.appendChild(createFriendsBar());
+	document.body.appendChild(createFriendsBar());
+
 
 	return div;
 }

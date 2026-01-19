@@ -5,7 +5,7 @@ import { createPlayerSocket } from "@components/PongBoards/PongSocket";
 import { createPongBoard } from "@components/PongBoards/createPongBoard";
 
 
-const PONG_BACKEND_URL = `ws://${window.location.hostname}:3029/ws/pong/play`;
+// const PONG_BACKEND_URL = `ws://${window.location.hostname}:3029/ws/pong/play`;
 
 export function loadPongPlayerPage(): HTMLElement {
 
@@ -16,10 +16,10 @@ export function loadPongPlayerPage(): HTMLElement {
 
 	/* ------ BUILD THE BOARD ------ */
 	// 1. create raw websocket
-	const ws = new WebSocket(PONG_BACKEND_URL);
+	// const ws = new WebSocket(PONG_BACKEND_URL);
 
 	// 2. wrap it
-	const socket = createPlayerSocket(ws/* , playerID */);
+	const socket = createPlayerSocket(/* ws, playerID */);
 
 	// 3. create UI
 	const board = createPongBoard(socket);
@@ -30,14 +30,15 @@ export function loadPongPlayerPage(): HTMLElement {
 		board.update(state);
 	});
 
-	// 5. handshake when ready
+	socket.handshake();
+	/* // 5. handshake when ready
 	ws.onopen = () => {
 		socket.handshake();
 	};
 
 	ws.onclose = () => {
 		console.log("Disconnected from game");
-	};
+	}; */
 
 	/* --------- BUILD THE PAGE ----------- */
 

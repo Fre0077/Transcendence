@@ -38,7 +38,7 @@ export function sendPostRequest(
 
 export function sendGetRequest(
 	url: string,
-	token: string
+	token?: string //questo va cancellato :)
 ): Promise<any> {
 	return new Promise((resolve, reject) => {
 		const xhr = new XMLHttpRequest();

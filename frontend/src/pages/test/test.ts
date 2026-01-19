@@ -6,8 +6,8 @@ import { clearSession, persistSession } from '@/services/session';
  */
 
 // --- CONFIGURAZIONE PORTE ---
-const AUTH_URL = `http://${window.location.hostname}:3001/api`;
-const PROFILE_URL = `http://${window.location.hostname}:3003/api`;
+const AUTH_URL = `http://${window.location.hostname}:3029/api`;
+const PROFILE_URL = `http://${window.location.hostname}:3029/api`;
 
 let accessToken: string | null = null;
 let currentRefreshToken: string | null = null;
@@ -334,6 +334,7 @@ async function apiCall(endpoint: string, method: 'GET' | 'POST' | 'PATCH' | 'DEL
     
     const config: RequestInit = {
         method: method,
+        credentials: 'include',
         headers: headers,
     };
 

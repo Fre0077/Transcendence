@@ -263,10 +263,14 @@ import { interpreter } from './interpreter.js';
 }
  */
 // Websocket rout handler
+function sleep(ms: number) {
+	return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 fastify.register(async function (fastify) {
 
 	/* === PLAYERS ENDPOINT === */
-	fastify.get('/play', { websocket: true }, (connection, request) => {
+	fastify.get('/play', { websocket: true }, async (connection, request) => {
 
 		// Logging the connection
 		const clientIP = request.socket.remoteAddress;
@@ -285,7 +289,12 @@ fastify.register(async function (fastify) {
 		}
 		/* ----- CHECK if EXPECTED ----- */
 
-		const gamecheck = findGameOf(userid);
+		let gamecheck;
+		for (let i = 0; i < 3; i++) {
+			gamecheck = findGameOf(userid);
+			if (gamecheck) {break};
+			await sleep(100);
+		};
 		if (!gamecheck) {
 			console.log('Game not found', userid);
 			connection.close(3000, "Game not found");

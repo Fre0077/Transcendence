@@ -4,6 +4,9 @@
 // 	secretary(message:any): void;
 // }
 
+
+const PONG_BACKEND_URL = `ws://${window.location.hostname}:3029/ws/pong/play`;
+
 // PongSocket.ts
 export interface PongSocket {
 	matchid?:string;
@@ -29,14 +32,22 @@ const playerSecretary = (data:any, ws:WebSocket) => {
 }
 
 // behaviour of the player socket
-export function createPlayerSocket(ws: WebSocket/* , playerid:string */): PongSocket
+export function createPlayerSocket(/* , playerid:string */): PongSocket
 {
+	const ws = new WebSocket(PONG_BACKEND_URL)
+	// 5. handshake when ready
 	return {
 		// data
 		// playerid: playerid,
 
 		// functions
-		handshake() {},
+		handshake() {
+			ws.onopen = () => {
+				sleep(1000).then(() => {
+					ws.send(JSON.stringify({ method: "JOIN" }));
+				});
+			};
+		},
 		send(data) {
 			ws.send(JSON.stringify(data));
 		},
