@@ -232,7 +232,7 @@ export function deleteGame(gameid:string, reason:string | void)
 	if (entry.metadata.origin && typeof entry.metadata.origin === "string") {
 		bunnyPublish(entry.metadata.origin, {
 			gameID: gameid,
-			status: 'finished'
+			status: reason
 		});
 	}
 

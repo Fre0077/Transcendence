@@ -123,4 +123,13 @@ export class Room
 		this.ingame = false;
 		this.played = true;
 	}
+
+	// quanto qualcuno se ne va...
+	public autowin()
+	{
+		// the idea is that if just one team left, the other will win
+		// but if both team leave, the room is aborted
+		if (this.justwin === true) this.aborted = true;
+		else this.justwin = true;
+	}
 }

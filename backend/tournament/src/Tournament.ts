@@ -25,6 +25,7 @@ interface TournamentState
 
 		// status
 		status:string;
+		aborted:boolean;
 		gameid:string;
 
 		// outcome
@@ -215,7 +216,7 @@ export class Tournament<T extends MySocket>
 
 	private	_closed:boolean;	// is the tournament closed? (no more player can join)
 	private _finished:boolean;
-	private _winner:string;
+	private _winners:string[];
 
 	// tournament's unique code
 	private readonly _ID:string;
@@ -246,7 +247,7 @@ export class Tournament<T extends MySocket>
 
 		this._closed = false;
 		this._finished = false;
-		this._winner = '';
+		this._winners = [];
 
 		this._ID = uuidv4();					// lobby code generator.
 		this._players = new Map();
@@ -294,8 +295,8 @@ export class Tournament<T extends MySocket>
 		return this._finished;
 	}
 
-	public get winner() {
-		return this._winner;
+	public get winners() {
+		return this._winners;
 	}
 
 	// getter of players
@@ -316,6 +317,7 @@ export class Tournament<T extends MySocket>
 			idx: keyToIdx(key).idx,
 			players: Array.from(room.players),
 			status: (room.ingame === true) ? 'in-game' : 'waiting',
+			aborted: room.aborted,
 			gameid: room.gameid,
 			winner: room.winners,
 			score: room.score
@@ -327,7 +329,9 @@ export class Tournament<T extends MySocket>
 			/* gameID: this._gameID,
 			ingame: this._ingame, */
 			players: players,
-			rooms:rooms
+			rooms:rooms,
+			finished: this._finished,
+			winners: this._winners
 		};
 
 		return state;
@@ -381,8 +385,15 @@ export class Tournament<T extends MySocket>
 	{
 		let changed = false;
 
+		// check if players need to be moved
 		if (this.advanceFinishedRooms()) changed = true;
+		if (this.advanceAbortedRooms()) changed = true;
+		if (this.advanceJustWinRooms()) changed = true;
+
+		// check if tournament finished
 		if (this.checkTournamentEnd()) changed = true;
+
+		// start rooms
 		if (await this.startReadyRooms()) changed = true;
 
 		if (changed) this.sync();
@@ -435,6 +446,75 @@ export class Tournament<T extends MySocket>
 		return changed;
 	}
 
+	private advanceJustWinRooms(): boolean
+	{
+		let changed = false;
+
+		for (const [key, room] of this._rooms)
+		{
+			if (room.advanced) continue ;
+			if (room.aborted) continue ;
+			if (!room.justwin) continue ;
+			if (room.players.size === 0) continue ;	// assuming the whole team gets moved at once
+			
+			// set the room as ingame so it can be finalized
+			room.ingame = true;
+
+			// create winners array
+			const winners = Array.from(room.players).filter(p => this._players.get(p)?.status !== "left")
+
+			// finalize the room
+			room.finalize(winners, [0,0]);
+
+			// gets the next rooms
+			const idx = keyToIdx(key);
+			const next = this.nextRoom(idx)
+
+			// move the players
+			winners.forEach((player) => {
+				this.move(player, key, idxToKey(next.winner));
+			});
+
+			// set the room as advanced
+			room.advanced = true;
+			changed = true;
+		}
+
+		return changed;
+	}
+
+	private advanceAbortedRooms(): boolean
+	{
+		let changed = false;
+
+		for (const [key, room] of this._rooms)
+		{
+			if (room.advanced) continue ;
+			if (!room.aborted) continue ;
+			
+			// gets the next rooms
+			const idx = keyToIdx(key);
+			const next = this.nextRoom(idx)
+
+			// finalize the room
+			room.finalize(["----"], [0,0]);
+			
+			// set the winner and the loser room to 'justwin' rooms
+			{
+				const win = this._rooms.get(idxToKey(next.winner));
+				const lose = this._rooms.get(idxToKey(next.loser));
+				if (win) win.autowin();
+				if (lose) lose.autowin();
+			}
+
+			// set the room as advanced
+			room.advanced = true;
+			changed = true;
+		}
+
+		return changed;
+	}
+
 	// move the players if they played a match
 	private advanceFinishedRooms(): boolean
 	{
@@ -445,37 +525,21 @@ export class Tournament<T extends MySocket>
 			/* check if the room is played */
 			if (room.advanced) continue;
 			if (!room.played) continue;
-			// if (room.winners.length === 0) continue;
+			if (room.aborted) continue;
+			if (room.winners.length === 0) continue;
 			
-			// gets the next room
+			// gets the next rooms
 			const idx = keyToIdx(key);
 			const next = this.nextRoom(idx);
 			
-			// set the winner room to 'justwin' room
-			if (room.aborted === true)
-			{
-				const win = this._rooms.get(idxToKey(next.winner));
-				if (win) win.justwin = true;
-			}
-			// move all the players to the win room
-			else if (room.justwin === true)
-			{
-				room.players.forEach(player => {
-					this.move(player, key, idxToKey(next.winner));
-				});
-			}
 			// move the winner players and the loser players
-			else
-			{
-				// move the players
-				room.players.forEach(player => {
-					if (room.winners.includes(player)) {
-						this.move(player, key, idxToKey(next.winner));
-					} else {
-						this.move(player, key, idxToKey(next.loser));
-					}
-				});
-			}
+			room.players.forEach(player => {
+				if (room.winners.includes(player)) {
+					this.move(player, key, idxToKey(next.winner));
+				} else {
+					this.move(player, key, idxToKey(next.loser));
+				}
+			});
 
 			/* #debug */
 			// console.log('Advanced room', key);
@@ -500,10 +564,10 @@ export class Tournament<T extends MySocket>
 
 		/* save data */
 		this._finished = true;
-		this._winner = finals.winners[0];
+		this._winners = finals.winners;
 		
 		/* #debug */
-		// console.log('Tournament finished, winner(s)', this._winner);
+		console.log('Tournament finished, winner(s)', this._winners);
 
 		return true;
 	}
@@ -537,33 +601,6 @@ export class Tournament<T extends MySocket>
 			}
 		}
 	}
-
-	// // force the room start (for bots)
-	// public async forcePlayRoom(roomkey:RoomKey): Promise<boolean>
-	// {
-	// 	const room = this._rooms.get(roomkey);
-	// 	if (room === undefined) {
-	// 		console.log('Trying to forcePlay() an undefined room', roomkey);
-	// 		return false;
-	// 	}
-
-	// 	// play the room
-	// 	const ok = await room.play(
-	// 		this.roomPlayerController(),
-	// 		this._gamecallback
-	// 	);
-
-	// 	// failed to start room
-	// 	if (ok.status === 'failure') {
-	// 		return false;
-	// 	}
-
-	// 	// sync state
-	// 	this.sync();
-
-	// 	// successful return
-	// 	return true;
-	// }
 
 	// reset the room (hardcoded 1 winner)
 	public finalizeRoom(gameid:string, winners:string[], score:number[])
@@ -630,7 +667,9 @@ export class Tournament<T extends MySocket>
 
 		// set the room to aborted
 		room.aborted = true;
-		room.played = true;
+
+		/* #debug */
+		console.log(`Room of ${room.players.values()} aborted`);
 
 		// routine check
 		this.routine();
@@ -778,11 +817,11 @@ export class Tournament<T extends MySocket>
 		};
 	}
 
-	// function to join the lobby, syntax: 'playerID'
-	public join(outPlayerID:string, ws:T | null): boolean {
+	// function to join the lobby, syntax: 'playerid'
+	public join(outPlayerid:string, ws:T | null): boolean {
 		// if (this._ingame === true) {return false;}
 
-		const target = this._players.get(outPlayerID);
+		const target = this._players.get(outPlayerid);
 		// check if player already in
 		if (target !== undefined)
 		{
@@ -799,7 +838,7 @@ export class Tournament<T extends MySocket>
 			else
 			{
 				// update player
-				this._players.set(outPlayerID, new Player(ws));
+				this._players.set(outPlayerid, new Player(ws));
 
 				// update status
 				this.sync();
@@ -816,7 +855,7 @@ export class Tournament<T extends MySocket>
 		}
 
 		// add player
-		this._players.set(outPlayerID, new Player(ws));
+		this._players.set(outPlayerid, new Player(ws));
 
 		// check if we got all players
 		if (this._players.size === this._size) this.close();
@@ -831,20 +870,20 @@ export class Tournament<T extends MySocket>
 
 	// The player temporarly left the lobby
 	// (connection closed but still inside the lobby)
-	public disconnect(playerID:string): boolean
+	public disconnect(playerid:string): boolean
 	{
 		// check if the player is inside
-		const player = this._players.get(playerID);
+		const player = this._players.get(playerid);
 		if (player === undefined)
 		{
-			console.log(`player '${playerID}' not in the tournament`);
+			console.log(`player '${playerid}' not in the tournament`);
 			return false;
 		}
 
 		// find the room
 		for (const r of this._rooms.values())
 		{
-			if (r.played === false && r.players.has(playerID))
+			if (r.played === false && r.players.has(playerid))
 			{
 				// disconnect player
 				if (r.ingame === false) player.disconnect();
@@ -857,7 +896,7 @@ export class Tournament<T extends MySocket>
 			}
 		}
 	
-		console.log(`Player ${playerID} didn't join a room yet`);
+		console.log(`Player ${playerid} didn't join a room yet`);
 		player.disconnect();
 
 		// update status
@@ -868,27 +907,27 @@ export class Tournament<T extends MySocket>
 
 
 	// Remove a player from the lobby
-	public leave(playerID:string): boolean
+	public leave(playerid:string): boolean
 	{
 		// check if the player is inside
-		const player = this._players.get(playerID);
+		const player = this._players.get(playerid);
 		if (player === undefined)
 		{
-			console.log(`player '${playerID}' not in the tournament`);
+			console.log(`player '${playerid}' not in the tournament`);
 			return false;
 		}
 
 		// disconnect player ...
 		player.leave();
-		//... and remove from lobby
-		// this._players.delete(playerID);
-		// #todo autowin (DNP) procedure
+		// ... and DNF procedure
+		const roomkey = this.roomOf(playerid);
+		if (roomkey !== undefined) this._rooms.get(roomkey)?.autowin();
 
 		// logging
-		console.log(`${playerID} left the tournament...`);
+		console.log(`${playerid} left the tournament...`);
 
 		// update status
-		this.sync();
+		this.routine();
 
 		return true;
 	}

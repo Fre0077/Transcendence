@@ -102,14 +102,24 @@ fastify.get<{ Querystring: BunnyQuery }>(
 				return { status: 'ko' };
 			}
 
+			// successfully finished games reaad from history
+			if (msg.status === 'finished') return ;
+
+			/* #debug */
+			console.log('Searching room of', msg.gameID);
+
 			// find the tournament
 			const tournament = findTournament((t:Tournament<WebSocket>) => {
-				return t.game(msg.ID);
+				return t.game(msg.gameID);
 			})
 
 			// kill the room
 			if (tournament !== undefined) {
-				tournament.killRoom(msg.ID);
+
+				/* #debug */
+				console.log('Killing room');
+			
+				tournament.killRoom(msg.gameID);
 			}
 
 
