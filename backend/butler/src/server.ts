@@ -86,10 +86,15 @@ import {
 	noAuthForward,
 
 	/* WS */
-	authWebSocket,
 	fwdWebSocket  
 }
 from './forwarders.js';
+
+import {
+	sendLobbyInvite,
+	authWebSocket
+} from './backendbypass.js';
+
 
 
 // backend urls
@@ -110,7 +115,7 @@ fastify.register(async function (fastify) {
 	}
 
 	// authentication endpoint
-	fastify.get('/isauth', async (request) => isCookieAuthenticated(request));
+	fastify.get('/isauth', async (request, reply) => isCookieAuthenticated(request, reply));
 
 	// auth backend APIs
 	fastify.post('/login', httpforwarder(`${AUTH_URL}/api/login`, { auth: false }));
@@ -141,7 +146,13 @@ fastify.register(async function (fastify) {
 	// ... add others
 
 
+	// backend bypass endpoints (interact with the users connected to butler)
+	// All these endpoint require an authenticated connection
+	fastify.post('/lobby-invite', { preHandler: [isCookieAuthenticated] }, async (request, reply) => sendLobbyInvite(request, reply));
+
+
 }, { prefix: '/api' });
+
 
 const LOBBY_URL = process.env.LOBBY_URL ?? 'http://lobby:3031';
 const TOURNAMENT_URL = process.env.LOBBY_URL ?? 'http://tournament:3032';

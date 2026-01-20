@@ -1,6 +1,6 @@
 import { FastifyReply, FastifyRequest/* , FastifyReply */ } from 'fastify';
 // import { SocketStream } from '@fastify/websocket';
-import { isCookieAuthenticated, getCookieUser } from './middleware.js';
+import { /* isCookieAuthenticated, */ getCookieUser } from './middleware.js';
 
 
 const GATEWAY_SECRET = process.env.GATEWAY_SECRET ?? 'biscottini';
@@ -10,42 +10,6 @@ const GATEWAY_SECRET = process.env.GATEWAY_SECRET ?? 'biscottini';
 /* ------------------------ */
 
 import WebSocket/* , { RawData } */ from 'ws';	// important to use backend websockets
-
-
-export function authWebSocket(connection:WebSocket, request:FastifyRequest)
-{
-	// Logging the connection
-	const clientIP = request.socket.remoteAddress;
-	const socket/* :WebSocket */ = connection/* .socket */;
-	console.log(`Client connected from ${clientIP}`);
-
-	/* --- AUTH CHECK --- */
-	const auth = isCookieAuthenticated(request);
-	if (auth.ok === false)
-	{
-		socket.close(1008, auth.reason);
-		return ; // important
-	}
-	/* ------------------- */
-
-	/* #debug */
-	console.log('WS connected with Authorized user');
-
-	// Handle incoming messages
-	socket.on('message', (message:any) => {
-		console.log(`Message received '${message.toString()}'`);
-	});
-
-	// Handle WebSocket errors
-	socket.on('error', (error:any) => {
-		console.error(`WebSocket error for ${clientIP}:`, error);
-	});
-
-	// Handle connection close
-	socket.on('close', (code:any, reason:any) => {
-		console.log(`Client ${clientIP} disconnected - Code: ${code}, Reason: ${reason?.toString() || 'none'}`);
-	});
-}
 
 /* 
 	@service:
@@ -277,7 +241,7 @@ export async function noAuthForward(
 	}
 
 	/* #debug */
-	console.log('Fetched from backend', data);
+	// console.log('Fetched from backend', data);
 
 	// call the post-process callback
 	if (callback) callback(data, reply);

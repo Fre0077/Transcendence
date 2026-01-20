@@ -1,14 +1,20 @@
 import { loadNavbar } from "@/components/navbar";
 import { createProfileCard } from "@components/createProfileCard.js";
+import { sendPostRequest } from "@/services/api/sendRequests";
 
 // const baseLobbyPath = `http://${window.location.hostname}:3031/`;
 const LOBBY_WEBSOCKET_URL = `ws://${window.location.hostname}:3029/ws/lobby`;
+const BACKEND_APIS_URL = `http://${window.location.hostname}:3029/api`;
 
 interface Player {
     id: string;
     name: string;
     status?: string;
 }
+
+// globally accessible lobby code
+let lobby_code:string = "";
+
 //ritorna il linkid di un utente
 // async function checkAuth() : Promise<number> {
 //     console.log("Controllo autorizzazione per giocare...");
@@ -53,8 +59,13 @@ interface Player {
 // }
 
 export function loadOnlineLobbyPage(): HTMLElement {
-    let lobby_code = '';
     let connected_players: Player[] = [];
+   
+    // get lobby code if present
+    const query = router.getQuery().get("lobby-id");
+    if (query) lobby_code = query;
+
+    console.log('Got param', lobby_code);
 
     // @topiana- we need playerID to authenticate the connection, so I passed it to createWebSocketConnection 
 
@@ -64,7 +75,7 @@ export function loadOnlineLobbyPage(): HTMLElement {
         
     const format = 3; // Best of 3 rounds
     
-    let lobbyWS = createWebSocketConnection(/* playerID,  */lobby_code, connected_players);
+    let lobbyWS = createWebSocketConnection(connected_players, lobby_code);
 
     //----
 
@@ -81,7 +92,7 @@ export function loadOnlineLobbyPage(): HTMLElement {
 
         <div class="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-3 gap-8">
             <!-- Create Game Card -->
-            <a id="createGameBtn" class="group relative overflow-hidden rounded-xl bg-gradient-to-br from-cyan-600/20 to-blue-600/20 p-8 border border-cyan-500/30 hover:border-cyan-400/70 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-cyan-500/20">
+            <a id="create-game-btn" class="group relative overflow-hidden rounded-xl bg-gradient-to-br from-cyan-600/20 to-blue-600/20 p-8 border border-cyan-500/30 hover:border-cyan-400/70 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-cyan-500/20">
                 <div class="relative z-10 text-center">
                     <div class="text-5xl mb-4">🎮</div>
                     <h3 class="text-xl font-bold text-white mb-2">Create Game</h3>
@@ -90,13 +101,80 @@ export function loadOnlineLobbyPage(): HTMLElement {
             </a>
             
             <!-- Join Game Card -->
-            <a id="joinGameBtn" class="group relative overflow-hidden rounded-xl bg-gradient-to-br from-green-600/20 to-teal-600/20 p-8 border border-green-500/30 hover:border-green-400/70 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-green-500/20">
+            <a id="join-game-btn" class="group relative overflow-hidden rounded-xl bg-gradient-to-br from-green-600/20 to-teal-600/20 p-8 border border-green-500/30 hover:border-green-400/70 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-green-500/20">
                 <div class="relative z-10 text-center">
                     <div class="text-5xl mb-4">🔗</div>
                     <h3 class="text-xl font-bold text-white mb-2">Join Game</h3>
                     <p class="text-sm text-white/70">Enter a lobby code</p>
                 </div>
             </a>
+
+
+
+
+
+            <!-- Invite Player Card -->
+            <section
+            id="invite-player-card"
+            class="relative rounded-xl p-8 border border-white/20
+                    bg-slate-800/60 backdrop-blur
+                    transition-all duration-300
+                    hover:shadow-lg hover:shadow-white/10
+                    focus-within:ring-2 focus-within:ring-cyan-400"
+            >
+                <div class="text-center">
+                    <!-- Icon -->
+                    <div class="text-5xl mb-4" aria-hidden="true">👤➕</div>
+
+                    <!-- Title -->
+                    <h3 class="text-xl font-bold text-white mb-2">
+                        Invite Player
+                    </h3>
+
+                    <!-- Description -->
+                    <p class="text-sm text-white/70 mb-4">
+                        Invite a player by their username
+                    </p>
+
+                    <!-- Form -->
+                    <form id="invite-form" class="flex flex-col gap-3">
+                        <label for="invite-player-username" class="sr-only">
+                            Player username
+                        </label>
+
+                        <input
+                            id="invite-player-username"
+                            name="username"
+                            type="text"
+                            required
+                            placeholder="Username"
+                            class="rounded-md px-4 py-2
+                                bg-slate-900 text-white
+                                border border-white/20
+                                placeholder-white/40
+                                focus:outline-none focus:ring-2 focus:ring-cyan-400"
+                        />
+
+                        <button
+                            type="submit"
+                            class="mt-2 inline-flex items-center justify-center gap-2
+                                rounded-md px-4 py-2
+                                bg-cyan-600 hover:bg-cyan-500
+                                text-white font-semibold
+                                transition-colors
+                                focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-400"
+                        >
+                            <span aria-hidden="true">✉️</span>
+                            Send Invite
+                        </button>
+                    </form>
+                </div>
+            </section>
+
+
+
+
+
 
             <!-- Lobby Info Card (ChatGPT) -->
             <div class="flex flex-col h-full lg:col-span-2 rounded-xl bg-gradient-to-br from-purple-600/20 to-pink-600/20 border border-purple-500/30 overflow-hidden">
@@ -133,12 +211,12 @@ export function loadOnlineLobbyPage(): HTMLElement {
                     <div class="flex w-full">
 
                         <!-- Start Game -->
-                        <a id="startGameBtn" class="flex-1 flex items-center justify-center py-3 text-sm font-medium text-white bg-green-600/20 hover:bg-green-600/30 transition">
+                        <a id="start-game-btn" class="flex-1 flex items-center justify-center py-3 text-sm font-medium text-white bg-green-600/20 hover:bg-green-600/30 transition">
                             Start Game
                         </a>
 
                         <!-- Leave Lobby -->
-                        <a id="leaveLobbyBtn" class="flex-1 flex items-center justify-center py-3 text-sm font-medium text-white bg-red-600/20 hover:bg-red-600/30 transition">
+                        <a id="leave-lobby-btn" class="flex-1 flex items-center justify-center py-3 text-sm font-medium text-white bg-red-600/20 hover:bg-red-600/30 transition">
                             Leave Lobby
                         </a>
 
@@ -181,7 +259,7 @@ export function loadOnlineLobbyPage(): HTMLElement {
 
                         <!-- ADD button -->
                         <button
-                            id="addBotBtn"
+                            id="add-bot-btn"
                             class="flex-1 flex items-center justify-center py-3 text-sm font-medium text-white bg-green-600/20 hover:bg-green-600/30 transition"
                         >
                             ADD
@@ -189,7 +267,7 @@ export function loadOnlineLobbyPage(): HTMLElement {
 
                         <!-- LEAVE button -->
                         <button
-                            id="remBotBtn"
+                            id="rem-bot-btn"
                             class="flex-1 flex items-center justify-center py-3 text-sm font-medium text-white bg-red-600/20 hover:bg-red-600/30 transition"
                         >
                             REMOVE
@@ -206,14 +284,14 @@ export function loadOnlineLobbyPage(): HTMLElement {
     `;
 
     // Add event listener for create game button
-    const createGameBtn = div.querySelector('#createGameBtn');
+    const createGameBtn = div.querySelector('#create-game-btn');
     if (createGameBtn) {
         createGameBtn.addEventListener('click', () => {
             createLobby(/* playerID,  */format, lobbyWS);
         });
     }
 
-    const joinGameBtn = div.querySelector('#joinGameBtn');
+    const joinGameBtn = div.querySelector('#join-game-btn');
     if (joinGameBtn) {
         joinGameBtn.addEventListener('click', () => {
             const lobby_code = prompt('Enter Lobby Code:');
@@ -223,27 +301,66 @@ export function loadOnlineLobbyPage(): HTMLElement {
         });
     }
     
-    const leaveLobbyBtn = div.querySelector('#leaveLobbyBtn');
+    const leaveLobbyBtn = div.querySelector('#leave-lobby-btn');
     if (leaveLobbyBtn) {
         leaveLobbyBtn.addEventListener('click', () => {
             console.log('Leave Lobby Button clicked');
             leaveLobby(lobby_code, connected_players, lobbyWS);
-            lobbyWS = createWebSocketConnection(/* playerID,  */lobby_code, connected_players);
+            lobbyWS = createWebSocketConnection(/* playerID,  */connected_players);
         });
         console.log('Leave Lobby Button found and event listener added');
     }
 
-    const startGameBtn = div.querySelector('#startGameBtn');
+    const startGameBtn = div.querySelector('#start-game-btn');
     if (startGameBtn) {
         startGameBtn.addEventListener('click', () => {
             startGame(/* lobby_code, */ lobbyWS);
         });
     }
 
+
+    /* -------------------------------- */
+    /*          PLAYER INVITE           */
+
+    //invite-player-btn
+    const inviteform = div.querySelector("#invite-form") as HTMLFormElement;
+    // const usernamediv = div.querySelector("#invite-player-username") as HTMLInputElement;
+    // const invitebtn = div.querySelector("#invite-player-btn");
+    inviteform.addEventListener("submit", (event) => {
+        event.preventDefault(); // stop page reload
+
+        // check if we are in a lobby
+        if (!lobby_code) {
+            alert("(#todo bertter) join a lobby/create before inviting");
+            return ;
+        }
+
+        // get the username
+        const form = event.currentTarget as HTMLFormElement;
+        const data = new FormData(form);
+
+        const username = data.get("username");
+
+        if (typeof username !== "string" || username.trim() === "") {
+            console.error("Invalid username");
+            return;
+        }
+
+        /* #debug */
+        console.log('Inviting', username, "to", lobby_code);
+
+        // send the request to the backend
+        sendPostRequest(`${BACKEND_APIS_URL}/lobby-invite`, {
+            lobbyid: lobby_code,
+            username: username
+        }, 'application/json');
+    });
+
+
     //----------------------
     // @topiana-
     const slider = div.querySelector("#botLevelSlider") as HTMLInputElement;
-    const addBotBtn = div.querySelector('#addBotBtn');
+    const addBotBtn = div.querySelector('#add-bot-btn');
     if (addBotBtn && slider) {
         addBotBtn.addEventListener('click', () => {
             const level = slider.value;
@@ -251,7 +368,7 @@ export function loadOnlineLobbyPage(): HTMLElement {
         });
     }
 
-    const remBotBtn = div.querySelector('#remBotBtn');
+    const remBotBtn = div.querySelector('#rem-bot-btn');
     if (remBotBtn) {
         remBotBtn.addEventListener('click', () => {
             remBot(lobbyWS);
@@ -401,12 +518,17 @@ function updateLobbyInfo(lobby_code?: string, connected_players: Player[] = []) 
 import { router } from "@/router";
 import { load404Page } from "@/pages/errors/404";
 
-function createWebSocketConnection(lobby_code: string, connected_players: Player[]): WebSocket {
+function createWebSocketConnection(connected_players: Player[], lobbyid?:string): WebSocket {
     const ws = new WebSocket(LOBBY_WEBSOCKET_URL);
     console.log("Websocketing to", LOBBY_WEBSOCKET_URL);
 
     ws.onopen = () => {
         console.log('Connected to lobby WebSocket');
+
+        // join lobby if id was passed
+        if (lobbyid) {
+            joinLobby(lobbyid, ws);
+        }
     };
 
     ws.onmessage = (event) => {

@@ -3,9 +3,6 @@ import { router } from "@/router";
 import { sendPostRequest } from "@/services/api/sendRequests";
 import { persistSession } from "@/services/session";
 
-
-import { butlerSocket } from '@/services/butlerSocket';
-
 export function loadLoginPage(): HTMLElement {
     const div = document.createElement('div');
     div.className = 'min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex flex-col';
@@ -117,7 +114,7 @@ export function loadLoginPage(): HTMLElement {
 
 
             /* @ecarbona @topiana business */
-            /* const socket =  */butlerSocket();
+            /* const socket =  *//* ConnectLifecycleWebsocket() */;
             /* 	#TODO mettere il router sul butler e fare che ogni PAGE sia
                 cleanable quindi con procedura di chiusura (distruzione div, 
                 chiusura socket, rimozione eventListeners)
@@ -127,7 +124,14 @@ export function loadLoginPage(): HTMLElement {
             const accessToken = data.accessToken || data.token;
             persistSession(accessToken, data.user, data.refreshToken);
             // window.location.pathname = '/home';
-            router.push('/home') 
+            
+            // emit auth event
+            window.dispatchEvent(
+                new CustomEvent('auth:login', { bubbles: true })
+			);
+            
+            router.push('/home');
+            // router.back();
 
         } catch (error) {
             // === ERRORE ===
@@ -167,6 +171,7 @@ export function loadLoginPage(): HTMLElement {
 
             // 3. Reindirizza
             router.push('/home');
+            // router.back();
 
         } catch (error) {
             // 4. Gestisci l'errore

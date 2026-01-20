@@ -7,7 +7,8 @@ export function sendPostRequest(
         const xhr = new XMLHttpRequest();
         xhr.open("POST", url, true);
 
-        // xhr.withCredentials = true; // 🔥 REQUIRED 4 Cookies (maybe?)
+        // AUTH
+        xhr.withCredentials = true; // 🔥 REQUIRED 4 Cookies
 
         xhr.setRequestHeader("Content-Type", type);
         xhr.onreadystatechange = function () {
@@ -43,9 +44,14 @@ export function sendGetRequest(
 	return new Promise((resolve, reject) => {
 		const xhr = new XMLHttpRequest();
 		xhr.open("GET", url, true);
+
+
+        // AUTH
         xhr.withCredentials = true;
-		xhr.setRequestHeader("Authorization", `Bearer ${token}`);
-		xhr.onreadystatechange = function () {
+		xhr.setRequestHeader("Authorization", `Bearer ${token}`);   // deprecated
+		
+        
+        xhr.onreadystatechange = function () {
 			if (xhr.readyState === XMLHttpRequest.DONE) {
 				if (xhr.status === 200) {
 					try {

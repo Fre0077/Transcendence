@@ -1,26 +1,30 @@
 
+import { router } from "@/router";
+import { toastNotification } from "./toastNotification";
+
 const BUTLER_URL = `ws://${window.location.hostname}:3029/ws`;
 
-let socket: WebSocket | null = null
+let socket:WebSocket | null = null;
 
-export function butlerSocket(): WebSocket
+
+// function joinLobby(lobbyid:string)
+// {
+// 	router.push(`/lobby/online?lobby-id=${}`);
+// }
+
+export function ConnectLifecycleSocket(): WebSocket
 {
 
 	// if already initialized
-	if (socket && socket.readyState !== WebSocket.CLOSED) {
+	if (socket && socket.readyState === WebSocket.OPEN) {
 		return socket;
 	}
 
-	socket = new WebSocket(BUTLER_URL);
-
-	// if (socket === null) {
-	// 	console.log('Error while connecting to', BUTLER_URL);
-	// 	return ;
-	// }
+	/* const  */socket = new WebSocket(BUTLER_URL);
 
 	socket.onopen = () => {
 		console.log('[WS] connected to \'' + BUTLER_URL + '\'');
-		if (socket) socket.send("Ciao Butler");
+		// if (socket) socket.send("Ciao Butler");
 	}
 
 	/* #friend-request
@@ -42,16 +46,19 @@ export function butlerSocket(): WebSocket
 				switch (msg.type)
 				{
 					case "friend-request":
-						console.log("Friend request", msg.data);
+						console.log("Friend request", msg.content);
+						toastNotification.message('TEST', 'X ti ha molestat su instagram', () => {alert('SAIK')}, 10000);
 						break ;
 					case "lobby-invite":
-						console.log("Lobby invite", msg.data);
+						console.log("Lobby invite", msg.content);
+						toastNotification.message('TEST', 'X ha trovato l\'indirizzo di casa tua', () => router.push(`/lobby/online?lobby-id=${msg.content}`), 10000);
 						break ;
 					case "tournament-invite":
-						console.log("Tournament invite", msg.data);
+						console.log("Tournament invite", msg.content);
+						toastNotification.message('TEST', 'X e\' dietro di te', () => {alert('SAIK')}, 10000);
 						break ;
 					default:
-						console.log(`Unknown type ${msg.type}`, msg.data);
+						console.log(`Unknown type ${msg.type}`, msg.content);
 				}
 			}
 		}
@@ -60,7 +67,6 @@ export function butlerSocket(): WebSocket
 			console.log('Error while receiving from butler', err);
 		}
 	}
-
 
 	socket.onclose = () => {
 		console.log("Addio butler");
@@ -75,7 +81,7 @@ export function butlerSocket(): WebSocket
 }
 
 // TODO quando fai il logout
-export function closeButlerSocket() {
+export function DisconnectLifecycleSocket() {
 	socket?.close();
 	socket = null;
 }

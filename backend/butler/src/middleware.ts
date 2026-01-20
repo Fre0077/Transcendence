@@ -55,20 +55,21 @@ export interface AuthReply {
 	reason?:string;
 }
 
-export function isCookieAuthenticated(request:FastifyRequest): AuthReply
+export function isCookieAuthenticated(request:FastifyRequest, reply:FastifyReply, done?: (err?: Error) => void): AuthReply
 {
 	/* --- AUTH CHECK --- */
 	// get the token
 	const token = request.cookies.token;
 
 	/* #debug */
-	console.log('got cookie token', token);
+	// console.log('got cookie token', token);
 
 	if (!token) {
 
 		/* #debug */
 		console.log(`Closed socket for:`, 'Missing token');
 
+		reply.code(401).send({ error: 'Missing token' });
 		return { ok:false, reason:'Missing token' };
 	}
 
@@ -80,8 +81,15 @@ export function isCookieAuthenticated(request:FastifyRequest): AuthReply
 		/* #debug */
 		console.log(`Closed socket for:`, 'Invalid token');
 
+		reply.code(401).send({ error: 'Invalid token' });
 		return { ok:false, reason: 'Invalid token' };
 	}
+
+	// add user to request
+	(request as any).user = user;
+
+	// done if passed
+	if (done) done();	// ✅ continue to the route handler
 
 	// return the user
 	return { ok:true }
@@ -103,7 +111,7 @@ export function getCookieUser(request:FastifyRequest): UserReply
 	const token = request.cookies.token;
 
 	/* #debug */
-	console.log('got cookie token', token);
+	// console.log('got cookie token', token);
 
 	if (!token) {
 

@@ -4,6 +4,7 @@
 MAJOR
 6. rejoin button on tournaments and lobbies
 7. Get profile data via username (current linkId deprecated)
+8. Tournament update got smashed into the lobby player's card
 
 MINOR
 4. timers and finish notifications on game
@@ -17,6 +18,7 @@ MINOR
 14. PongBoard player cards will just have the player's account in it
 15. Tournament winner card not loading
 16. Tournament games not being saved in history
+17. 'classes' folder in src/
 
 STYLE
 1. spacing at the bottom of the lobby page

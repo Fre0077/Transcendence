@@ -124,9 +124,15 @@ class Router {
     return params;
   }
 
+  // @topiana-
+  private stripQuery(path: string): string {
+    return path.split('?')[0];
+  }
+
   // Handle route change
   private async handleRoute(path: string) {
-    const match = this.findRoute(path);
+    const cleanPath = this.stripQuery(path);  //@topiana-
+    const match = this.findRoute(cleanPath);
 
     if (!match) {
       // Route not found - redirect to 404
