@@ -11,7 +11,13 @@ import { Room, RoomPlayerController } from './Room.js';
 interface TournamentState
 {
 	ID:string;
-	// gameID:string;
+
+	// status
+	finished:boolean;
+	winners:string[];
+	current_layer:number;
+
+	// data
 	players: {
 		ID:string;
 		status:string;
@@ -25,13 +31,12 @@ interface TournamentState
 
 		// status
 		status:string;
-		aborted:boolean;
 		gameid:string;
 
 		// outcome
 		winner:string[];
 		score:number[];
-	}[]
+	}[];
 }
 
 /* --------------------------------------------------------------- */
@@ -215,6 +220,7 @@ export class Tournament<T extends MySocket>
 	private _finals:RoomKey;	// key of the Finals
 
 	private	_closed:boolean;	// is the tournament closed? (no more player can join)
+	private _current_layer:number;
 	private _finished:boolean;
 	private _winners:string[];
 
@@ -246,6 +252,7 @@ export class Tournament<T extends MySocket>
 		this._finals = getfinals(this._format);
 
 		this._closed = false;
+		this._current_layer = 0;
 		this._finished = false;
 		this._winners = [];
 
@@ -312,12 +319,19 @@ export class Tournament<T extends MySocket>
 			status: player.status,
 		}));
 
+		function getstatus(room:Room): string {
+			if (room.aborted) return 'aborted';
+			if (room.ingame) return 'in-game';
+			if (room.justwin) return 'autowin';
+			if (room.played) return 'finished';
+			return 'waiting';
+		}
+
 		const rooms = Array.from(this._rooms, ([key, room]) => ({
 			layer: keyToIdx(key).layer,
 			idx: keyToIdx(key).idx,
 			players: Array.from(room.players),
-			status: (room.ingame === true) ? 'in-game' : 'waiting',
-			aborted: room.aborted,
+			status: getstatus(room),
 			gameid: room.gameid,
 			winner: room.winners,
 			score: room.score
@@ -326,12 +340,13 @@ export class Tournament<T extends MySocket>
 
 		const state = {
 			ID: this._ID,
+			finished: this._finished,
+			winners: this._winners,
+			current_layer: this._current_layer,
 			/* gameID: this._gameID,
 			ingame: this._ingame, */
 			players: players,
 			rooms:rooms,
-			finished: this._finished,
-			winners: this._winners
 		};
 
 		return state;
@@ -390,6 +405,9 @@ export class Tournament<T extends MySocket>
 		if (this.advanceAbortedRooms()) changed = true;
 		if (this.advanceJustWinRooms()) changed = true;
 
+		// check if we can go to the next layer
+		if (await this.checkCurrentLayer()) changed = true;
+
 		// check if tournament finished
 		if (this.checkTournamentEnd()) changed = true;
 
@@ -403,12 +421,17 @@ export class Tournament<T extends MySocket>
 	{
 		let changed = false;
 
-		for (const room of this._rooms.values())
+		for (const [key, room] of this._rooms/* .values() */)
 		{
 			/* ------ IS ROOM READY? ------ */
 			if (room.ingame || room.played) continue;
 			if (!room.full()) continue;
 
+			// check if the room is on the current played layer
+			const layer = keyToIdx(key).layer;
+			if (layer !== this._current_layer) continue;
+
+			// check player readyness
 			const players = Array.from(room.players);
 
 			const allReady = players.every(id => {
@@ -501,10 +524,10 @@ export class Tournament<T extends MySocket>
 			
 			// set the winner and the loser room to 'justwin' rooms
 			{
-				const win = this._rooms.get(idxToKey(next.winner));
-				const lose = this._rooms.get(idxToKey(next.loser));
-				if (win) win.autowin();
-				if (lose) lose.autowin();
+				const winkey = idxToKey(next.winner);
+				const losekey = idxToKey(next.loser);
+				if (winkey !== key) this._rooms.get(winkey)?.autowin();
+				if (losekey !== key) this._rooms.get(losekey)?.autowin();
 			}
 
 			// set the room as advanced
@@ -546,6 +569,44 @@ export class Tournament<T extends MySocket>
 
 			// set the room as advanced
 			room.advanced = true;
+			changed = true;
+		}
+
+		return changed;
+	}
+
+	private async checkCurrentLayer(): Promise<boolean>
+	{
+		let changed = false;
+		let allplayed = true;
+
+		// wait a bit inbetween rounds
+		function sleep(ms: number) {
+			return new Promise(resolve => setTimeout(resolve, ms));
+		}
+
+		for (const [key, room] of this._rooms)
+		{
+			const layer = keyToIdx(key).layer;
+			if (layer !== this._current_layer) continue;
+
+			// if someone didn't play, don't advance the layer
+			if (room.played === false)
+			{
+				allplayed = false;
+				break ;
+			}
+		}
+		
+		if (allplayed === true)
+		{
+			// little sleep (1s)
+			await sleep(1000);
+		
+			// advance current layer
+			this._current_layer++;
+
+			// register the status change
 			changed = true;
 		}
 

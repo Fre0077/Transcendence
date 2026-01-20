@@ -2,7 +2,7 @@ import { loadNavbar } from "@/components/navbar";
 import { sendGetRequest } from "@/services/api/sendRequests";
 import { generateInitialsAvatar } from "@/components/createDefaultImage";
 
-import { GameData, createHistoryBar } from "@/components/historyBar";
+import { GameData, createHistoryBar } from "@/components/createHistoryBar";
 import { createFriendsBar } from "@/components/createFriendBar";
 
 export function loadProfilePage(): HTMLElement {
@@ -88,7 +88,7 @@ export function loadProfilePage(): HTMLElement {
 		if (!history) throw Error("History div not found");
 
 		// loops through games and adds them
-		for (const g of games/* .history */) {
+		for (const g of games.reverse()/* .history */) {
 			history.appendChild(createHistoryBar(g));
 		}
 	}).catch(error => {

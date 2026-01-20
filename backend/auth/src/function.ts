@@ -17,7 +17,7 @@ import { stringify } from 'querystring';
 
 export async function generateTokens(user: Account) {
 	// 1. Crea l'Access Token (breve)
-	const accessTokenPayload = { userId: user.id, email: user.email };
+	const accessTokenPayload = { /* @topiana- added */username: user.username, userId: user.id, email: user.email };
 	const accessToken = jwt.sign(accessTokenPayload, "ft_trans(cendence)", {
 		expiresIn: "15m",
 	});

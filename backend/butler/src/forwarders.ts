@@ -79,7 +79,7 @@ export function fwdWebSocket(connection:WebSocket, request:FastifyRequest, endpo
 		endpoint,
 		{
 			headers: {
-				'x-user-id': String(auth.userId),
+				'x-user-id': String(auth.username) ?? String(auth.userId),
 				'x-gateway-secret': String(GATEWAY_SECRET),
 				// 'x-ws-query': JSON.stringify(request.query),
 			}

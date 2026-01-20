@@ -5,11 +5,12 @@
 // }
 
 
-const PONG_BACKEND_URL = `ws://${window.location.hostname}:3029/ws/pong/play`;
+const PONG_BACKEND_URL = `ws://${window.location.hostname}:3029/ws/pong`;
 
 // PongSocket.ts
 export interface PongSocket {
 	matchid?:string;
+	replay?:string;
 	send(data: unknown): void;
 	handshake(): void;
 	onmessage(handler: (state: any, /* ... */) => void): void;
@@ -34,20 +35,14 @@ const playerSecretary = (data:any, ws:WebSocket) => {
 // behaviour of the player socket
 export function createPlayerSocket(/* , playerid:string */): PongSocket
 {
-	const ws = new WebSocket(PONG_BACKEND_URL)
-	// 5. handshake when ready
+	const ws = new WebSocket(`${PONG_BACKEND_URL}/play`);
+
 	return {
 		// data
 		// playerid: playerid,
 
 		// functions
-		handshake() {
-			ws.onopen = () => {
-				sleep(1000).then(() => {
-					ws.send(JSON.stringify({ method: "JOIN" }));
-				});
-			};
-		},
+		handshake() {},
 		send(data) {
 			ws.send(JSON.stringify(data));
 		},
@@ -85,8 +80,10 @@ const spectateSecretary = (data:any, ws:WebSocket) => {
 }
 
 // behaviour of the spectator socket
-export function createSpectatorSocket(ws: WebSocket/* , playerid:string */, matchid:string): PongSocket
+export function createSpectatorSocket(/* , playerid:string */matchid:string): PongSocket
 {
+	const ws = new WebSocket(`${PONG_BACKEND_URL}/spectate`);
+
 	return {
 		// data
 		// playerid: playerid,
@@ -109,6 +106,55 @@ export function createSpectatorSocket(ws: WebSocket/* , playerid:string */, matc
 					// console.log('Msg received', msg);
 
 					if (msg.method) spectateSecretary(msg, ws);
+					else handler(msg);
+				} catch (err) {
+					// console.log(err);
+				}
+			};
+		},
+		close() {
+			ws.close();
+		}
+	};
+}
+
+/* --------------------------------------- */
+/* 			  SPECTATOR SOCKET			   */
+/* --------------------------------------- */
+
+
+// already parsed message
+const replaySecretary = (data:any, ws:WebSocket) => {
+	console.log('Spectator Socket got', data);
+	ws;
+}
+
+// behaviour of the spectator socket
+export function createReplaySocket(/* , playerid:string */replaystring:string): PongSocket
+{
+	const ws = new WebSocket(`${PONG_BACKEND_URL}/replay`);
+
+	return {
+		// data
+		replay:replaystring,
+
+		// functions
+		handshake() {
+			sleep(200)
+			.then(() => {
+				ws.send(replaystring);
+			});
+		},
+		send() {},
+		onmessage(handler) {
+			ws.onmessage = (e) => {
+				try {
+					const msg = JSON.parse(e.data);
+
+					/* #debug */
+					// console.log('Msg received', msg);
+
+					if (msg.method) replaySecretary(msg, ws);
 					else handler(msg);
 				} catch (err) {
 					// console.log(err);

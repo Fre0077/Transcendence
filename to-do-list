@@ -2,25 +2,26 @@
 @topiana- todos
 
 MAJOR
-2. Replay system
 6. rejoin button on tournaments and lobbies
+7. Get profile data via username (current linkId deprecated)
 
 MINOR
-3. abort games between bots in tournaments when all players leave
 4. timers and finish notifications on game
 5. finish notification on tournaments
-6. autowin on disconnected players and layer check
 7. tournaments chat
 8. cheering mentre specti (come clash)
 9. Emotes in-game
 10. Error log in lobby page
-11. Swap history order in profile page
+12. Inconsistend player-score relation in match history
+13. Force start timers in for tournament layers and game rounds
+14. PongBoard player cards will just have the player's account in it
+15. Tournament winner card not loading
+16. Tournament games not being saved in history
 
 STYLE
 1. spacing at the bottom of the lobby page
 2. pls... the back button
-3. laodPongBoard() player2's widget is too close to the border
-4. Better timer on pong page
+4. Better friendlist
 
 CLEANUPS
 2. Log all major messages
@@ -37,5 +38,11 @@ DONE
 4. Room stuck if player wins (DONE)
 3. loadPongBoard(ws:WebSocket) that spawns the game using that socket (DONE)
 5. remove event listeners if game is finished (DONE)
-10. NON AGGIORNA SCORE LA PRIMA PARTITA CHE FAI
-4. Publish on RabbitMQ the history of the games
+10. NON AGGIORNA SCORE LA PRIMA PARTITA CHE FAI (DONE)
+4. Publish on RabbitMQ the history of the games (DONE)
+3. abort games between bots in tournaments when all players leave (DONE)
+6. autowin on disconnected players and layer check (DONE)
+11. Swap history order in profile page (DONE)
+4. Better timer on pong (DONE)
+3. laodPongBoard() player2's widget is too close to the border (DONE?)
+2. Replay system (DONE)

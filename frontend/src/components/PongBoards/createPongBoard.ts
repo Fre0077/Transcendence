@@ -12,7 +12,6 @@ import { InteractiveWidget, createProfileWidget } from "@components/createProfil
 
 export function createPongBoard(socket:PongSocket): PongBoard {
 
-	
 	const div = document.createElement('div');
 	
 	// build div
@@ -23,8 +22,6 @@ export function createPongBoard(socket:PongSocket): PongBoard {
 
 	<!-- Game Area -->
   	<div class="w-full max-w-6xl flex flex-col lg:flex-row items-center justify-between gap-8">
-
-		<div id="timeout"></div>
 
 		<!-- Player 1 Card -->
 		<div class="w-full lg:w-64 rounded-xl bg-gradient-to-br from-cyan-600/20 to-blue-600/20 p-6 border border-cyan-500/30 text-center">
@@ -54,8 +51,6 @@ export function createPongBoard(socket:PongSocket): PongBoard {
 	// where to draw the card UI
 	const player1Slot = div.querySelector("#player1-card")!;
 	const player2Slot = div.querySelector("#player2-card")!;
-	// were to draw timeout
-	const timeout = div.querySelector("#timeout")!;
 
 	// 🧠 cache
 	let playersInitialized = false;
@@ -92,12 +87,6 @@ export function createPongBoard(socket:PongSocket): PongBoard {
 		// 2️⃣ score updates (cheap)
 		if (player1Widget) player1Widget.setScore(Number(state.score[0]));
 		if (player2Widget) player2Widget.setScore(Number(state.score[1]));
-
-		// display timeout
-		if (timeout) {
-			if (state?.timeout > 0) {timeout.innerHTML = state.timeout}
-			else {timeout.innerHTML = '';}
-		}
 
 		// 3️⃣ pure canvas draw
 		draw(state);

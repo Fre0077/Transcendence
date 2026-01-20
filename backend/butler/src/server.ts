@@ -162,6 +162,7 @@ fastify.register(async function (fastify) {
 	// backend websockets
 	fastify.get('/pong/play', { websocket: true }, wsforwarder(`${PONG_URL}/play`));
 	fastify.get('/pong/spectate', { websocket: true }, wsforwarder(`${PONG_URL}/spectate`));
+	fastify.get('/pong/replay', { websocket: true }, wsforwarder(`${PONG_URL}/replay`));
 	fastify.get('/lobby', { websocket: true }, wsforwarder(`${LOBBY_URL}/ws`));
 	fastify.get('/tournament', { websocket: true }, wsforwarder(`${TOURNAMENT_URL}/ws`));
 

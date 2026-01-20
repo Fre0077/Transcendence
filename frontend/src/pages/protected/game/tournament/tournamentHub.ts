@@ -11,8 +11,6 @@ export function loadTournamentHubPage(): HTMLElement
     const playerID = localStorage.getItem('userId'/* ) || sessionStorage.getItem('guestID') || 'Guest_' + Math.floor(Math.random() * 1000 */);
         if (!playerID)
                 return load404Page();
-            
-    let tournamentWS = createWebSocketConnection(playerID);
 
     //----
 
@@ -125,19 +123,22 @@ export function loadTournamentHubPage(): HTMLElement
                     </button>
                 </div>
             </div>
+
+            <!-- Rejoin Tourn Card -->
+            <a id="reJoinTournBtn"
+                class="hidden group relative overflow-hidden rounded-xl bg-gradient-to-br from-green-600/20 to-teal-600/20 p-8 border border-green-500/30 hover:border-green-400/70 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-green-500/20">
+            </a>
+        
         
         </div>
     </div>
     `;
 
-    // Add event listener for create game button
-    /* const createTournBtn = div.querySelector('#createTournBtn');
-    if (createTournBtn) {
-        createTournBtn.addEventListener('click', () => {
-            create(tournamentWS);
-        });
-    } */
+    // connect to the backend
+    let tournamentWS = createWebSocketConnection(spawnRejoinButton);
 
+
+    // JOIN button code
     const joinTournBtn = div.querySelector('#joinTournBtn');
     if (joinTournBtn) {
         joinTournBtn.addEventListener('click', () => {
@@ -149,6 +150,30 @@ export function loadTournamentHubPage(): HTMLElement
         });
     }
 
+    // REJOIN button code
+    const reJoinBtn = div.querySelector('#reJoinTournBtn') as HTMLAnchorElement;
+    function spawnRejoinButton(tournament_id:string)
+    {
+        // Set the button content
+        reJoinBtn.innerHTML = `
+            <div class="relative z-10 text-center">
+                <div class="text-5xl mb-4">↩️</div>
+                <h3 class="text-xl font-bold text-white mb-2">Re-Join Tournament</h3>
+                <p class="text-sm text-white/70">Resume your last match</p>
+                <p class="text-xs text-white/50 mt-1">Tournament ID: <span class="font-mono">${tournament_id}</span></p>
+            </div>
+        `;
+    
+        // Make it visible
+        reJoinBtn.classList.remove('hidden');
+    
+        // Make it work
+        reJoinBtn.onclick = (e) => {
+            e.preventDefault();
+            pushToTournament(tournamentWS, tournament_id);
+        };
+    }
+    
     /* Chat-GPT does it's things: select a number of players and tournament stats */
     const createHeader = div.querySelector('#createTournHeader')!;
     const options = div.querySelector('#createTournOptions') as HTMLDivElement;
@@ -326,7 +351,7 @@ function pushToTournament(socket:WebSocket, /* playerID:string, */ tournamentID:
 // #review pls (ChatGPT)
 import { router } from "@/router";
 
-function createWebSocketConnection(playerID:string): WebSocket
+function createWebSocketConnection(onRejoin: (tournamentID: string) => void): WebSocket
 {
     const ws = new WebSocket(TOURNAMENT_WEBSOCKET_URL);
     console.log('Websocketing to', TOURNAMENT_WEBSOCKET_URL);
@@ -335,7 +360,7 @@ function createWebSocketConnection(playerID:string): WebSocket
         console.log('Connected to tournament WebSocket');
 
         // @topiana- aggiunta la AUTH call all'inizio della connesione #review pls
-        ws.send(JSON.stringify({ method: 'AUTH', playerID: playerID }));
+        // ws.send(JSON.stringify({ method: 'AUTH', playerID: playerID }));
     };
 
     ws.onmessage = (event) => {
@@ -362,7 +387,12 @@ function createWebSocketConnection(playerID:string): WebSocket
             // just logging
             else if (method === 'AUTH_REPLY' && data.status === 'success') {
                 console.log('Authenticatd successfully');
+            }
+            // pupup rejoin button
+            else if (data.ID) {
 
+                // spawn the rejoin-tournament-card and make it that if 
+                onRejoin(data.ID);
             }
 
         } catch (e) {

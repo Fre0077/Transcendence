@@ -3,43 +3,35 @@ import { load404Page } from "@/pages/errors/404";
 import { createSpectatorSocket } from "@components/PongBoards/PongSocket";
 import { createPongBoard } from "@components/PongBoards/createPongBoard";
 
-const PONG_SPECTATE_URL = `ws://${window.location.hostname}:3029/ws/pong/spectate`;
+// #needs-auth-check
+// import { isauth } from "@/services/api/isauth";
 
 export function loadPongSpectatorDiv(matchid:string): HTMLElement {
 
+	// obsolete
 	const playerid = localStorage.getItem('userId') || sessionStorage.getItem('guestID');
 	if (playerid === null) {
 		return load404Page();
 	}
 
 	/* ------ BUILD THE BOARD ------ */
-	// 1. create raw websocket
-	const ws = new WebSocket(PONG_SPECTATE_URL);
 
-	// 2. wrap it
-	const socket = createSpectatorSocket(ws, /* playerid, */ matchid);
+	// 1. create socket
+	const socket = createSpectatorSocket(/* playerid, */ matchid);
 
-	// 3. create UI
+	// 2. create UI
 	const board = createPongBoard(socket);
 
-	// 4. connect socket → board
+	// 3. connect socket → board
 	socket.onmessage((state) => {
 		// forward game state to board
 		board.update(state);
 	});
 
-	// 5. handshake when ready
-	ws.onopen = () => {
-		socket.handshake();
-	};
-
-	ws.onclose = () => {
-		console.log("Disconnected from game");
-	};
+	// 4. handshake when ready
+	socket.handshake();
 
 	/* --------- BUILD THE PAGE ----------- */
-
-	// <div class="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex flex-col items-center py-8 px-4">
 
 	const div = document.createElement('div');
 	div.className = 'relative w-full bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex flex-col rounded-xl border border-white/10';
@@ -80,6 +72,11 @@ export function loadPongSpectatorDiv(matchid:string): HTMLElement {
 
 			// destroy board
 			board.destroy();
+
+			// notify parent
+			div.dispatchEvent(
+				new CustomEvent("spectate:close", { bubbles: true })
+			);
 		});
 	}
 

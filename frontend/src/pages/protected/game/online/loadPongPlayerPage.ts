@@ -4,41 +4,32 @@ import { load404Page } from "@/pages/errors/404";
 import { createPlayerSocket } from "@components/PongBoards/PongSocket";
 import { createPongBoard } from "@components/PongBoards/createPongBoard";
 
-
-// const PONG_BACKEND_URL = `ws://${window.location.hostname}:3029/ws/pong/play`;
+// #needs-auth-check
+// import { isauth } from "@/services/api/isauth";
 
 export function loadPongPlayerPage(): HTMLElement {
 
-	const playerID = localStorage.getItem('userId') || sessionStorage.getItem('guestID');
-	if (playerID === null) {
+	// obsolete
+	const playerid = localStorage.getItem('userId') || sessionStorage.getItem('guestID');
+	if (playerid === null) {
 		return load404Page();
 	}
 
 	/* ------ BUILD THE BOARD ------ */
-	// 1. create raw websocket
-	// const ws = new WebSocket(PONG_BACKEND_URL);
-
-	// 2. wrap it
+	// 1. create socket
 	const socket = createPlayerSocket(/* ws, playerID */);
 
-	// 3. create UI
+	// 2. create UI
 	const board = createPongBoard(socket);
 
-	// 4. connect socket → board
+	// 3. connect socket → board
 	socket.onmessage((state) => {
 		// forward game state to board
 		board.update(state);
 	});
 
+	// 4. handshake when ready
 	socket.handshake();
-	/* // 5. handshake when ready
-	ws.onopen = () => {
-		socket.handshake();
-	};
-
-	ws.onclose = () => {
-		console.log("Disconnected from game");
-	}; */
 
 	/* --------- BUILD THE PAGE ----------- */
 

@@ -25,67 +25,8 @@ function randomAngle(N:number = 1) : number[]
 	return arr;
 }
 
-
-/* ------------------- Ball Class ------------------- */
-/* all data relative to the ball */
-
-class Ball
-{
-	public pos:number[];			/* coordinates (x,y) of the ball */
-	public angle:number;			/* angle on which the ball is moving (clamped 0 -> 2PI) */
-	public speed:number;			/* module of the peed */
-
-	constructor () {
-		this.angle = 0;
-		this.pos = [0.5, 0.5];
-		this.speed = 0.01;
-	}
-
-	// resets the parameters to the default ones
-	public reset() {
-		this.angle = 0;
-		this.pos = [0.5, 0.5];
-		this.speed = 0.01;
-	}
-
-	// this function bounces ann object that changes the X
-	// component of the ball's direction
-	// @offsetDeg is the angle we want to add to a perfect reflection
-	public bounceX(offsetDeg:number = 0) {
-
-		// convert offset to radians
-		const delta = offsetDeg * (Math.PI / 180);
-
-		// perfect reflection off vertical wall
-		const perfectReflection = Math.PI - this.angle;
-	
-		// apply your custom offset
-		this.angle = perfectReflection + delta;
-		this.angle = Ball.clamp(this.angle);
-	}
-
-	public bounceY(offsetDeg:number = 0) {
-
-		// convert offset to radians
-		const delta = offsetDeg * (Math.PI / 180);
-
-		// perfect reflection off vertical wall
-		const perfectReflection = -this.angle;
-
-		// apply your custom offset
-		this.angle = perfectReflection + delta;
-		this.angle = Ball.clamp(this.angle);
-	}
-
-	public static clamp(angle:number): number {
-
-		if (angle < 0)
-			angle = (2 * Math.PI) + angle % (2 * Math.PI);
-		if (angle > (2 * Math.PI))
-			angle = angle % (2 * Math.PI) - (2 * Math.PI);
-		return angle;
-	}
-}
+import Ball from './Ball.js'
+import Replay, { Move } from './Replay.js';
 
 export class Player
 {
@@ -173,6 +114,7 @@ interface PlayerState {
 }
 
 interface GameState {
+	tick:number;
 	score: number[];
 	ball: BallState;
 	players:PlayerState[];
@@ -194,7 +136,11 @@ export class Game
 {
 	private timeout:number;			/* number of ms the game should halt between rouds */
 	private tick:number;			/* number of in-game tick passed till the beginning of the match */
-	// private log:string;				// list of movements for replay #todo
+	
+	// replay variables
+	private isreplay:boolean;
+	private _replay:Replay;				// record movements, playerid and directions for replay
+	private _moves:Move[];
 
 	// match variables
 	private round:number;			/* number of round (0 - > target * 2 - 1) */
@@ -223,7 +169,7 @@ export class Game
 
 	/* ======================== CONSTRUCTORS ======================== */
 	// the constructor expliccitly wants the variables initialized
-	constructor(players:{ idx:number, ID:string }[]) {
+	constructor(players:{ idx:number, ID:string }[], replay?:boolean) {
 		this.timeout = 60;				// 1 sec of timeout
 		this.tick = 0;					// start -> 0
 	
@@ -244,6 +190,11 @@ export class Game
 		this.running = false;
 		this.listeners = new Map();
 		this.lastmovetime = Date.now();
+
+		// setup replay
+		this.isreplay = replay || false;
+		this._replay = new Replay(this._players.map(p => p.ID), this.directions);
+		this._moves = [];
 	}
 
 
@@ -277,6 +228,11 @@ export class Game
 		return this._players;
 	}
 
+	// get the replay string
+	public get replay() {
+		return this._replay.replaystring;
+	}
+
 	public has(playerid:string) {
 		return this._players.find(p => p.ID === playerid);
 	}
@@ -295,6 +251,7 @@ export class Game
 			}
 		}));
 		return {
+			tick: this.tick,
 			score: this.score,				/* score of the match [player1, player2] */
 			ball: {
 				pos: this.ball.pos,			/* array of 2 coordinates [X, Y] of the CENTER of the ball */
@@ -344,13 +301,26 @@ export class Game
 		this.directions = dirs;
 	}
 
+	// we trust the caller here
+	public setMoves(__moves:Move[]) {
+		this._moves = __moves;
+	}
+
+
+	/* ----------------------------------------------------------------- */
+	/* 							USER INPUTS								 */
+	/* ----------------------------------------------------------------- */
+
 	// Input handling
 	public press(player:number, direction: string) {
 		
 		if (player !== 0 && player !== 1) return;
 		if (direction === 'Up') this._players[player].Up = true;
 		if (direction === 'Down')this._players[player].Down = true;
+
+		// update datas
 		this.lastmovetime = Date.now();
+		if (!this.isreplay) this._replay.addmove(this.tick, player, `${direction}_PRESS`);
 	}
 
 	public release(player:number, direction: string) {
@@ -358,7 +328,32 @@ export class Game
 		if (player !== 0 && player !== 1) return;
 		if (direction === 'Up') this._players[player].Up = false;
 		if (direction === 'Down') this._players[player].Down = false;
+
+		// update datas
 		this.lastmovetime = Date.now();
+		if (!this.isreplay) this._replay.addmove(this.tick, player, `${direction}_RELEASE`);
+	}
+
+		// starts the ball
+	public launch() {
+		// don't double launch
+		if (this.roundStart === true || this.timeout !== 0) return;
+
+		// tell the game loop that the ball needs to move
+		this.roundStart = true;
+
+		// randomize ball direction
+		this.ball.angle = Ball.clamp(this.directions[this.round]);
+
+		// which player the ball goes to?
+		if (this.lastScored === 1) {Ball.clamp(this.ball.angle += Math.PI);}
+		if (this.lastScored === 0) {/* do nothing */;}
+
+		/* #debug */
+		console.log(`launching ball with angle ${this.ball.angle}`);
+
+		// save the launch in replay
+		if (!this.isreplay) this._replay.addmove(this.tick, 0, "START_PRESS");
 	}
 
 	/* ----------------------------------------------------------------- */
@@ -499,32 +494,8 @@ export class Game
 
 
 
-	// concord == -1, 0, 1
-	// speed needs to be adjusted but it kinda workds
-	// speeds is from 0 to 1. 1 max intensity, 0 no intensity
-	// private dynamicBounce(axis:string, speed:number, concord:number) {
-	// 	if (axis === 'x') this.ballAngle = Math.PI - this.ballAngle + concord * (this.ballAngle * speed / 4);
-	// 	else if (axis === 'y') this.ballAngle = this.ballAngle * -1;
-
-	// 	// clamp angle
-	// 	if (this.ballAngle < 0) this.ballAngle = 2 * Math.PI + this.ballAngle;
-	// 	else if (this.ballAngle > 2 * Math.PI) this.ballAngle = this.ballAngle - 2 * Math.PI;
-	// }
-
-
-
-
-
-
-
-
-
-
-
-
 	// bring the gamestate back to the start not affecting the score
 	private ballInTheMiddle() {
-		this.timeout = 180;				// 3 sec of timeout
 	
 		this.round += 1;				// go to next round
 		this.roundStart = false;		// round not started
@@ -544,62 +515,40 @@ export class Game
 			this.winner = 1;
 			this.stop();
 		}
+		else { this.timeout = 180; }	// 3 sec of timeout
 	}
-
-
-
-
-
-	/* ========================================================================= */
-	/* ======================== PUBLIC GAMEPLAY METHODS ======================== */
-	/* ========================================================================= */
 
 
 
 
 
 	// reset the game to the beginning
-	public reset() {
+	// public reset() {
 
-		/* ! ! ! KEEP THIS THE SAME AS THE CONSTRUCTOR ! ! ! */
-		this.timeout = 60;				// 1 sec of timeout
-		this.tick = 0;					// start -> 0
+	// 	/* ! ! ! KEEP THIS THE SAME AS THE CONSTRUCTOR ! ! ! */
+	// 	this.timeout = 60;				// 1 sec of timeout
+	// 	this.tick = 0;					// start -> 0
 	
-		this.round = 0;					// start at round 0
-		this.roundStart = false;		// ball not moving
-		this.score = [0, 0];			// match score to 0;
-		this.lastScored = 0;			// default
-		this.targetScore = 3;			// Bo5
-		this.winner = -1;				// noone won just yet
+	// 	this.round = 0;					// start at round 0
+	// 	this.roundStart = false;		// ball not moving
+	// 	this.score = [0, 0];			// match score to 0;
+	// 	this.lastScored = 0;			// default
+	// 	this.targetScore = 3;			// Bo5
+	// 	this.winner = -1;				// noone won just yet
 		
-		this.ball = new Ball();
-		this.directions = randomAngle((this.targetScore * 2) - 1);
+	// 	this.ball = new Ball();
+	// 	this.directions = randomAngle((this.targetScore * 2) - 1);
 
-		this._players.forEach((player) => {
-			player.reset();
-		});
+	// 	this._players.forEach((player) => {
+	// 		player.reset();
+	// 	});
 		
-		// start the game again
-		this.start();
-	}
+	// 	// start the game again
+	// 	this.start();
+	// }
 
-	// starts the ball
-	public launch() {
-		// don't double launch
-		if (this.roundStart === true || this.timeout !== 0) return;
 
-		// tell the game loop that the ball needs to move
-		this.roundStart = true;
 
-		// randomize ball direction
-		this.ball.angle = Ball.clamp(this.directions[this.round]);
-
-		// which player the ball goes to?
-		if (this.lastScored === 1) {Ball.clamp(this.ball.angle += Math.PI);}
-		if (this.lastScored === 0) {/* do nothing */;}
-
-		console.log(`launching ball with angle ${this.ball.angle}`);
-	}
 
 	/* play a tick of the game, one game logic progression.
 	then sends the updated state to the players */
@@ -607,6 +556,26 @@ export class Game
 	{
 		// advance the tick
 		++this.tick;
+
+		// Replay automoves
+		if (this.isreplay) {
+
+			// #todo maybe remove the move already played from replay? (not if you want backward and forward)
+			const moves = this._moves.filter(m => m.tick === this.tick);
+			for (const m of moves) {
+				const actions = m.move.split('_');
+
+				/* #debug */
+				console.log('Playing move', actions);
+		
+				if (actions[0] === "START") this.launch();
+				else if (actions[1] === 'PRESS') this.press(m.player, actions[0]);
+				else if (actions[1] === 'RELEASE') this.release(m.player, actions[0]);
+				else {
+					console.log('Invalid action on move', m);
+				}
+			}
+		}
 
 		// Move players
 		this._players.forEach((player) => {

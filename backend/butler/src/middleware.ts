@@ -91,6 +91,7 @@ export function isCookieAuthenticated(request:FastifyRequest): AuthReply
 }
 
 interface UserReply extends AuthReply {
+	username?:string;
 	userId?:number;
 	email?:string;
 }
@@ -132,7 +133,7 @@ export function getCookieUser(request:FastifyRequest): UserReply
 
 function verifyAccessToken(token: string) {
 	try {
-		return jwt.verify(token, "ft_trans(cendence)") as { userId: number; email: string };
+		return jwt.verify(token, "ft_trans(cendence)") as { username: string, userId: number; email: string };
 	} catch (error) {
 		return null;
 	}

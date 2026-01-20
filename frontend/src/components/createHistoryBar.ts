@@ -1,4 +1,6 @@
 
+import { loadPongReplayDiv } from "@pages/protected/game/online/laodPongReplayDiv";
+
 export interface GameData {
 	id:number;			// id nella tabella delle history
 	createdAt:string; 
@@ -120,12 +122,44 @@ export function createHistoryBar(data: GameData): HTMLElement {
 				</button>
 			</div>
 		</div>
+
+		<!-- REPLAY ROW -->
+		<div id="replay-slot"></div>
 	`;
 
+	let replayContainer: HTMLElement | null = null;
+
 	const replayBtn = div.querySelector('button');
-	replayBtn?.addEventListener('click', () => {
-		console.log("Replay clicked:", data.replay);
+	replayBtn?.addEventListener("click", () => {
+		// toggle replay
+		if (replayContainer) {
+			replayContainer.remove();
+			replayContainer = null;
+			return;
+		}
+
+		replayContainer = document.createElement("div");
+		replayContainer.className = "mt-4";
+
+		const replayDiv = loadPongReplayDiv(data.replay);
+
+		// 🔥 hook close button
+		replayDiv.addEventListener("replay:close", () => {
+			replayContainer?.remove();
+			replayContainer = null;
+		});
+
+		replayContainer.appendChild(replayDiv);
+		div.appendChild(replayContainer);
 	});
+
+	// const replayBtn = div.querySelector('button');
+	// replayBtn?.addEventListener('click', () => {
+	// 	console.log("Replay clicked:", data.replay);
+
+	// 	const replaySlot = div.querySelector('#replay-slot');
+	// 	if (replaySlot) replaySlot.appendChild(loadPongReplayDiv(data.replay));
+	// });
 
 	return div;
 }

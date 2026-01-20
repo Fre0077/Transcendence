@@ -107,10 +107,9 @@ export function createGame(gameid:string, playerid:string[], metadata: any): Gam
 	const players = Array.from(playerid, (id, idx) => ({
 		ID: id,
 		idx: idx,
-		status: "disconnected" as "connected" | "disconnected" | "left"
 	}));
 
-	const game:Game = new Game(players.map(({ idx, ID }) => ({ idx, ID })));
+	const game:Game = new Game(players);
 	games.set(gameid, { game: game, /* players: players, */ timeout:TIMEOUT, metadata:metadata });
 	return game;
 }
@@ -213,13 +212,17 @@ export function deleteGame(gameid:string, reason:string | void)
 	// #todo send to RabbitMQ and ft_bunny
 	if (winner !== -1)
 	{
+		// create player array based on Player.idx
+		const players = entry.game.players.sort((a, b) => a.idx - b.idx).map(p => p.ID);
+
 		// what will be sent to RabbitMQ and ft_bunnyMQ @ecarbona
 		const history = {
 			game: 'pong',
 			ID: gameid,
 			winner: [entry.game.players[winner].ID],
-			players: entry.game.players.map(player => player.ID),
+			players: players,
 			score: entry.game.state.score,
+			replay: entry.game.replay,
 			metadata: entry.metadata
 		}
 
@@ -258,15 +261,11 @@ export function deleteGame(gameid:string, reason:string | void)
 
 import { interpreter } from './interpreter.js';
 
-/* interface SpectateQuery {
-	gameid?: string;
-}
- */
-// Websocket rout handler
 function sleep(ms: number) {
 	return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+// Websocket rout handler
 fastify.register(async function (fastify) {
 
 	/* === PLAYERS ENDPOINT === */
@@ -279,7 +278,7 @@ fastify.register(async function (fastify) {
 
 
 		/* --------- CHECK AUTH --------- */
-		const userid = request.headers['x-user-id'] as string;	// danerous?
+		const userid = request.headers['x-user-id'] as string;	// dangerous?
 		const secret = request.headers['x-gateway-secret'];
 		
 		if (!userid || secret !== GATEWAY_SECRET) {
@@ -358,18 +357,21 @@ fastify.register(async function (fastify) {
 
 		// Handle WebSocket errors
 		connection.on('error', (error:string) => {
+			console.error(`WebSocket error for ${clientIP}:`, error);
+
 			// remove listener
 			game.unsubscribe(playerid);
 
-			console.error(`WebSocket error for ${clientIP}:`, error);
+			// close socket
+			connection.close(1006, error);
 		});
 
 		// Handle connection close
 		connection.on('close', (code:number, reason:string) => {
+			console.log(`Client ${clientIP} disconnected - Code: ${code}, Reason: ${reason?.toString() || 'none'}`);
+
 			// remove listener
 			game.unsubscribe(playerid);
-
-			console.log(`Client ${clientIP} disconnected - Code: ${code}, Reason: ${reason?.toString() || 'none'}`);
 		});
 	});
 
@@ -378,7 +380,7 @@ fastify.register(async function (fastify) {
 
 
 	/* === SPECTATORS ENDPOINT === */
-	fastify.get/* <{ Querystring: SpectateQuery }> */('/spectate', { websocket: true }, (connection, request) => {
+	fastify.get('/spectate', { websocket: true }, (connection, request) => {
 		
 		// Logging the connection
 		const clientIP = request.socket.remoteAddress;
@@ -387,9 +389,8 @@ fastify.register(async function (fastify) {
 
 
 		/* --------- CHECK AUTH --------- */
-		const userid = request.headers['x-user-id'] as string;	// danerous?
+		const userid = request.headers['x-user-id'] as string;	// dangerous?
 		const secret = request.headers['x-gateway-secret'];
-		// const query = JSON.parse(request.headers['x-ws-query'] as string);	// !dangerous not catching it, but im wild @topiana-
 		
 		if (!userid || secret !== GATEWAY_SECRET) {
 			console.log('Sus player', userid);
@@ -466,6 +467,111 @@ fastify.register(async function (fastify) {
 
 			// remove listener
 			if (match) match.unsubscribe(userid);
+			// close socket
+			connection.close(1006, error);
+		});
+
+	});
+
+	/* === REPLAY ENDPOINT === */
+	fastify.get('/replay', { websocket: true }, (connection, request) => {
+		
+		// Logging the connection
+		const clientIP = request.socket.remoteAddress;
+		console.log(`New connection from ${clientIP}`);
+
+
+		/* --------- CHECK AUTH --------- */
+		const userid = request.headers['x-user-id'] as string;	// dangerous?
+		const secret = request.headers['x-gateway-secret'];
+		
+		if (!userid || secret !== GATEWAY_SECRET) {
+			console.log('Sus player', userid);
+			connection.close(1008, "Invalid user authentication");
+			return ;
+		}
+
+		// Send welcome message
+		connection.on('open', () => {
+			connection.send('Connected to Pong-Replay WebSocket server!');
+		});
+
+		// replay game
+		let game:Game | undefined = undefined;
+
+		connection.on('message', (message:string) => {
+
+			try
+			{
+				/* ------- CHECK REPLAY ------- */
+
+				const replay = JSON.parse(message);
+
+				// check for replay basics
+				if (!replay.players || !replay.directions || !replay.moves) {
+					console.log('Wrongly formatted replay', replay);
+					connection.close(3001, "Wrongly formatted replay");
+					return ;
+				} 
+
+				/* -------- BUILD GAME -------- */
+				
+				const players = Array.from(replay.players, (id, idx) => ({
+					ID: id as string,	// trust me bro ;P
+					idx: idx,
+				}));
+
+				// create game
+				game = new Game(players, true);
+
+				// set the directions
+				game.setDirections(replay.directions);
+
+				// set the moves to play
+				game.setMoves(replay.moves);
+
+				// start the game
+				game.start();
+
+				// listener sends board updates to the frontend
+				const listener = (state:string) => {
+					if (state === "close") {
+						connection.close(undefined, "Game closed");
+					}
+					else if (connection.readyState === WebSocket.OPEN) {
+						connection.send(state);
+					}
+				};
+
+				// add listener, even if not expected AS PLAYER
+				game.subscribe(userid, listener);
+				/* --------------------------- */
+			}
+			catch (err)
+			{
+				console.log('Error while connecting the spectator socket');
+				connection.close(1011, "Internal server error");
+				return ;
+			}
+		})
+
+		// Handle connection close
+		connection.on('close', (code:number, reason:string) => {
+			console.log(`Client ${clientIP} disconnected - Code: ${code}, Reason: ${reason?.toString() || 'none'}`);
+		
+			// remove listener
+			game?.unsubscribe(userid);
+
+			// stop game
+			game?.stop();
+		});
+	
+		// Handle WebSocket errors
+		connection.on('error', (error:string) => {
+			console.error(`WebSocket error for ${clientIP}:`, error);
+
+			// close socket
+			connection.close(1006, error);
 		});
 
 	});

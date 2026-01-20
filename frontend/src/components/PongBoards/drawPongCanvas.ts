@@ -1,3 +1,47 @@
+
+// (ChatGPT)
+function drawCountdown(
+	ctx: CanvasRenderingContext2D,
+	timeout: number,
+	canvasWidth: number,
+	canvasHeight: number
+) {
+	if (timeout <= 0) return;
+
+	const FPS = 60;
+
+	// Which number to show (3,2,1...)
+	const secondsLeft = Math.ceil(timeout / FPS);
+
+	// Progress within the current second (0 → 1)
+	const frameInSecond = timeout % FPS;
+	const t = 1 - frameInSecond / FPS;
+
+	// Ease-out for smooth fade
+	const easeOut = (x: number) => 1 - Math.pow(1 - x, 3);
+
+	const alpha = easeOut(t);           // fade out
+	const scale = 0.8 + 0.4 * easeOut(t); // subtle zoom
+
+	ctx.save();
+	ctx.translate(canvasWidth / 2, canvasHeight / 2);
+	ctx.scale(scale, scale);
+
+	ctx.globalAlpha = alpha * 0.9;
+	ctx.fillStyle = "white";
+	ctx.textAlign = "center";
+	ctx.textBaseline = "middle";
+	ctx.font = "bold 120px Inter, system-ui, sans-serif";
+
+	// Optional glow
+	ctx.shadowColor = "rgba(255,255,255,0.35)";
+	ctx.shadowBlur = 14;
+
+	ctx.fillText(String(secondsLeft), 0, 0);
+	ctx.restore();
+}
+
+
 export default function drawPongCanvas(root: HTMLElement)
 {
 	// gets the canvas
@@ -48,12 +92,22 @@ export default function drawPongCanvas(root: HTMLElement)
 			p2.height * canvas.height
 		);
 
-		// ball
-		ctx.fillRect(
-			ball.pos[0] * canvas.width - ballWidthSubtr,
-			ball.pos[1] * canvas.height - ballHeightSubtr,
-			ballWidth,
-			ballHeight
-		);
+		// If we're on timeout
+		if (state.timeout > 0)
+		{
+			// ⏱ countdown overlay (ChatGPT)
+			drawCountdown(ctx, state.timeout, canvas.width, canvas.height);
+		}
+		// if we aren't
+		else
+		{
+			// draw ball
+			ctx.fillRect(
+				ball.pos[0] * canvas.width - ballWidthSubtr,
+				ball.pos[1] * canvas.height - ballHeightSubtr,
+				ballWidth,
+				ballHeight
+			);
+		}
 	};
 }
