@@ -10,7 +10,7 @@
 
 */
 
-import { randIntM } from './random.js'
+import { randIntM } from '../random.js'
 
 // array of number angles between +PI / 4 and -PI / 4
 function randomAngle(N:number = 1) : number[]

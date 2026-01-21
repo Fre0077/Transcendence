@@ -1,6 +1,6 @@
 
 
-import { Lobby } from './Lobby.js';
+import { Lobby } from './classes/Lobby.js';
 import { createLobby, findLobby/* , joinLobby */ } from './index.js';
 import type { WebSocket } from "ws";
 

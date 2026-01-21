@@ -1,5 +1,5 @@
 import Fastify from 'fastify';
-import { Game/* , Player */ } from './Game.js'
+import { Game/* , Player */ } from './classes/Game.js'
 import { WebSocket } from "ws";
 
 // Where the Queue will listen

@@ -1,5 +1,5 @@
 import Fastify from 'fastify';
-import { PongBot } from './PongBot.js'
+import { PongBot } from './classes/PongBot.js'
 import { WebSocket } from "ws";
 
 
