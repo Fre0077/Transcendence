@@ -9,7 +9,9 @@ interface ToastOptions {
     type?: ToastType;
     duration?: number; // milliseconds, 0 for persistent
     icon?: string;
-    onClick?: () => void;
+    onClickDiv?: () => void;
+    onClickAccept?: () => void;
+    onClickDecline?: () => void;
 }
 
 class ToastNotificationService {
@@ -38,10 +40,12 @@ class ToastNotificationService {
             type = 'info',
             duration = 5000,
             icon,
-            onClick
+            onClickDiv,
+            onClickAccept,
+            onClickDecline
         } = options;
 
-        const toast = this.createToast(title, message, type, icon, onClick);
+        const toast = this.createToast(title, message, type, icon, onClickDiv, onClickAccept, onClickDecline);
         this.container!.appendChild(toast);
 
         // Trigger animation
@@ -65,36 +69,42 @@ class ToastNotificationService {
         message: string,
         type: ToastType,
         customIcon?: string,
-        onClick?: () => void
+        onClickDiv?: () => void,
+        onClickAccept?: () => void,
+        onClickDecline?: () => void
     ): HTMLElement {
         const toast = document.createElement('div');
         toast.className = `toast pointer-events-auto w-96 max-w-[calc(100vw-2rem)] bg-slate-800 border border-slate-700 rounded-lg shadow-2xl overflow-hidden transform transition-all duration-300 ease-out translate-x-[120%] opacity-0`;
         
         const colors = this.getTypeColors(type);
         const icon = customIcon || this.getTypeIcon(type);
-
-        toast.innerHTML = `
-            <div class="flex items-start p-4 gap-3 ${onClick ? 'cursor-pointer hover:bg-slate-700/50 transition' : ''}">
-                <!-- Icon -->
+        let actionButtons = '';
+        if (onClickAccept && onClickDecline) {
+            actionButtons = `
+                <div class="mt-3 flex gap-2">
+                    <button class="toast-accept flex-1 px-4 py-2 text-sm font-medium rounded-md bg-emerald-600 text-white hover:bg-emerald-500 transition">Accept</button>
+                    <button class="toast-decline flex-1 px-4 py-2 text-sm font-medium rounded-md bg-red-600 text-white hover:bg-red-500 transition">Decline</button>
+                </div>
+            `;
+        }
+        toast.innerHTML = /* html */`
+            <div class="flex items-start p-4 gap-3 ${onClickDiv ? 'cursor-pointer hover:bg-slate-700/50 transition' : ''}">
                 <div class="flex-shrink-0 w-10 h-10 rounded-full ${colors.bg} flex items-center justify-center text-2xl">
                     ${icon}
                 </div>
                 
-                <!-- Content -->
                 <div class="flex-1 min-w-0">
                     <h4 class="text-white font-semibold text-sm mb-1">${this.escapeHtml(title)}</h4>
                     <p class="text-slate-300 text-sm leading-relaxed">${this.escapeHtml(message)}</p>
+                    ${actionButtons}
                 </div>
                 
-                <!-- Close button -->
                 <button class="flex-shrink-0 text-slate-400 hover:text-white transition p-1 rounded hover:bg-slate-700" aria-label="Close">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
                 </button>
             </div>
-            
-            <!-- Progress bar -->
             <div class="h-1 ${colors.progress} toast-progress"></div>
         `;
 
@@ -106,13 +116,31 @@ class ToastNotificationService {
         });
 
         // Click handler
-        if (onClick) {
+        if (onClickDiv) {
             toast.addEventListener('click', () => {
-                onClick();
+                onClickDiv();
                 this.removeToast(toast);
             });
         }
 
+        const acceptBtn = toast.querySelector('.toast-accept');
+        if (acceptBtn && onClickAccept) {
+            acceptBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                onClickAccept();
+                this.removeToast(toast);
+            });
+        }
+
+        const declineBtn = toast.querySelector('.toast-decline');
+        if (declineBtn && onClickDecline) {
+            declineBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                onClickDecline();
+                this.removeToast(toast);
+            });
+        }
+        
         return toast;
     }
 
@@ -201,8 +229,16 @@ class ToastNotificationService {
         this.show(title, message, { type: 'info', duration });
     }
 
-    message(title: string, message: string, onClick?: () => void, duration?: number): void {
-        this.show(title, message, { type: 'message', onClick, duration });
+    message(title: string, message: string, onClickDiv?: () => void, duration?: number): void {
+        this.show(title, message, { type: 'message', onClickDiv, duration });
+    }
+
+    friend(title: string, message: string,
+            onClickDiv?: () => void,
+            onClickAccept?: () => void,
+            onClickDecline?: () => void,
+            duration?: number): void {
+        this.show(title, message, {type: 'message', onClickDiv, onClickAccept, onClickDecline, duration})
     }
 }
 

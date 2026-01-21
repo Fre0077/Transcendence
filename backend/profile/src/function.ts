@@ -220,9 +220,9 @@ export async function getProfileData(myLinkId: number) {
 }
 
 //Ottieni la lista amici e richieste che hai in sospeso
-export async function getUserData(myLinkId: number) {
+export async function getUserData(user: string) {
     const data = await profilePrisma.user.findUnique({
-        where: { linkId: myLinkId },
+        where: { username: user },
         select: {
             username: true,
             avatarUrl: true,
@@ -243,7 +243,7 @@ export interface GameData {
 	game:string;		// pong, chess, ...
 	gameId:string;		// id della partita lato backend
 	gamePlayers:string;	// who played the game (parse as string array)
-	metadataId:string;	// id del metadata
+	metadataId:string | null;	// id del metadata
 	replay:string;		// replay (duh)
 	score:string		// score (parse number array)
 	updatedAt:string;	// time updated
@@ -306,22 +306,33 @@ export async function replaceAllData(GameData: GameData[]) {
 }
 
 //Ottieni la lista dei games
-export async function getUserGames(myLinkId: number) : Promise<GameData[]> {
+export async function getUserGames(user: string) : Promise<GameData[]> {
     const data = await profilePrisma.user.findUnique({
-        where: { linkId: myLinkId },
+        where: { username: user },
         select: {
             history: true
         }
     });
     if (!data)
         throw new NotFound("Profilo utente non trovato.", "profile");
-    return data.history as GameData[];
+    return data.history.map(game => ({
+        id: game.id,
+        game: game.game,
+        gameId: game.gameId,
+        winner: game.winner,
+        score: game.score,
+        replay: game.replay,
+        gamePlayers: game.gamePlayers,
+        createdAt: game.createdAt.toISOString(),
+        updatedAt: game.updatedAt.toISOString(),
+        metadataId: game.metadataId
+    }));
 }
 
 //Ottieni username e avatarUrl
-export async function getUserInfo(myLinkId: number) {
+export async function getUserInfo(user: string) {
     const data = await profilePrisma.user.findUnique({
-        where: { linkId: myLinkId },
+        where: { username: user },
         select: {
             username: true,
             avatarUrl: true
