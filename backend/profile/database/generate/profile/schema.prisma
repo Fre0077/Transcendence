@@ -25,6 +25,9 @@ model Game {
   replay      String
   gamePlayers String
 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   players    User[]
   metadata   Metadata? @relation(fields: [metadataId], references: [id])
   metadataId String?   @unique
@@ -33,7 +36,7 @@ model Game {
 model User {
   id        Int     @id @default(autoincrement())
   linkId    Int     @unique
-  username  String?
+  username  String? @unique
   avatarUrl String?
 
   wins   Int @default(0) //spostare nel db di profile

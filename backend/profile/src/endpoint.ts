@@ -20,9 +20,13 @@ export interface AuthRequest extends FastifyRequest {
 	user?: { userId: number; email: string };
 }
 
+export interface UserRequest extends FastifyRequest {
+	username: number;
+}
+
 // 1. Definisci cosa ti aspetti nell'URL (?userId=123)
 interface ProfileQuery {
-    userId?: string;
+    username?: string;
 }
 
 export async function profileEndpoint(fastify: FastifyInstance) {
@@ -31,9 +35,10 @@ export async function profileEndpoint(fastify: FastifyInstance) {
         try {
             const userId = Number(request.headers['x-user-id'])
 			const secret = request.headers['x-gateway-secret']
+            const username = String(request.query);
 
-			if (!userId || secret !== 'biscottini') {throw new Unauthorized('Utente non autorizzato', 'profile'); }
-            const data = await getUserData(userId);
+			if (!username || !userId || secret !== 'biscottini') {throw new Unauthorized('Utente non autorizzato', 'profile'); }
+            const data = await getUserData(username);
             logInfo('{profile} [200] Dati utente recuperati con successo');
             return reply.status(200).send(data);
         } catch (err) {
@@ -51,9 +56,10 @@ export async function profileEndpoint(fastify: FastifyInstance) {
         try {
             const userId = Number(request.headers['x-user-id'])
 			const secret = request.headers['x-gateway-secret']
+            const username = String(request.query);
 
-			if (!userId || secret !== 'biscottini') {throw new Unauthorized('Utente non autorizzato', 'profile'); }
-            const data = await getUserGames(userId);
+			if (!username || !userId || secret !== 'biscottini') {throw new Unauthorized('Utente non autorizzato', 'profile'); }
+            const data = await getUserGames(username);
             const validUsername = await replaceAllData(data)
             logInfo('{profile} [200] Dati game utente recuperati con successo');
             return reply.status(200).send(validUsername);
@@ -74,11 +80,12 @@ export async function profileEndpoint(fastify: FastifyInstance) {
             // check della query
             const userId = Number(request.headers['x-user-id'])
 			const secret = request.headers['x-gateway-secret']
+            const username = String(request.query);
 
-			if (!userId || secret !== 'biscottini') {throw new Unauthorized('Utente non autorizzato', 'profile'); }
+			if (!username || !userId || secret !== 'biscottini') {throw new Unauthorized('Utente non autorizzato', 'profile'); }
                 
             // get the user info (username and avarat url)
-            const data = await getUserInfo(userId);
+            const data = await getUserInfo(username);
             // successfule return
             logInfo('{profile} [200] Account trovato');
             reply.code(200).send(data);

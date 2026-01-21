@@ -36,7 +36,7 @@ model Game {
 model User {
   id       Int     @id @default(autoincrement())
   linkId   Int     @unique
-  username String?
+  username String? @unique
   avatarUrl String?
 
   wins            Int @default(0)  //spostare nel db di profile

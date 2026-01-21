@@ -177,6 +177,17 @@ export function loadHomePage(): HTMLElement {
 					5000
 				);
 			}, 1500);
+
+			setTimeout(() => {
+				toastNotification.friend(
+					'Friend Request',
+					'Diventiamo amici?',
+					() => { alert('Div cliccato');},
+					() => { alert('Accept cliccato');},
+					() => { alert('Decline cliccato');},
+					5000
+				);
+			}, 1500)
 		});
 	}
 

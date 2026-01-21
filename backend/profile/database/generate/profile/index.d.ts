@@ -2224,6 +2224,8 @@ export namespace Prisma {
     score: string | null
     replay: string | null
     gamePlayers: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
     metadataId: string | null
   }
 
@@ -2235,6 +2237,8 @@ export namespace Prisma {
     score: string | null
     replay: string | null
     gamePlayers: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
     metadataId: string | null
   }
 
@@ -2246,6 +2250,8 @@ export namespace Prisma {
     score: number
     replay: number
     gamePlayers: number
+    createdAt: number
+    updatedAt: number
     metadataId: number
     _all: number
   }
@@ -2267,6 +2273,8 @@ export namespace Prisma {
     score?: true
     replay?: true
     gamePlayers?: true
+    createdAt?: true
+    updatedAt?: true
     metadataId?: true
   }
 
@@ -2278,6 +2286,8 @@ export namespace Prisma {
     score?: true
     replay?: true
     gamePlayers?: true
+    createdAt?: true
+    updatedAt?: true
     metadataId?: true
   }
 
@@ -2289,6 +2299,8 @@ export namespace Prisma {
     score?: true
     replay?: true
     gamePlayers?: true
+    createdAt?: true
+    updatedAt?: true
     metadataId?: true
     _all?: true
   }
@@ -2387,6 +2399,8 @@ export namespace Prisma {
     score: string
     replay: string
     gamePlayers: string
+    createdAt: Date
+    updatedAt: Date
     metadataId: string | null
     _count: GameCountAggregateOutputType | null
     _avg: GameAvgAggregateOutputType | null
@@ -2417,6 +2431,8 @@ export namespace Prisma {
     score?: boolean
     replay?: boolean
     gamePlayers?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
     metadataId?: boolean
     players?: boolean | Game$playersArgs<ExtArgs>
     metadata?: boolean | Game$metadataArgs<ExtArgs>
@@ -2431,6 +2447,8 @@ export namespace Prisma {
     score?: boolean
     replay?: boolean
     gamePlayers?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
     metadataId?: boolean
     metadata?: boolean | Game$metadataArgs<ExtArgs>
   }, ExtArgs["result"]["game"]>
@@ -2443,6 +2461,8 @@ export namespace Prisma {
     score?: boolean
     replay?: boolean
     gamePlayers?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
     metadataId?: boolean
     metadata?: boolean | Game$metadataArgs<ExtArgs>
   }, ExtArgs["result"]["game"]>
@@ -2455,10 +2475,12 @@ export namespace Prisma {
     score?: boolean
     replay?: boolean
     gamePlayers?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
     metadataId?: boolean
   }
 
-  export type GameOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "game" | "gameId" | "winner" | "score" | "replay" | "gamePlayers" | "metadataId", ExtArgs["result"]["game"]>
+  export type GameOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "game" | "gameId" | "winner" | "score" | "replay" | "gamePlayers" | "createdAt" | "updatedAt" | "metadataId", ExtArgs["result"]["game"]>
   export type GameInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     players?: boolean | Game$playersArgs<ExtArgs>
     metadata?: boolean | Game$metadataArgs<ExtArgs>
@@ -2485,6 +2507,8 @@ export namespace Prisma {
       score: string
       replay: string
       gamePlayers: string
+      createdAt: Date
+      updatedAt: Date
       metadataId: string | null
     }, ExtArgs["result"]["game"]>
     composites: {}
@@ -2918,6 +2942,8 @@ export namespace Prisma {
     readonly score: FieldRef<"Game", 'String'>
     readonly replay: FieldRef<"Game", 'String'>
     readonly gamePlayers: FieldRef<"Game", 'String'>
+    readonly createdAt: FieldRef<"Game", 'DateTime'>
+    readonly updatedAt: FieldRef<"Game", 'DateTime'>
     readonly metadataId: FieldRef<"Game", 'String'>
   }
     
@@ -4676,6 +4702,8 @@ export namespace Prisma {
     score: 'score',
     replay: 'replay',
     gamePlayers: 'gamePlayers',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
     metadataId: 'metadataId'
   };
 
@@ -4728,6 +4756,13 @@ export namespace Prisma {
    * Reference to a field of type 'Int'
    */
   export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
+    
+
+
+  /**
+   * Reference to a field of type 'DateTime'
+   */
+  export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
     
 
 
@@ -4802,6 +4837,8 @@ export namespace Prisma {
     score?: StringFilter<"Game"> | string
     replay?: StringFilter<"Game"> | string
     gamePlayers?: StringFilter<"Game"> | string
+    createdAt?: DateTimeFilter<"Game"> | Date | string
+    updatedAt?: DateTimeFilter<"Game"> | Date | string
     metadataId?: StringNullableFilter<"Game"> | string | null
     players?: UserListRelationFilter
     metadata?: XOR<MetadataNullableScalarRelationFilter, MetadataWhereInput> | null
@@ -4815,6 +4852,8 @@ export namespace Prisma {
     score?: SortOrder
     replay?: SortOrder
     gamePlayers?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
     metadataId?: SortOrderInput | SortOrder
     players?: UserOrderByRelationAggregateInput
     metadata?: MetadataOrderByWithRelationInput
@@ -4832,6 +4871,8 @@ export namespace Prisma {
     score?: StringFilter<"Game"> | string
     replay?: StringFilter<"Game"> | string
     gamePlayers?: StringFilter<"Game"> | string
+    createdAt?: DateTimeFilter<"Game"> | Date | string
+    updatedAt?: DateTimeFilter<"Game"> | Date | string
     players?: UserListRelationFilter
     metadata?: XOR<MetadataNullableScalarRelationFilter, MetadataWhereInput> | null
   }, "id" | "metadataId">
@@ -4844,6 +4885,8 @@ export namespace Prisma {
     score?: SortOrder
     replay?: SortOrder
     gamePlayers?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
     metadataId?: SortOrderInput | SortOrder
     _count?: GameCountOrderByAggregateInput
     _avg?: GameAvgOrderByAggregateInput
@@ -4863,6 +4906,8 @@ export namespace Prisma {
     score?: StringWithAggregatesFilter<"Game"> | string
     replay?: StringWithAggregatesFilter<"Game"> | string
     gamePlayers?: StringWithAggregatesFilter<"Game"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"Game"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"Game"> | Date | string
     metadataId?: StringNullableWithAggregatesFilter<"Game"> | string | null
   }
 
@@ -4904,10 +4949,10 @@ export namespace Prisma {
   export type UserWhereUniqueInput = Prisma.AtLeast<{
     id?: number
     linkId?: number
+    username?: string
     AND?: UserWhereInput | UserWhereInput[]
     OR?: UserWhereInput[]
     NOT?: UserWhereInput | UserWhereInput[]
-    username?: StringNullableFilter<"User"> | string | null
     avatarUrl?: StringNullableFilter<"User"> | string | null
     wins?: IntFilter<"User"> | number
     losses?: IntFilter<"User"> | number
@@ -4918,7 +4963,7 @@ export namespace Prisma {
     incomingRequests?: UserListRelationFilter
     outgoingRequests?: UserListRelationFilter
     history?: GameListRelationFilter
-  }, "id" | "linkId">
+  }, "id" | "linkId" | "username">
 
   export type UserOrderByWithAggregationInput = {
     id?: SortOrder
@@ -5010,6 +5055,8 @@ export namespace Prisma {
     score: string
     replay: string
     gamePlayers: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
     players?: UserCreateNestedManyWithoutHistoryInput
     metadata?: MetadataCreateNestedOneWithoutGameInput
   }
@@ -5022,6 +5069,8 @@ export namespace Prisma {
     score: string
     replay: string
     gamePlayers: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
     metadataId?: string | null
     players?: UserUncheckedCreateNestedManyWithoutHistoryInput
   }
@@ -5033,6 +5082,8 @@ export namespace Prisma {
     score?: StringFieldUpdateOperationsInput | string
     replay?: StringFieldUpdateOperationsInput | string
     gamePlayers?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     players?: UserUpdateManyWithoutHistoryNestedInput
     metadata?: MetadataUpdateOneWithoutGameNestedInput
   }
@@ -5045,6 +5096,8 @@ export namespace Prisma {
     score?: StringFieldUpdateOperationsInput | string
     replay?: StringFieldUpdateOperationsInput | string
     gamePlayers?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     metadataId?: NullableStringFieldUpdateOperationsInput | string | null
     players?: UserUncheckedUpdateManyWithoutHistoryNestedInput
   }
@@ -5057,6 +5110,8 @@ export namespace Prisma {
     score: string
     replay: string
     gamePlayers: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
     metadataId?: string | null
   }
 
@@ -5067,6 +5122,8 @@ export namespace Prisma {
     score?: StringFieldUpdateOperationsInput | string
     replay?: StringFieldUpdateOperationsInput | string
     gamePlayers?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type GameUncheckedUpdateManyInput = {
@@ -5077,6 +5134,8 @@ export namespace Prisma {
     score?: StringFieldUpdateOperationsInput | string
     replay?: StringFieldUpdateOperationsInput | string
     gamePlayers?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     metadataId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
@@ -5278,6 +5337,17 @@ export namespace Prisma {
     not?: NestedIntFilter<$PrismaModel> | number
   }
 
+  export type DateTimeFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    in?: Date[] | string[]
+    notIn?: Date[] | string[]
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeFilter<$PrismaModel> | Date | string
+  }
+
   export type UserListRelationFilter = {
     every?: UserWhereInput
     some?: UserWhereInput
@@ -5301,6 +5371,8 @@ export namespace Prisma {
     score?: SortOrder
     replay?: SortOrder
     gamePlayers?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
     metadataId?: SortOrder
   }
 
@@ -5316,6 +5388,8 @@ export namespace Prisma {
     score?: SortOrder
     replay?: SortOrder
     gamePlayers?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
     metadataId?: SortOrder
   }
 
@@ -5327,6 +5401,8 @@ export namespace Prisma {
     score?: SortOrder
     replay?: SortOrder
     gamePlayers?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
     metadataId?: SortOrder
   }
 
@@ -5348,6 +5424,20 @@ export namespace Prisma {
     _sum?: NestedIntFilter<$PrismaModel>
     _min?: NestedIntFilter<$PrismaModel>
     _max?: NestedIntFilter<$PrismaModel>
+  }
+
+  export type DateTimeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    in?: Date[] | string[]
+    notIn?: Date[] | string[]
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeWithAggregatesFilter<$PrismaModel> | Date | string
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedDateTimeFilter<$PrismaModel>
+    _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
   export type GameListRelationFilter = {
@@ -5467,6 +5557,10 @@ export namespace Prisma {
     create?: XOR<UserCreateWithoutHistoryInput, UserUncheckedCreateWithoutHistoryInput> | UserCreateWithoutHistoryInput[] | UserUncheckedCreateWithoutHistoryInput[]
     connectOrCreate?: UserCreateOrConnectWithoutHistoryInput | UserCreateOrConnectWithoutHistoryInput[]
     connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+  }
+
+  export type DateTimeFieldUpdateOperationsInput = {
+    set?: Date | string
   }
 
   export type UserUpdateManyWithoutHistoryNestedInput = {
@@ -5787,6 +5881,17 @@ export namespace Prisma {
     not?: NestedIntNullableFilter<$PrismaModel> | number | null
   }
 
+  export type NestedDateTimeFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    in?: Date[] | string[]
+    notIn?: Date[] | string[]
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeFilter<$PrismaModel> | Date | string
+  }
+
   export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel>
     in?: number[]
@@ -5814,6 +5919,20 @@ export namespace Prisma {
     not?: NestedFloatFilter<$PrismaModel> | number
   }
 
+  export type NestedDateTimeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    in?: Date[] | string[]
+    notIn?: Date[] | string[]
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeWithAggregatesFilter<$PrismaModel> | Date | string
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedDateTimeFilter<$PrismaModel>
+    _max?: NestedDateTimeFilter<$PrismaModel>
+  }
+
   export type GameCreateWithoutMetadataInput = {
     game: string
     gameId: string
@@ -5821,6 +5940,8 @@ export namespace Prisma {
     score: string
     replay: string
     gamePlayers: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
     players?: UserCreateNestedManyWithoutHistoryInput
   }
 
@@ -5832,6 +5953,8 @@ export namespace Prisma {
     score: string
     replay: string
     gamePlayers: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
     players?: UserUncheckedCreateNestedManyWithoutHistoryInput
   }
 
@@ -5858,6 +5981,8 @@ export namespace Prisma {
     score?: StringFieldUpdateOperationsInput | string
     replay?: StringFieldUpdateOperationsInput | string
     gamePlayers?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     players?: UserUpdateManyWithoutHistoryNestedInput
   }
 
@@ -5869,6 +5994,8 @@ export namespace Prisma {
     score?: StringFieldUpdateOperationsInput | string
     replay?: StringFieldUpdateOperationsInput | string
     gamePlayers?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     players?: UserUncheckedUpdateManyWithoutHistoryNestedInput
   }
 
@@ -6123,6 +6250,8 @@ export namespace Prisma {
     score: string
     replay: string
     gamePlayers: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
     metadata?: MetadataCreateNestedOneWithoutGameInput
   }
 
@@ -6134,6 +6263,8 @@ export namespace Prisma {
     score: string
     replay: string
     gamePlayers: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
     metadataId?: string | null
   }
 
@@ -6233,6 +6364,8 @@ export namespace Prisma {
     score?: StringFilter<"Game"> | string
     replay?: StringFilter<"Game"> | string
     gamePlayers?: StringFilter<"Game"> | string
+    createdAt?: DateTimeFilter<"Game"> | Date | string
+    updatedAt?: DateTimeFilter<"Game"> | Date | string
     metadataId?: StringNullableFilter<"Game"> | string | null
   }
 
@@ -6443,6 +6576,8 @@ export namespace Prisma {
     score?: StringFieldUpdateOperationsInput | string
     replay?: StringFieldUpdateOperationsInput | string
     gamePlayers?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     metadata?: MetadataUpdateOneWithoutGameNestedInput
   }
 
@@ -6454,6 +6589,8 @@ export namespace Prisma {
     score?: StringFieldUpdateOperationsInput | string
     replay?: StringFieldUpdateOperationsInput | string
     gamePlayers?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     metadataId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
@@ -6465,6 +6602,8 @@ export namespace Prisma {
     score?: StringFieldUpdateOperationsInput | string
     replay?: StringFieldUpdateOperationsInput | string
     gamePlayers?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     metadataId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
