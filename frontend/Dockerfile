@@ -1,4 +1,5 @@
 FROM node:20-alpine
+
 WORKDIR /app
 
 # install deps at build time for faster container start
@@ -6,7 +7,7 @@ COPY package*.json ./
 RUN npm ci --silent
 
 # copy source
-COPY . .
+# COPY . . #sourcing in volumes
 
 ENV NODE_ENV=development
 # EXPOSE 3000

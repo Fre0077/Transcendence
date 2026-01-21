@@ -18,7 +18,7 @@ MINOR
 14. PongBoard player cards will just have the player's account in it
 15. Tournament winner card not loading
 16. Tournament games not being saved in history
-17. 'classes' folder in src/
+17. Profile card loads only the user card
 
 STYLE
 1. spacing at the bottom of the lobby page
@@ -32,6 +32,9 @@ CLEANUPS
 7. keep track of bots (better unique id not needing for manual lobby/tournament counter)
 8. Shared Game module for replays (and get there via url)
 9. Gateway double-socket safety net (if you already connected to a websocket endpoint, on retry: disconnect -> reconnect)
+10. 'classes' folder in src/
+11. gateway 'live-api'
+12. frontend api calls all in one place
 
 DONE
 1. remove JOIN method for games (DONE)
