@@ -24,6 +24,7 @@ STYLE
 1. spacing at the bottom of the lobby page
 2. pls... the back button
 4. Better friendlist
+5. better lobby UI (better start/leave buttons, 'bot' and 'invite' card appears only if lobby is created/joined)
 
 CLEANUPS
 2. Log all major messages

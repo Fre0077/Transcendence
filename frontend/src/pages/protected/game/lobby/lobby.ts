@@ -46,16 +46,32 @@ export function loadOnlineLobbyPage(): HTMLElement {
         </div>
 
         
+        <div class="flex flex-row items-end justify-between gap-8 mb-6">
+            <!-- Create Game Card -->
+            <a id="create-lobby-btn" class="group relative overflow-hidden rounded-xl bg-gradient-to-br from-green-600/20 to-teal-600/20 p-3 border border-green-500/30 hover:border-green-400/70 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-green-500/20">
+                <div class="relative z-6 text-center min-w-56">
+                    <div class="text-3xl mb-2">🎮</div>
+                    <h2 class="text-xl font-bold text-white mb-2">Create Lobby</h3>
+                    <p class="text-sm text-white/70">Create your private lobby</p>
+                </div>
+            </a>
+            
+            <!-- Join Game Card -->
+            <a id="join-lobby-btn" class="group relative overflow-hidden rounded-xl bg-gradient-to-br from-green-600/20 to-teal-600/20 p-3 border border-green-500/30 hover:border-green-400/70 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-green-500/20">
+                <div class="relative z-6 text-center min-w-56">
+                    <div class="text-3xl mb-2">🔗</div>
+                    <h2 class="text-xl font-bold text-white mb-2">Join Lobby</h3>
+                    <p class="text-sm text-white/70">Enter a lobby code</p>
+                </div>
+            </a>
+        </div>
+
         <!-- Lobby Info Card (ChatGPT) -->
         <div class="flex flex-col w-full rounded-xl bg-gradient-to-br from-purple-600/20 to-pink-600/20 border border-purple-500/30 overflow-hidden">
 
             <!-- CARD CONTENT -->
-            <div class="p-8 flex-1">
+            <div class=" p-8 flex-1">
                 <h3 class="text-lg font-bold text-white mb-4">Lobby Info</h3>
-                <button id="create-lobby-btn" class="px-4 py-2 bg-cyan-600/20 border border-cyan-500/30 rounded-lg text-sm text-white hover:bg-cyan-600/30 transition flex items-center gap-2">
-                    <img src="/assets/icons/create.jpeg" alt="Create" class="w-4 h-4">
-                </button>
-
                 <div class="space-y-4" id="lobbyInfo">
                     <div>
                         <p class="text-xs text-white/50 uppercase tracking-wide mb-1">Lobby Code</p>
@@ -99,16 +115,7 @@ export function loadOnlineLobbyPage(): HTMLElement {
         
         
         <!-- ACTION CARDS -->
-
         <div class="w-full max-w-7xl grid grid-cols-3 grid-rows-1 gap-8">
-            <!-- Join Game Card -->
-            <a id="join-game-btn" class="group relative overflow-hidden rounded-xl bg-gradient-to-br from-green-600/20 to-teal-600/20 p-8 border border-green-500/30 hover:border-green-400/70 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-green-500/20">
-                <div class="relative z-10 text-center">
-                    <div class="text-5xl mb-4">🔗</div>
-                    <h3 class="text-xl font-bold text-white mb-2">Join Game</h3>
-                    <p class="text-sm text-white/70">Enter a lobby code</p>
-                </div>
-            </a>
 
             <!-- BOT card (ChatGPT) -->
             <div class="flex flex-col rounded-xl bg-gradient-to-br from-blue-600/20 to-indigo-600/20 border border-blue-500/30 overflow-hidden">
@@ -236,9 +243,9 @@ export function loadOnlineLobbyPage(): HTMLElement {
     }
 
     // join an existing lobby
-    const joinGameBtn = div.querySelector('#join-game-btn');
-    if (joinGameBtn) {
-        joinGameBtn.addEventListener('click', () => {
+    const joinLobbyBtn = div.querySelector('#join-lobby-btn');
+    if (joinLobbyBtn) {
+        joinLobbyBtn.addEventListener('click', () => {
             const lobby_code = prompt('Enter Lobby Code:');
             if (lobby_code) {
                 joinLobby(lobby_code, /* playerID, */ lobbyWS);
