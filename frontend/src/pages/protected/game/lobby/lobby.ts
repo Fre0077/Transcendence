@@ -15,49 +15,6 @@ interface Player {
 // globally accessible lobby code
 let lobby_code:string = "";
 
-//ritorna il linkid di un utente
-// async function checkAuth() : Promise<number> {
-//     console.log("Controllo autorizzazione per giocare...");
-
-//     const token = localStorage.getItem('authToken');
-
-//     if (!token) {
-//         console.warn("Nessun token trovato. L'utente deve fare il login.");
-//         alert("Devi essere loggato per giocare!");
-//         router.push('/login'); // Reindirizza al login
-//         return -1;
-//     }
-
-//     try {
-//         const response = await fetch(`http://${window.location.hostname}:3001/api/profile`, {
-//             method: 'GET',
-//             headers: {
-//                 'Content-Type': 'application/json',
-//                 'Authorization': `Bearer ${token}`
-//             }
-//         });
-
-//         const data = await response.json();
-
-//         if (!response.ok) {
-//             throw new Error(data.error || "Sessione non valida");
-//         }
-
-//         // === SUCCESSO ===
-//         console.log("Autorizzazione confermata! Avvio del gioco...");
-//         return data.id;
-
-//     } catch (error) {
-//         // === FALLIMENTO ===
-//         console.error("Autorizzazione fallita:", error);
-//         alert("La tua sessione è scaduta o non è valida. Effettua nuovamente il login.");
-//         localStorage.removeItem('authToken');
-//         localStorage.removeItem('user');
-//         router.push('/login');
-//     }
-//     return -1;
-// }
-
 export function loadOnlineLobbyPage(): HTMLElement {
     let connected_players: Player[] = [];
    
@@ -72,8 +29,6 @@ export function loadOnlineLobbyPage(): HTMLElement {
     const playerID = localStorage.getItem('userId'/* ) || sessionStorage.getItem('guestID') || 'Guest_' + Math.floor(Math.random() * 1000 */);
     if (!playerID)
             return load404Page();
-        
-    const format = 3; // Best of 3 rounds
     
     let lobbyWS = createWebSocketConnection(connected_players, lobby_code);
 
@@ -84,22 +39,68 @@ export function loadOnlineLobbyPage(): HTMLElement {
     div.innerHTML = /*html*/ `
     ${loadNavbar().outerHTML}
     <!-- Online Lobby Page Content -->
-    <div class="flex-1 container mx-auto px-4 flex flex-col items-center justify-center gap-8">
-        <div class="text-center mb-8">
+    <div class="gap-6 container mx-auto flex flex-col items-center justify-center">
+        <div class="text-center mt-6">
             <h1 class="text-5xl font-bold text-white mb-4">Online Game Lobby</h1>
             <p class="text-lg text-white/60">Create or join an online game lobby!</p>
         </div>
 
-        <div class="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Create Game Card -->
-            <a id="create-game-btn" class="group relative overflow-hidden rounded-xl bg-gradient-to-br from-cyan-600/20 to-blue-600/20 p-8 border border-cyan-500/30 hover:border-cyan-400/70 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-cyan-500/20">
-                <div class="relative z-10 text-center">
-                    <div class="text-5xl mb-4">🎮</div>
-                    <h3 class="text-xl font-bold text-white mb-2">Create Game</h3>
-                    <p class="text-sm text-white/70">Set up a new online lobby</p>
+        
+        <!-- Lobby Info Card (ChatGPT) -->
+        <div class="flex flex-col w-full rounded-xl bg-gradient-to-br from-purple-600/20 to-pink-600/20 border border-purple-500/30 overflow-hidden">
+
+            <!-- CARD CONTENT -->
+            <div class="p-8 flex-1">
+                <h3 class="text-lg font-bold text-white mb-4">Lobby Info</h3>
+                <button id="create-lobby-btn" class="px-4 py-2 bg-cyan-600/20 border border-cyan-500/30 rounded-lg text-sm text-white hover:bg-cyan-600/30 transition flex items-center gap-2">
+                    <img src="/assets/icons/create.jpeg" alt="Create" class="w-4 h-4">
+                </button>
+
+                <div class="space-y-4" id="lobbyInfo">
+                    <div>
+                        <p class="text-xs text-white/50 uppercase tracking-wide mb-1">Lobby Code</p>
+                        <p id="lobbyCode" class="text-sm font-mono text-cyan-400">
+                            ${lobby_code || 'Waiting...'}
+                        </p>
+
+                        <div class="flex items-center gap-2 mt-4">
+                            <button id="copyLobbyCodeBtn" class="px-4 py-2 bg-cyan-600/20 border border-cyan-500/30 rounded-lg text-sm text-white hover:bg-cyan-600/30 transition flex items-center gap-2">
+                                <img src="/assets/icons/copy.png" alt="Copy" class="w-4 h-4">
+                            </button>
+                            <span id="copyStatus" class="text-sm text-white/60"></span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <p class="text-xs text-white/50 uppercase tracking-wide mb-2">Connected Players</p>
+                        <div id="connectedPlayersList" class="grid">
+                            </div>
+                    </div>
                 </div>
-            </a>
-            
+            </div>
+
+            <!-- ACTION BAR (STUCK TO BOTTOM, FULL WIDTH) -->
+            <div class="border-t border-white/10">
+                <div class="flex w-full">
+
+                    <!-- Start Game -->
+                    <a id="start-game-btn" class="flex-1 flex items-center justify-center py-3 text-sm font-medium text-white bg-green-600/20 hover:bg-green-600/30 transition">
+                        Start Game
+                    </a>
+
+                    <!-- Leave Lobby -->
+                    <a id="leave-lobby-btn" class="flex-1 flex items-center justify-center py-3 text-sm font-medium text-white bg-red-600/20 hover:bg-red-600/30 transition">
+                        Leave Lobby
+                    </a>
+
+                </div>
+            </div>
+        </div>
+        
+        
+        <!-- ACTION CARDS -->
+
+        <div class="w-full max-w-7xl grid grid-cols-3 grid-rows-1 gap-8">
             <!-- Join Game Card -->
             <a id="join-game-btn" class="group relative overflow-hidden rounded-xl bg-gradient-to-br from-green-600/20 to-teal-600/20 p-8 border border-green-500/30 hover:border-green-400/70 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-green-500/20">
                 <div class="relative z-10 text-center">
@@ -109,8 +110,56 @@ export function loadOnlineLobbyPage(): HTMLElement {
                 </div>
             </a>
 
+            <!-- BOT card (ChatGPT) -->
+            <div class="flex flex-col rounded-xl bg-gradient-to-br from-blue-600/20 to-indigo-600/20 border border-blue-500/30 overflow-hidden">
 
+                <!-- CARD CONTENT -->
+                <div class="p-6 flex-1 flex flex-col items-center">
+                    <h3 class="text-lg font-bold text-white mb-2">BOT</h3>
+                    <p class="text-xs text-white/70 mb-6">Difficulty</p>
 
+                    <!-- Slider container -->
+                    <div class="flex flex-row items-center gap-2 flex-1 justify-center">
+                        <span class="text-4xl">💩</span>
+
+                        <input
+                            id="botLevelSlider"
+                            type="range"
+                            min="0"
+                            max="100"
+                            value="50"
+                            class="w-40 h-2 accent-blue-500 cursor-pointer
+                                [writing-mode:horizontal-lr]
+                                [direction:ltr]"
+                        />
+
+                        <span class="text-4xl">🐐</span>
+                    </div>
+                </div>
+
+                <!-- ACTION BAR (FULL WIDTH, 2 BUTTONS) -->
+                <div class="border-t border-white/10">
+                    <div class="flex w-full">
+
+                        <!-- ADD button -->
+                        <button
+                            id="add-bot-btn"
+                            class="flex-1 flex items-center justify-center py-3 text-sm font-medium text-white bg-green-600/20 hover:bg-green-600/30 transition"
+                        >
+                            ADD
+                        </button>
+
+                        <!-- LEAVE button -->
+                        <button
+                            id="rem-bot-btn"
+                            class="flex-1 flex items-center justify-center py-3 text-sm font-medium text-white bg-red-600/20 hover:bg-red-600/30 transition"
+                        >
+                            REMOVE
+                        </button>
+
+                    </div>
+                </div>
+            </div>
 
 
             <!-- Invite Player Card -->
@@ -173,124 +222,20 @@ export function loadOnlineLobbyPage(): HTMLElement {
 
 
 
-
-
-
-            <!-- Lobby Info Card (ChatGPT) -->
-            <div class="flex flex-col h-full lg:col-span-2 rounded-xl bg-gradient-to-br from-purple-600/20 to-pink-600/20 border border-purple-500/30 overflow-hidden">
-
-                <!-- CARD CONTENT -->
-                <div class="p-8 flex-1">
-                    <h3 class="text-lg font-bold text-white mb-4">Lobby Info</h3>
-
-                    <div class="space-y-4" id="lobbyInfo">
-                        <div>
-                            <p class="text-xs text-white/50 uppercase tracking-wide mb-1">Lobby Code</p>
-                            <p id="lobbyCode" class="text-sm font-mono text-cyan-400">
-                                ${lobby_code || 'Waiting...'}
-                            </p>
-
-                            <div class="flex items-center gap-2 mt-4">
-                                <button id="copyLobbyCodeBtn" class="px-4 py-2 bg-cyan-600/20 border border-cyan-500/30 rounded-lg text-sm text-white hover:bg-cyan-600/30 transition flex items-center gap-2">
-                                    <img src="/assets/icons/copy.png" alt="Copy" class="w-4 h-4">
-                                </button>
-                                <span id="copyStatus" class="text-sm text-white/60"></span>
-                            </div>
-                        </div>
-
-                        <div>
-                            <p class="text-xs text-white/50 uppercase tracking-wide mb-2">Connected Players</p>
-                            <div id="connectedPlayersList" class="grid grid-cols-1 gap-4">
-                                </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- ACTION BAR (STUCK TO BOTTOM, FULL WIDTH) -->
-                <div class="border-t border-white/10">
-                    <div class="flex w-full">
-
-                        <!-- Start Game -->
-                        <a id="start-game-btn" class="flex-1 flex items-center justify-center py-3 text-sm font-medium text-white bg-green-600/20 hover:bg-green-600/30 transition">
-                            Start Game
-                        </a>
-
-                        <!-- Leave Lobby -->
-                        <a id="leave-lobby-btn" class="flex-1 flex items-center justify-center py-3 text-sm font-medium text-white bg-red-600/20 hover:bg-red-600/30 transition">
-                            Leave Lobby
-                        </a>
-
-                    </div>
-                </div>
-            </div>
-
-
-
-            <!-- BOT card (ChatGPT) -->
-            <div class="flex flex-col rounded-xl bg-gradient-to-br from-blue-600/20 to-indigo-600/20 border border-blue-500/30 overflow-hidden">
-
-                <!-- CARD CONTENT -->
-                <div class="p-6 flex-1 flex flex-col items-center">
-                    <h3 class="text-lg font-bold text-white mb-2">BOT</h3>
-                    <p class="text-xs text-white/70 mb-6">Difficulty</p>
-
-                    <!-- Slider container -->
-                    <div class="flex flex-col items-center gap-2 flex-1 justify-center">
-                        <span class="text-xs text-white/50">Gremlin</span>
-
-                        <input
-                            id="botLevelSlider"
-                            type="range"
-                            min="0"
-                            max="100"
-                            value="50"
-                            class="h-40 w-2 accent-blue-500 cursor-pointer
-                                [writing-mode:vertical-rl]
-                                [direction:rtl]"
-                        />
-
-                        <span class="text-xs text-white/50">Demigod</span>
-                    </div>
-                </div>
-
-                <!-- ACTION BAR (FULL WIDTH, 2 BUTTONS) -->
-                <div class="border-t border-white/10">
-                    <div class="flex w-full">
-
-                        <!-- ADD button -->
-                        <button
-                            id="add-bot-btn"
-                            class="flex-1 flex items-center justify-center py-3 text-sm font-medium text-white bg-green-600/20 hover:bg-green-600/30 transition"
-                        >
-                            ADD
-                        </button>
-
-                        <!-- LEAVE button -->
-                        <button
-                            id="rem-bot-btn"
-                            class="flex-1 flex items-center justify-center py-3 text-sm font-medium text-white bg-red-600/20 hover:bg-red-600/30 transition"
-                        >
-                            REMOVE
-                        </button>
-
-                    </div>
-                </div>
-            </div>
-
-
-
         </div>
+        <br>
     </div>
     `;
 
     // Add event listener for create game button
-    const createGameBtn = div.querySelector('#create-game-btn');
-    if (createGameBtn) {
-        createGameBtn.addEventListener('click', () => {
-            createLobby(/* playerID,  */format, lobbyWS);
+    const createLobbyBtn = div.querySelector('#create-lobby-btn');
+    if (createLobbyBtn) {
+        createLobbyBtn.addEventListener('click', () => {
+            createLobby(/* playerID,  */3, lobbyWS);
         });
     }
 
+    // join an existing lobby
     const joinGameBtn = div.querySelector('#join-game-btn');
     if (joinGameBtn) {
         joinGameBtn.addEventListener('click', () => {
@@ -364,7 +309,9 @@ export function loadOnlineLobbyPage(): HTMLElement {
     if (addBotBtn && slider) {
         addBotBtn.addEventListener('click', () => {
             const level = slider.value;
-            addBot(Number(level), lobbyWS);
+
+            // invert value
+            addBot(100 - Number(level), lobbyWS);
         });
     }
 
@@ -471,28 +418,44 @@ function updateLobbyInfo(lobby_code?: string, connected_players: Player[] = []) 
     const playersListElem = document.getElementById('connectedPlayersList');
     //credito a Gemini che ci ha donato questo else/if
     if (playersListElem) {
-    // 1. Pulisci il contenitore vecchio
-    playersListElem.innerHTML = ''; 
+        // 1. Pulisci il contenitore vecchio
+        playersListElem.innerHTML = ''; 
 
-    if (connected_players.length > 0) {
-        // 2. Modifica la classe del contenitore per visualizzare le card (Grid invece di lista semplice)
-        // Rimuovi 'space-y-1' se presente, perché le card sono grandi
-        playersListElem.className = "grid grid-cols-1 md:grid-cols-2 gap-4 mt-2"; 
+        if (connected_players.length > 0) {
+            // 2. Modifica la classe del contenitore per visualizzare le card (Grid invece di lista semplice)
+            // Rimuovi 'space-y-1' se presente, perché le card sono grandi
+            playersListElem.className = "grid grid-cols-3 md:grid-cols-3 gap-4 mt-2"; 
 
-        // 3. Itera e "appendi" gli elementi DOM reali
-        connected_players.forEach(player => {
-            // Qui ottieni l'elemento HTML vivo
-            const cardDOM = createProfileCard(player.id); 
-            
-            // Lo inserisci nella pagina
-            playersListElem.appendChild(cardDOM);
-        });
-    } else {
-        // Caso lista vuota
-        playersListElem.className = "space-y-1"; // Ripristina stile lista semplice per il messaggio
-        playersListElem.innerHTML = '<li class="text-sm text-white/40 italic">No players connected</li>';
+            // 3. Itera e "appendi" gli elementi DOM reali
+            connected_players.forEach(player => {
+                // Qui ottieni l'elemento HTML vivo
+                const cardDOM = createProfileCard(player.id); 
+                
+                // initial state
+                cardDOM.classList.add(
+                    "opacity-0",
+                    "translate-y-20",
+                    "transition-all",
+                    "duration-1000",
+                    "ease-out"
+                );
+
+                // Lo inserisci nella pagina
+                playersListElem.appendChild(cardDOM);
+
+                // next frame → trigger transition
+                requestAnimationFrame(() => {
+                    cardDOM.classList.remove("opacity-0", "translate-y-20");
+                    cardDOM.classList.add("opacity-100", "translate-y-0");
+                });
+
+            });
+        } else {
+            // Caso lista vuota
+            playersListElem.className = "space-y-1"; // Ripristina stile lista semplice per il messaggio
+            playersListElem.innerHTML = '<li class="text-sm text-white/40 italic">No players connected</li>';
+        }
     }
-}
 
     const copyLobbyCodeBtn = document.getElementById('copyLobbyCodeBtn');
     if (copyLobbyCodeBtn) {
@@ -528,7 +491,9 @@ function createWebSocketConnection(connected_players: Player[], lobbyid?:string)
         // join lobby if id was passed
         if (lobbyid) {
             joinLobby(lobbyid, ws);
-        }
+        } /* else {
+            createLobby(3, ws);
+        } */
     };
 
     ws.onmessage = (event) => {
