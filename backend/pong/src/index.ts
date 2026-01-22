@@ -618,8 +618,10 @@ function GamesManager()
 			if (entry.timeout !== TIMEOUT) console.log(id, entry.timeout);
 
 			// check if all players left
-			if (players.find(p => p.status !== "left") === undefined) {
-				deleteGame(id, 'all player left');
+			// #todo on BOT-Update needs a safe way to know if an user is a bot
+			if (players.find(p => !p.ID.startsWith('BOT'))	// allow only-bot games
+				&& players.find(p => !p.ID.startsWith('BOT') && p.status !== "left") === undefined) {
+				deleteGame(id, 'all players left');
 				return ;
 			}
 

@@ -51,7 +51,7 @@ export function loadPongPlayerPage(): HTMLElement {
 			id="leaveGameBtn"
 			class="px-6 py-2 bg-red-600/20 border border-red-500/30 rounded-lg text-sm text-white hover:bg-red-600/30 transition shadow-lg active:scale-95"
 		>
-			Back
+			LEAVE
 		</button>
 	`;
 
@@ -83,7 +83,7 @@ export function loadPongPlayerPage(): HTMLElement {
 		}
 	}
 	
-	// inputs
+	// event listeners for inputs
     document.addEventListener("keydown", keydown);
 	document.addEventListener("keyup", keyup);
 
