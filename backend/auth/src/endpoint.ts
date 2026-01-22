@@ -31,8 +31,6 @@ export async function authEndpoint(fastify: FastifyInstance) {
 				
 				return reply.code(401).send({ message: "Verifica 2FA richiesta", twoFactorRequired: true });
 			}
-			const tokens = await generateTokens(user);
-			
 			// write reply
 			reply
 				.code(200)
@@ -43,7 +41,7 @@ export async function authEndpoint(fastify: FastifyInstance) {
 					sameSite: 'lax',
 					path: '/',
 				}) */
-				.send({ ...tokens, user, ok: true });
+				.send({ ...user, user, ok: true });
 		
 			logInfo('{auth} [200] token generato con successo');
 		} catch (err) {

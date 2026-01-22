@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { getCookieUser } from './middleware.js';
+import { /* isCookieAuthenticated, */ isCookieAuthenticated } from './middleware.js';
 
 import WebSocket/* , { RawData } */ from 'ws';	// important to use backend websockets
 
@@ -15,7 +15,7 @@ export function authWebSocket(connection:WebSocket, request:FastifyRequest)
 	console.log(`Client connected from ${clientIP}`);
 
 	/* --- AUTH CHECK --- */
-	const auth = getCookieUser(request);
+	const auth = isCookieAuthenticated(request);
 	if (auth.ok === false)
 	{
 		socket.close(1008, auth.reason);

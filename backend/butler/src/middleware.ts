@@ -31,16 +31,52 @@ export interface AuthRequest extends FastifyRequest {
 	}
 }; */
 
+
+function generateAccessTokens(user: any) {
+	// 1. Crea l'Access Token (breve)
+	const accessTokenPayload = { /* @topiana- added */username: user.username, userId: user.id, email: user.email };
+	const accessToken = jwt.sign(accessTokenPayload, "ft_trans(cendence)", {
+		expiresIn: "1m",
+	});
+	return {
+		accessToken
+	};
+}
+
+function generateTokens(user: any) {
+	// 1. Crea l'Access Token (breve)
+	const accessTokenPayload = { /* @topiana- added */username: user.username, userId: user.id, email: user.email };
+	const accessToken = jwt.sign(accessTokenPayload, "ft_trans(cendence)", {
+		expiresIn: "1m",
+	});
+	const refreshToken = jwt.sign(accessTokenPayload, "ft_trans(cendence)", {
+		expiresIn: "24h",
+	});
+	return {
+		accessToken,
+		refreshToken
+	};
+}
+
+
 export function attachCookies(data:any, reply:FastifyReply)
 {
-	// NO ACCESS TOKEN FOUND!!!
-	if (!data.accessToken) {
-		console.log("Fatal: No 'accessToken' found when trying to attach cookies to the user");
+	if (!data.user) {
+		console.log("Fatal: No user found when trying to attach cookies to the user");
+		reply.code(500).send();
 		return ;
 	}
+	const { accessToken, refreshToken } = generateTokens(data.user)
 
 	// attach the cookie
-	reply.setCookie('token', data.accessToken, {
+	reply.setCookie('token', accessToken, {
+		httpOnly: true,
+		secure: false,		// true in production (HTTPS)
+		sameSite: 'lax',	// also check this
+		path: '/',
+	});
+
+	reply.setCookie('refreshToken', refreshToken, {
 		httpOnly: true,
 		secure: false,		// true in production (HTTPS)
 		sameSite: 'lax',	// also check this
@@ -53,6 +89,32 @@ export function attachCookies(data:any, reply:FastifyReply)
 export interface AuthReply {
 	ok:boolean;					// status
 	reason?:string;
+	user?:any;
+}
+
+
+function refreshAccessToken(refreshToken: any, reply: FastifyReply) : AuthReply {
+		if (!refreshToken) {
+			reply.code(401).send({ error: 'Missing token' });
+			return { ok:false, reason:'Missing token' };
+		}
+		const user = verifyAccessToken(refreshToken);
+		if (!user) {
+			/* #debug */
+			console.log(`Closed socket for:`, 'Invalid token');
+			reply.code(401).send({ error: 'Invalid token' });
+			return { ok:false, reason: 'Invalid token' };
+		}
+
+		const accessToken = generateAccessTokens(user);
+
+		reply.setCookie('token', String(accessToken), {
+			httpOnly: true,
+			secure: false,		// true in production (HTTPS)
+			sameSite: 'lax',	// also check this
+			path: '/',
+		});
+		return { ok:true , user:user}
 }
 
 export function isCookieAuthenticated(request:FastifyRequest, reply:FastifyReply, done?: (err?: Error) => void): AuthReply
@@ -66,11 +128,15 @@ export function isCookieAuthenticated(request:FastifyRequest, reply:FastifyReply
 
 	if (!token) {
 
-		/* #debug */
-		console.log(`Closed socket for:`, 'Missing token');
+		const ret = refreshAccessToken(token, reply);
+		if (ret.ok === false)
+			return ret;
+			// add user to request
+		(request as any).user = ret.user;
 
-		reply.code(401).send({ error: 'Missing token' });
-		return { ok:false, reason:'Missing token' };
+		// done if passed
+		if (done) done();	// ✅ continue to the route handler
+		return { ok:true }
 	}
 
 	// verify the token

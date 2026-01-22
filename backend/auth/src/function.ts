@@ -15,20 +15,20 @@ import { BadRequest, Unauthorized, Forbidden, NotFound, Conflict } from "../util
 import { fastify } from "../server";
 import { stringify } from 'querystring';
 
-export async function generateTokens(user: Account) {
-	// 1. Crea l'Access Token (breve)
-	const accessTokenPayload = { /* @topiana- added */username: user.username, userId: user.id, email: user.email };
-	const accessToken = jwt.sign(accessTokenPayload, "ft_trans(cendence)", {
-		expiresIn: "15m",
-	});
-	const refreshToken = '';
-	return {
-		accessToken,
-		refreshToken,
-		// Restituisce anche la scadenza (in millisecondi) per il client
-		accessTokenExpires: Date.now() + ms("24h"), 
-	};
-}
+// export async function generateTokens(user: Account) {
+// 	// 1. Crea l'Access Token (breve)
+// 	const accessTokenPayload = { /* @topiana- added */username: user.username, userId: user.id, email: user.email };
+// 	const accessToken = jwt.sign(accessTokenPayload, "ft_trans(cendence)", {
+// 		expiresIn: "15m",
+// 	});
+// 	const refreshToken = jwt.sign(accessTokenPayload, "ft_trans(cendence)", {
+// 		expiresIn: "24h",
+// 	});
+// 	return {
+// 		accessToken,
+// 		refreshToken
+// 	};
+// }
 
 //check per il login
 export async function login(input:  userLogin): Promise<Account> {
