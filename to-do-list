@@ -2,18 +2,10 @@
 @topiana- todos
 
 MAJOR
-6. rejoin button on tournaments and lobbies (and better start button on lobby)
 7. Get profile data via username (current linkId deprecated)
-8. Tournament update got smashed into the lobby player's card
-9. Move all websocket connection in one file
-10. Game 'back' works only the second time
-11. History non viene piu' salvata perche' adesso viene passato l'username al profile
-9. Sistemare endpoint remove + cambiare da TargetUsername a Target
-10. aggiungere ai tasti su profile le api Incoming Requests e Outgoing Request
+11. Match History non viene piu' salvata perche' adesso viene passato l'username al profile
 
 MINOR
-4. timers and finish notifications on game
-5. finish notification on tournaments
 7. tournaments chat
 8. cheering mentre specti (come clash)
 9. Emotes in-game
@@ -21,24 +13,20 @@ MINOR
 12. Inconsistend player-score relation in match history
 13. Force start timers in for tournament layers and game rounds
 14. PongBoard player cards will just have the player's account in it
-15. Tournament winner card not loading
-16. Tournament games not being saved in history
-17. Profile card loads only the user card
+18. rejoin button if you disconnect from a game (really marginal)
+19. finish notifications on game
 
 STYLE
-1. spacing at the bottom of the lobby page
 2. pls... the back button
 4. Better friendlist
-5. better lobby UI (better start/leave buttons, 'bot' and 'invite' card appears only if lobby is created/joined)
 
 CLEANUPS
 2. Log all major messages
 3. save MQueues messages in DB
 6. Game less laggy
-7. keep track of bots (better unique id not needing for manual lobby/tournament counter)
+7. keep track of bots (better unique id not needing for manual lobby/tournament counter) and the backend containers need a more solid way to know if an user is a bot
 8. Shared Game module for replays (and get there via url)
 9. Gateway double-socket safety net (if you already connected to a websocket endpoint, on retry: disconnect -> reconnect)
-10. 'classes' folder in src/
 11. gateway 'live-api'
 12. frontend api calls all in one place
 
@@ -58,3 +46,14 @@ DONE
 4. Better timer on pong (DONE)
 3. laodPongBoard() player2's widget is too close to the border (DONE?)
 2. Replay system (DONE)
+9. Move all websocket connection in one directory (@/services/ws) (DONE)
+10. Game 'back' works only the second time (DONE)
+6. rejoin button on tournaments and lobbies (and better start button on lobby) (DONE)
+8. Tournament update got smashed into the lobby player's card (DONE)
+4. timers on game (DONE)
+5. finish notification on tournaments (DONE)
+1. spacing at the bottom of the lobby page (DONE)
+5. better lobby UI (better start/leave buttons, 'bot' and 'invite' card appears only if lobby is created/joined) (DONE)
+10. 'classes' folder in src/ (DONE)
+17. Profile card loads only the user card (DONE)'
+15. Tournament winner card not loading (DONE)

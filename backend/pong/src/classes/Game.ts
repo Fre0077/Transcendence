@@ -375,7 +375,7 @@ export class Game
 
 		// change status if it was a player
 		const p = this.players.find(p => p.ID === ID);
-		if (p !== undefined) p.status = "disconnected";
+		if (p !== undefined && p.status !== "left") p.status = "disconnected";
 	}
 
 	// remove the send

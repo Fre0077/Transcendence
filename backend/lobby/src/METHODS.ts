@@ -293,6 +293,14 @@ export async function START(outlobby:string | undefined): Promise<StandardReturn
 		};
 	}
 
+	// check if lobby is already in game
+	if (lobby.ingame === true) {
+		return {
+			status: "success",
+			reply: JSON.stringify({ method: 'START_REPLY', status: 'success', value: lobby.gameID, comment: "The lobby is already in game" })
+		};
+	}
+
 	// get variables from the callback
 	let ret = await lobby.launch( async (gameID:string, players:string[]): Promise<boolean> => {
 		// signal the GameService to create a Game

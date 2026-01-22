@@ -37,23 +37,6 @@ fastify.get("/lobbies", async () => ({
 	}))
 }));
 
-/* ======== YOUR LOBBY ====== */
-interface MyLobbyQuery {
-	ID: string;	// ID of the lobby
-}
-
-fastify.get<{ Querystring: MyLobbyQuery }>(
-	"/my-lobby",
-	async (request) => {
-		const { ID } = request.query;
-
-		const lobby:Lobby<WebSocket> | undefined = findLobby((lobby:Lobby<WebSocket>) => { return lobby.ID === ID });
-		if (lobby === undefined)
-			return { status: 'failure' };
-		else
-			return { status: 'success', state: lobby.state };
-	}
-);
 
 
 /* ============= BUNNY ENDPOINT ============ */

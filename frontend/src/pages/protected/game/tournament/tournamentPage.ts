@@ -60,7 +60,7 @@ export function loadOnlineTournamentPage(): HTMLElement
 		<div class="w-full max-w-7xl flex flex-col lg:flex-row gap-6">
 
 			<!-- Players list (LEFT) -->
-			<div id="connectedPlayersList" class="w-full lg:w-64 shrink-0 sticky top-24 self-start"></div>
+			<div id="tournament-connected-players" class="w-full lg:w-64 shrink-0 sticky top-24 self-start"></div>
 
 			<!-- Tournament board (RIGHT) -->
 			<div
@@ -76,8 +76,6 @@ export function loadOnlineTournamentPage(): HTMLElement
 		</div>
 
 		<div id="winnersPanel"></div>
-
-		<div id="connectedPlayersList"></div>
 
 		<div id="spectateGameDiv" class="w-full mt-10"></div>
 
@@ -171,32 +169,43 @@ function spectate(gameid: string) {
 /* --------------------------------------- */
 /* ----- Render Tournament (ChatGPT) ----- */
 
-function renderWinnersPanel(winners: string[]): string {
-  if (!winners?.length) return '';
+function renderWinnersPanel(winners: string[]): HTMLElement
+{
+	const div = document.createElement('div');
+	div.innerHTML = /* html */`
+		<div class="w-full mt-6">
+			<div class="w-full max-w-4xl mx-auto rounded-xl bg-white/5 border border-white/10 p-4">
+				<h3 class="text-white/80 font-semibold mb-3">Tournament Winners</h3>
+				
+				<div id="wall-of-fame"class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
+			</div>
+		</div>
+	`;
 
-  // unique winners (just in case)
-  const uniqueWinners = Array.from(new Set(winners));
+	// where to put the cards
+	const wall = div.querySelector('#wall-of-fame') as HTMLElement;
 
-  return `
-    <div class="w-full mt-6">
-      <div class="w-full max-w-4xl mx-auto rounded-xl bg-white/5 border border-white/10 p-4">
-        <h3 class="text-white/80 font-semibold mb-3">Tournament Winners</h3>
+	// sad winners
+	if (!winners?.length)
+	{
+		wall.textContent = "No winners... ???";
+	}
 
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-          ${uniqueWinners
-            .map(player => `<div class="w-full">${createProfileCard(player).outerHTML}</div>`)
-            .join('')}
-        </div>
-      </div>
-    </div>
-  `;
+	// unique winners (just in case)
+	const uniqueWinners = Array.from(new Set(winners));
+
+	for (const p of uniqueWinners) {
+		wall.appendChild(createProfileCard(p));
+	}
+
+	return div;
 }
 
 // Render player list on the right, also only place where you can leave the tournament
 function renderPlayerList(players:Player[])
 {
 	 /* ---------------- Players list ---------------- */
-	const playersListElem = document.getElementById('connectedPlayersList');
+	const playersListElem = document.getElementById('tournament-connected-players');
 	if (playersListElem) {
 		if (players.length > 0) {
 			playersListElem.innerHTML = `
@@ -338,8 +347,8 @@ function updateTournamentInfo(state:TournamentState) {
 
 	// update winners panel
 	const winnersPanel = document.getElementById('winnersPanel');
-	if (winnersPanel) {
-		winnersPanel.innerHTML = finished ? renderWinnersPanel(winners) : '';
+	if (winnersPanel && finished) {
+		winnersPanel.appendChild(renderWinnersPanel(winners));
 	}
 }
 

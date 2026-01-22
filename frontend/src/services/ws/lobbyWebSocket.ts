@@ -70,7 +70,11 @@ export function ConnectLobbySocket(
 					// save lobby id
 					lobby_id = data.value;
 				}
-				else console.log('Failed to start lobby');
+				else {
+					console.log('Failed to create/start the lobby');
+					// clear lobby id
+					lobby_id = undefined;
+				}
 			}
 			else if (data.ID && data.players) onstate(data);
 			else
@@ -97,8 +101,8 @@ export function ConnectLobbySocket(
 	};
 
 
-	// build LobbyWebSocket
-	return {
+	// assign lobbyWS
+	lobbyWS = {
 		socket: socket,
 
 		/* socket */
@@ -151,9 +155,13 @@ export function ConnectLobbySocket(
 			}
 		}
 	}
+
+	// build LobbyWebSocket
+	return lobbyWS;
 }
 
 // if you just need to disconnect
 export function DisconnectLobbySocket() {
 	lobbyWS?.close();
+	lobbyWS = null;
 }

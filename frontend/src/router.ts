@@ -82,8 +82,8 @@ class Router {
 
   // Go back in history
   back() {
-    // #todo remove event listeners
-    window.history.back();
+    // @topiana- #todo remove event listeners
+    window.history.back();    
   }
 
   // Find route that matches the given path

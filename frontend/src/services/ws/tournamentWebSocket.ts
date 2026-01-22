@@ -75,11 +75,8 @@ export function ConnectTournamentSocket(
 
 
 
-
-
-
-	// build TournamentWebSocket
-	return {
+	// build&assign lobbyWS
+	tournamentWS = {
 		socket: socket,
 
 		/* socket */
@@ -114,7 +111,12 @@ export function ConnectTournamentSocket(
 							// callback
 							onjoin?.(data.value);
 						}
-						else console.log('Failed to join tourament');
+						else {
+							console.log('Failed to join tourament');
+
+							// clear tournament id
+							tournament_id = undefined;
+						}
 					}
 					// successful CREATE reply
 					else if (method === 'CREATE_REPLY') {
@@ -177,9 +179,13 @@ export function ConnectTournamentSocket(
 			}
 		}
 	}
+
+	// return socket
+	return tournamentWS
 }
 
 // if you just want to close the websocket
 export function DisconnectTournamentSocket() {
 	tournamentWS?.close();
+	tournamentWS = null;
 }

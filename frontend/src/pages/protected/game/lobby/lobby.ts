@@ -80,7 +80,7 @@ export function loadOnlineLobbyPage(): HTMLElement
 	
 					<div>
 						<p class="text-xs text-white/50 uppercase tracking-wide mb-2">Connected Players</p>
-						<div id="connectedPlayersList" class="grid gap-2"></div>
+						<div id="lobby-connected-players" class="grid gap-2"></div>
 					</div>
 				</div>
 	
@@ -116,7 +116,7 @@ export function loadOnlineLobbyPage(): HTMLElement
 	);
 
     // update lobby code
-    lobby_code = lobbyWS.getid();
+    if (!lobby_code) lobby_code = lobbyWS.getid();
     /* -------------------------- */
 
 	// div with switched stuff
@@ -162,7 +162,7 @@ export function loadOnlineLobbyPage(): HTMLElement
 
 
 
-function pushToGamePage(gameid:string)
+function pushToGamePage(gameid?:string)
 {
 	// close socket when leaving window
 	DisconnectLobbySocket();
@@ -215,7 +215,7 @@ function updateLobbyInfo(state:any)
 	const invitediv = document.getElementById('invite-player-card');
 	const botdiv = document.getElementById('bot-card');
     const footer = document.getElementById('lobby-footer');
-	const playersListElem = document.getElementById('connectedPlayersList');
+	const playersListElem = document.getElementById('lobby-connected-players');
 	const lobbyCodeElem = document.getElementById('lobbyCode');
 
 	// There is data to update
@@ -327,11 +327,29 @@ function loadStartButton(): HTMLElement
     `;
 
     // Add event listener
-    const startbtn = div.firstChild as HTMLElement;
+    const startbtn = div.querySelector('#start-game-btn') as HTMLElement;
 	startbtn.addEventListener('click', () => lobbyWS?.start());
 
     return div;
 }
+
+// function loadRejoinButton(): HTMLElement
+// {
+//     const div = document.createElement('div');
+
+//     div.className = "mt-auto p-2 bg-slate-900/20 rounded-xl flex justify-center";
+//     div.innerHTML = /* html */`
+//         <a id="rejoin-game-btn" class="px-4 py-3 bg-green-600/30 hover:bg-green-600/50 rounded-lg text-white font-bold transition">
+//             Re-join Game
+//         </a>
+//     `;
+
+//     // Add event listener
+//     const startbtn = div.querySelector('#start-game-btn') as HTMLElement;
+// 	startbtn.addEventListener('click', () => lobbyWS?.start());
+
+//     return div;
+// }
 
 
 
