@@ -1,6 +1,6 @@
 
 import { router } from "@/router";
-import { toastNotification } from "./toastNotification";
+import { toastNotification } from "@services/toastNotification";
 
 const BUTLER_URL = `ws://${window.location.hostname}:3029/ws`;
 

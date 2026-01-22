@@ -7,7 +7,7 @@ import './styles/main.css';
 import { renderTestPage } from './pages/test/test.ts';
 
 // connect to the gateway for notifications
-import { ConnectLifecycleSocket, DisconnectLifecycleSocket } from '@services/lifecycleWebSocket';
+import { ConnectLifecycleSocket, DisconnectLifecycleSocket } from '@services/ws/lifecycleWebSocket';
 
 // Initialize the application when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
