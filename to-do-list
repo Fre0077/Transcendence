@@ -7,6 +7,7 @@ MAJOR
 8. Tournament update got smashed into the lobby player's card
 9. Move all websocket connection in one file
 10. Game 'back' works only the second time
+11. History non viene piu' salvata perche' adesso viene passato l'username al profile
 
 MINOR
 4. timers and finish notifications on game

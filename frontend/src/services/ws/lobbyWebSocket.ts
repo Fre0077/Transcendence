@@ -17,6 +17,9 @@ export interface LobbyWebSocket {
 	start: () => void,
 	leave: () => void,
 
+	// stored variables
+	getid: () => string | undefined,
+
 	// bot ops
 	addbot: (level:number) => void,
 	rembot: () => void,
@@ -24,6 +27,7 @@ export interface LobbyWebSocket {
 
 // Singleton
 let lobbyWS:LobbyWebSocket | null = null;
+let lobby_id:string | undefined = undefined;
 
 // let's build something good
 export function ConnectLobbySocket(
@@ -59,6 +63,13 @@ export function ConnectLobbySocket(
 			const method = data.method || '';
 			if (method === 'START_REPLY') {
 				if (data.status === 'success') onstart(data.value);
+				else console.log('Failed to start lobby');
+			}
+			else if (method === 'JOIN_REPLY' || method === 'CREATE_REPLY') {
+				if (data.status === 'success') {
+					// save lobby id
+					lobby_id = data.value;
+				}
 				else console.log('Failed to start lobby');
 			}
 			else if (data.ID && data.players) onstate(data);
@@ -118,12 +129,16 @@ export function ConnectLobbySocket(
 				socket.send(JSON.stringify({ method: 'LEAVE' }));
 			}
 
+			// update lobby id
+			lobby_id = undefined;
+
 			// update the state as empty
 			onstate({ ID:'', players:[] });
 
 			// call passed function
 			onleave();
 		},
+		getid: () => {return lobby_id;},
 		/* bot api */
 		addbot: (level:number) => {
 			if (socket.readyState === WebSocket.OPEN) {
@@ -138,7 +153,7 @@ export function ConnectLobbySocket(
 	}
 }
 
+// if you just need to disconnect
 export function DisconnectLobbySocket() {
 	lobbyWS?.close();
-	lobbyWS = null;
 }

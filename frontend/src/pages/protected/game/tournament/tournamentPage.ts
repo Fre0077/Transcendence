@@ -1,11 +1,17 @@
+// defaults
+import { router } from "@/router";
 import { loadNavbar } from "@/components/navbar";
-import { load404Page } from "@/pages/errors/404";
+// import { load404Page } from "@/pages/errors/404";
 
+// services
+import { TournamentWebSocket, ConnectTournamentSocket } from "@/services/ws/tournamentWebSocket";
+
+// elements
 import { loadPongSpectatorDiv } from "@pages/protected/game/online/loadPongSpectatorDiv";
 import { createProfileCard } from "@/components/createProfileCard";
 import { Room, renderRoomCard } from "@/components/tournament/renderRoomCard";
 
-const TOURNAMENT_WEBSOCKET_URL = `ws://${window.location.hostname}:3029/ws/tournament`;
+// const TOURNAMENT_WEBSOCKET_URL = `ws://${window.location.hostname}:3029/ws/tournament`;
 
 
 // Keep track of games currently being spectated
@@ -32,15 +38,11 @@ interface TournamentState
 	rooms: Room[];
 }
 
-export function loadOnlineTournamentPage(): HTMLElement {
+let tournamentWS:TournamentWebSocket | null = null;
+let tourn_code:string | undefined = undefined;
 
-	const playerID = localStorage.getItem('userId'/* ) || sessionStorage.getItem('guestID') || 'Guest_' + Math.floor(Math.random() * 1000 */);
-		if (!playerID)
-				return load404Page();
-			
-	
-	/* const tournamentWS =  */createWebSocketConnection(playerID);
-
+export function loadOnlineTournamentPage(): HTMLElement
+{
 	//----
 
 	const div = document.createElement('div');
@@ -82,42 +84,22 @@ export function loadOnlineTournamentPage(): HTMLElement {
 	</div>
 	`;
 
+	// connect to the backend
+	tournamentWS = ConnectTournamentSocket(() => router.push('/tournaments'), tourn_code);
+
+	// add listeners to socket messages
+	tournamentWS.onmessage(pushToGamePage, () => {}, updateTournamentInfo);
+
+	// update tournament code
+	tourn_code = tournamentWS.getid();
+
 	return div;
 }
 
 /* -------------------------------------------------------- */
-/* ------------------- SOCKET EVENTS ---------------------- */
+/* ------------------- SOCKET ACTIONS --------------------- */
 /* -------------------------------------------------------- */
 
-function leave(socket: WebSocket): boolean
-{
-	// @topiana- check on socket state
-	if (socket.readyState === WebSocket.OPEN) {
-		socket.send(JSON.stringify({ method: 'LEAVE' }));
-		return true;
-	} else {
-		console.log("Socket closed, couldn't leave tournament");
-		return false;
-	}
-}
-
-// message received: {"method":"START_REPLY","status":"success","value":"00d78701-cb70-4535-81f3-c7b96bcd757b","comment":"The lobby is now in game"}
-function ready(socket: WebSocket)
-{
-	// build request
-	const startGameRequest = {
-		method: 'READY',
-		// lobbyID: tournment_code // outdated
-	};
-
-	// send requests
-	if (socket.readyState === WebSocket.OPEN) {
-		socket.send(JSON.stringify(startGameRequest));
-	} else {
-		console.log("Socket closed, couldn't get ready");
-		return ;
-	}
-}
 
 // add the spectated game
 function spectate(gameid: string) {
@@ -211,7 +193,7 @@ function renderWinnersPanel(winners: string[]): string {
 }
 
 // Render player list on the right, also only place where you can leave the tournament
-function renderPlayerList(players:Player[], socket:WebSocket)
+function renderPlayerList(players:Player[])
 {
 	 /* ---------------- Players list ---------------- */
 	const playersListElem = document.getElementById('connectedPlayersList');
@@ -269,17 +251,8 @@ function renderPlayerList(players:Player[], socket:WebSocket)
 	const readyBtnPlayerList = document.getElementById('readyBtnPlayerList');
 	const leaveBtnPlayerList = document.getElementById('leaveBtnPlayerList');
 
-	if (readyBtnPlayerList) readyBtnPlayerList.addEventListener('click', () => ready(socket));
-	if (leaveBtnPlayerList) leaveBtnPlayerList.addEventListener('click', () => {
-		console.log('Leave Tournament Button clicked');
-		if (leave(socket) === false) return;
-
-		// close socket while leaving the page
-		socket.close();
-		
-		// backc to tournament HUB
-		router.back();
-	});
+	if (readyBtnPlayerList) readyBtnPlayerList.addEventListener('click', () => tournamentWS?.ready());
+	if (leaveBtnPlayerList) leaveBtnPlayerList.addEventListener('click', () => tournamentWS?.leave());
 }
 
 
@@ -345,10 +318,7 @@ function renderTournamentLayout(rooms:Room[])
 
 
 
-function updateTournamentInfo(
-    state:TournamentState,
-	socket:WebSocket
-) {
+function updateTournamentInfo(state:TournamentState) {
 	console.log('Updating tournament info ...');
 
 	// read data
@@ -361,7 +331,7 @@ function updateTournamentInfo(
 	}
 
 	// Render player list
-	renderPlayerList(players, socket);
+	renderPlayerList(players);
 
 	// render tournament layout
 	renderTournamentLayout(rooms);
@@ -373,7 +343,7 @@ function updateTournamentInfo(
 	}
 }
 
-/* ----------------------------------------- */
+/* ---------------------------------------------------- */
 
 
 
@@ -382,80 +352,9 @@ function updateTournamentInfo(
 
 
 
-
-
-
-/* ----------------------------------------- */
-/* 		Socket creation and connection		 */
-
-import { router } from "@/router";
-
-function createWebSocketConnection(playerID:string): WebSocket
+function pushToGamePage(gameid:string)
 {
-    const ws = new WebSocket(TOURNAMENT_WEBSOCKET_URL);
-    console.log('Websocketing to', TOURNAMENT_WEBSOCKET_URL);
-
-	ws.onopen = () => {
-		console.log('Connected to tournament WebSocket');
-
-		// @topiana- aggiunta la AUTH call all'inizio della connesione #review pls
-		ws.send(JSON.stringify({ method: 'AUTH', playerID: playerID }));
-	};
-
-	ws.onmessage = (event) => {
-		try {
-			const data = JSON.parse(event.data);
-
-			/* #debug */
-			console.log('Tournament WebSocket message received:', data);
-
-			const method = data.method || '';
-			if (method === 'START_REPLY' && data.status === 'success') {
-				console.log('Room is starting the game:', data.comment);
-
-
-				// @topiana- load the game page #review pls
-				// window.location.href = `/game:${data.value}`;
-
-				// #remove
-				// window.sessionStorage.setItem('guestID', playerID);
-
-				// close the websocket when leaving the page
-				ws.close();
+	tournamentWS?.close();
 				
-				router.push(`/game/${data.value}`);
-
-			}
-			// @topiana-
-			else if (method === 'AUTH_REPLY' && data.status === 'success') {
-				console.log('Authenticatd successfully');
-
-
-				// reset lobbycode
-				// tournment_code = ''; // (not necessary)
-
-			}
-		
-		   	// console.log('checking for updates...');
-			if (data.ID
-				&& data.players && data.rooms
-				/* && data.finished */ && data.winners)
-			{
-				// update tournament
-				updateTournamentInfo(data, ws);
-			}
-		} catch (e) {
-			console.log("error on message received:", event.data);
-		}
-	};
-
-	ws.onerror = (error) => {
-		console.error('WebSocket error:', error);
-	};
-
-	ws.onclose = () => {
-		console.log('Disconnected from lobby WebSocket');
-	};
-
-	return ws;
+	router.push(`/game/${gameid}`);
 }

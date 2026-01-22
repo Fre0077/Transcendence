@@ -115,6 +115,12 @@ export function fwdWebSocket(connection:WebSocket, request:FastifyRequest, endpo
 
 // import fetch from 'node-fetch'; // or global fetch in Node 18+
 
+import { URLSearchParams } from 'node:url';
+
+function buildQuery(query:any):string {
+	return new URLSearchParams(query).toString()
+}
+
 // forward request to backend services afterr checking authourization
 export async function authForward(request:FastifyRequest, reply:FastifyReply, endpoint:string)
 {
@@ -156,6 +162,9 @@ export async function authForward(request:FastifyRequest, reply:FastifyReply, en
 		fetchOptions.body = request.body ? JSON.stringify(request.body) : undefined;
 		headers['content-type'] = 'application/json';
 	}
+
+	// if there is a query, add it
+	if (request.query) endpoint += `?${buildQuery(request.query)}`;
 
 	// --- CALL BACKEND ---
 	let backendResponse;
@@ -213,6 +222,9 @@ export async function noAuthForward(
 		fetchOptions.body = request.body ? JSON.stringify(request.body) : undefined;
 		headers['content-type'] = 'application/json';
 	}
+
+	// if there is a query, add it
+	if (request.query) endpoint += `?${buildQuery(request.query)}`;
 
 	// --- CALL BACKEND ---
 	let backendResponse;

@@ -3,7 +3,7 @@ import { PongBoard } from "./createPongBoard";
 
 // import { createProfileCard } from "@components/createProfileCard";
 import drawPongCanvas from "./drawPongCanvas";
-import type { PongSocket } from "./PongSocket";
+import type { PongSocket } from "@services/ws/createPongSocket";
 import { InteractiveWidget, createProfileWidget } from "@components/createProfileWidget";
 
 export function createPongBoardWidget(socket: PongSocket): PongBoard {

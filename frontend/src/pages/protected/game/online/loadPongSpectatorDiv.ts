@@ -1,6 +1,6 @@
 // loadPongPlayerPage.ts
 import { load404Page } from "@/pages/errors/404";
-import { createSpectatorSocket } from "@components/PongBoards/PongSocket";
+import { createSpectatorSocket } from "@/services/ws/createPongSocket";
 import { createPongBoard } from "@components/PongBoards/createPongBoard";
 
 // #needs-auth-check

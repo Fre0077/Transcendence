@@ -1,7 +1,7 @@
 // loadPongPlayerPage.ts
 import { createPongBoardWidget } from "@/components/PongBoards/createPongBoardWidget";
 import { load404Page } from "@/pages/errors/404";
-import { createReplaySocket } from "@components/PongBoards/PongSocket";
+import { createReplaySocket } from "@/services/ws/createPongSocket";
 // import { createPongBoard } from "@components/PongBoards/createPongBoard";
 
 // #needs-auth-check

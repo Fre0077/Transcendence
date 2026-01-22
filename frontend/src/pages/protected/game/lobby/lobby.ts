@@ -21,7 +21,7 @@ interface Player {
 }
 
 let lobbyWS:LobbyWebSocket | null = null;
-let lobby_code:string = "";
+let lobby_code:string | undefined = undefined;
 
 export function loadOnlineLobbyPage(): HTMLElement
 {
@@ -31,15 +31,6 @@ export function loadOnlineLobbyPage(): HTMLElement
 
 	console.log('Got query', lobby_code);
 	/* ----------------------------------------- */
-	
-	// connect to backend
-	lobbyWS = ConnectLobbySocket(
-		pushToGamePage,
-		pushToHubPage,
-		updateLobbyInfo,
-	);
-
-	//----
 
 	const div = document.createElement('div');
 	div.className = 'min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex flex-col';
@@ -94,11 +85,7 @@ export function loadOnlineLobbyPage(): HTMLElement
 				</div>
 	
 				<!-- START BUTTON -->
-				<div class="mt-auto p-2 border-t border-white/20 bg-slate-900/20 rounded-xl flex justify-center">
-					<a id="start-game-btn" class="px-4 py-3 bg-green-600/30 hover:bg-green-600/50 rounded-lg text-white font-bold transition">
-						Start Game
-					</a>
-				</div>
+                <div id="lobby-footer"></div>
 
 			</div>
 
@@ -120,6 +107,18 @@ export function loadOnlineLobbyPage(): HTMLElement
 	</div>
 	`;
 
+    /* --- Connect to Backent --- */
+	lobbyWS = ConnectLobbySocket(
+		pushToGamePage,
+		pushToHubPage,
+		updateLobbyInfo,
+        lobby_code
+	);
+
+    // update lobby code
+    lobby_code = lobbyWS.getid();
+    /* -------------------------- */
+
 	// div with switched stuff
 	const topcards = div.querySelector('#top-cards') as HTMLElement;
 
@@ -127,7 +126,7 @@ export function loadOnlineLobbyPage(): HTMLElement
 	function showCreate() {
 		const toswitch = topcards.lastChild;
 		if (toswitch) topcards.replaceChild(loadCreateLobbyCard(showLeave), toswitch);
-	}
+    }
 
 	// switch to LEAVE card
 	function showLeave() {
@@ -136,7 +135,7 @@ export function loadOnlineLobbyPage(): HTMLElement
 	}
 
 	// load correct card
-	if (lobby_code === "") showCreate();
+	if (!lobby_code) showCreate();
 	else showLeave();
 
 	// JOIN an existing lobby
@@ -154,10 +153,6 @@ export function loadOnlineLobbyPage(): HTMLElement
 			}
 		});
 	}
-
-	// Add event listener for START game button
-	const startGameBtn = div.querySelector('#start-game-btn');
-	if (startGameBtn) startGameBtn.addEventListener('click', () => lobbyWS?.start());
 
 	return div;
 }
@@ -219,11 +214,12 @@ function updateLobbyInfo(state:any)
 	// get divs
 	const invitediv = document.getElementById('invite-player-card');
 	const botdiv = document.getElementById('bot-card');
+    const footer = document.getElementById('lobby-footer');
 	const playersListElem = document.getElementById('connectedPlayersList');
 	const lobbyCodeElem = document.getElementById('lobbyCode');
 
 	// There is data to update
-	if (lobby_code !== "" && players.length !== 0 && lobbyWS !== null)
+	if (lobby_code && players.length !== 0 && lobbyWS !== null)
 	{
 		// Update lobby code
 		if (lobbyCodeElem) lobbyCodeElem.textContent = lobby_code;
@@ -278,6 +274,9 @@ function updateLobbyInfo(state:any)
 		// Spawn bot card
 		if (botdiv && !botdiv.hasChildNodes()) botdiv.appendChild(createBotCard(lobbyWS.addbot, lobbyWS.rembot));
 
+        // Spawn start button
+        if (footer && !footer.hasChildNodes()) footer.append(loadStartButton());
+
 		// add copy lobby code button
 		const copyLobbyCodeBtn = document.getElementById('copyLobbyCodeBtn');
 		if (copyLobbyCodeBtn) {
@@ -305,6 +304,7 @@ function updateLobbyInfo(state:any)
 		if (playersListElem) playersListElem.innerHTML = "";
 		if (invitediv) removeAllChildNodes(invitediv);
 		if (botdiv) removeAllChildNodes(botdiv);
+        if (footer) removeAllChildNodes(footer);
 	}
 }
 
@@ -315,7 +315,23 @@ function updateLobbyInfo(state:any)
 
 
 
+function loadStartButton(): HTMLElement
+{
+    const div = document.createElement('div');
 
+    div.className = "mt-auto p-2 bg-slate-900/20 rounded-xl flex justify-center";
+    div.innerHTML = /* html */`
+        <a id="start-game-btn" class="px-4 py-3 bg-green-600/30 hover:bg-green-600/50 rounded-lg text-white font-bold transition">
+            Start Game
+        </a>
+    `;
+
+    // Add event listener
+    const startbtn = div.firstChild as HTMLElement;
+	startbtn.addEventListener('click', () => lobbyWS?.start());
+
+    return div;
+}
 
 
 
