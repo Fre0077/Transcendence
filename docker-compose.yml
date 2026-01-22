@@ -37,14 +37,42 @@ services:
     networks:
       - transcendence
 
+# 2.25. MONITORING STUFFS
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitor/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_dat:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      frontend:
+        condition: service_started
+    networks:
+      - transcendence
+    restart: always
 
-
-
-
-
-
-
-
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3050:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SECURITY_ADMIN_USER=admin
+    volumes:
+      - grafana_dat:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - transcendence
+    restart: always
 
 
   # 2.5 BUTLER che rompe i coglioni
@@ -61,15 +89,6 @@ services:
     networks:
       - transcendence
     restart: always
-
-
-
-
-
-
-
-
-
 
 
   # 3. BACKEND SERVICES START LAST
@@ -242,3 +261,5 @@ volumes:
   auth_db:
   chat_db:
   profile_db:
+  prometheus_dat:
+  grafana_dat:

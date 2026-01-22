@@ -1,8 +1,10 @@
 
 import { router } from "@/router";
 import { toastNotification } from "./toastNotification";
+import { sendPostRequest, sendDeleteRequest } from "@/services/api/sendRequests";
 
 const BUTLER_URL = `ws://${window.location.hostname}:3029/ws`;
+const BACKEND_APIS_URL = `http://${window.location.hostname}:3029/api`;
 
 let socket:WebSocket | null = null;
 
@@ -46,8 +48,15 @@ export function ConnectLifecycleSocket(): WebSocket
 				switch (msg.type)
 				{
 					case "friend-request":
-						console.log("Friend request", msg.content);
-						toastNotification.message('TEST', 'X ti ha molestat su instagram', () => {alert('SAIK')}, 10000);
+						console.log("Friend request", msg.sender);
+						toastNotification.friend('Friend Request', `${msg.sender} vorrebbe essere tuo amico`, 
+							() => { alert('Pagina Friends');},
+							() => { sendPostRequest(`${BACKEND_APIS_URL}/friend/accept`, {
+										target : msg.sender
+									}, 'application/json');},
+							() => { sendDeleteRequest(`${BACKEND_APIS_URL}/friend/remove`, {
+										target : msg.sender
+									}, 'application/json');}, 5000);
 						break ;
 					case "lobby-invite":
 						console.log("Lobby invite", msg.content);

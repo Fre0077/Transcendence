@@ -1,4 +1,7 @@
 import { sendGetRequest } from "@/services/api/sendRequests";
+import { sendPostRequest, sendDeleteRequest } from "@/services/api/sendRequests";
+
+const BACKEND_APIS_URL = `http://${window.location.hostname}:3029/api`;
 
 async function getFriendsList(){
 	try {
@@ -16,10 +19,10 @@ async function getFriendsList(){
 export type FriendStatus = "online" | "offline" | "ingame";
 
 interface Friend {
-	username: "totommi",
+	username: string,
 	avatarUrl: null,
-	status: FriendStatus;
-	linkId: 2	// #todo remove
+	status: FriendStatus,
+	linkId: 2,	// #todo remove
 }
 
 function createFriendCard(friend: Friend): HTMLElement {
@@ -59,7 +62,7 @@ function createFriendCard(friend: Friend): HTMLElement {
 			<button class="w-full px-3 py-2 text-sm text-left text-white hover:bg-white/10">
 				Invite to Game
 			</button>
-			<button class="w-full px-3 py-2 text-sm text-left text-red-400 hover:bg-red-500/10">
+			<button class="decline-btn w-full px-3 py-2 text-sm text-left text-red-400 hover:bg-red-500/10">
 				Remove Friend
 			</button>
 		</div>
@@ -70,16 +73,23 @@ function createFriendCard(friend: Friend): HTMLElement {
 	card.addEventListener("click", () => {
 		actions.classList.toggle("hidden");
 	});
+	
+	const declineBtn = card.querySelector(".decline-btn")!;
+	declineBtn.addEventListener("click", async () => {
+		try {
+			await sendDeleteRequest(
+				`${BACKEND_APIS_URL}/friend/remove`,
+				{ target: friend.username },
+				"application/json"
+			);
+			console.log("Friend request remove:", friend.username);
+		} catch (err) {
+			console.error(err);
+		}
+	});
 
 	return card;
 }
-
-
-
-
-
-
-
 
 
 interface Request  {
@@ -98,13 +108,46 @@ function createIncomingRequestCard(req: Request): HTMLElement {
 			<span class="text-sm text-white">${req.username}</span>
 		</div>
 		<div class="flex gap-2">
-			<button class="text-green-400 text-xs hover:underline">Accept</button>
-			<button class="text-red-400 text-xs hover:underline">Decline</button>
+			<button class="accept-btn text-green-400 text-xs hover:underline">
+				Accept
+			</button>
+			<button class="decline-btn text-red-400 text-xs hover:underline">
+				Decline
+			</button>
 		</div>
 	`;
 
+	const acceptBtn = div.querySelector(".accept-btn")!;
+	acceptBtn.addEventListener("click", async () => {
+		try {
+			await sendPostRequest(
+				`${BACKEND_APIS_URL}/friend/accept`,
+				{ target: req.username },
+				"application/json"
+			);
+			console.log("Friend request accepted:", req.username);
+		} catch (err) {
+			console.error(err);
+		}
+	});
+
+	const declineBtn = div.querySelector(".decline-btn")!;
+	declineBtn.addEventListener("click", async () => {
+		try {
+			await sendDeleteRequest(
+				`${BACKEND_APIS_URL}/friend/remove`,
+				{ target: req.username },
+				"application/json"
+			);
+			console.log("Friend request remove:", req.username);
+		} catch (err) {
+			console.error(err);
+		}
+	});
+
 	return div;
 }
+
 
 
 
@@ -121,7 +164,11 @@ function createOutgoingRequestCard(req: Request): HTMLElement {
 			<span class="text-sm text-white">${req.username}</span>
 		</div>
 		<div class="flex gap-2">
-			<button class="text-green-400 text-xs hover:underline">Cancel</button>
+			<button 
+				class="text-green-400 text-xs hover:underline"
+				onclick = "alert('ciao')">
+					Cancel
+				</button>
 		</div>
 	`;
 
@@ -206,11 +253,11 @@ function loadFriendBarContent(bar: HTMLElement) {
 			friendsList.appendChild(createFriendCard(f))
 		);
 
-		if(incoming && data.incoming)data.incoming.forEach((r: Request) =>
+		if(incoming && data.incomingRequests)data.incomingRequests.forEach((r: Request) =>
 			incoming.appendChild(createIncomingRequestCard(r))
 		);
 
-		if(outgoing && data.outgoing) data.outgoing.forEach((r: Request) =>
+		if(outgoing && data.outgoingRequests) data.outgoingRequests.forEach((r: Request) =>
 			outgoing.appendChild(createOutgoingRequestCard(r))
 		);
 	});

@@ -5,6 +5,8 @@ MAJOR
 6. rejoin button on tournaments and lobbies
 7. Get profile data via username (current linkId deprecated)
 8. Tournament update got smashed into the lobby player's card
+9. Sistemare endpoint remove + cambiare da TargetUsername a Target
+10. aggiungere ai tasti su profile le api Incoming Requests e Outgoing Request
 
 MINOR
 4. timers and finish notifications on game

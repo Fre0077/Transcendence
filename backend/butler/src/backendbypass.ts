@@ -57,8 +57,9 @@ export function authWebSocket(connection:WebSocket, request:FastifyRequest)
 interface Message {
 	what: "NOTIFY" | "INFO",
 	type:string,
-	content:string,
-	message?:string
+	content?:string,
+	message?:string,
+	sender:string
 }
 
 /* actually send  the message to the user */
@@ -108,7 +109,36 @@ export async function sendLobbyInvite(request:FastifyRequest, reply:FastifyReply
 		what: "NOTIFY",
 		type: 'lobby-invite',
 		content: lobbyid,
-		message: 'Sei stato invitato in una lobby!'
+		message: 'Sei stato invitato in una lobby!',
+		sender: (request as any).user.username
+	});
+
+	if (ret === false) reply.code(404).send(JSON.stringify({ ok:false, comment:"The user isn't connected" }));
+	else reply.code(200).send(JSON.stringify({ ok:true, comment:"Message sent correctly" }));
+}
+
+interface FriendRequestBody {
+	username:string
+}
+
+export async function sendFriendRequest(request:FastifyRequest, reply:FastifyReply)
+{
+	// get target data
+	const { username } = request.body as FriendRequestBody;
+	if (!username)
+	{
+		// #todo send error page?
+		reply
+			.code(400)
+			.send("Invalid body");
+		return ; // important
+	}
+
+	// send lobby invite
+	const ret = sendMessageTo(username, {
+		what: "NOTIFY",
+		type: 'friend-request',
+		sender: (request as any).user.username
 	});
 
 	if (ret === false) reply.code(404).send(JSON.stringify({ ok:false, comment:"The user isn't connected" }));

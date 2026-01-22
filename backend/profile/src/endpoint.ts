@@ -120,17 +120,17 @@ export async function profileEndpoint(fastify: FastifyInstance) {
 
     // POST /api/friend/request -> Invia richiesta
     fastify.post('/friend/request', async (request: AuthRequest, reply: FastifyReply) => {
-        const { targetUsername } = request.body as { targetUsername: string };
+        const { target } = request.body as { target: string };
         try {
             const userId = Number(request.headers['x-user-id'])
 			const secret = request.headers['x-gateway-secret']
 
 			if (!userId || secret !== 'biscottini') {throw new Unauthorized('Utente non autorizzato', 'profile'); }
-            if (!targetUsername)
-                throw new BadRequest("Username richiesto", "profile");
-            const result = await sendFriendRequest(userId, targetUsername);
+            if (!target)
+                throw new BadRequest("target richiesto", "profile");
+            const result = await sendFriendRequest(userId, target);
             
-            logInfo(`{profile} [200] Richiesta amicizia inviata a ${targetUsername}`);
+            logInfo(`{profile} [200] Richiesta amicizia inviata a ${target}`);
             return reply.status(200).send(result);
         } catch (err) {
             if (err instanceof Error)
@@ -142,17 +142,17 @@ export async function profileEndpoint(fastify: FastifyInstance) {
 
     // POST /api/friend/accept -> Accetta richiesta
     fastify.post('/friend/accept', async (request: AuthRequest, reply: FastifyReply) => {
-        const { targetUsername } = request.body as { targetUsername: string };
+        const { target } = request.body as { target: string };
         try {
             const userId = Number(request.headers['x-user-id'])
 			const secret = request.headers['x-gateway-secret']
 
 			if (!userId || secret !== 'biscottini') {throw new Unauthorized('Utente non autorizzato', 'profile'); }
-            if (!targetUsername)
+            if (!target)
                 throw new BadRequest("Username richiesto per accettare", "profile");
-            const result = await acceptFriendRequest(userId, targetUsername);
+            const result = await acceptFriendRequest(userId, target);
             
-            logInfo(`{profile} [200] Richiesta amicizia accettata per ${targetUsername}`);
+            logInfo(`{profile} [200] Richiesta amicizia accettata per ${target}`);
             return reply.status(200).send(result);
         } catch (err) {
             if (err instanceof Error)
@@ -164,17 +164,17 @@ export async function profileEndpoint(fastify: FastifyInstance) {
 
     // DELETE /api/friend/remove -> Rifiuta/Annulla richiesta o Rimuovi amico
     fastify.delete('/friend/remove', async (request: AuthRequest, reply: FastifyReply) => {
-        const { targetUsername } = request.body as { targetUsername: string };
+        const { target } = request.body as { target: string };
         try {
             const userId = Number(request.headers['x-user-id'])
 			const secret = request.headers['x-gateway-secret']
 
 			if (!userId || secret !== 'biscottini') {throw new Unauthorized('Utente non autorizzato', 'profile'); }
-            if (!targetUsername)
+            if (!target)
                 throw new BadRequest("Username richiesto per rimuovere", "profile");
-            const result = await removeFriendRequest(userId, targetUsername);
+            const result = await removeFriendRequest(userId, target);
             
-            logInfo(`{profile} [200] Relazione rimossa con ${targetUsername}`);
+            logInfo(`{profile} [200] Relazione rimossa con ${target}`);
             return reply.status(200).send(result);
         } catch (err) {
             if (err instanceof Error)

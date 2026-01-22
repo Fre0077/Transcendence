@@ -36,6 +36,7 @@ await fastify.register(cors, {
         cb(null, origin);
     },
 	credentials: true,              // important: allows cookies to be sent
+	methods: ["GET", "POST", "PATCH", "PUT", "DELETE"],
 });
 
 // Health-check endpoint (server-side)
@@ -92,7 +93,8 @@ from './forwarders.js';
 
 import {
 	sendLobbyInvite,
-	authWebSocket
+	authWebSocket,
+	sendFriendRequest
 } from './backendbypass.js';
 
 
@@ -149,6 +151,7 @@ fastify.register(async function (fastify) {
 	// backend bypass endpoints (interact with the users connected to butler)
 	// All these endpoint require an authenticated connection
 	fastify.post('/lobby-invite', { preHandler: [isCookieAuthenticated] }, async (request, reply) => sendLobbyInvite(request, reply));
+	fastify.post('/friend-request', { preHandler: [isCookieAuthenticated] }, async (request, reply) => { await authForward(request, reply, `${PROFILE_URL}/api/friend/request`), sendFriendRequest(request, reply)});
 
 
 }, { prefix: '/api' });

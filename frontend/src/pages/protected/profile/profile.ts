@@ -4,6 +4,9 @@ import { generateInitialsAvatar } from "@/components/createDefaultImage";
 
 import { GameData, createHistoryBar } from "@/components/createHistoryBar";
 import { createFriendsBar } from "@/components/createFriendBar";
+import { sendPostRequest } from "@/services/api/sendRequests";
+
+const BACKEND_APIS_URL = `http://${window.location.hostname}:3029/api`;
 
 export function loadProfilePage(): HTMLElement {
 	const div = document.createElement('div');
@@ -37,6 +40,66 @@ export function loadProfilePage(): HTMLElement {
 					</div>
 				</div>
 			</div>
+
+
+			<section
+            id="invite-player-card"
+            class="relative rounded-xl p-8 border border-white/20
+                    bg-slate-800/60 backdrop-blur
+                    transition-all duration-300
+                    hover:shadow-lg hover:shadow-white/10
+                    focus-within:ring-2 focus-within:ring-cyan-400"
+            >
+                <div class="text-center">
+                    <!-- Icon -->
+                    <div class="text-5xl mb-4" aria-hidden="true">👤➕</div>
+
+                    <!-- Title -->
+                    <h3 class="text-xl font-bold text-white mb-2">
+                        Invite Player
+                    </h3>
+
+                    <!-- Description -->
+                    <p class="text-sm text-white/70 mb-4">
+                        Invite a player by their username
+                    </p>
+
+                    <!-- Form -->
+                    <form id="invite-form" class="flex flex-col gap-3">
+                        <label for="invite-player-username" class="sr-only">
+                            Player username
+                        </label>
+
+                        <input
+                            id="invite-player-username"
+                            name="username"
+                            type="text"
+                            required
+                            placeholder="Username"
+                            class="rounded-md px-4 py-2
+                                bg-slate-900 text-white
+                                border border-white/20
+                                placeholder-white/40
+                                focus:outline-none focus:ring-2 focus:ring-cyan-400"
+                        />
+
+                        <button
+                            type="submit"
+                            class="mt-2 inline-flex items-center justify-center gap-2
+                                rounded-md px-4 py-2
+                                bg-cyan-600 hover:bg-cyan-500
+                                text-white font-semibold
+                                transition-colors
+                                focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-400"
+                        >
+                            <span aria-hidden="true">✉️</span>
+                            Send Invite
+                        </button>
+                    </form>
+                </div>
+            </section>
+
+
 		</div>
 		<!-- MATCH HISTORY -->
 		<div id="match-history" class="mt-12 w-full max-w-4xl flex flex-col space-y-3 font-mono">
@@ -99,6 +162,36 @@ export function loadProfilePage(): HTMLElement {
 	// if (!friends) throw Error("FriendBar div not found");
 	// friends.appendChild(createFriendsBar());
 	document.body.appendChild(createFriendsBar());
+
+
+
+		/* -------------------------------- */
+		/*          PLAYER INVITE           */
+	
+		//invite-player-btn
+		const inviteform = div.querySelector("#invite-form") as HTMLFormElement;
+		// const usernamediv = div.querySelector("#invite-player-username") as HTMLInputElement;
+		// const invitebtn = div.querySelector("#invite-player-btn");
+		inviteform.addEventListener("submit", (event) => {
+			event.preventDefault(); // stop page reload
+	
+			// get the username
+			const form = event.currentTarget as HTMLFormElement;
+			const data = new FormData(form);
+	
+			const username = data.get("username");
+	
+			if (typeof username !== "string" || username.trim() === "") {
+				console.error("Invalid username");
+				return;
+			}
+
+	
+			// send the request to the backend
+			sendPostRequest(`${BACKEND_APIS_URL}/friend-request`, {
+				target: username
+			}, 'application/json');
+		});
 
 
 	return div;
