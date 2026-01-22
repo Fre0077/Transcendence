@@ -2,9 +2,12 @@
 @topiana- todos
 
 MAJOR
-6. rejoin button on tournaments and lobbies
+6. rejoin button on tournaments and lobbies (and better start button on lobby)
 7. Get profile data via username (current linkId deprecated)
 8. Tournament update got smashed into the lobby player's card
+9. Move all websocket connection in one file
+10. Game 'back' works only the second time
+11. History non viene piu' salvata perche' adesso viene passato l'username al profile
 9. Sistemare endpoint remove + cambiare da TargetUsername a Target
 10. aggiungere ai tasti su profile le api Incoming Requests e Outgoing Request
 
@@ -26,6 +29,7 @@ STYLE
 1. spacing at the bottom of the lobby page
 2. pls... the back button
 4. Better friendlist
+5. better lobby UI (better start/leave buttons, 'bot' and 'invite' card appears only if lobby is created/joined)
 
 CLEANUPS
 2. Log all major messages

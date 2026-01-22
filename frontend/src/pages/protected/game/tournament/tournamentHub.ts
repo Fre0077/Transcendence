@@ -1,18 +1,25 @@
+// defaults
+import { router } from "@/router";
 import { loadNavbar } from "@/components/navbar";
-import { load404Page } from "@/pages/errors/404";
+// import { load404Page } from "@/pages/errors/404";
 
-const TOURNAMENT_WEBSOCKET_URL = `ws://${window.location.hostname}:3029/ws/tournament`;
+// servicets
+import { TournamentWebSocket, ConnectTournamentSocket } from "@/services/ws/tournamentWebSocket";
+
+// const TOURNAMENT_WEBSOCKET_URL = `ws://${window.location.hostname}:3029/ws/tournament`;
+
+let tournamentWS:TournamentWebSocket | null = null;
+let tourn_code:string | undefined = undefined;
 
 export function loadTournamentHubPage(): HTMLElement
 {
 
-    // @topiana- we need playerID to authenticate the connection, so I passed it to createWebSocketConnection 
+    /* --------------- GET QUERY --------------- */
+    const query = router.getQuery().get("tourn-id");
+    if (query) tourn_code = query;
 
-    const playerID = localStorage.getItem('userId'/* ) || sessionStorage.getItem('guestID') || 'Guest_' + Math.floor(Math.random() * 1000 */);
-        if (!playerID)
-                return load404Page();
-
-    //----
+    console.log('Got query', tourn_code);
+    /* ----------------------------------------- */
 
     const div = document.createElement('div');
     div.className = 'min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex flex-col';
@@ -62,13 +69,13 @@ export function loadTournamentHubPage(): HTMLElement
                     <div class="mb-4">
                         <label class="block text-sm text-white/70 mb-1">Tournament Format</label>
                         <div id="formatList" class="max-h-32 overflow-y-auto rounded-lg bg-slate-800 border border-white/10">
-                            <button class="format-option w-full text-left px-3 py-2 hover:bg-cyan-600/20" data-value="single-elimination">
+                            <button class="format-option w-full text-left text-white font-mono px-3 py-2 hover:bg-cyan-600/20" data-value="single-elimination">
                                 Single Elimination
                             </button>
-                            <button class="format-option w-full text-left px-3 py-2 hover:bg-cyan-600/20" data-value="double-elimination">
+                            <button class="format-option w-full text-left text-white font-mono px-3 py-2 hover:bg-cyan-600/20" data-value="double-elimination">
                                 Double Elimination
                             </button>
-                            <button class="format-option w-full text-left px-3 py-2 hover:bg-cyan-600/20" data-value="round-robin">
+                            <button class="format-option w-full text-left text-white font-mono px-3 py-2 hover:bg-cyan-600/20" data-value="round-robin">
                                 Round Robin
                             </button>
                         </div>
@@ -111,7 +118,7 @@ export function loadTournamentHubPage(): HTMLElement
 
                             <p class="text-xs text-white/50 mt-1">
                                 Level: <span id="botLevelLabel">50</span>
-                                <span class="ml-2">(0 = strong, 100 = weak)</span>
+                                <span class="ml-2">(0: Easy, 100: Hard)</span>
                             </p>
                         </div>
                     </div>
@@ -125,7 +132,7 @@ export function loadTournamentHubPage(): HTMLElement
             </div>
 
             <!-- Rejoin Tourn Card -->
-            <a id="reJoinTournBtn"
+            <a id="rejoin-tourn-btn"
                 class="hidden group relative overflow-hidden rounded-xl bg-gradient-to-br from-green-600/20 to-teal-600/20 p-8 border border-green-500/30 hover:border-green-400/70 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-green-500/20">
             </a>
         
@@ -135,45 +142,59 @@ export function loadTournamentHubPage(): HTMLElement
     `;
 
     // connect to the backend
-    let tournamentWS = createWebSocketConnection(spawnRejoinButton);
+    tournamentWS = ConnectTournamentSocket(() => {}, tourn_code);
+
+    // add listeners to socket messages
+    tournamentWS.onmessage(() => {}, pushToTournament);
+
+    // update tournament code
+    tourn_code = tournamentWS.getid();
+
+    // eventually load rejoin button
+    if (tourn_code) {
+        const reJoinBtn = div.querySelector('#rejoin-tourn-btn') as HTMLAnchorElement;
+
+        // Set the button content
+        reJoinBtn.innerHTML = `
+            <div class="relative z-10 text-center">
+                <div class="text-5xl mb-4">↩️</div>
+                <h3 class="text-xl font-bold text-white mb-2">Re-Join Tournament</h3>
+                <p class="text-sm text-white/70">Resume your last tourament</p>
+                <p class="text-xs text-white/50 mt-1">Tournament ID: <span class="font-mono">${tourn_code}</span></p>
+            </div>
+        `;
+
+        // Make it visible
+        reJoinBtn.classList.remove('hidden');
+
+        // Make it work
+        reJoinBtn.onclick = (e) => {
+            e.preventDefault();
+            if (tourn_code) pushToTournament(tourn_code);
+        };
+    }
 
 
     // JOIN button code
     const joinTournBtn = div.querySelector('#joinTournBtn');
     if (joinTournBtn) {
         joinTournBtn.addEventListener('click', () => {
-            const tourn_conde = prompt('Enter Tournament Code:');
-            if (tourn_conde) {
-                join(tourn_conde, tournamentWS);
+            const tourn_code = prompt('Enter Toruament Code:');
+			if (tourn_code) {
 
-            }
+				// leave old toruament
+				tournamentWS?.leave();
+
+				// join new lobby
+				tournamentWS?.join(tourn_code);
+			}
         });
     }
+    
 
-    // REJOIN button code
-    const reJoinBtn = div.querySelector('#reJoinTournBtn') as HTMLAnchorElement;
-    function spawnRejoinButton(tournament_id:string)
-    {
-        // Set the button content
-        reJoinBtn.innerHTML = `
-            <div class="relative z-10 text-center">
-                <div class="text-5xl mb-4">↩️</div>
-                <h3 class="text-xl font-bold text-white mb-2">Re-Join Tournament</h3>
-                <p class="text-sm text-white/70">Resume your last match</p>
-                <p class="text-xs text-white/50 mt-1">Tournament ID: <span class="font-mono">${tournament_id}</span></p>
-            </div>
-        `;
-    
-        // Make it visible
-        reJoinBtn.classList.remove('hidden');
-    
-        // Make it work
-        reJoinBtn.onclick = (e) => {
-            e.preventDefault();
-            pushToTournament(tournamentWS, tournament_id);
-        };
-    }
-    
+    /* --------------------------------------------------------- */
+    /*                      CREATE FORM LOGIC                    */
+
     /* Chat-GPT does it's things: select a number of players and tournament stats */
     const createHeader = div.querySelector('#createTournHeader')!;
     const options = div.querySelector('#createTournOptions') as HTMLDivElement;
@@ -223,12 +244,12 @@ export function loadTournamentHubPage(): HTMLElement
     });
 
     // Format selection
-    /* div.querySelectorAll('.format-option').forEach(btn => {
+    div.querySelectorAll('.format-option').forEach(btn => {
         btn.addEventListener('click', () => {
             selectedFormat = (btn as HTMLElement).dataset.value!;
             selectedFormatSpan.textContent = selectedFormat;
         });
-    }); */
+    });
 
     const formatButtons = div.querySelectorAll('.format-option');
 
@@ -239,11 +260,13 @@ export function loadTournamentHubPage(): HTMLElement
 
             // Reset all buttons
             formatButtons.forEach(b => {
-                b.classList.remove('font-bold', 'text-cyan-400', 'bg-cyan-600/20');
+                b.classList.remove('font-extrabold', 'text-green-300', 'bg-cyan-600/20');
+                b.classList.add('text-white');
             });
 
             // Highlight selected one
-            btn.classList.add('font-bold', 'text-cyan-400', 'bg-cyan-600/20');
+            btn.classList.remove('text-white');
+            btn.classList.add('font-extrabold', 'text-green-300', 'bg-cyan-600/20');
         });
     });
 
@@ -277,11 +300,11 @@ export function loadTournamentHubPage(): HTMLElement
         }
 
         // assemble and send the create ruequest
-        create(playerCount, selectedFormat, tournamentWS);
+        tournamentWS?.create(playerCount, selectedFormat);
 
         // add bots if requested
         for (let i = 0; i < botCount; i++) {
-            addbot(botLevel, tournamentWS);
+            tournamentWS?.addbot(100 - botLevel);
         }
         
     });
@@ -289,127 +312,25 @@ export function loadTournamentHubPage(): HTMLElement
     return div;
 }
 
-// @topiana- add a bot
-function addbot(level:number, ws:WebSocket)
-{
-	if (ws.readyState === WebSocket.OPEN) {
-		ws.send(JSON.stringify({ method: 'BOT', value: 'ADD', level: level }))
-	}
-}
-
-
-/* 
-    Request:
-    {
-        method: 'CREATE',     (mandatory)
-        playerID: <playerID>, (mandatory) (outdated)
-        format: <format>      (optional)
-    }
-    @format: the number of rounds a player need to win to win the match
-*/
-function create(size:number = 4, format:string = 'single-elimination', socket:WebSocket)
-{
-    // assemble create request
-    const createRequest = {
-        method: 'CREATE',
-        size: size,
-        format: format
-    };
-
-    // send create request
-    if (socket.readyState === WebSocket.OPEN) {
-        socket.send(JSON.stringify(createRequest));
-    }
-}
-
-function join(code: string, socket:WebSocket)
-{
-    // assemble join request
-    const joinRequest = {
-        method: 'JOIN',
-        tournamentID: code
-    };
-
-    // send join request
-    if (socket.readyState === WebSocket.OPEN) {
-        socket.send(JSON.stringify(joinRequest));
-    }
-}
+/* ------------------------------------------------ */
 
 // move to tournament page
-function pushToTournament(socket:WebSocket, /* playerID:string, */ tournamentID:string)
+function pushToTournament(tournamentID:string)
 {
-    // #remove
-    // window.sessionStorage.setItem('guestID', playerID);
+    // close connection
+    tournamentWS?.close();
 
-    // disconnect the websocket
-    socket.close();
-    
+    // go to tournament page
     router.push(`/tournament/${tournamentID}`);
 }
 
-// #review pls (ChatGPT)
-import { router } from "@/router";
 
-function createWebSocketConnection(onRejoin: (tournamentID: string) => void): WebSocket
-{
-    const ws = new WebSocket(TOURNAMENT_WEBSOCKET_URL);
-    console.log('Websocketing to', TOURNAMENT_WEBSOCKET_URL);
 
-    ws.onopen = () => {
-        console.log('Connected to tournament WebSocket');
 
-        // @topiana- aggiunta la AUTH call all'inizio della connesione #review pls
-        // ws.send(JSON.stringify({ method: 'AUTH', playerID: playerID }));
-    };
 
-    ws.onmessage = (event) => {
-        try {
-            const data = JSON.parse(event.data);
-            console.log('Tournament WebSocket message received:', data);
-            // let updateNeeded = false; // (outdated)
-            const method = data.method || '';
 
-            /* go to the created tournament */
-            if (method === 'CREATE_REPLY' && data.status === 'success') {
-                console.log('Tournament created:', data.comment);
 
-                pushToTournament(ws, /* playerID, */ data.value);
 
-            }
-            /* go to the joined tournament */
-            else if (method === 'JOIN_REPLY' && data.status === 'success') {
-                console.log('Tournament joined:', data.comment);
-
-                pushToTournament(ws, /* playerID, */ data.value);
-
-            }
-            // just logging
-            else if (method === 'AUTH_REPLY' && data.status === 'success') {
-                console.log('Authenticatd successfully');
-            }
-            // pupup rejoin button
-            else if (data.ID) {
-
-                // spawn the rejoin-tournament-card and make it that if 
-                onRejoin(data.ID);
-            }
-
-        } catch (e) {
-            console.log("message received:", event.data);
-        }
-    };
-
-    ws.onerror = (error) => {
-        console.error('WebSocket error:', error);
-    };
-
-    ws.onclose = () => {
-        console.log('Disconnected from lobby WebSocket');
-    };
-
-    return ws;
-}
 
 
 /* ---------------------------------------- */

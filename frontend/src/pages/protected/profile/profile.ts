@@ -212,16 +212,17 @@ interface UserProfile {
 }
 
 export async function getUserProfile(): Promise<UserProfile> {
-	const token = localStorage.getItem('authToken');
-	const linkid = localStorage.getItem('userId');
-
-	if (!token || !linkid) {
-	throw new Error('No authentication token found');
+	/* ----- get username (todo better) ----- */
+	const user = localStorage.getItem('user');
+	if (!user) {
+		throw new Error('No authentication token found');
 	}
+	const { username } = JSON.parse(user);
+	/* --------------------------------- */
 
-	const profileResponse = await sendGetRequest(`http://localhost:3029/api/user?linkid=${linkid}`, 'token');
+	const profileResponse = await sendGetRequest(`http://localhost:3029/api/user?username=${username}`);
 	// const authResponse = await sendGetRequest(`http://localhost:3001/api/profile`, token);
-	const butlerResponse = await sendGetRequest('http://localhost:3029/api/profile', 'token');
+	const butlerResponse = await sendGetRequest(`http://localhost:3029/api/profile?username=${username}`);
 	return {
 		id: profileResponse.id,
 		email: butlerResponse.email,
@@ -290,14 +291,19 @@ export function createDonutChart(wins: number, losses: number, text:string): HTM
 
 // @topiana- ecarbona collab
 export async function getUserGames(): Promise</* { history:  */GameData[]/*  } */> {
-	const token = localStorage.getItem('authToken');
-	const linkid = localStorage.getItem('userId');
+	// const token = localStorage.getItem('authToken');
+	// const linkid = localStorage.getItem('userId');
 
-	if (!token || !linkid) {
+	/* ----- get username (todo better) ----- */
+	const user = localStorage.getItem('user');
+	if (!user) {
 		throw new Error('No authentication token found');
 	}
+	const { username } = JSON.parse(user);
+	/* --------------------------------- */
 
-	const response = await sendGetRequest(`http://localhost:3029/api/game?linkid=${linkid}`, token);
+
+	const response = await sendGetRequest(`http://localhost:3029/api/game?username=${username}`);
 	return response;
 }
 

@@ -1,4 +1,4 @@
-import type { Game } from './Game.js';
+import type { Game } from './classes/Game.js';
 
 type StandardReturn = {
 	status: "success" | "failure";

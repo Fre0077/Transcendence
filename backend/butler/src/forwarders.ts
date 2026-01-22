@@ -1,6 +1,6 @@
 import { FastifyReply, FastifyRequest/* , FastifyReply */ } from 'fastify';
 // import { SocketStream } from '@fastify/websocket';
-import { /* isCookieAuthenticated, */ getCookieUser } from './middleware.js';
+import { isCookieAuthenticated/* , getCookieUser */ } from './middleware.js';
 
 
 const GATEWAY_SECRET = process.env.GATEWAY_SECRET ?? 'biscottini';
@@ -17,7 +17,10 @@ import WebSocket/* , { RawData } */ from 'ws';	// important to use backend webso
 		tournament
 		pong 
 */
-export function fwdWebSocket(connection:WebSocket, request:FastifyRequest, endpoint:string)
+export function fwdWebSocket(
+	connection:WebSocket,
+	request:FastifyRequest,
+	endpoint:string)
 {
 	// Logging the connection
 	const clientIP = request.socket.remoteAddress;
@@ -25,16 +28,12 @@ export function fwdWebSocket(connection:WebSocket, request:FastifyRequest, endpo
 	console.log(`Client connected from ${clientIP}`);
 
 	/* --- AUTH CHECK --- */
-	const auth = getCookieUser(request);
-	if (auth.ok === false)
-	{
-		clientSocket.close(1008, auth.reason);
-		return ; // important
-	}
+	const auth = isCookieAuthenticated(request);
+	if (auth.ok === false) return ; // important
 	/* ------------------- */
 
 	/* #debug */
-	console.log('WS connected with Authorized user:', {user: auth.userId, email: auth.email});
+	console.log('WS connected with Authorized user:', auth.user);
 
 	/* --- FORWARDING --- */
 
@@ -43,7 +42,7 @@ export function fwdWebSocket(connection:WebSocket, request:FastifyRequest, endpo
 		endpoint,
 		{
 			headers: {
-				'x-user-id': String(auth.username) ?? String(auth.userId),
+				'x-user-id': String(auth.user.username) ?? String(auth.user.userId),
 				'x-gateway-secret': String(GATEWAY_SECRET),
 				// 'x-ws-query': JSON.stringify(request.query),
 			}
@@ -115,19 +114,18 @@ export function fwdWebSocket(connection:WebSocket, request:FastifyRequest, endpo
 
 // import fetch from 'node-fetch'; // or global fetch in Node 18+
 
+import { URLSearchParams } from 'node:url';
+
+function buildQuery(query:any):string {
+	return new URLSearchParams(query).toString()
+}
+
 // forward request to backend services afterr checking authourization
 export async function authForward(request:FastifyRequest, reply:FastifyReply, endpoint:string)
 {
 	/* --- AUTH CHECK --- */
-	const auth = getCookieUser(request);
-	if (auth.ok === false)
-	{
-		// #todo send error page?
-		reply
-			.code(401)
-			.send(auth.reason || "Unauthorized");
-		return ; // important
-	}
+	const auth = isCookieAuthenticated(request, reply);
+	if (auth.ok === false) return ; // important
 	/* ------------------- */
 
 	// --- PREPARE REQUEST FOR BACKEND ---
@@ -142,7 +140,7 @@ export async function authForward(request:FastifyRequest, reply:FastifyReply, en
 	}
 
 	// Add your auth info to backend
-	headers['x-user-id'] = String(auth.userId);
+	headers['x-user-id'] = String('1'/* auth.user.userId */);
 	headers['x-gateway-secret'] = String(GATEWAY_SECRET);
 
 	// set options as fetch() likes it
@@ -156,6 +154,9 @@ export async function authForward(request:FastifyRequest, reply:FastifyReply, en
 		fetchOptions.body = request.body ? JSON.stringify(request.body) : undefined;
 		headers['content-type'] = 'application/json';
 	}
+
+	// if there is a query, add it
+	if (request.query) endpoint += `?${buildQuery(request.query)}`;
 
 	// --- CALL BACKEND ---
 	let backendResponse;
@@ -214,6 +215,9 @@ export async function noAuthForward(
 		headers['content-type'] = 'application/json';
 	}
 
+	// if there is a query, add it
+	if (request.query) endpoint += `?${buildQuery(request.query)}`;
+
 	// --- CALL BACKEND ---
 	let backendResponse;
 	try {
@@ -246,6 +250,6 @@ export async function noAuthForward(
 	// call the post-process callback
 	if (callback) callback(data, reply);
 
-	reply.send(data);
+	reply.code(200).send(data);	// later remove 'data'
 }
 

@@ -1,5 +1,5 @@
 
-import { Tournament } from './Tournament.js';
+import { Tournament } from './classes/Tournament.js';
 import { createTournament, findTournament, joinTournament } from './index.js';
 import type { WebSocket } from "ws";
 

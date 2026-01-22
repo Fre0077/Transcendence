@@ -35,10 +35,11 @@ export async function profileEndpoint(fastify: FastifyInstance) {
         try {
             const userId = Number(request.headers['x-user-id'])
 			const secret = request.headers['x-gateway-secret']
-            const username = String(request.query);
+            const { username } = request.query;
 
-			if (!username || !userId || secret !== 'biscottini') {throw new Unauthorized('Utente non autorizzato', 'profile'); }
-            const data = await getUserData(username);
+            if (!userId || secret !== 'biscottini') {throw new Unauthorized('Utente non autorizzato', 'profile'); }
+            if (!username) {throw new NotFound('Username query not found', 'profile'); }            const data = await getUserData(username);
+            
             logInfo('{profile} [200] Dati utente recuperati con successo');
             return reply.status(200).send(data);
         } catch (err) {
@@ -56,9 +57,11 @@ export async function profileEndpoint(fastify: FastifyInstance) {
         try {
             const userId = Number(request.headers['x-user-id'])
 			const secret = request.headers['x-gateway-secret']
-            const username = String(request.query);
+            const { username } = request.query;
 
-			if (!username || !userId || secret !== 'biscottini') {throw new Unauthorized('Utente non autorizzato', 'profile'); }
+			if (!userId || secret !== 'biscottini') {throw new Unauthorized('Utente non autorizzato', 'profile'); }
+            if (!username) {throw new NotFound('Username query not found', 'profile'); }
+            
             const data = await getUserGames(username);
             const validUsername = await replaceAllData(data)
             logInfo('{profile} [200] Dati game utente recuperati con successo');
@@ -80,10 +83,11 @@ export async function profileEndpoint(fastify: FastifyInstance) {
             // check della query
             const userId = Number(request.headers['x-user-id'])
 			const secret = request.headers['x-gateway-secret']
-            const username = String(request.query);
+            const { username } = request.query;
 
-			if (!username || !userId || secret !== 'biscottini') {throw new Unauthorized('Utente non autorizzato', 'profile'); }
-                
+			if (!userId || secret !== 'biscottini') {throw new Unauthorized('Utente non autorizzato', 'profile'); }
+            if (!username) {throw new NotFound('Username query not found', 'profile'); }
+
             // get the user info (username and avarat url)
             const data = await getUserInfo(username);
             // successfule return

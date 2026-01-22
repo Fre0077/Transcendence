@@ -1,7 +1,7 @@
 // loadPongPlayerPage.ts
 import { router } from "@/router";
 // import { load404Page } from "@/pages/errors/404";
-import { PongSocket } from "@components/PongBoards/PongSocket";
+import { PongSocket } from "@/services/ws/createPongSocket";
 import { createPongBoard } from "@components/PongBoards/createPongBoard";
 import { Game } from "@pages/protected/game/local/GameClass"
 

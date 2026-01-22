@@ -1,5 +1,10 @@
+// services
+import { sendGetRequest } from "@/services/api/sendRequests";
+
+// elements
 import { generateInitialsAvatar } from "@/components/createDefaultImage";
 
+// urls
 const PROFILE_BASE_URL = `http://${window.location.hostname}:3029/api`;
 
 export interface InteractiveWidget {
@@ -118,60 +123,22 @@ function loadWidget(
 
 
 
-async function loadPlayerWidget(linkid:string, compact:boolean): Promise<string>
+async function loadPlayerWidget(username:string, compact:boolean): Promise<string>
 {
 	try {
-		const url = `${PROFILE_BASE_URL}/userinfo?linkid=${linkid}`;
-		const authToken = localStorage.getItem("authToken");
-		const response = await fetch(url, {
-			method: 'GET',
-			credentials: 'include',
-			headers: {
-				'Content-Type': 'application/json',
-				'Authorization': authToken ? `Bearer ${authToken}` : ''
-			}
-		});
-		if (!response.ok) throw new Error('Utente non trovato');
-		const data = await response.json();
+		// get data from backend
+		const data = await sendGetRequest(`${PROFILE_BASE_URL}/userinfo?username=${username}`);
 		
 		// Dati ricevuti: username e avatarUrl (o image)
-		const username = data.username || linkid;
 		const avatar = data.avatarUrl || data.image || "";
 		// 4. Aggiorniamo l'HTML con i dati reali
 
 		if (compact) return loadCompactWidget(username, avatar);
 		else return loadWidget(username, avatar);
-		// return /* html */`
-		// 	<div class="player-widget relative flex flex-col items-center p-4 rounded-xl bg-slate-800/60 border border-white/10 shadow-lg backdrop-blur">
-
-		// 		<!-- Avatar -->
-		// 		<div class="relative group mb-4">
-        //                 <div class="absolute -inset-1 bg-gradient-to-r from-pink-600 to-purple-600 rounded-full opacity-70 blur transition duration-200"></div>
-        //                 <img 
-        //                     src="${avatar}" 
-        //                     alt="${username}" 
-        //                     class="relative w-24 h-24 rounded-full object-cover border-2 border-slate-800 shadow-2xl"
-        //                     onerror="this.src=${generateInitialsAvatar(username, 'player')}"
-        //                 />
-        //             </div>
-
-		// 		<!-- Username -->
-		// 		<h3
-		// 			data-role="username"
-		// 			class="text-sm font-semibold text-white tracking-wide"
-		// 		>
-		// 			${username}
-		// 		</h3>
-
-		// 		<!-- 📊 DATA SLOT -->
-		// 		<div data-role="data">
-		// 			<div data-field="score" class="text-4xl font-mono text-yellow-400">0</div>
-		// 		</div>
-		// 	</div>`;
 	} catch (error) {
 		console.error("Errore caricamento profilo:", error);
 		// Stato di Errore
-		return loadErrorWidget(linkid, compact);
+		return loadErrorWidget(username, compact);
 	}
 }
 

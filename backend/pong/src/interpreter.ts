@@ -1,6 +1,6 @@
 
 import { /* AUTH,  *//* JOIN, */ LEAVE, MOVE/* , SPECTATE */ } from './METHODS.js'
-import { Game } from './Game.js';
+import { Game } from './classes/Game.js';
 // import { GameEntry } from './index.js';
 
 

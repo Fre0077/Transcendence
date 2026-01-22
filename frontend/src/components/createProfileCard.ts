@@ -1,8 +1,13 @@
+// services
+import { sendGetRequest } from "@/services/api/sendRequests";
+
+// elements
 import { generateInitialsAvatar } from "@/components/createDefaultImage";
 
+// urls
 const PROFILE_BASE_URL = `http://${window.location.hostname}:3029/api`;
 
-export function createProfileCard(linkid: string): HTMLElement {
+export function createProfileCard(username: string): HTMLElement {
     const container = document.createElement('div');
     
     // Classi Tailwind come da tua richiesta
@@ -10,14 +15,14 @@ export function createProfileCard(linkid: string): HTMLElement {
     container.style.minHeight = '250px'; // Altezza minima per evitare "salti" nel layout
 
     // Bot Check
-    if (linkid.startsWith('BOT')) {
-        container.innerHTML = loadBotCard(linkid);
+    if (username.startsWith('BOT')) {
+        container.innerHTML = loadBotCard(username);
         return container;
     }
 
     // Guest Check
-    if (linkid.startsWith('Guest')) {
-        container.innerHTML = loadGuestCard(linkid);
+    if (username.startsWith('Guest')) {
+        container.innerHTML = loadGuestCard(username);
         return container;
     }
 
@@ -30,25 +35,25 @@ export function createProfileCard(linkid: string): HTMLElement {
     `;
     (async () => {
         try {
-            const url = `${PROFILE_BASE_URL}/userinfo?linkid=${linkid}`;
-            const authToken = localStorage.getItem("authToken");
-            const response = await fetch(url, {
-                method: 'GET',
-                credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': authToken ? `Bearer ${authToken}` : ''
-                }
-            });
-            if (!response.ok) throw new Error('Utente non trovato');
-            const data = await response.json();
+            const data = await sendGetRequest(`${PROFILE_BASE_URL}/userinfo?username=${username}`);
+            // const url = `${PROFILE_BASE_URL}/userinfo?username=${username}`;
+            // const authToken = localStorage.getItem("authToken");
+            // const response = await fetch(url, {
+            //     method: 'GET',
+            //     credentials: 'include',
+            //     headers: {
+            //         'Content-Type': 'application/json',
+            //         'Authorization': authToken ? `Bearer ${authToken}` : ''
+            //     }
+            // });
+            // if (!response.ok) throw new Error('Utente non trovato');
+            // const data = await response.json();
 
             /* #debug */
             // console.log('/userinfo', response, data);
             
             // Dati ricevuti: username e avatarUrl (o image)
-            const username = data.username || linkid;
-            const avatar = data.avatarUrl || data.image || "";
+            const avatar = data?.avatarUrl || data?.image || "";
             // 4. Aggiorniamo l'HTML con i dati reali
             container.innerHTML = /* html */`
                 <div class="flex flex-col items-center p-8 z-10 w-full">
@@ -79,7 +84,7 @@ export function createProfileCard(linkid: string): HTMLElement {
         } catch (error) {
             console.error("Errore caricamento profilo:", error);
             // Stato di Errore
-            container.innerHTML = loadErrorCard(linkid);
+            container.innerHTML = loadErrorCard(username);
         }
     })();
 

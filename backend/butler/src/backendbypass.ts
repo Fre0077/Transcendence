@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { getCookieUser } from './middleware.js';
+import { /* isCookieAuthenticated, */ isCookieAuthenticated } from './middleware.js';
 
 import WebSocket/* , { RawData } */ from 'ws';	// important to use backend websockets
 
@@ -15,7 +15,7 @@ export function authWebSocket(connection:WebSocket, request:FastifyRequest)
 	console.log(`Client connected from ${clientIP}`);
 
 	/* --- AUTH CHECK --- */
-	const auth = getCookieUser(request);
+	const auth = isCookieAuthenticated(request);
 	if (auth.ok === false)
 	{
 		socket.close(1008, auth.reason);
@@ -24,7 +24,7 @@ export function authWebSocket(connection:WebSocket, request:FastifyRequest)
 	/* ------------------- */
 
 	/* #debug */
-	console.log(`WS connected with Authorized user '${auth.username}'`);
+	console.log(`WS connected with Authorized user '${auth.user.username}'`);
 
 	// Handle incoming messages
 	socket.on('message', (message:any) => {
@@ -42,12 +42,12 @@ export function authWebSocket(connection:WebSocket, request:FastifyRequest)
 		console.log(`Client ${clientIP} disconnected - Code: ${code}, Reason: ${reason?.toString() || 'none'}`);
 	
 		// remove from stored connections
-		connected_users.delete(auth.username as string/* in god we trust */);
+		connected_users.delete(auth.user.username as string/* in god we trust */);
 	});
 
 
 	// store the connection
-	connected_users.set(auth.username as string /* in god we trust pt.2*/, connection);
+	connected_users.set(auth.user.username as string /* in god we trust pt.2*/, connection);
 }
 
 /* ------------------------------------- */

@@ -158,8 +158,8 @@ fastify.register(async function (fastify) {
 
 
 const LOBBY_URL = process.env.LOBBY_URL ?? 'http://lobby:3031';
-const TOURNAMENT_URL = process.env.LOBBY_URL ?? 'http://tournament:3032';
-const PONG_URL = process.env.LOBBY_URL ?? 'http://pong:3040';
+const TOURNAMENT_URL = process.env.TOURNAMENT_URL ?? 'http://tournament:3032';
+const PONG_URL = process.env.PONG_URL ?? 'http://pong:3040';
 
 // websocket endpoints (always need authentication)
 fastify.register(async function (fastify) {

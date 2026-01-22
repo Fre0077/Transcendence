@@ -1,7 +1,7 @@
 // loadPongPlayerPage.ts
 import { router } from "@/router";
 import { load404Page } from "@/pages/errors/404";
-import { createPlayerSocket } from "@components/PongBoards/PongSocket";
+import { createPlayerSocket } from "@/services/ws/createPongSocket";
 import { createPongBoard } from "@components/PongBoards/createPongBoard";
 
 // #needs-auth-check

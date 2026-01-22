@@ -1,7 +1,11 @@
 
 import { router } from "@/router";
+<<<<<<< HEAD:frontend/src/services/lifecycleWebSocket.ts
 import { toastNotification } from "./toastNotification";
 import { sendPostRequest, sendDeleteRequest } from "@/services/api/sendRequests";
+=======
+import { toastNotification } from "@services/toastNotification";
+>>>>>>> refs/remotes/origin/feature__notify:frontend/src/services/ws/lifecycleWebSocket.ts
 
 const BUTLER_URL = `ws://${window.location.hostname}:3029/ws`;
 const BACKEND_APIS_URL = `http://${window.location.hostname}:3029/api`;

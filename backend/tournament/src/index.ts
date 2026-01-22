@@ -1,5 +1,5 @@
 import Fastify from 'fastify';
-import { Tournament } from './Tournament.js'
+import { Tournament } from './classes/Tournament.js'
 import type { WebSocket } from "ws";
 
 
@@ -141,28 +141,6 @@ fastify.get<{ Querystring: BunnyQuery }>(
 
 
 
-/* ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! */
-/* 					 	TEMPORARY 					   */
-/* 			  Serving Static HTML as Backend		   */
-
-// fetching test html
-await fastify.register(import('@fastify/static'), {
-	root: new URL('../public', import.meta.url).pathname
-});
-
-// serving lobby test html
-fastify.get('/', async (request, reply) => {
-	request; // ignore
-	return reply.sendFile('fastify_tournament.html');
-});
-
-// serving pong test html
-fastify.get('/pong', async (request, reply) => {
-	request; // ignore
-	return reply.sendFile('fastify_pong.html');
-});
-
-/* ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! */
 
 
 

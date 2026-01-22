@@ -1,5 +1,5 @@
 import Fastify from 'fastify';
-import { MQueue } from './MQueue.js'
+import { MQueue } from './classes/MQueue.js'
 
 // generate ids
 import { v4 as uuidv4 } from "uuid";
