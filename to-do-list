@@ -1,6 +1,11 @@
 
 @topiana- todos
 
+NEW
+1. Chess
+2. Ranked games
+3. Profile level
+
 MAJOR
 7. Get profile data via username (current linkId deprecated)
 11. Match History non viene piu' salvata perche' adesso viene passato l'username al profile
