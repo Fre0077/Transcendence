@@ -16,9 +16,9 @@ import {
 // @topiana-
 import { NotFound } from "../utils/exception";
 
-export interface AuthRequest extends FastifyRequest {
-	user?: { userId: number; email: string };
-}
+// export interface AuthRequest extends FastifyRequest {
+// 	user?: { userId: number; email: string };
+// }
 
 export interface UserRequest extends FastifyRequest {
 	username: number;
@@ -104,7 +104,7 @@ export async function profileEndpoint(fastify: FastifyInstance) {
     });
 
     // GET /api/friends -> Ottieni amici e richieste
-    fastify.get('/friends', async (request: AuthRequest, reply: FastifyReply) => {
+    fastify.get('/friends', async (request: FastifyRequest, reply: FastifyReply) => {
         try {
             const userId = Number(request.headers['x-user-id'])
 			const secret = request.headers['x-gateway-secret']
@@ -123,7 +123,7 @@ export async function profileEndpoint(fastify: FastifyInstance) {
     });
 
     // POST /api/friend/request -> Invia richiesta
-    fastify.post('/friend/request', async (request: AuthRequest, reply: FastifyReply) => {
+    fastify.post('/friend/request', async (request: FastifyRequest, reply: FastifyReply) => {
         const { target } = request.body as { target: string };
         try {
             const userId = Number(request.headers['x-user-id'])
@@ -145,7 +145,7 @@ export async function profileEndpoint(fastify: FastifyInstance) {
     });
 
     // POST /api/friend/accept -> Accetta richiesta
-    fastify.post('/friend/accept', async (request: AuthRequest, reply: FastifyReply) => {
+    fastify.post('/friend/accept', async (request: FastifyRequest, reply: FastifyReply) => {
         const { target } = request.body as { target: string };
         try {
             const userId = Number(request.headers['x-user-id'])
@@ -167,7 +167,7 @@ export async function profileEndpoint(fastify: FastifyInstance) {
     });
 
     // DELETE /api/friend/remove -> Rifiuta/Annulla richiesta o Rimuovi amico
-    fastify.delete('/friend/remove', async (request: AuthRequest, reply: FastifyReply) => {
+    fastify.delete('/friend/remove', async (request: FastifyRequest, reply: FastifyReply) => {
         const { target } = request.body as { target: string };
         try {
             const userId = Number(request.headers['x-user-id'])

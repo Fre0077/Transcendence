@@ -1,19 +1,29 @@
 
 @topiana- todos
 
+
+WHAT-AM-I-DOING-NOW
+14. DELETE method not working
+15. Review NOTIFICATION and merge into topiana-
+
+
 MANDATODY:
 1. The project must include accessible Privacy Policy and Terms of Service pages with relevant content.
 2. For the backend, HTTPS must be used everywhere. (???)
 
 NEW
-1. Chess
+1. Profile level
 2. Ranked games
-3. Profile level
+3. Chess
+4. Major: A public API to interact with the database with a secured API key, rate limiting, documentation, and at least 5 endpoints:
 
 MAJOR
 7. Get profile data via username (current linkId deprecated)
 11. Match History non viene piu' salvata perche' adesso viene passato l'username al profile
-12. Pong on mobile
+12. Auth with /api/isauth API
+13. Pong on mobile
+16. Full frontend update with gateway API
+
 
 MINOR
 7. tournaments chat
@@ -22,13 +32,14 @@ MINOR
 10. Error log in lobby page
 12. Inconsistend player-score relation in match history
 13. Force start timers in for tournament layers and game rounds
-14. PongBoard player cards will just have the player's account in it
 18. rejoin button if you disconnect from a game (really marginal)
 19. finish notifications on game
+20. Better pong bot
 
 STYLE
 2. pls... the back button
 4. Better friendlist
+5. Better default avatar
 
 CLEANUPS
 2. Log all major messages

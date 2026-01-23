@@ -1,6 +1,6 @@
 import { FastifyReply, FastifyRequest/* , FastifyReply */ } from 'fastify';
 // import { SocketStream } from '@fastify/websocket';
-import { isCookieAuthenticated/* , getCookieUser */ } from './middleware.js';
+import { AuthReply, isCookieAuthenticated/* , getCookieUser */ } from './middleware.js';
 
 
 const GATEWAY_SECRET = process.env.GATEWAY_SECRET ?? 'biscottini';
@@ -117,17 +117,12 @@ export function fwdWebSocket(
 import { URLSearchParams } from 'node:url';
 
 function buildQuery(query:any):string {
-	return new URLSearchParams(query).toString()
+	return new URLSearchParams(query).toString();
 }
 
-// forward request to backend services afterr checking authourization
-export async function authForward(request:FastifyRequest, reply:FastifyReply, endpoint:string)
+// Careful, it throws errors
+export async function fetchBackend(request:FastifyRequest, endpoint:string, auth?:AuthReply): Promise<Response>
 {
-	/* --- AUTH CHECK --- */
-	const auth = isCookieAuthenticated(request, reply);
-	if (auth.ok === false) return ; // important
-	/* ------------------- */
-
 	// --- PREPARE REQUEST FOR BACKEND ---
 	const headers: Record<string, string> = {};
 
@@ -140,8 +135,10 @@ export async function authForward(request:FastifyRequest, reply:FastifyReply, en
 	}
 
 	// Add your auth info to backend
-	headers['x-user-id'] = String('1'/* auth.user.userId */);
-	headers['x-gateway-secret'] = String(GATEWAY_SECRET);
+	if (auth) {
+		headers['x-user-id'] = String(auth.user.userId);
+		headers['x-gateway-secret'] = String(GATEWAY_SECRET);
+	}
 
 	// set options as fetch() likes it
 	const fetchOptions: any = {
@@ -159,9 +156,21 @@ export async function authForward(request:FastifyRequest, reply:FastifyReply, en
 	if (request.query) endpoint += `?${buildQuery(request.query)}`;
 
 	// --- CALL BACKEND ---
+	return await fetch(endpoint, fetchOptions);
+}
+
+// forward request to backend services afterr checking authourization
+export async function authForward(request:FastifyRequest, reply:FastifyReply, endpoint:string)
+{
+	/* --- AUTH CHECK --- */
+	const auth = isCookieAuthenticated(request, reply);
+	if (auth.ok === false) return ; // important
+	/* ------------------- */
+
+	// --- CALL BACKEND ---
 	let backendResponse;
 	try {
-		backendResponse = await fetch(endpoint, fetchOptions);
+		backendResponse = await fetchBackend(request, endpoint, auth);
 	} catch (err) {
 		reply.code(502).send("Backend service unreachable");
 		return;
@@ -176,6 +185,9 @@ export async function authForward(request:FastifyRequest, reply:FastifyReply, en
 		reply.header(key, value);
 	});
 	
+	/* #debug */
+	console.log('>Backend fetch', backendResponse);
+
 	// Send body
 	if (contentType?.includes('application/json')) {
 		const data = await backendResponse.json();
@@ -192,36 +204,11 @@ export async function noAuthForward(
 	reply:FastifyReply, endpoint:string,
 	callback?: (data: any, reply: FastifyReply) => void)	// only called on succccessful fetch
 {
-	// --- PREPARE REQUEST FOR BACKEND ---
-	const headers: Record<string, string> = {};
-
-	// Forward original headers (optional)
-	if (request.headers)
-	{
-		for (const [key, value] of Object.entries(request.headers)) {
-			if (value && typeof value === 'string') {headers[key] = value};
-		}
-	}
-
-	// set options as fetch() likes it
-	const fetchOptions: any = {
-		method: request.method,
-		headers,
-	};
-
-	// If there is a body, forward it
-	if (['POST', 'PUT', 'PATCH'].includes(request.method)) {
-		fetchOptions.body = request.body ? JSON.stringify(request.body) : undefined;
-		headers['content-type'] = 'application/json';
-	}
-
-	// if there is a query, add it
-	if (request.query) endpoint += `?${buildQuery(request.query)}`;
 
 	// --- CALL BACKEND ---
 	let backendResponse;
 	try {
-		backendResponse = await fetch(endpoint, fetchOptions);
+		backendResponse = await fetchBackend(request, endpoint);
 	} catch (err) {
 		reply.code(502).send("Backend service unreachable");
 		return;
@@ -245,7 +232,7 @@ export async function noAuthForward(
 	}
 
 	/* #debug */
-	console.log('Fetched from backend', backendResponse);
+	// console.log('Fetched from backend', backendResponse);
 
 	// call the post-process callback
 	if (callback && backendResponse.status === 200) callback(data, reply);

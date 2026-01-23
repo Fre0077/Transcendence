@@ -41,9 +41,13 @@ export function loadProfilePage(): HTMLElement {
 				</div>
 			</div>
 
+		</div>
 
-			<section
-            id="invite-player-card"
+		<br>
+
+		<!-- Friend Request -->
+		<section
+            id="friend-request-card"
             class="relative rounded-xl p-8 border border-white/20
                     bg-slate-800/60 backdrop-blur
                     transition-all duration-300
@@ -56,22 +60,22 @@ export function loadProfilePage(): HTMLElement {
 
                     <!-- Title -->
                     <h3 class="text-xl font-bold text-white mb-2">
-                        Invite Player
+                        Friend request
                     </h3>
 
                     <!-- Description -->
                     <p class="text-sm text-white/70 mb-4">
-                        Invite a player by their username
+                        Send a friend request
                     </p>
 
                     <!-- Form -->
-                    <form id="invite-form" class="flex flex-col gap-3">
-                        <label for="invite-player-username" class="sr-only">
+                    <form id="friend-request-form" class="flex flex-col gap-3">
+                        <label for="friend-request-username" class="sr-only">
                             Player username
                         </label>
 
                         <input
-                            id="invite-player-username"
+                            id="friend-request-username"
                             name="username"
                             type="text"
                             required
@@ -93,14 +97,13 @@ export function loadProfilePage(): HTMLElement {
                                 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-400"
                         >
                             <span aria-hidden="true">✉️</span>
-                            Send Invite
+                            Send Request
                         </button>
                     </form>
                 </div>
             </section>
 
 
-		</div>
 		<!-- MATCH HISTORY -->
 		<div id="match-history" class="mt-12 w-full max-w-4xl flex flex-col space-y-3 font-mono">
 		</div>
@@ -157,41 +160,38 @@ export function loadProfilePage(): HTMLElement {
 	}).catch(error => {
 		console.error("Error loading user profile:", error);
 	});
+
+	
 	// AGGIUNGI LA BAR DEGLI AMICI
-	// const friends = div.querySelector('#friend-bar');
-	// if (!friends) throw Error("FriendBar div not found");
-	// friends.appendChild(createFriendsBar());
 	document.body.appendChild(createFriendsBar());
 
 
 
-		/* -------------------------------- */
-		/*          PLAYER INVITE           */
-	
-		//invite-player-btn
-		const inviteform = div.querySelector("#invite-form") as HTMLFormElement;
-		// const usernamediv = div.querySelector("#invite-player-username") as HTMLInputElement;
-		// const invitebtn = div.querySelector("#invite-player-btn");
-		inviteform.addEventListener("submit", (event) => {
-			event.preventDefault(); // stop page reload
-	
-			// get the username
-			const form = event.currentTarget as HTMLFormElement;
-			const data = new FormData(form);
-	
-			const username = data.get("username");
-	
-			if (typeof username !== "string" || username.trim() === "") {
-				console.error("Invalid username");
-				return;
-			}
+	/* -------------------------------- */
+	/*          FRIEND REQUEST          */
 
-	
-			// send the request to the backend
-			sendPostRequest(`${BACKEND_APIS_URL}/friend-request`, {
-				target: username
-			}, 'application/json');
-		});
+	// friend request btn
+	const freqform = div.querySelector("#friend-request-form") as HTMLFormElement;
+	freqform.addEventListener("submit", (event) => {
+		event.preventDefault(); // stop page reload
+
+		// get the username
+		const form = event.currentTarget as HTMLFormElement;
+		const data = new FormData(form);
+
+		const username = data.get("username");
+
+		if (typeof username !== "string" || username.trim() === "") {
+			console.error("Invalid username");
+			return;
+		}
+
+
+		// send the request to the backend
+		sendPostRequest(`${BACKEND_APIS_URL}/friend-request`, {
+			target: username
+		}, 'application/json');
+	});
 
 
 	return div;

@@ -83,6 +83,7 @@ async function sendNotify(username: string, ) {
 
 import { 
 	/* HTTP */
+	fetchBackend,
 	authForward,
 	noAuthForward,
 
@@ -112,7 +113,9 @@ fastify.register(async function (fastify) {
 
 		// JWT interceptor
 		if (endpoint === `${AUTH_URL}/api/login`) return async (request:FastifyRequest, reply:FastifyReply) => await noAuthForward(request, reply, endpoint, attachCookies);
+		// No-Auth route
 		else if (props.auth === false) return async (request:FastifyRequest, reply:FastifyReply) => await noAuthForward(request, reply, endpoint);
+		// Auth route
 		else return async (request:FastifyRequest, reply:FastifyReply) => await authForward(request, reply, endpoint);
 	}
 
@@ -147,11 +150,38 @@ fastify.register(async function (fastify) {
 	fastify.get('/user-list', httpforwarder(`${CHAT_URL}/api/user-list`, { auth: true}));
 	// ... add others
 
+	// Fetches the desired backend endpoint (if specified). Then on successfule response calls the 'forward' function.
+	// NOTE that the 'splitforwarder()' needs 'isCookieAuthenticated()' as preHAndler, so that it cann attach the 'user' to the request.
+	function splitforwarder(endpoint:string | undefined, forwarder: (request:FastifyRequest, reply:FastifyReply) => void)
+	{
+		return async (request:FastifyRequest, reply:FastifyReply) => {
+
+			// fetch the desired endpoint
+			if (endpoint !== undefined)
+			{
+				const ret = await fetchBackend(request, endpoint, (request as any).user);
+
+				/* #debug */
+				console.log('Split-Fetched', ret);
+
+				if (ret.status !== 200) {
+					reply.code(ret.status).send(ret.statusText);
+					return ;
+				}
+			}
+
+			/* #debug */
+			console.log('Forwarding request');
+
+			// execute the second part
+			forwarder(request, reply);
+		};
+	}
 
 	// backend bypass endpoints (interact with the users connected to butler)
 	// All these endpoint require an authenticated connection
-	fastify.post('/lobby-invite', { preHandler: [isCookieAuthenticated] }, async (request, reply) => sendLobbyInvite(request, reply));
-	fastify.post('/friend-request', { preHandler: [isCookieAuthenticated] }, async (request, reply) => { await authForward(request, reply, `${PROFILE_URL}/api/friend/request`), sendFriendRequest(request, reply)});
+	fastify.post('/lobby-invite', { preHandler: [isCookieAuthenticated] }, splitforwarder(undefined, sendLobbyInvite));
+	fastify.post('/friend-request', { preHandler: [isCookieAuthenticated] }, splitforwarder(`${PROFILE_URL}/api/friend/request`, sendFriendRequest));
 
 
 }, { prefix: '/api' });
