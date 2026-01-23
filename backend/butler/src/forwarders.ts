@@ -153,6 +153,7 @@ export async function fetchBackend(request:FastifyRequest, endpoint:string, auth
 	}
 
 	// if there is a query, add it
+	// FIX THIS!!! (NOT UNDERSTANDING IF THERE IS A QUERY (I think???))
 	if (request.query) endpoint += `?${buildQuery(request.query)}`;
 
 	// --- CALL BACKEND ---
