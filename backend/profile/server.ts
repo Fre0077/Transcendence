@@ -1,14 +1,18 @@
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import fastifyCookie from '@fastify/cookie';
-
-
+import fastifyMetrics from "fastify-metrics";
 import { startRabbit } from "./rabbit";
 import { profileEndpoint } from "./src/endpoint";
 import { startprofileConsumer } from "./src/consumer";
 
 export const fastify = Fastify({
     logger: false
+});
+
+// Metrics - Register BEFORE routes
+fastify.register(fastifyMetrics, {
+    endpoint: '/metrics'
 });
 
 // CORS

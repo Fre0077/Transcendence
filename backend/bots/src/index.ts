@@ -1,4 +1,5 @@
 import Fastify from 'fastify';
+import fastifyMetrics from "fastify-metrics";
 import { PongBot } from './classes/PongBot.js'
 import { WebSocket } from "ws";
 
@@ -30,6 +31,11 @@ import { bunnyRegister, bunnySubscribe, bunnyGet } from './bunny.js'
 /* ------- LOAD STUFF ------- */
 const fastify = Fastify({ 
 	logger: false //too much stuff... 
+});
+
+// Metrics - Register BEFORE routes
+fastify.register(fastifyMetrics.default, {
+    endpoint: '/metrics'
 });
 
 // Health-check endpoint (server-side)

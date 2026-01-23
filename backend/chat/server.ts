@@ -3,6 +3,7 @@ import cors from "@fastify/cors";
 import websocket from "@fastify/websocket";
 import fastifyMultipart from "@fastify/multipart";
 import fastifyStatic from "@fastify/static";
+import fastifyMetrics from "fastify-metrics";
 import path from "path";
 
 import { startRabbit } from "./rabbit";
@@ -11,6 +12,11 @@ import { startChatConsumer } from "./src/consumer";
 
 export const fastify = Fastify({
     logger: false
+});
+
+// Metrics - Register BEFORE routes
+fastify.register(fastifyMetrics, {
+    endpoint: '/metrics'
 });
 
 // CORS

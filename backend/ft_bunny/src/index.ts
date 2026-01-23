@@ -1,4 +1,5 @@
 import Fastify from 'fastify';
+import fastifyMetrics from "fastify-metrics";
 import { MQueue } from './classes/MQueue.js'
 
 // generate ids
@@ -13,6 +14,11 @@ const VERSION:string = "1.0.4";
 
 const fastify = Fastify({ 
 	logger: false //too much stuff... 
+});
+
+// Metrics - Register BEFORE routes
+fastify.register(fastifyMetrics, {
+    endpoint: '/metrics'
 });
 
 /* ------------------------------------ */
