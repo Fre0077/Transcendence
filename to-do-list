@@ -1,6 +1,10 @@
 
 @topiana- todos
 
+MANDATODY:
+1. The project must include accessible Privacy Policy and Terms of Service pages with relevant content.
+2. For the backend, HTTPS must be used everywhere. (???)
+
 NEW
 1. Chess
 2. Ranked games
@@ -9,6 +13,7 @@ NEW
 MAJOR
 7. Get profile data via username (current linkId deprecated)
 11. Match History non viene piu' salvata perche' adesso viene passato l'username al profile
+12. Pong on mobile
 
 MINOR
 7. tournaments chat
