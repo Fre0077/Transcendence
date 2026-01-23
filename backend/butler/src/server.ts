@@ -1,5 +1,6 @@
 import Fastify, { FastifyReply, FastifyRequest } from 'fastify';
 import fastifyCookie from '@fastify/cookie';
+import fastifyMetrics from "fastify-metrics";
 import fastifyWebsocket from '@fastify/websocket';
 import cors from '@fastify/cors';
 
@@ -15,6 +16,11 @@ const PORT = Number(process.env.PORT) || 3029;
 /* ------- LOAD STUFF ------- */
 const fastify = Fastify({ 
 	logger: false //too much stuff... 
+});
+
+// Metrics - Register BEFORE routes
+await fastify.register(fastifyMetrics.default, {
+  endpoint: '/metrics'
 });
 
 // Register WebSocket plugin

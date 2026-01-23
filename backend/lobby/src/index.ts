@@ -1,4 +1,5 @@
 import Fastify from 'fastify';
+import fastifyMetrics from "fastify-metrics";
 import { Lobby } from './classes/Lobby.js'
 import { WebSocket } from "ws";
 
@@ -21,6 +22,11 @@ import { bunnyRegister, bunnySubscribe, bunnyGet, bunnyPublish } from './bunny.j
 /* ------- LOAD STUFF ------- */
 const fastify = Fastify({ 
 	logger: false //too much stuff... 
+});
+
+// Metrics - Register BEFORE routes
+fastify.register(fastifyMetrics.default, {
+    endpoint: '/metrics'
 });
 
 // Register WebSocket plugin

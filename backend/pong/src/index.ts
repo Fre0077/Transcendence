@@ -1,4 +1,5 @@
 import Fastify from 'fastify';
+import fastifyMetrics from "fastify-metrics";
 import { Game/* , Player */ } from './classes/Game.js'
 import { WebSocket } from "ws";
 
@@ -22,6 +23,11 @@ const INACTIVE_TIMEOUT:number = 1 * 60 * 1000;	// timeout in millisecond to wait
 /* ------- LOAD STUFF ------- */
 const fastify = Fastify({ 
 	logger: false //too much stuff... 
+});
+
+// Metrics - Register BEFORE routes
+fastify.register(fastifyMetrics.default, {
+    endpoint: '/metrics'
 });
 
 // Register WebSocket plugin

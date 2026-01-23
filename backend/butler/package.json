@@ -19,6 +19,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^25.0.9",
     "@types/ws": "^8.18.1",
+    "fastify-metrics": "^12.1.0",
     "jsonwebtoken": "^9.0.3",
     "typescript": "^5.9.3"
   },
