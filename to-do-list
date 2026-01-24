@@ -3,9 +3,11 @@
 
 
 WHAT-AM-I-DOING-NOW
-14. DELETE method not working
 15. Review NOTIFICATION and merge into topiana-
 
+WHAT-AM-I-DOING-NEXT
+16. review friend handling
+17. status dot on friendlist
 
 MANDATODY:
 1. The project must include accessible Privacy Policy and Terms of Service pages with relevant content.
@@ -78,3 +80,4 @@ DONE
 10. 'classes' folder in src/ (DONE)
 17. Profile card loads only the user card (DONE)'
 15. Tournament winner card not loading (DONE)
+14. DELETE method not working (DONE)
