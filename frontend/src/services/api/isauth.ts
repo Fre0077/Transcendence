@@ -1,6 +1,6 @@
 import { sendGetRequest } from "./sendRequests";
 
-const GATEWAY_URL = `http://${window.location.hostname}/api/isauth`;
+const GATEWAY_URL = `http://${window.location.hostname}:3029/api/isauth`;
 
 export async function isauth(): Promise<boolean> {
 	try {

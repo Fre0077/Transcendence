@@ -229,8 +229,12 @@ class ToastNotificationService {
         this.show(title, message, { type: 'info', duration });
     }
 
-    message(title: string, message: string,
-        onClickDiv?: () => void,
+    message(title: string, message: string, onClickDiv?: () => void, duration?: number): void {
+        this.show(title, message, {type: 'message', onClickDiv, duration});
+    }
+
+    invite(title: string, message: string,
+            onClickDiv?: () => void,
             onClickAccept?: () => void,
             onClickDecline?: () => void,
             duration?: number): void {

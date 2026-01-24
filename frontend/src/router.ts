@@ -14,6 +14,10 @@ import { loadProfilePage } from "./pages/protected/profile/profile";
 import { loadLoginPage } from "./pages/public/login/login";
 import { loadRegisterPage } from "./pages/public/register/register";
 
+
+// services
+import { isauth } from "@services/api/isauth";
+
 type RouteComponent = () => HTMLElement;
 
 interface RouteConfig {
@@ -147,21 +151,29 @@ class Router {
     // import { authService } from '@/services/api/auth';
     // const isAuthenticated = await authService.isAuthenticated();
     // const has2FA = await authService.has2FAEnabled();
-    //
+    
     // if (route.meta?.requiresAuth && !isAuthenticated) {
     //   this.replace('/login');
     //   return;
     // }
-    //
+    
     // if (route.meta?.requiresGuest && isAuthenticated) {
     //   this.replace('/dashboard');
     //   return;
     // }
-    //
+    
     // if (route.meta?.requires2FA && !has2FA) {
     //   this.replace('/2fa');
     //   return;
     // }
+
+    
+    // cheap guard by @topiana-
+    const isAuthenticated = await isauth();
+    if (route.meta?.requiresAuth && !isAuthenticated) {
+      this.replace('/login');
+      return;
+    }
 
     // Update page title
     if (route.meta?.title) {

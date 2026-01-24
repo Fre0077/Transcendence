@@ -3,6 +3,7 @@ import { loadNavbar } from '../../../components/navbar';
 import { loadHeroContent } from './heroContent';
 import { toastNotification } from '@/services/toastNotification';
 import { router } from "@/router";
+import { isauth } from '@/services/api/isauth';
 
 
 export function loadHomePage(): HTMLElement {
@@ -108,30 +109,12 @@ export function loadHomePage(): HTMLElement {
         event.preventDefault(); 
         console.log("Controllo autorizzazione per giocare...");
 
-        const token = localStorage.getItem('authToken');
-
-        if (!token) {
-            console.warn("Nessun token trovato. L'utente deve fare il login.");
-            alert("Devi essere loggato per giocare!");
-            router.push('/login'); // Reindirizza al login
-            return;
-        }
-
         try {
-            const response = await fetch('http://localhost:3029/api/profile', {
-                method: 'GET',
-				credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                }
-            });
+            const isAuthenticated = await isauth();
 
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.error || "Sessione non valida");
-            }
+			if (!isAuthenticated) {
+                throw new Error("Sessione non valida");
+			}
 
             // === SUCCESSO ===
             console.log("Autorizzazione confermata! Avvio del gioco...");

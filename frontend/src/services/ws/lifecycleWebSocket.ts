@@ -67,7 +67,7 @@ export async function ConnectLifecycleSocket(): Promise<WebSocket | null>
 						break ;
 					case "lobby-invite":
 						console.log("Lobby invite", msg.content);
-						toastNotification.message('Lobby Invite', `${msg.sender} ti ha invitato nella sua lobby`,
+						toastNotification.invite('Lobby Invite', `${msg.sender} ti ha invitato nella sua lobby`,
 							undefined,
 							() => router.push(`/lobby/online?lobby-id=${msg.content}`),
 							() => {},
@@ -75,7 +75,7 @@ export async function ConnectLifecycleSocket(): Promise<WebSocket | null>
 						break ;
 					case "tournament-invite":
 						console.log("Tournament invite", msg.content);
-						toastNotification.message('TEST', 'X e\' dietro di te',
+						toastNotification.invite('TEST', 'X e\' dietro di te',
 							() => {alert('SAIK')},
 							undefined,
 							undefined,
