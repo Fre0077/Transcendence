@@ -29,7 +29,10 @@ export function fwdWebSocket(
 
 	/* --- AUTH CHECK --- */
 	const auth = isCookieAuthenticated(request);
-	if (auth.ok === false) return ; // important
+	if (auth.ok === false) {
+		connection.close(1008, auth.reason);
+		return ; // important
+	}
 	/* ------------------- */
 
 	/* #debug */
@@ -42,7 +45,7 @@ export function fwdWebSocket(
 		endpoint,
 		{
 			headers: {
-				'x-user-id': String(auth.user.username) ?? String(auth.user.userId),
+				'x-user-username': String(auth.user.username),
 				'x-gateway-secret': String(GATEWAY_SECRET),
 				// 'x-ws-query': JSON.stringify(request.query),
 			}

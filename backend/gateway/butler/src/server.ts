@@ -5,7 +5,7 @@ import fastifyWebsocket from '@fastify/websocket';
 import cors from '@fastify/cors';
 
 // import { WebSocket } from "ws";
-import { isCookieAuthenticated, attachCookies} from './middleware.js';
+import { isCookieAuthenticated, attachAllCookies} from './middleware.js';
 
 
 // Where the Queue will listen
@@ -118,7 +118,7 @@ fastify.register(async function (fastify) {
 	function httpforwarder(endpoint:string, props?:any) {
 
 		// JWT interceptor
-		if (endpoint === `${AUTH_URL}/api/login`) return async (request:FastifyRequest, reply:FastifyReply) => await noAuthForward(request, reply, endpoint, attachCookies);
+		if (endpoint === `${AUTH_URL}/api/login`) return async (request:FastifyRequest, reply:FastifyReply) => await noAuthForward(request, reply, endpoint, attachAllCookies);
 		// No-Auth route
 		else if (props.auth === false) return async (request:FastifyRequest, reply:FastifyReply) => await noAuthForward(request, reply, endpoint);
 		// Auth route

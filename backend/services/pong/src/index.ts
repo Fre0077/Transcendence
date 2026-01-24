@@ -284,7 +284,7 @@ fastify.register(async function (fastify) {
 
 
 		/* --------- CHECK AUTH --------- */
-		const userid = request.headers['x-user-id'] as string;	// dangerous?
+		const userid = request.headers['x-user-username'] as string;	// dangerous?
 		const secret = request.headers['x-gateway-secret'];
 		
 		if (!userid || secret !== GATEWAY_SECRET) {
@@ -395,7 +395,7 @@ fastify.register(async function (fastify) {
 
 
 		/* --------- CHECK AUTH --------- */
-		const userid = request.headers['x-user-id'] as string;	// dangerous?
+		const userid = request.headers['x-user-username'] as string;	// dangerous?
 		const secret = request.headers['x-gateway-secret'];
 		
 		if (!userid || secret !== GATEWAY_SECRET) {
@@ -488,11 +488,11 @@ fastify.register(async function (fastify) {
 
 
 		/* --------- CHECK AUTH --------- */
-		const userid = request.headers['x-user-id'] as string;	// dangerous?
+		const username = request.headers['x-user-username'] as string;	// dangerous?
 		const secret = request.headers['x-gateway-secret'];
 		
-		if (!userid || secret !== GATEWAY_SECRET) {
-			console.log('Sus player', userid);
+		if (!username || secret !== GATEWAY_SECRET) {
+			console.log('Sus player', username);
 			connection.close(1008, "Invalid user authentication");
 			return ;
 		}
@@ -550,7 +550,7 @@ fastify.register(async function (fastify) {
 				};
 
 				// add listener, even if not expected AS PLAYER
-				game.subscribe(userid, listener);
+				game.subscribe(username, listener);
 				/* --------------------------- */
 			}
 			catch (err)
@@ -566,7 +566,7 @@ fastify.register(async function (fastify) {
 			console.log(`Client ${clientIP} disconnected - Code: ${code}, Reason: ${reason?.toString() || 'none'}`);
 		
 			// remove listener
-			game?.unsubscribe(userid);
+			game?.unsubscribe(username);
 
 			// stop game
 			game?.stop();

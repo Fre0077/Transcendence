@@ -1,10 +1,10 @@
-// defaukts
+// defaults
 import { router } from "@/router";
 
 // services
 import { toastNotification } from "@services/toastNotification";
-import { sendPostRequest } from "../api/sendRequests";
-import { sendDeleteRequest } from "../api/sendRequests";
+import { /* sendGetRequest,  */sendPostRequest } from "../api/sendRequests";
+import { authWebSocket } from "@services/ws/authWebSocket";
 
 // URLs
 const BUTLER_URL = `ws://${window.location.hostname}:3029/ws`;
@@ -13,12 +13,9 @@ const BACKEND_APIS_URL = `http://${window.location.hostname}:3029/api`;
 let socket:WebSocket | null = null;
 
 
-// function joinLobby(lobbyid:string)
-// {
-// 	router.push(`/lobby/online?lobby-id=${}`);
-// }
-
-export function ConnectLifecycleSocket(): WebSocket
+// this function is async because authWebSocket() fetch()es the '/isauth' endpoint to refresh tokens.
+// If it didn't the connection could fail
+export async function ConnectLifecycleSocket(): Promise<WebSocket | null>
 {
 
 	// if already initialized
@@ -26,7 +23,12 @@ export function ConnectLifecycleSocket(): WebSocket
 		return socket;
 	}
 
-	/* const  */socket = new WebSocket(BUTLER_URL);
+	// connect with auth refresh
+	socket = await authWebSocket('');
+	if (!socket) {
+		console.log("User not authenticated, can't connect to lifecycle websocket");
+		return null;
+	}
 
 	socket.onopen = () => {
 		console.log('[WS] connected to \'' + BUTLER_URL + '\'');
@@ -60,18 +62,24 @@ export function ConnectLifecycleSocket(): WebSocket
 									}, 'application/json');},
 							() => { sendPostRequest(`${BACKEND_APIS_URL}/friend/remove`, {
 										target : msg.sender
-									}, 'application/json');}, 5000);
+									}, 'application/json');},
+							5000);
 						break ;
 					case "lobby-invite":
 						console.log("Lobby invite", msg.content);
 						toastNotification.message('Lobby Invite', `${msg.sender} ti ha invitato nella sua lobby`,
 							undefined,
 							() => router.push(`/lobby/online?lobby-id=${msg.content}`),
-							() => {}, 10000);
+							() => {},
+							10000);
 						break ;
 					case "tournament-invite":
 						console.log("Tournament invite", msg.content);
-						toastNotification.message('TEST', 'X e\' dietro di te', () => {alert('SAIK')}, 10000);
+						toastNotification.message('TEST', 'X e\' dietro di te',
+							() => {alert('SAIK')},
+							undefined,
+							undefined,
+							10000);
 						break ;
 					default:
 						console.log(`Unknown type ${msg.type}`, msg.content);

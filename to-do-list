@@ -3,10 +3,8 @@
 
 
 WHAT-AM-I-DOING-NOW
-15. Review NOTIFICATION and merge into topiana-
 
 WHAT-AM-I-DOING-NEXT
-16. review friend handling
 17. status dot on friendlist
 19. If a player disconnects from the game it should be shown and the game should pause when possible
 
@@ -79,6 +77,13 @@ DONE
 1. spacing at the bottom of the lobby page (DONE)
 5. better lobby UI (better start/leave buttons, 'bot' and 'invite' card appears only if lobby is created/joined) (DONE)
 10. 'classes' folder in src/ (DONE)
-17. Profile card loads only the user card (DONE)'
+17. Profile card loads only the user card (DONE)
 15. Tournament winner card not loading (DONE)
 14. DELETE method not working (DONE)
+15. Review NOTIFICATION and merge into topiana- (DONE)
+16. review friend handling (DONE)
+
+
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRvdG9tbWkiLCJlbWFpbCI6ImJAZ21haWwuY29tIiwiaWF0IjoxNzY5Mjc4Mjk4LCJleHAiOjE3NjkyNzgzMDh9.DePnlfCigyHfPCMu4KyTx53lRWVvcdMvNd2Es7MFXYM
+
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRvdG9tbWkiLCJlbWFpbCI6ImJAZ21haWwuY29tIiwiaWF0IjoxNzY5Mjc4MDYyLCJleHAiOjE3NjkyNzgwNzJ9.HBQy7GEH9o6uNf7RQ53GeLmY_jeX2VzI0qfBTZpwgGU

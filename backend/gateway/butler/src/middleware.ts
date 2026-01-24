@@ -55,7 +55,7 @@ function attachCookie(reply:FastifyReply, cookie:Cookie)
 }
 
 // attach bot tokens to the user reply
-export function attachCookies(data:any, reply:FastifyReply)
+export function attachAllCookies(data:any, reply:FastifyReply)
 {
 	if (!data.user) {
 		console.log("Fatal: No user found when trying to attach cookies to the user");
@@ -103,6 +103,9 @@ function refreshAccessToken(refreshToken: string, reply: FastifyReply) : AuthRep
 		return { ok:false, reason: 'Invalid token' };
 	}
 
+	/* #debug */
+	// console.log('Refreshed token with', user);
+
 	// generate new accessToken
 	const accessToken = generateAccessToken(user);
 
@@ -124,7 +127,7 @@ if accessToken isn't present or it's not valid (expired or invalid) check the re
 export function isCookieAuthenticated(request:FastifyRequest, reply?:FastifyReply, done?: (err?: Error) => void): AuthReply
 {
 	/* --- AUTH CHECK --- */
-	// get the token
+	// get the tokens
 	const accessToken = request.cookies.accessToken;
 	const refreshToken = request.cookies.refreshToken;
 
@@ -211,9 +214,7 @@ function verifyToken(token:string | undefined)
 }
 function verifyAccessToken(token: string) {
 	try {
-		const ret = jwt.verify(token, "ft_trans(cendence)");
-		if (ret) return ret as { username: string, userId: number; email: string };
-		return null;
+		return jwt.verify(token, "ft_trans(cendence)") as { username: string, userId: number; email: string };
 	} catch (error) {
 		return null;
 	}
@@ -224,8 +225,9 @@ function verifyAccessToken(token: string) {
 
 function generateRefreshToken(user: any): string
 {
-	// 1. Crea l'Access Token (breve)
-	const refreshTokenPayload = { /* @topiana- added */username: user.username, userId: user.id, email: user.email };
+	// Crea il Refresh Token (lungo)
+	const id = (user.id) ? user.id : user.userId;	// get the id since we have 2 ways of storing it :D
+	const refreshTokenPayload = { /* @topiana- added */username: user.username, userId: id, email: user.email };
 	const refreshToken = jwt.sign(refreshTokenPayload, "ft_trans(cendence)", {
 		expiresIn: "24h",
 	});
@@ -234,10 +236,11 @@ function generateRefreshToken(user: any): string
 
 function generateAccessToken(user: any): string
 {
-	// 1. Crea l'Access Token (breve)
-	const accessTokenPayload = { /* @topiana- added */username: user.username, userId: user.id, email: user.email };
+	// Crea l'Access Token (breve)
+	const id = (user.id) ? user.id : user.userId;	// get the id since we have 2 ways of storing it :D
+	const accessTokenPayload = { /* @topiana- added */username: user.username, userId: id, email: user.email };
 	const accessToken = jwt.sign(accessTokenPayload, "ft_trans(cendence)", {
-		expiresIn: "15m",
+		expiresIn: "10s",
 	});
 	return accessToken;
 }

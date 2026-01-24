@@ -1,4 +1,4 @@
-import { /* AUTH, */ CREATE, JOIN, LEAVE, START, BOT } from './METHODS.js';
+import { /* AUTH, */ CREATE, JOIN, STATE, LEAVE, START, BOT } from './METHODS.js';
 
 import type { WebSocket } from "ws";
 
@@ -100,6 +100,16 @@ export async function interpreter(
 			// send reply
 			return jret.reply;
 		
+		case "STATE":
+			/* { method: 'LEAVE' }
+				Description: Leaves the lobby. If not authenticated or not joined a lobby the
+				request fails.
+			*/
+			let stret = STATE(lobby);
+
+			// send reply
+			return stret.reply;
+
 		case "LEAVE":
 			/* { method: 'LEAVE' }
 				Description: Leaves the lobby. If not authenticated or not joined a lobby the

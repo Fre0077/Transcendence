@@ -29,7 +29,7 @@ export function loadOnlineLobbyPage(): HTMLElement
 	const query = router.getQuery().get("lobby-id");
 	if (query) lobby_code = query;
 
-	console.log('Got query', lobby_code);
+	console.log('Got Lobby-ID', lobby_code);
 	/* ----------------------------------------- */
 
 	const div = document.createElement('div');
@@ -274,8 +274,15 @@ function updateLobbyInfo(state:any)
 		// Spawn bot card
 		if (botdiv && !botdiv.hasChildNodes()) botdiv.appendChild(createBotCard(lobbyWS.addbot, lobbyWS.rembot));
 
-        // Spawn start button
-        if (footer && !footer.hasChildNodes()) footer.append(loadStartButton());
+        // Spawn start/rejoin button
+		let lastingame: boolean | undefined = undefined;
+        if (footer && lastingame !== state.ingame) {
+			removeAllChildNodes(footer);
+			if (state.ingame === true) footer.append(loadRejoinButton());
+			else footer.append(loadStartButton());
+			// save last ingame
+			lastingame = state.ingame;
+		}
 
 		// add copy lobby code button
 		const copyLobbyCodeBtn = document.getElementById('copyLobbyCodeBtn');
@@ -313,7 +320,8 @@ function updateLobbyInfo(state:any)
 
 
 
-
+/* --------------------------------- */
+/* 		  	START/REJOIN GAME		 */
 
 function loadStartButton(): HTMLElement
 {
@@ -333,28 +341,28 @@ function loadStartButton(): HTMLElement
     return div;
 }
 
-// function loadRejoinButton(): HTMLElement
-// {
-//     const div = document.createElement('div');
+function loadRejoinButton(): HTMLElement
+{
+    const div = document.createElement('div');
 
-//     div.className = "mt-auto p-2 bg-slate-900/20 rounded-xl flex justify-center";
-//     div.innerHTML = /* html */`
-//         <a id="rejoin-game-btn" class="px-4 py-3 bg-green-600/30 hover:bg-green-600/50 rounded-lg text-white font-bold transition">
-//             Re-join Game
-//         </a>
-//     `;
+    div.className = "mt-auto p-2 bg-slate-900/20 rounded-xl flex justify-center";
+    div.innerHTML = /* html */`
+        <a id="rejoin-game-btn" class="px-4 py-3 bg-green-600/30 hover:bg-green-600/50 rounded-lg text-white font-bold transition">
+            Re-join Game
+        </a>
+    `;
 
-//     // Add event listener
-//     const startbtn = div.querySelector('#start-game-btn') as HTMLElement;
-// 	startbtn.addEventListener('click', () => lobbyWS?.start());
+    // Add event listener
+    const startbtn = div.querySelector('#rejoin-game-btn') as HTMLElement;
+	startbtn.addEventListener('click', () => lobbyWS?.start());
 
-//     return div;
-// }
+    return div;
+}
 
 
 
 /* --------------------------------- */
-/* 		  CREATE/LEAVE LOBBY		 */
+/* 		   CREATE/LEAVE LOBBY		 */
 
 function loadCreateLobbyCard(onclick?: () => void): HTMLElement
 {

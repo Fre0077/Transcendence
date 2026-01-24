@@ -145,22 +145,14 @@ Reply:
 
 export function JOIN(msg:object,
 	outlobby:string | undefined,
-	outplayer:string | undefined,
+	outplayer:string,
 	ws:WebSocket): StandardReturn
 {
-	// check if AUTHenticated
-	if (outplayer === undefined) {
-		return {
-			status: "failure",
-			reply: JSON.stringify({ method: 'JOIN_REPLY', status: "failure", comment: "Not authenticated"})
-		}
-	}
-
 	// check if we already in lobby
 	if (outlobby !== undefined) {
 		return {
 			status: "failure",
-			reply: JSON.stringify({ method: 'JOIN_REPLY', status: "failure", comment: "already in a lobby"})
+			reply: JSON.stringify({ method: 'JOIN_REPLY', status: "failure", reason: 'rejoin', comment: "already in a lobby"})
 		}
 	}
 
@@ -170,7 +162,7 @@ export function JOIN(msg:object,
 		console.log(`invalid JSON message ${msg}`);
 		return {
 			status: "failure",
-			reply: JSON.stringify({method: 'JOIN_REPLY', status: 'failure', comment: "invalid JSON: missing 'lobbyID'"})
+			reply: JSON.stringify({method: 'JOIN_REPLY', status: 'failure', reason: 'invalid', comment: "invalid JSON: missing 'lobbyID'"})
 		};
 	}
 
@@ -181,7 +173,7 @@ export function JOIN(msg:object,
 	if (lobby === undefined) {
 		return {
 			status: "failure",
-			reply: JSON.stringify({ method: 'JOIN_REPLY', status: 'failure', value: msg.lobbyID, comment: "Lobby not found"})
+			reply: JSON.stringify({ method: 'JOIN_REPLY', status: 'failure', reason: 'not-found', comment: "Lobby not found"})
 		};
 	}
 
@@ -189,7 +181,7 @@ export function JOIN(msg:object,
 	if (lobby.join(outplayer, ws) === false) {
 		return {
 			status: "failure",
-			reply: JSON.stringify({ method: 'JOIN_REPLY', status: 'failure', value: msg.lobbyID, comment: "Error while joining the lobby, either the lobby is full or you're already connected"})
+			reply: JSON.stringify({ method: 'JOIN_REPLY', status: 'failure', reason: 'internal-error', comment: "Error while joining the lobby, either the lobby is full or you're already connected"})
 		};
 	}
 
@@ -200,6 +192,48 @@ export function JOIN(msg:object,
 		// player: outplayer,
 		lobby: lobby.ID
 	}
+}
+
+
+/*
+{
+	method: 'STATE'
+} 
+Description: Asks for the lobby state. On successful request the reply will be the lobby state itself
+Reply:
+{
+	method: 'STAE_REPLY',
+	status: 'failure',
+	comment: <comment>
+}
+*/
+
+export function STATE(outlobby:string | undefined): StandardReturn
+{
+	// check if you joined a lobby
+	if (outlobby === undefined) {
+		return {
+			status: "failure",
+			reply: JSON.stringify({ method: 'STATE_REPLY', status: 'failure', comment: "Not in a lobby" })
+		};
+	}
+
+	// find the lobby the lobby
+	const lobby:Lobby<WebSocket> | undefined = findLobby((lobby:Lobby<WebSocket>) => { return lobby.ID === outlobby });
+	if (!lobby) {
+		return {
+			status: "failure",
+			reply: JSON.stringify({ method: 'STATE_REPLY', status: 'failure', comment: "Internal server error" })
+		};
+	}
+
+	// successfule return
+	return {
+		status: "success",
+		reply: lobby.stateJSON,
+		// player: outplayer,
+		lobby: outlobby
+	};
 }
 
 /*
@@ -216,16 +250,8 @@ Reply:
 }
 */
 
-export function LEAVE(outlobby:string | undefined, outplayer:string | undefined): StandardReturn
+export function LEAVE(outlobby:string | undefined, outplayer:string): StandardReturn
 {
-	// check auth
-	if (outplayer === undefined) {
-		return {
-			status: "failure",
-			reply: JSON.stringify({ method: 'LEAVE_REPLY', status: 'failure', comment: "Not authenticated yet" })
-		};
-	}
-
 	// check if you joined a lobby
 	if (outlobby === undefined) {
 		return {

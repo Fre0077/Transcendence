@@ -38,7 +38,25 @@ export function ConnectLobbySocket(
 ): LobbyWebSocket
 {
 	// if already connected don't connect
-	if (lobbyWS && lobbyWS.socket.readyState === WebSocket.OPEN) return lobbyWS;
+	if (lobbyWS && lobbyWS.socket.readyState === WebSocket.OPEN)
+	{
+		console.log('Valid lobbyWS with ids', outlobbyid, lobby_id);
+		// if an outlobby id was passed
+		if (outlobbyid !== undefined && outlobbyid !== lobby_id)
+		{
+			// leave previous lobby
+			if (lobby_id !== undefined) lobbyWS.send({ method: 'LEAVE' });
+			// then join the new one
+			lobbyWS.send({ method: 'JOIN', lobbyID: outlobbyid});
+		}
+		else	// ask for the state
+		{
+			console.log('Asking for state');
+			lobbyWS.send({ method: 'STATE' });
+		}
+
+		return lobbyWS;
+	}
 
 	const socket = new WebSocket(LOBBY_WEBSOCKET_URL);
 	console.log("Websocketing to", LOBBY_WEBSOCKET_URL);
@@ -73,10 +91,16 @@ export function ConnectLobbySocket(
 				else {
 					console.log('Failed to create/start the lobby');
 					// clear lobby id
-					lobby_id = undefined;
+					if (data.reason !== 'rejoin') lobby_id = undefined;
 				}
 			}
-			else if (data.ID && data.players) onstate(data);
+			else if (data.ID && data.players) {
+				// save lobby id (just to be safe)
+				lobby_id = data.ID;
+				
+				// callback
+				onstate(data);
+			}
 			else
 			{
 				console.log("Received this message that I didn't understand", data);

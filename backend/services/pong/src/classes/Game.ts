@@ -110,6 +110,7 @@ interface PaddleState {
 
 interface PlayerState {
 	ID:string;
+	status:string;
 	paddle:PaddleState;
 }
 
@@ -119,6 +120,7 @@ interface GameState {
 	ball: BallState;
 	players:PlayerState[];
 	playing:boolean;
+	paused:boolean;
 	timeout: number;
 	winner: number;
 }
@@ -134,8 +136,9 @@ const	paddleHeight_2: number = paddleHeight / 2;
 
 export class Game
 {
-	private timeout:number;			/* number of ms the game should halt between rouds */
 	private tick:number;			/* number of in-game tick passed till the beginning of the match */
+	private _paused:boolean;		/* is the game paused? */
+	private timeout:number;			/* number of ms the game should halt between rouds */
 	
 	// replay variables
 	private isreplay:boolean;
@@ -170,8 +173,9 @@ export class Game
 	/* ======================== CONSTRUCTORS ======================== */
 	// the constructor expliccitly wants the variables initialized
 	constructor(players:{ idx:number, ID:string }[], replay?:boolean) {
-		this.timeout = 60;				// 1 sec of timeout
 		this.tick = 0;					// start -> 0
+		this._paused = false;
+		this.timeout = 60;				// 1 sec of timeout
 	
 		this.round = 0;					// start at round 0
 		this.roundStart = false;		// ball not moving
@@ -243,6 +247,7 @@ export class Game
 	{
 		const players = Array.from(this._players, (player) => ({
 			ID: player.ID,
+			status: player.status,
 			paddle: {
 				posY: player.posY,
 				height: player.height,
@@ -259,6 +264,7 @@ export class Game
 			},
 			players: players,
 			playing: this.roundStart,
+			paused: this._paused,
 			timeout: this.timeout,
 			winner: this.winner
 		};
@@ -337,7 +343,7 @@ export class Game
 		// starts the ball
 	public launch() {
 		// don't double launch
-		if (this.roundStart === true || this.timeout !== 0) return;
+		if (this.roundStart === true || this._paused === true || this.timeout !== 0) return;
 
 		// tell the game loop that the ball needs to move
 		this.roundStart = true;
@@ -366,7 +372,10 @@ export class Game
 
 		// change status if it was a player
 		const p = this.players.find(p => p.ID === ID);
-		if (p !== undefined) p.status = "connected";
+		if (p !== undefined) {
+			if (p.status === "disconnected") this.resume();
+			p.status = "connected";
+		}
 	}
 	
 	// remove the listener
@@ -375,7 +384,10 @@ export class Game
 
 		// change status if it was a player
 		const p = this.players.find(p => p.ID === ID);
-		if (p !== undefined && p.status !== "left") p.status = "disconnected";
+		if (p !== undefined && p.status !== "left") {
+			p.status = "disconnected";
+			this.pause();
+		};
 	}
 
 	// remove the send
@@ -384,7 +396,10 @@ export class Game
 
 		// change status if it was a player
 		const p = this.players.find(p => p.ID === ID);
-		if (p !== undefined) p.status = "left";
+		if (p !== undefined) {
+			p.status = "left";
+			// should the game pause? (no but it shouldn't be counted as a valid game)
+		}
 	}
 
 	// send game state to each client
@@ -657,12 +672,22 @@ export class Game
 		loop();
 	}
 
-	// public stop() {
-		// }
-		
+	
+	// stop the game from processing ticks
 	public stop() {
 		if (this.gameLoopInterval) clearInterval(this.gameLoopInterval);
 		this.running = false;
+	}
+
+	// pause the game :)
+	public pause() {
+		this._paused = true;
+	}
+
+	// resume the game :D
+	public resume() {
+		this._paused = false;
+		this.timeout = 180;
 	}
 }
 

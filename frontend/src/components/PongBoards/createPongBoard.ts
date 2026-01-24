@@ -18,7 +18,10 @@ export function createPongBoard(socket:PongSocket): PongBoard {
 	div.className = 'relative w-full bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex flex-col rounded-xl border border-white/10 p-6 lg:p-10';
 	div.innerHTML = /*html*/ `
 
-	<!-- Online Game Page Content -->
+	<!-- Top content -->
+	<div class="w-full max-w-6xl flex flex-row lg:flex-row items-center justify-between gap-8">
+		<div id="status-box" class="mx-auto w-full text-xl text-white max-w-xl text-center">STATUS</div>
+	</div>
 
 	<!-- Game Area -->
   	<div class="w-full max-w-6xl flex flex-col lg:flex-row items-center justify-between gap-8">
@@ -48,6 +51,9 @@ export function createPongBoard(socket:PongSocket): PongBoard {
 	</div>
 	`;
 
+	// whwere to update the stauts
+	const statusBox = div.querySelector('#status-box') as HTMLElement;
+
 	// where to draw the card UI
 	const player1Slot = div.querySelector("#player1-card")!;
 	const player2Slot = div.querySelector("#player2-card")!;
@@ -64,32 +70,48 @@ export function createPongBoard(socket:PongSocket): PongBoard {
 	async function update(state: any)
 	{
 		/* #debug */
-		// console.log('Updating board...');
+		// console.log('Updating board...', state);
 
-		// 1️⃣ one-time player setup
-		if (!playersInitialized && state.players.length === 2) {
+		try {
 
-			/* #debug */
-			// console.log('Drawing cards...');
+			// 1️⃣ one-time player setup
+			if (!playersInitialized && state.players.length === 2) {
 
-			// save widgets
-			player1Widget = await createProfileWidget(state.players[0].ID);
-			player2Widget = await createProfileWidget(state.players[1].ID);
+				/* #debug */
+				// console.log('Drawing cards...');
 
-			// append elements (the check on child is for sync problems)
-			if (player1Slot.childElementCount === 0) player1Slot.appendChild(player1Widget.element);
-			if (player2Slot.childElementCount === 0) player2Slot.appendChild(player2Widget.element);
-			
-			// block further things
-			playersInitialized = true;
+				// save widgets
+				player1Widget = await createProfileWidget(state.players[0].ID);
+				player2Widget = await createProfileWidget(state.players[1].ID);
+
+				// append elements (the check on child is for sync problems)
+				if (player1Slot.childElementCount === 0) player1Slot.appendChild(player1Widget.element);
+				if (player2Slot.childElementCount === 0) player2Slot.appendChild(player2Widget.element);
+				
+				// block further things
+				playersInitialized = true;
+			}
+
+			// 2️⃣ players score/status updates (cheap)
+			if (player1Widget) {
+				player1Widget.setScore(Number(state.score[0]));
+				player1Widget.setStatus(String(state.players[0].status));
+			}
+			if (player2Widget) {
+				player2Widget.setScore(Number(state.score[1]));
+				player2Widget.setStatus(String(state.players[1].status));
+			};
+
+			if (state.paused === true) statusBox.textContent = "GAME PAUSED";
+			else statusBox.textContent = "";
+
+			// 3️⃣ pure canvas draw
+			draw(state);
+
+		} catch (err) {
+			console.log('Error while drawing board', err);
 		}
 
-		// 2️⃣ score updates (cheap)
-		if (player1Widget) player1Widget.setScore(Number(state.score[0]));
-		if (player2Widget) player2Widget.setScore(Number(state.score[1]));
-
-		// 3️⃣ pure canvas draw
-		draw(state);
 	}
 
 	// build the wrapper

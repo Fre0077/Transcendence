@@ -1,6 +1,8 @@
 /* --------------------------------------------------------- */
 /*				  SINGLETON SOCKET CONNECTION				 */
 
+import { toastNotification } from "@services/toastNotification";
+
 const TOURNAMENT_WEBSOCKET_URL = `ws://${window.location.hostname}:3029/ws/tournament`;
 
 const TOURNAMENT_FORMAT = 'single-eliminatin';
@@ -43,7 +45,17 @@ export function ConnectTournamentSocket(
 ): TournamentWebSocket
 {
 	// if already connected don't connect
-	if (tournamentWS && tournamentWS.socket.readyState === WebSocket.OPEN) return tournamentWS;
+	if (tournamentWS && tournamentWS.socket.readyState === WebSocket.OPEN)
+	{
+		// if an outournament id was passed
+		if (ouTournamentId !== undefined)
+		{
+			// notify the error
+			toastNotification.error('Already in a Toruament', 'You must leave a tournament before joining a new one', 10000);
+		}
+
+		return tournamentWS;
+	}
 
 	const socket = new WebSocket(TOURNAMENT_WEBSOCKET_URL);
 	console.log("Websocketing to", TOURNAMENT_WEBSOCKET_URL);
@@ -130,7 +142,13 @@ export function ConnectTournamentSocket(
 						else console.log('Failed to create tourament');
 					}
 					// 
-					else if (data.ID && data.players) onstate?.(data);
+					else if (data.ID && data.players) {
+						// save tournament id (just to be safe)
+						tournament_id = data.ID;
+
+						// callback
+						onstate?.(data);
+					}
 					else
 					{
 						console.log("Received this message that I didn't understand", data);

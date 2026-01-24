@@ -268,23 +268,23 @@ fastify.register(async function (fastify) {
 
 
 		/* --------- CHECK AUTH --------- */
-		const userid = request.headers['x-user-id'] as string;
+		const username = request.headers['x-user-username'] as string;
   		const secret = request.headers['x-gateway-secret'];
 
-		if (!userid || secret !== GATEWAY_SECRET) {
+		if (!username || secret !== GATEWAY_SECRET) {
 			connection.close(1008, "Invalid user authentication");
 			return ;
 		}
 
 		/* --------- AUTO JOIN  --------- */
 
-		const checktour = findTournament((t) => t.has(userid));
-		checktour?.join(userid, connection);
+		const checktour = findTournament((t) => t.has(username));
+		checktour?.join(username, connection);
 
 		/* ------------------------------ */
 
 		// playerID not verified with JWT yet
-		const player:string = userid;
+		const player:string = username;
 		// lobbyID
 		let tournament:string | undefined = checktour?.ID;
 
