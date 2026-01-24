@@ -8,6 +8,7 @@ WHAT-AM-I-DOING-NOW
 WHAT-AM-I-DOING-NEXT
 16. review friend handling
 17. status dot on friendlist
+19. If a player disconnects from the game it should be shown and the game should pause when possible
 
 MANDATODY:
 1. The project must include accessible Privacy Policy and Terms of Service pages with relevant content.

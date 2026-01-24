@@ -229,8 +229,12 @@ class ToastNotificationService {
         this.show(title, message, { type: 'info', duration });
     }
 
-    message(title: string, message: string, onClickDiv?: () => void, duration?: number): void {
-        this.show(title, message, { type: 'message', onClickDiv, duration });
+    message(title: string, message: string,
+        onClickDiv?: () => void,
+            onClickAccept?: () => void,
+            onClickDecline?: () => void,
+            duration?: number): void {
+        this.show(title, message, {type: 'message', onClickDiv, onClickAccept, onClickDecline, duration});
     }
 
     friend(title: string, message: string,
@@ -238,7 +242,7 @@ class ToastNotificationService {
             onClickAccept?: () => void,
             onClickDecline?: () => void,
             duration?: number): void {
-        this.show(title, message, {type: 'message', onClickDiv, onClickAccept, onClickDecline, duration})
+        this.show(title, message, {type: 'message', onClickDiv, onClickAccept, onClickDecline, duration});
     }
 }
 

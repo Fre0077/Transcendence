@@ -58,13 +58,16 @@ export function ConnectLifecycleSocket(): WebSocket
 							() => { sendPostRequest(`${BACKEND_APIS_URL}/friend/accept`, {
 										target : msg.sender
 									}, 'application/json');},
-							() => { sendDeleteRequest(`${BACKEND_APIS_URL}/friend/remove`, {
+							() => { sendPostRequest(`${BACKEND_APIS_URL}/friend/remove`, {
 										target : msg.sender
 									}, 'application/json');}, 5000);
 						break ;
 					case "lobby-invite":
 						console.log("Lobby invite", msg.content);
-						toastNotification.message('TEST', 'X ha trovato l\'indirizzo di casa tua', () => router.push(`/lobby/online?lobby-id=${msg.content}`), 10000);
+						toastNotification.message('Lobby Invite', `${msg.sender} ti ha invitato nella sua lobby`,
+							undefined,
+							() => router.push(`/lobby/online?lobby-id=${msg.content}`),
+							() => {}, 10000);
 						break ;
 					case "tournament-invite":
 						console.log("Tournament invite", msg.content);
