@@ -38,8 +38,9 @@ export async function profileEndpoint(fastify: FastifyInstance) {
             const { username } = request.query;
 
             if (!userId || secret !== 'biscottini') {throw new Unauthorized('Utente non autorizzato', 'profile'); }
-            if (!username) {throw new NotFound('Username query not found', 'profile'); }            const data = await getUserData(username);
+            if (!username) {throw new NotFound('Username query not found', 'profile'); }
             
+            const data = await getUserData(username);
             logInfo('{profile} [200] Dati utente recuperati con successo');
             return reply.status(200).send(data);
         } catch (err) {
@@ -167,7 +168,7 @@ export async function profileEndpoint(fastify: FastifyInstance) {
     });
 
     // DELETE /api/friend/remove -> Rifiuta/Annulla richiesta o Rimuovi amico
-    fastify.delete('/friend/remove', async (request: FastifyRequest, reply: FastifyReply) => {
+    fastify.post('/friend/remove', async (request: FastifyRequest, reply: FastifyReply) => {
         const { target } = request.body as { target: string };
         try {
             const userId = Number(request.headers['x-user-id'])

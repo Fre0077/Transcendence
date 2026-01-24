@@ -153,8 +153,12 @@ export async function fetchBackend(request:FastifyRequest, endpoint:string, auth
 	}
 
 	// if there is a query, add it
-	// FIX THIS!!! (NOT UNDERSTANDING IF THERE IS A QUERY (I think???))
-	if (request.query) endpoint += `?${buildQuery(request.query)}`;
+	if (Object.keys(request.query as object).length !== 0) {
+		endpoint += `?${buildQuery(request.query)}`;
+	}
+
+	/* #debug */
+	console.log('Fetching', endpoint, 'with', fetchOptions);
 
 	// --- CALL BACKEND ---
 	return await fetch(endpoint, fetchOptions);
@@ -187,7 +191,7 @@ export async function authForward(request:FastifyRequest, reply:FastifyReply, en
 	});
 	
 	/* #debug */
-	console.log('>Backend fetch', backendResponse);
+	// console.log('>Backend fetch', backendResponse);
 
 	// Send body
 	if (contentType?.includes('application/json')) {
@@ -233,7 +237,7 @@ export async function noAuthForward(
 	}
 
 	/* #debug */
-	// console.log('Fetched from backend', backendResponse);
+	// console.log('>Backend fetch', backendResponse);
 
 	// call the post-process callback
 	if (callback && backendResponse.status === 200) callback(data, reply);

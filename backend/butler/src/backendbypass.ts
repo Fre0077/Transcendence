@@ -87,15 +87,15 @@ interface Message {
 
 /* --- Lobby Invite message --- */
 interface LobbyInviteBody {
-	username:string,
+	target:string,
 	lobbyid:string,
 }
 
 export async function sendLobbyInvite(request:FastifyRequest, reply:FastifyReply)
 {
 	// get target data
-	const { username, lobbyid } = request.body as LobbyInviteBody;
-	if (!username || !lobbyid)
+	const { target, lobbyid } = request.body as LobbyInviteBody;
+	if (!target || !lobbyid)
 	{
 		// #todo send error page?
 		reply
@@ -105,7 +105,7 @@ export async function sendLobbyInvite(request:FastifyRequest, reply:FastifyReply
 	}
 
 	// send lobby invite
-	const ret = sendMessageTo(username, {
+	const ret = sendMessageTo(target, {
 		what: "NOTIFY",
 		type: 'lobby-invite',
 		content: lobbyid,
@@ -118,14 +118,14 @@ export async function sendLobbyInvite(request:FastifyRequest, reply:FastifyReply
 }
 
 interface FriendRequestBody {
-	username:string
+	target:string
 }
 
 export async function sendFriendRequest(request:FastifyRequest, reply:FastifyReply)
 {
 	// get target data
-	const { username } = request.body as FriendRequestBody;
-	if (!username)
+	const { target } = request.body as FriendRequestBody;
+	if (!target)
 	{
 		// #todo send error page?
 		reply
@@ -135,7 +135,7 @@ export async function sendFriendRequest(request:FastifyRequest, reply:FastifyRep
 	}
 
 	// send lobby invite
-	const ret = sendMessageTo(username, {
+	const ret = sendMessageTo(target, {
 		what: "NOTIFY",
 		type: 'friend-request',
 		sender: (request as any).user.username

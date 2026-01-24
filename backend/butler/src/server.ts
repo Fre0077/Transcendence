@@ -149,7 +149,7 @@ fastify.register(async function (fastify) {
 	fastify.get('/friends', httpforwarder(`${PROFILE_URL}/api/friends`, { auth: true }));
 	fastify.post('/friend/request', httpforwarder(`${PROFILE_URL}/api/friend/request`, { auth: true }));
 	fastify.post('/friend/accept', httpforwarder(`${PROFILE_URL}/api/friend/accept`, { auth: true }));
-	fastify.delete('/friend/remove', httpforwarder(`${PROFILE_URL}/api/friend/remove`, { auth: true }));
+	fastify.post('/friend/remove', httpforwarder(`${PROFILE_URL}/api/friend/remove`, { auth: true }));
 	// ... add others
 
 	// chat backend APIs
@@ -157,7 +157,7 @@ fastify.register(async function (fastify) {
 	// ... add others
 
 	// Fetches the desired backend endpoint (if specified). Then on successfule response calls the 'forward' function.
-	// NOTE that the 'splitforwarder()' needs 'isCookieAuthenticated()' as preHAndler, so that it cann attach the 'user' to the request.
+	// NOTE that the 'splitforwarder()' needs 'isCookieAuthenticated()' as preHandler, so that it cann attach the 'user' to the request.
 	function splitforwarder(endpoint:string | undefined, forwarder: (request:FastifyRequest, reply:FastifyReply) => void)
 	{
 		return async (request:FastifyRequest, reply:FastifyReply) => {
@@ -165,10 +165,20 @@ fastify.register(async function (fastify) {
 			// fetch the desired endpoint
 			if (endpoint !== undefined)
 			{
-				const ret = await fetchBackend(request, endpoint, (request as any).user);
+				/* #dedbug */
+				// console.log('About to fetch', endpoint, 'for user', request);
+
+				let ret;
+				try {
+					ret = await fetchBackend(request, endpoint, { ok:true, user:(request as any).user });
+				} catch (err) {
+					console.log('Error', err);
+					reply.code(502).send("Backend service unreachable");
+					return ;
+				}
 
 				/* #debug */
-				console.log('Split-Fetched', ret);
+				// console.log('Split-Fetched', ret);
 
 				if (ret.status !== 200) {
 					reply.code(ret.status).send(ret.statusText);
@@ -177,7 +187,7 @@ fastify.register(async function (fastify) {
 			}
 
 			/* #debug */
-			console.log('Forwarding request');
+			// console.log('Forwarding request');
 
 			// execute the second part
 			forwarder(request, reply);

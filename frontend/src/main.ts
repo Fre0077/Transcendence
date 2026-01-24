@@ -42,6 +42,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize router
     router.init('app');
 
+    // connect socket to backend gateway
+    ConnectLifecycleSocket();
+
     console.log('✅ Application initialized');
   }
   // --- FINE DEL BLOCCO MODIFICATO ---

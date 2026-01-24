@@ -428,7 +428,7 @@ function sendLobbyInvite(event:SubmitEvent)
 	// send the request to the backend
 	sendPostRequest(`${BACKEND_APIS_URL}/lobby-invite`, {
 		lobbyid: lobby_code,
-		username: username
+		target: username
 	}, 'application/json');
 }
 

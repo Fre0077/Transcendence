@@ -1,5 +1,5 @@
 import { sendGetRequest } from "@/services/api/sendRequests";
-import { sendPostRequest, sendDeleteRequest } from "@/services/api/sendRequests";
+import { sendPostRequest } from "@/services/api/sendRequests";
 
 const BACKEND_APIS_URL = `http://${window.location.hostname}:3029/api`;
 
@@ -74,10 +74,10 @@ function createFriendCard(friend: Friend): HTMLElement {
 		actions.classList.toggle("hidden");
 	});
 	
-	const declineBtn = card.querySelector(".decline-btn")!;
-	declineBtn.addEventListener("click", async () => {
+	const cancelBtn = card.querySelector(".decline-btn")!;
+	cancelBtn.addEventListener("click", async () => {
 		try {
-			await sendDeleteRequest(
+			await sendPostRequest(
 				`${BACKEND_APIS_URL}/friend/remove`,
 				{ target: friend.username },
 				"application/json"
@@ -134,7 +134,7 @@ function createIncomingRequestCard(req: Request): HTMLElement {
 	const declineBtn = div.querySelector(".decline-btn")!;
 	declineBtn.addEventListener("click", async () => {
 		try {
-			await sendDeleteRequest(
+			await sendPostRequest(
 				`${BACKEND_APIS_URL}/friend/remove`,
 				{ target: req.username },
 				"application/json"
@@ -164,13 +164,25 @@ function createOutgoingRequestCard(req: Request): HTMLElement {
 			<span class="text-sm text-white">${req.username}</span>
 		</div>
 		<div class="flex gap-2">
-			<button 
-				class="text-green-400 text-xs hover:underline"
-				onclick = "alert('ciao')">
-					Cancel
-				</button>
+			<button class="cancel-btn text-green-400 text-xs hover:underline">
+				Cancel
+			</button>
 		</div>
 	`;
+
+	const cancelBtn = div.querySelector(".cancel-btn")!;
+	cancelBtn.addEventListener("click", async () => {
+		try {
+			await sendPostRequest(
+				`${BACKEND_APIS_URL}/friend/remove`,
+				{ target: req.username },
+				"application/json"
+			);
+			console.log("Friend request remove:", req.username);
+		} catch (err) {
+			console.error(err);
+		}
+	});
 
 	return div;
 }
