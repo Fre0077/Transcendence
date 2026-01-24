@@ -108,7 +108,7 @@ export function loadLoginPage(): HTMLElement {
             if (!response.ok) {
                 throw new Error(data.error || 'Login fallito');
             }
-
+            
             // === SUCCESSO ===
             console.log('Login riuscito:', data);
 
@@ -120,9 +120,9 @@ export function loadLoginPage(): HTMLElement {
                 chiusura socket, rimozione eventListeners)
             */
 
-
-            const accessToken = data.accessToken || data.token;
-            persistSession(accessToken, data.user, data.refreshToken);
+            // @topiana- (deprecated)
+            // const accessToken = data.accessToken || data.token;
+            // persistSession(accessToken, data.user, data.refreshToken);
             // window.location.pathname = '/home';
             
             // emit auth event

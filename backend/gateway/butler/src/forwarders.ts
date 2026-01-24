@@ -243,8 +243,11 @@ export async function noAuthForward(
 	// console.log('>Backend fetch', backendResponse);
 
 	// call the post-process callback
-	if (callback && backendResponse.status === 200) callback(data, reply);
-
-	reply.send(data);	// later remove 'data'
+	if (callback && backendResponse.status === 200) {
+		callback(data, reply);
+		// and hold the data
+		reply.send();
+	}
+	else reply.send(data);	// send the fetched reply
 }
 
