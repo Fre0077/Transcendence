@@ -15,12 +15,26 @@ export function createPongBoard(socket:PongSocket): PongBoard {
 	const div = document.createElement('div');
 	
 	// build div
-	div.className = 'relative w-full bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex flex-col rounded-xl border border-white/10 p-6 lg:p-10';
-	div.innerHTML = /*html*/ `
+	div.className = 'relative w-full bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex flex-col rounded-xl border border-white/10 p-6 pt-0 lg:p-10 lg:pt-2';
+	div.innerHTML = /*html*/`
 
 	<!-- Top content -->
-	<div class="w-full max-w-6xl flex flex-row lg:flex-row items-center justify-between gap-8">
-		<div id="status-box" class="mx-auto w-full text-xl text-white max-w-xl text-center">STATUS</div>
+	<div class="w-full max-w-6xl flex flex-col lg:flex-col items-center justify-between gap-8 my-auto">
+		<div
+			id="status-box"
+			class="mx-auto w-full max-w-xl text-center
+					text-3xl md:text-4xl
+					font-arcade uppercase tracking-widest
+					text-yellow-300
+					[text-shadow:
+					-2px_-2px_0_#000,
+						2px_-2px_0_#000,
+					-2px_2px_0_#000,
+						2px_2px_0_#000,
+						0_0_12px_rgba(250,204,21,0.8)]"
+		>
+			STATUS
+		</div>
 	</div>
 
 	<!-- Game Area -->
@@ -103,7 +117,7 @@ export function createPongBoard(socket:PongSocket): PongBoard {
 			};
 
 			if (state.paused === true) statusBox.textContent = "GAME PAUSED";
-			else statusBox.textContent = "";
+			else statusBox.textContent = "GOOD LUCK!";
 
 			// 3️⃣ pure canvas draw
 			draw(state);

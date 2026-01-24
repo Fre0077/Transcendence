@@ -24,14 +24,17 @@ function drawCountdown(
 	const scale = 0.8 + 0.4 * easeOut(t); // subtle zoom
 
 	ctx.save();
-	ctx.translate(canvasWidth / 2, canvasHeight / 2);
+	ctx.translate(
+		Math.round(canvasWidth / 2),
+		Math.round(canvasHeight / 2)
+	);
 	ctx.scale(scale, scale);
 
 	ctx.globalAlpha = alpha * 0.9;
 	ctx.fillStyle = "white";
 	ctx.textAlign = "center";
 	ctx.textBaseline = "middle";
-	ctx.font = "bold 120px Inter, system-ui, sans-serif";
+	ctx.font = "81px 'Press Start 2P', monospace";
 
 	// Optional glow
 	ctx.shadowColor = "rgba(255,255,255,0.35)";

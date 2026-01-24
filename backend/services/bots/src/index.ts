@@ -183,7 +183,7 @@ export async function createBot(gamestr:string, botid:string, gameid:string, lev
 		// create and Socket
 		const socket = new WebSocket(myurl, {
 			headers : {
-				'x-user-id': botid,
+				'x-user-username': botid,
 				'x-gateway-secret': GATEWAY_SECRET
 			}
 		});

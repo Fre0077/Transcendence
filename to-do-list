@@ -3,12 +3,12 @@
 
 
 WHAT-AM-I-DOING-NOW
+20. auth setup that @aleborhi tought in the beginning
 
 WHAT-AM-I-DOING-NEXT
 17. status dot on friendlist
-19. If a player disconnects from the game it should be shown and the game should pause when possible
 
-MANDATODY:
+MANDATORY:
 1. The project must include accessible Privacy Policy and Terms of Service pages with relevant content.
 2. For the backend, HTTPS must be used everywhere. (???)
 
@@ -36,6 +36,7 @@ MINOR
 18. rejoin button if you disconnect from a game (really marginal)
 19. finish notifications on game
 20. Better pong bot
+21. lobby chat
 
 STYLE
 2. pls... the back button
@@ -49,8 +50,7 @@ CLEANUPS
 7. keep track of bots (better unique id not needing for manual lobby/tournament counter) and the backend containers need a more solid way to know if an user is a bot
 8. Shared Game module for replays (and get there via url)
 9. Gateway double-socket safety net (if you already connected to a websocket endpoint, on retry: disconnect -> reconnect)
-11. gateway 'live-api'
-12. frontend api calls all in one place
+11. frontend api calls all in one place
 
 DONE
 1. remove JOIN method for games (DONE)
@@ -82,8 +82,4 @@ DONE
 14. DELETE method not working (DONE)
 15. Review NOTIFICATION and merge into topiana- (DONE)
 16. review friend handling (DONE)
-
-
-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRvdG9tbWkiLCJlbWFpbCI6ImJAZ21haWwuY29tIiwiaWF0IjoxNzY5Mjc4Mjk4LCJleHAiOjE3NjkyNzgzMDh9.DePnlfCigyHfPCMu4KyTx53lRWVvcdMvNd2Es7MFXYM
-
-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRvdG9tbWkiLCJlbWFpbCI6ImJAZ21haWwuY29tIiwiaWF0IjoxNzY5Mjc4MDYyLCJleHAiOjE3NjkyNzgwNzJ9.HBQy7GEH9o6uNf7RQ53GeLmY_jeX2VzI0qfBTZpwgGU
+19. If a player disconnects from the game it should be shown and the game should pause when possible (DONE)

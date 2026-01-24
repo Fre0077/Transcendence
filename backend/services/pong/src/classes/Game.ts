@@ -33,7 +33,7 @@ export class Player
 	// ID
 	private _ID:string;
 	private _idx:number;
-	public status: "connected" | "disconnected" | "left";
+	public status: "tojoin" | "connected" | "disconnected" | "left";
 
 	// position data
 	public posY:number;
@@ -51,7 +51,7 @@ export class Player
 	{
 		this._ID = __ID;
 		this._idx = __idx;
-		this.status = "disconnected";
+		this.status = "tojoin";
 		this.posY = 0.5;
 		this._height = paddleHeight;
 		this._width = paddleWidth;
@@ -138,6 +138,7 @@ export class Game
 {
 	private tick:number;			/* number of in-game tick passed till the beginning of the match */
 	private _paused:boolean;		/* is the game paused? */
+	private _alljoined:boolean;
 	private timeout:number;			/* number of ms the game should halt between rouds */
 	
 	// replay variables
@@ -175,7 +176,8 @@ export class Game
 	constructor(players:{ idx:number, ID:string }[], replay?:boolean) {
 		this.tick = 0;					// start -> 0
 		this._paused = false;
-		this.timeout = 60;				// 1 sec of timeout
+		this._alljoined = false;
+		this.timeout = 0;				// 0 sec of timeout
 	
 		this.round = 0;					// start at round 0
 		this.roundStart = false;		// ball not moving
@@ -239,6 +241,18 @@ export class Game
 
 	public has(playerid:string) {
 		return this._players.find(p => p.ID === playerid);
+	}
+
+	// getter that updates the private attribute
+	private get alljoined() {
+		if (this._alljoined === true) return true;
+		// getter for the first time all joins
+		const curr = (this.players[0].status !== "tojoin" && this.players[1].status !== "tojoin");
+		if (curr === true) {
+			this._alljoined = true;
+			this.timeout = 180;		// when all joined, the first time, set timeout 3 sec
+		}
+		return this._alljoined;
 	}
 
 	// state non JSON
@@ -343,7 +357,11 @@ export class Game
 		// starts the ball
 	public launch() {
 		// don't double launch
-		if (this.roundStart === true || this._paused === true || this.timeout !== 0) return;
+		if (this.roundStart === true
+			|| this.alljoined === false
+			|| this._paused === true
+			|| this.timeout !== 0)
+			return;
 
 		// tell the game loop that the ball needs to move
 		this.roundStart = true;
@@ -373,8 +391,14 @@ export class Game
 		// change status if it was a player
 		const p = this.players.find(p => p.ID === ID);
 		if (p !== undefined) {
+			// resume if paused
 			if (p.status === "disconnected") this.resume();
+
+			// update status
 			p.status = "connected";
+
+			// refresh alljoined
+			if (this._alljoined === false) this.alljoined
 		}
 	}
 	
@@ -686,8 +710,11 @@ export class Game
 
 	// resume the game :D
 	public resume() {
-		this._paused = false;
-		this.timeout = 180;
+		if (this._paused === true)
+		{
+			this._paused = false;
+			this.timeout = 180;
+		}
 	}
 }
 
