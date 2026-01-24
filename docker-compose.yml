@@ -80,7 +80,7 @@ services:
   # 2.5 BUTLER che rompe i coglioni
   butler:
     build:
-      context: ./backend/butler
+      context: ./backend/gateway/butler
       dockerfile: Dockerfile
     container_name: butler
     ports:
@@ -96,7 +96,7 @@ services:
   # 3. BACKEND SERVICES START LAST
   auth:
     build:
-      context: ./backend
+      context: ./backend/database/
       dockerfile: auth/Dockerfile
     container_name: auth
     ports:
@@ -119,7 +119,7 @@ services:
 
   chat:
     build:
-      context: ./backend
+      context: ./backend/database/
       dockerfile: chat/Dockerfile
     container_name: chat
     ports:
@@ -142,7 +142,7 @@ services:
 
   profile:
     build:
-      context: ./backend
+      context: ./backend/database/
       dockerfile: profile/Dockerfile
     container_name: profile
     ports:
@@ -174,7 +174,7 @@ services:
   # GAME RELATED SERVICES
   ft_bunny:
     build:
-      context: ./backend/ft_bunny
+      context: ./backend/services/ft_bunny
       dockerfile: Dockerfile
     container_name: ft_bunny
     depends_on:
@@ -192,7 +192,7 @@ services:
 
   lobby:
     build:
-      context: ./backend/lobby
+      context: ./backend/services/lobby
       dockerfile: Dockerfile
     container_name: lobby
     ports:
@@ -208,7 +208,7 @@ services:
 
   tournament:
     build:
-      context: ./backend/tournament
+      context: ./backend/services/tournament
       dockerfile: Dockerfile
     container_name: tournament
     ports:
@@ -224,7 +224,7 @@ services:
 
   pong:
     build:
-      context: ./backend/pong
+      context: ./backend/services/pong
       dockerfile: Dockerfile
     container_name: pong
     ports:
@@ -240,7 +240,7 @@ services:
   
   bots:
     build:
-      context: ./backend/bots
+      context: ./backend/services/bots
       dockerfile: Dockerfile
     container_name: bots
     ports:
