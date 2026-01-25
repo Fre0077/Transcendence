@@ -4,7 +4,7 @@ import { generateInitialsAvatar } from "@/components/createDefaultImage";
 
 import { GameData, createHistoryBar } from "@/components/createHistoryBar";
 import { createFriendsBar } from "@/components/createFriendBar";
-import { sendPostRequest } from "@/services/api/sendRequests";
+import { sendPostRequest, sendPatchRequest } from "@/services/api/sendRequests";
 
 const BACKEND_APIS_URL = `http://${window.location.hostname}:3029/api`;
 
@@ -17,6 +17,11 @@ export function loadProfilePage(): HTMLElement {
 	<div class="flex items-center flex-grow flex-col bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
 		<!-- this div will only expand vertically -->
 		<div class="flex flex-row space-x-8 mt-12 p-8 bg-slate-800/70 backdrop-blur-sm rounded-lg max-w-4xl w-full">
+			<button
+				id="edit-profile-btn"
+				class="absolute top-4 left-4 bg-white/10 hover:bg-white/20 text-white px-3 py-1 rounded-lg text-sm">
+				✏️ Edit
+			</button>
 			<div class="text-center flex flex-row flex-grow items-center">
 				<img class="w-32 h-32 mb-6 rounded-full select-none" draggable="false" ondragstart="return false;" style="-webkit-user-drag: none; user-select: none;" src="https://i.pravatar.cc/150?img=1" alt="Under Construction" />
 				<div class="ml-8 text-left">
@@ -107,12 +112,37 @@ export function loadProfilePage(): HTMLElement {
 		<!-- MATCH HISTORY -->
 		<div id="match-history" class="mt-12 w-full max-w-4xl flex flex-col space-y-3 font-mono">
 		</div>
+
+		<!-- EDIT PROFILE -->
+		<div id="edit-profile-modal"
+			class="fixed inset-0 hidden items-center justify-center bg-black/60 z-50">
+
+			<div class="bg-slate-900 p-6 rounded-xl w-full max-w-md text-white">
+				<h2 class="text-xl font-bold mb-4">Edit profile</h2>
+
+				<form id="edit-profile-form" class="space-y-3">
+					<input name="name" class="w-full p-2 rounded bg-slate-800" placeholder="Name">
+					<input name="surname" class="w-full p-2 rounded bg-slate-800" placeholder="Surname">
+					<input name="username" class="w-full p-2 rounded bg-slate-800" placeholder="Username">
+					<textarea name="bio" class="w-full p-2 rounded bg-slate-800" placeholder="Bio"></textarea>
+
+					<div class="flex justify-end gap-2">
+						<button type="button" id="close-edit-modal"
+							class="px-4 py-2 bg-slate-700 rounded">Cancel</button>
+						<button type="submit"
+							class="px-4 py-2 bg-cyan-600 rounded">Save</button>
+					</div>
+				</form>
+			</div>
+		</div>
 	</div>
 	`;
 
-	// Load user stats
+	let currentUser: UserProfile;
+
 	getUserProfile().then(user => {
 		console.log("server response:", user);
+		currentUser = user;
 		const usernameElem = div.querySelector('h1');
 		const bioElem = div.querySelector('p');
 		if (usernameElem) usernameElem.textContent = user.username;
@@ -165,7 +195,39 @@ export function loadProfilePage(): HTMLElement {
 	// AGGIUNGI LA BAR DEGLI AMICI
 	document.body.appendChild(createFriendsBar());
 
-
+	try {
+		const editBtn = div.querySelector('#edit-profile-btn') as HTMLButtonElement;
+		const modal = div.querySelector('#edit-profile-modal') as HTMLDivElement;
+		const closeBtn = div.querySelector('#close-edit-modal') as HTMLButtonElement;
+		const form = div.querySelector('#edit-profile-form') as HTMLFormElement;
+	
+		editBtn.addEventListener('click', () => {
+			modal.classList.remove('hidden');
+			modal.classList.add('flex');
+	
+			form.name.value = currentUser.name;
+			form.surname.value = currentUser.surname;
+			form.username.value = currentUser.username;
+			form.bio.value = currentUser.bio ?? '';
+		});
+	
+		closeBtn.addEventListener('click', () => {
+			modal.classList.add('hidden');
+			modal.classList.remove('flex');
+		});
+	
+		form.addEventListener('submit', async (e) => {
+			e.preventDefault();
+	
+			const data = Object.fromEntries(new FormData(form).entries());
+			const updated = await sendPatchRequest(`http://${window.location.hostname}:3029/api/profile`, data);
+	
+			//andrebbero aggiornati i token i think???
+			currentUser = updated;
+		});
+	} catch (err) {
+		console.log('Erro while trying to update profile', err);
+	}
 
 	/* -------------------------------- */
 	/*          FRIEND REQUEST          */
@@ -223,16 +285,17 @@ interface UserProfile {
 
 export async function getUserProfile(): Promise<UserProfile> {
 	/* ----- get username (todo better) ----- */
-	const user = localStorage.getItem('user');
-	if (!user) {
+	const user = await sendGetRequest(`http://${window.location.hostname}:3029/api/isauth`);
+	if (user.ok === false) {
 		throw new Error('No authentication token found');
 	}
-	const { username } = JSON.parse(user);
+	const username = user.user.username;
+	if (!username) throw new Error('username not found')
 	/* --------------------------------- */
 
-	const profileResponse = await sendGetRequest(`http://localhost:3029/api/user?username=${username}`);
-	// const authResponse = await sendGetRequest(`http://localhost:3001/api/profile`, token);
-	const butlerResponse = await sendGetRequest(`http://localhost:3029/api/profile?username=${username}`);
+	const profileResponse = await sendGetRequest(`http://${window.location.hostname}:3029/api/user?username=${username}`);
+	// const authResponse = await sendGetRequest(`http://${window.location.hostname}:3001/api/profile`, token);
+	const butlerResponse = await sendGetRequest(`http://${window.location.hostname}:3029/api/profile?username=${username}`);
 	return {
 		id: profileResponse.id,
 		email: butlerResponse.email,
@@ -305,15 +368,16 @@ export async function getUserGames(): Promise</* { history:  */GameData[]/*  } *
 	// const linkid = localStorage.getItem('userId');
 
 	/* ----- get username (todo better) ----- */
-	const user = localStorage.getItem('user');
-	if (!user) {
+	const user = await sendGetRequest(`http://${window.location.hostname}:3029/api/isauth`);
+	if (user.ok === false) {
 		throw new Error('No authentication token found');
 	}
-	const { username } = JSON.parse(user);
+	const username = user.user.username;
+	if (!username) throw new Error('username not found')
 	/* --------------------------------- */
 
 
-	const response = await sendGetRequest(`http://localhost:3029/api/game?username=${username}`);
+	const response = await sendGetRequest(`http://${window.location.hostname}:3029/api/game?username=${username}`);
 	return response;
 }
 

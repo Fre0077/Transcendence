@@ -112,3 +112,30 @@ export function sendDeleteRequest(
         }
     });
 }
+
+export function sendPatchRequest(
+    url: string,
+    data: any = null,
+    type: string = "application/json"
+): Promise<any> {
+    return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("PATCH", url, true);
+        xhr.withCredentials = true;
+        xhr.setRequestHeader("Content-Type", type);
+        xhr.onreadystatechange = () => {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                if (xhr.status === 200) {
+                    try {
+                        resolve(JSON.parse(xhr.responseText));
+                    } catch (e: any) {
+                        reject(new Error("JSON parse error: " + e.message));
+                    }
+                } else {
+                    reject(new Error(`HTTP ${xhr.status}: ${xhr.statusText}`));
+                }
+            }
+        };
+        xhr.send(data ? JSON.stringify(data) : null);
+    });
+}
