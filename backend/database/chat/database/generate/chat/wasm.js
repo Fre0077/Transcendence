@@ -138,7 +138,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/home/fre007/Desktop/giova/Transcendence/backend/chat/database/generate/chat",
+      "value": "/home/fre007/Desktop/temp/Transcendence/backend/database/chat/database/generate/chat",
       "fromEnvVar": null
     },
     "config": {
@@ -152,7 +152,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/home/fre007/Desktop/giova/Transcendence/backend/chat/database/chat.prisma",
+    "sourceFilePath": "/home/fre007/Desktop/temp/Transcendence/backend/database/chat/database/chat.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {

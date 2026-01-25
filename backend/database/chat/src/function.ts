@@ -120,11 +120,11 @@ export async function newChat(input: NewChat): Promise<void> {
 		throw new NotFound(`Host user "${input.host}" does not exist`, "chat");
 	
 	const memberUsers = [];
-	for (const memberName of input.members) {
-		if (memberName === input.host) continue;
-		const user = await chatPrisma.user.findUnique({ where: { username: memberName.toString() } });
+	for (const memberLinkId of input.members) {
+		if (memberLinkId === input.host) continue;
+		const user = await chatPrisma.user.findUnique({ where: { linkId: memberLinkId } });
 		if (!user) 
-			throw new NotFound(`Member user "${memberName}" does not exist`, "chat");
+			throw new NotFound(`Member user "${memberLinkId}" does not exist`, "chat");
 		memberUsers.push(user);
 	}
 
@@ -185,6 +185,23 @@ export async function newMessage(input: NewMessage): Promise<void> {
 //cancella tutti i messaggi di una specifica chat
 export async function deleteChatMessages(input: number) {
 	await chatPrisma.messages.deleteMany({ where: { chat: { chatId: input } } })
+}
+
+//cancella una chat e tutti i suoi messaggi
+export async function deleteChat(input: number) {
+	if (!input || Number.isNaN(input))
+		throw new BadRequest('Invalid chatId provided', 'chat');
+
+	const chat = await chatPrisma.chats.findUnique({ where: { chatId: input }, include: { users: true } });
+	if (!chat)
+		throw new NotFound(`Chat with chatID ${input} does not exist`, 'chat');
+
+	// Remove messages, detach members, then remove the chat
+	await chatPrisma.$transaction([
+		chatPrisma.messages.deleteMany({ where: { chatId: input } }),
+		chatPrisma.chats.update({ where: { chatId: input }, data: { users: { set: [] } } }),
+		chatPrisma.chats.delete({ where: { chatId: input } })
+	]);
 }
 
 //cancella il messaggio indicato
