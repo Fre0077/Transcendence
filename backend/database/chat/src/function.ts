@@ -120,11 +120,11 @@ export async function newChat(input: NewChat): Promise<void> {
 		throw new NotFound(`Host user "${input.host}" does not exist`, "chat");
 	
 	const memberUsers = [];
-	for (const memberName of input.members) {
-		if (memberName === input.host) continue;
-		const user = await chatPrisma.user.findUnique({ where: { username: memberName.toString() } });
+	for (const memberLinkId of input.members) {
+		if (memberLinkId === input.host) continue;
+		const user = await chatPrisma.user.findUnique({ where: { linkId: memberLinkId } });
 		if (!user) 
-			throw new NotFound(`Member user "${memberName}" does not exist`, "chat");
+			throw new NotFound(`Member user "${memberLinkId}" does not exist`, "chat");
 		memberUsers.push(user);
 	}
 
