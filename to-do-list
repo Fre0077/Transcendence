@@ -24,6 +24,7 @@ MAJOR
 12. Auth with /api/isauth API
 13. Pong on mobile
 16. Full frontend update with gateway API
+18. Bot handshake on creation (only 'bot' container can create bots)
 
 
 MINOR

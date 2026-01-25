@@ -64,6 +64,11 @@ export async function ConnectLifecycleSocket(): Promise<WebSocket | null>
 										target : msg.sender
 									}, 'application/json');},
 							5000);
+
+						// update the UI
+						window.dispatchEvent(
+							new CustomEvent('update:friends', { bubbles: true })
+						);
 						break ;
 					case "lobby-invite":
 						console.log("Lobby invite", msg.content);
@@ -93,12 +98,13 @@ export async function ConnectLifecycleSocket(): Promise<WebSocket | null>
 	}
 
 	socket.onclose = () => {
-		console.log("Addio butler");
+		console.log("Closing lifecycle websocket");
 		socket = null;
 	}
 
 	socket.onerror = (err) => {
 		console.log("Socket error", err);
+		socket?.close();
 	}
 
 	return socket;
