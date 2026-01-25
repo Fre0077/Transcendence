@@ -123,7 +123,7 @@ function loadMessagesPanel(chatId: number): HTMLElement
 	}
 
 	function connect() {
-		socket = new WebSocket(`ws://${location.hostname}:3029/ws/message-list`);
+		socket = new WebSocket(`ws://${location.hostname}:3029/ws/broadcast`);
 
 		socket.addEventListener('open', () => {
 			// [chatId, startIndex]
@@ -142,10 +142,8 @@ function loadMessagesPanel(chatId: number): HTMLElement
 			// }
 
 			// loop();
-			socket?.send(
-				JSON.stringify({
-					message: [chatId, 0],
-				})
+			socket?.dispatchEvent(
+				new CustomEvent('chat', { detail: { chatId, startIndex: 0 } })
 			);
 		});
 
