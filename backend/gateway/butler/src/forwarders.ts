@@ -244,9 +244,9 @@ export async function noAuthForward(
 
 	// call the post-process callback
 	if (callback && backendResponse.status === 200) {
-		callback(data, reply);
+		const newdata = callback(data, reply);
 		// and hold the data
-		reply.send();
+		reply.send(newdata);
 	}
 	else reply.send(data);	// send the fetched reply
 }

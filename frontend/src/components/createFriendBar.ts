@@ -210,9 +210,8 @@ export function createFriendsBar(): HTMLElement {
 				>
 					⟳
 				</button>
-				<button
+				<button id="close-bar-btn"
 					class="text-white/70 hover:text-white transition"
-					onclick="document.getElementById('FriendBar')?.remove()"
 				>
 					×
 				</button>
@@ -238,12 +237,24 @@ export function createFriendsBar(): HTMLElement {
 		</div>
 	`;
 
+	// define for future removal
+	const load = () => loadFriendBarContent(bar);
+
 	// Initial load
-	loadFriendBarContent(bar);
+	load();
 
 	// Refresh button (dev only)
-	bar.querySelector("#friend-refresh")?.addEventListener("click", () => {
-		loadFriendBarContent(bar);
+	bar.querySelector("#friend-refresh")?.addEventListener("click", load);
+
+	// refresh friend bar on update
+	window.addEventListener('update:friends', load);
+
+	// clean closup
+	bar.querySelector("#close-bar-btn")?.addEventListener("click", () => {
+		// remove listener
+		window.removeEventListener('update:friends', load);
+		// remove object
+		bar.remove();
 	});
 
 	return bar;
