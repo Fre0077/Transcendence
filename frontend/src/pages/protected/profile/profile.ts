@@ -191,12 +191,13 @@ export function loadProfilePage(): HTMLElement {
 		try{
 			sendPostRequest(`${BACKEND_APIS_URL}/friend-request`, {
 				target: username
-			}, 'application/json');
-
-			// update the UI
-			window.dispatchEvent(
-				new CustomEvent('update:friends', { bubbles: true })
-			);
+			}, 'application/json')
+			.then(() => {
+				// update the UI
+				window.dispatchEvent(
+					new CustomEvent('update:friends', { bubbles: true })
+				);
+			});
 		} catch (err) {
 			console.log('Erro while trying to friend request', err);
 		}

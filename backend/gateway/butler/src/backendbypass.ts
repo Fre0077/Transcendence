@@ -121,6 +121,11 @@ interface FriendRequestBody {
 	target:string
 }
 
+// HELPER
+// function sleep(ms:number) {
+// 	return new Promise(resolve => setTimeout(resolve, ms));
+// }
+
 export async function sendFriendRequest(request:FastifyRequest, reply:FastifyReply)
 {
 	// get target data
@@ -134,6 +139,8 @@ export async function sendFriendRequest(request:FastifyRequest, reply:FastifyRep
 		return ; // important
 	}
 
+	// await sleep(1000);
+
 	// send lobby invite
 	const ret = sendMessageTo(target, {
 		what: "NOTIFY",
@@ -141,6 +148,6 @@ export async function sendFriendRequest(request:FastifyRequest, reply:FastifyRep
 		sender: (request as any).user.username
 	});
 
-	if (ret === false) reply.code(404).send(JSON.stringify({ ok:false, comment:"The user isn't connected" }));
+	if (ret === false) reply.code(200).send(JSON.stringify({ ok:false, comment:"The user isn't connected" }));
 	else reply.code(200).send(JSON.stringify({ ok:true, comment:"Message sent correctly" }));
 }

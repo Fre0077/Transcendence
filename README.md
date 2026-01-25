@@ -2,7 +2,6 @@
 
 ### 1. Architettura e Sicurezza (Punti Chiave)
 
-<<<<<<< HEAD
 * **Google Login lato Backend (Spiegazione):**
 Quando si dice che il login "deve essere gestito dal backend", si intende che il frontend non deve limitarsi a confermare l'identità dell'utente. Il processo corretto è:
 1. Il **Frontend** ottiene un token da Google.
@@ -324,4 +323,3 @@ When the Game is finished or someone RESETted the game, the data regarding that 
 
 //----
 @aleborghi: il back-to-lobby ora funziona dalla parte del backend. quando finisci il game devi tornare alla lobby con un JOIN, pero` aspetta un attimo prima di farlo che i due backend si devono parlare
->>>>>>> origin/topiana-

@@ -13,6 +13,35 @@ const BACKEND_APIS_URL = `http://${window.location.hostname}:3029/api`;
 let socket:WebSocket | null = null;
 
 
+/* HELPERS */
+function acceptFriendRequest(target:string)
+{
+	sendPostRequest(`${BACKEND_APIS_URL}/friend/accept`, {
+			target : target
+		}, 'application/json')
+	.then(() => {
+
+		// update the UI
+		window.dispatchEvent(
+			new CustomEvent('update:friends', { bubbles: true })
+		);
+	});
+}
+
+function declineFriendRequest(target:string)
+{
+	sendPostRequest(`${BACKEND_APIS_URL}/friend/remove`, {
+			target : target
+		}, 'application/json')
+	.then(() => {
+
+		// update the UI
+		window.dispatchEvent(
+			new CustomEvent('update:friends', { bubbles: true })
+		);
+	});
+}
+
 // this function is async because authWebSocket() fetch()es the '/isauth' endpoint to refresh tokens.
 // If it didn't the connection could fail
 export async function ConnectLifecycleSocket(): Promise<WebSocket | null>
@@ -57,18 +86,10 @@ export async function ConnectLifecycleSocket(): Promise<WebSocket | null>
 						console.log("Friend request", msg.sender);
 						toastNotification.friend('Friend Request', `${msg.sender} vorrebbe essere tuo amico`, 
 							() => { alert('Pagina Friends');},
-							() => { sendPostRequest(`${BACKEND_APIS_URL}/friend/accept`, {
-										target : msg.sender
-									}, 'application/json');},
-							() => { sendPostRequest(`${BACKEND_APIS_URL}/friend/remove`, {
-										target : msg.sender
-									}, 'application/json');},
+							() => acceptFriendRequest(msg.sender),
+							() => declineFriendRequest(msg.sender),
 							5000);
-
-						// update the UI
-						window.dispatchEvent(
-							new CustomEvent('update:friends', { bubbles: true })
-						);
+						
 						break ;
 					case "lobby-invite":
 						console.log("Lobby invite", msg.content);

@@ -25,6 +25,7 @@ MAJOR
 13. Pong on mobile
 16. Full frontend update with gateway API
 18. Bot handshake on creation (only 'bot' container can create bots)
+21. Sometimes freezes... after adding .dispatchEvent()??? or the persist session with no more localStorage???
 
 
 MINOR

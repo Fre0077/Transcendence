@@ -124,7 +124,13 @@ function createIncomingRequestCard(req: Request): HTMLElement {
 				`${BACKEND_APIS_URL}/friend/accept`,
 				{ target: req.username },
 				"application/json"
-			);
+			)
+			.then(() => {
+				// update the UI
+				div.dispatchEvent(
+					new CustomEvent('update:friends:local', { bubbles: true })
+				);
+			});
 			console.log("Friend request accepted:", req.username);
 		} catch (err) {
 			console.error(err);
@@ -137,8 +143,13 @@ function createIncomingRequestCard(req: Request): HTMLElement {
 			await sendPostRequest(
 				`${BACKEND_APIS_URL}/friend/remove`,
 				{ target: req.username },
-				"application/json"
-			);
+				"application/json")
+			.then(() => {
+				// update the UI
+				div.dispatchEvent(
+					new CustomEvent('update:friends:local', { bubbles: true })
+				);
+			});
 			console.log("Friend request remove:", req.username);
 		} catch (err) {
 			console.error(err);
@@ -176,8 +187,13 @@ function createOutgoingRequestCard(req: Request): HTMLElement {
 			await sendPostRequest(
 				`${BACKEND_APIS_URL}/friend/remove`,
 				{ target: req.username },
-				"application/json"
-			);
+				"application/json")
+			.then(() => {
+				// update the UI
+				div.dispatchEvent(
+					new CustomEvent('update:friends:local', { bubbles: true })
+				);
+			});
 			console.log("Friend request remove:", req.username);
 		} catch (err) {
 			console.error(err);
@@ -248,11 +264,13 @@ export function createFriendsBar(): HTMLElement {
 
 	// refresh friend bar on update
 	window.addEventListener('update:friends', load);
+	bar.addEventListener('update:friends:local', load);
 
 	// clean closup
 	bar.querySelector("#close-bar-btn")?.addEventListener("click", () => {
-		// remove listener
+		// remove listeners
 		window.removeEventListener('update:friends', load);
+		bar.removeEventListener('update:friends:local', load);
 		// remove object
 		bar.remove();
 	});
