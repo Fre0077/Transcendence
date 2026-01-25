@@ -70,7 +70,7 @@ export function loadChatApiTest(): HTMLElement
 	chatFooter.appendChild(loadSendMessageBar());
 
 	const messagesHost = div.querySelector('#messages') as HTMLElement;
-	messagesHost.replaceWith(loadMessagesPanel(1)); // 👈 chatId here
+	messagesHost.replaceWith(loadMessagesPanel());
 
 	return div;
 }
@@ -88,11 +88,15 @@ function removeAllChildNodes(parent:HTMLElement) {
     }
 }
 
+// HELPER
+function sleep(ms:number) {
+	return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 
 /* -------------------------------------------------------------------- */
 
-
-function loadMessagesPanel(chatId: number): HTMLElement
+function loadMessagesPanel(): HTMLElement
 {
 	const container = document.createElement('div');
 	container.id = 'messages';
@@ -125,30 +129,16 @@ function loadMessagesPanel(chatId: number): HTMLElement
 	function connect() {
 		socket = new WebSocket(`ws://${location.hostname}:3029/ws/broadcast`);
 
-		socket.addEventListener('open', () => {
-			// [chatId, startIndex]
-			// let tries = 3;
-			// const loop = () => {
-			// 	setTimeout(() => {
-			// 		if (tries === 0) return;
-			// 		socket?.send(
-			// 			JSON.stringify({
-			// 				message: [chatId, 0],
-			// 			})
-			// 		);
-			// 		tries--;
-			// 		loop();
-			// 	}, 1000);
-			// }
+		socket.onopen = () => {
+			console.log('Dispatching chat event');
+			sleep(100).then(() => socket?.send(JSON.stringify({ chatId:1, index:0 })));
+			// socket?.dispatchEvent(
+			// 	new CustomEvent('chat', { detail: { chatId: 1, startIndex: 0 } })
+			// );
+		};
 
-			// loop();
-			socket?.dispatchEvent(
-				new CustomEvent('chat', { detail: { chatId, startIndex: 0 } })
-			);
-		});
-
-		socket.addEventListener('message', (event) => {
-			try{
+		socket.onmessage = (event) => {
+			try {
 				const data = JSON.parse(event.data);
 
 				if (data.error) {
@@ -157,30 +147,43 @@ function loadMessagesPanel(chatId: number): HTMLElement
 				}
 
 				console.log('parsed data', data);
-				const messages = JSON.parse(data.reply);
 
-				if (!messages || !Array.isArray(messages)) return;
-
-				container.innerHTML = '';
-				
-				for (const msg of messages.reverse()) {
-					console.log('rendering message', msg);
-					renderMessage(msg);
+				if (data.type === "ChatList")
+				{
+					console.log('New Chat list');
+				}
+				else if (data.type === "MessageList")
+				{
+					console.log('New Message list');
 				}
 
-				scrollToBottom();
+				// E` una chatlist?
+				// E` una message list?
+
+				// const messages = JSON.parse(data.reply);
+
+				// if (!messages || !Array.isArray(messages)) return;
+
+				// container.innerHTML = '';
+				
+				// for (const msg of messages.reverse()) {
+				// 	console.log('rendering message', msg);
+				// 	renderMessage(msg);
+				// }
+
+				// scrollToBottom();
 			} catch (err) {
 				console.log('Error while parsing message', err);
 			}
-		});
+		};
 
-		socket.addEventListener('close', () => {
+		socket.onclose = () => {
 			console.warn('WebSocket closed');
-		});
+		};
 
-		socket.addEventListener('error', (err) => {
+		socket.onerror = (err) => {
 			console.error('WebSocket error', err);
-		});
+		};
 	}
 
 	connect();

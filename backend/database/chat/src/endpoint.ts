@@ -12,6 +12,8 @@ import { NewChat, NewMessage, SrcChat } from "../utils/interface";
 import { logError, logInfo } from "../utils/logger"
 import { authMiddleware } from "./middleware";
 
+import { WebSocket } from "ws";
+
 const connections: Map<number, WebSocket> = new Map;
 const chatConnections: Map<WebSocket, number[]> = new Map;
 
@@ -25,6 +27,7 @@ async function broadcastChatListToAll() {
 
 async function broadcastMessageListToAll() {
 	for (const [socket, data] of chatConnections) {
+		console.log('sending to', data);
 		const messages = await messageList(data);
 		socket.send(JSON.stringify({ messages }));
 	}
@@ -50,22 +53,22 @@ export async function chatEndpoint(fastify: FastifyInstance) {
 		}
 	});
 
-fastify.post("/user-list", async (request, reply) => {
-		const { linkId } = request.body as { linkId?: number };
-		try {
-			if (!linkId)
-				throw new BadRequest("linkId non inviato", 'chat');
-			const output = await userList(linkId);
+	// fastify.post("/user-list", async (request, reply) => {
+	// 	const { linkId } = request.body as { linkId?: number };
+	// 	try {
+	// 		if (!linkId)
+	// 			throw new BadRequest("linkId non inviato", 'chat');
+	// 		const output = await userList(linkId);
 
-			logInfo("{chat} [201] file inviati con successo");
-			return reply.status(201).send({ reply: output, message: 'file inviati con successo' });
-		} catch (err) {
-			if (err instanceof Error)
-				return reply.status((err as any).statusCode).send({ error: err.message });
-			logError("{chat} [500] errore interno del server");
-			return reply.status(500).send({ error: "Internal server error" });
-		}
-	});
+	// 		logInfo("{chat} [201] file inviati con successo");
+	// 		return reply.status(201).send({ reply: output, message: 'file inviati con successo' });
+	// 	} catch (err) {
+	// 		if (err instanceof Error)
+	// 			return reply.status((err as any).statusCode).send({ error: err.message });
+	// 		logError("{chat} [500] errore interno del server");
+	// 		return reply.status(500).send({ error: "Internal server error" });
+	// 	}
+	// });
 
 		// Endpoint WebSocket per ottenere la lista delle chat di uno user
 	fastify.get("/chat-list", async (request, reply) => {
@@ -96,19 +99,32 @@ fastify.post("/user-list", async (request, reply) => {
 	});
 
 	// Endpoint WebSocket per ottenere gli ultimi 100 messaggi a partire da un certo indice
-	fastify.get("/broadcast", { websocket: true }, (connection, request) => {
-		let currentChatId: number | null = null;
+	fastify.get("/broadcast", { websocket: true }, (connection: any, request) => {
 
-		const linkId = request.headers["x-user-id"];
+		const linkId = Number(request.headers["x-user-id"]);
 
-		connection.on('open', () => {
-			console.log('add connection')
-			connections.set(linkId, connection)
-		});
+		/* #debug */
+		console.log('Connection from',linkId);
 
-		connection.on('chat', (index: number, chatId: number) => {
-			console.log('add connection')
-			chatConnections.set(connection, [linkId, index, chatId])
+		// storing connection
+		connections.set(linkId, connection);
+
+		connection.on('message', async (rawMessage: RawData) => {
+			try {
+				console.log('Got message', rawMessage.toString());
+
+				const data = JSON.parse(rawMessage.toString());
+
+
+				if (data.chatId && typeof data.chatId === "number"
+					&& data.index && typeof data.index === "number")
+				{
+					console.log('got chat event');
+					chatConnections.set(connection, [data.chatId, data.index, linkId]);
+				}
+			} catch (err) {
+				console.log('err', err);
+			}
 		});
 
 		connection.on('close', () => {
@@ -172,6 +188,7 @@ fastify.post("/user-list", async (request, reply) => {
 			const output = await listChatMessage(messageArray);
 
 			await broadcastMessageListToAll();
+			await broadcastChatListToAll();
 
 			logInfo("{chat} [200] messaggio inviato con successo");
 			return reply.status(200).send({ message: "messaggio inviato con successo" });

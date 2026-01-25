@@ -236,8 +236,7 @@ fastify.register(async function (fastify) {
 	fastify.get('/tournament', { websocket: true }, wsforwarder(`${TOURNAMENT_URL}/ws`));
 
 	// chat websockets
-	fastify.get('/chat-list', { websocket: true }, wsforwarder(`${CHAT_URL}/api/chat-list`));
-	fastify.get('/message-list', { websocket: true }, wsforwarder(`${CHAT_URL}/api/message-list`));
+	fastify.get('/broadcast', { websocket: true }, wsforwarder(`${CHAT_URL}/api/broadcast`));
 
 }, { prefix: '/ws' });
 
