@@ -77,6 +77,10 @@ export function attachAllCookies(data:any, reply:FastifyReply)
 		id: 'refreshToken',
 		value: refreshToken
 	});
+
+	// remove user from data
+	const newdata = (({ user, ...object }) => object)(data);
+	return newdata;
 }
 
 /* ------------------------------------------------ */
