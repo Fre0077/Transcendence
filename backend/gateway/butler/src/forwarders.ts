@@ -36,15 +36,18 @@ export function fwdWebSocket(
 	/* ------------------- */
 
 	/* #debug */
-	console.log('WS connected with Authorized user:', auth.user);
+	console.log('WS connected with Authorized user:', auth.user, '...');
 
 	/* --- FORWARDING --- */
+
+	console.log('... and connecting to', endpoint);
 
 	// connect to backend
 	const backendSocket = new WebSocket(
 		endpoint,
 		{
 			headers: {
+				'x-user-id': String(auth.user.userId),
 				'x-user-username': String(auth.user.username),
 				'x-gateway-secret': String(GATEWAY_SECRET),
 				// 'x-ws-query': JSON.stringify(request.query),

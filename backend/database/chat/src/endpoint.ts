@@ -23,6 +23,12 @@ async function broadcastChatListToAll() {
 	}
 }
 
+
+// 1. GET dove l'unico parametro del body e` il linkId
+// 2. Un singolo socket per gli updates (nuovi messaggi, nuove chat)
+// 3. /chat-list e /message-list -> GET request
+
+
 export async function chatEndpoint(fastify: FastifyInstance) {
 
 	// Endpoint POST per avere la lista degli user
@@ -80,7 +86,7 @@ export async function chatEndpoint(fastify: FastifyInstance) {
 	});
 
 	// Endpoint WebSocket per ottenere gli ultimi 100 messaggi a partire da un certo indice
-	fastify.get("/message-list", { websocket: true }, (connection: any, req) => {
+	fastify.get("/message-list", { websocket: true }, (connection, request) => {
 		let currentChatId: number | null = null;
 
 		connection.on('message', async (rawMessage: RawData) => {
@@ -90,7 +96,16 @@ export async function chatEndpoint(fastify: FastifyInstance) {
 					connection.send(JSON.stringify({ error: "Invalid index array provided" }));
 					return;
 				}
+
+				// get the link id automatically
+				const linkid = request.headers['x-user-id'];
+				if (!linkid) throw new Unauthorized("Missing user-id", "chat");
+
+				// add the linkid
+				message.push(Number(linkid));
+
 				currentChatId = message[0];
+
 				// Registra il client nella chat
 				if (!messClients[currentChatId]) messClients[currentChatId] = new Set();
 				messClients[currentChatId].add(connection);
@@ -123,6 +138,14 @@ export async function chatEndpoint(fastify: FastifyInstance) {
 		try {
 			if (!chatData)
 				throw new BadRequest("Missing chat info", "chat");
+
+			// get the host id automatically
+			const hostid = request.headers['x-user-id'];
+			if (!hostid) throw new Unauthorized("Missing user-id", "chat");
+
+			// add it to chatData
+			chatData.host = Number(hostid);
+
 			const output = await newChat(chatData);
 
 			await broadcastChatListToAll();
@@ -130,6 +153,10 @@ export async function chatEndpoint(fastify: FastifyInstance) {
 			logInfo("{chat} [200] chat creata con successo");
 			return reply.status(200).send({ message: 'chat creata con successo' });
 		} catch (err) {
+
+			/* #debug */
+			console.log('Error', err);
+
 			if (err instanceof Error)
 				return reply.status((err as any).statusCode).send({ error: err.message });
 			logError("{chat} [500] errore interno del server");
@@ -137,12 +164,21 @@ export async function chatEndpoint(fastify: FastifyInstance) {
 		}
 	});
 
-	// Endpoint per ricevere messaggi
+	// Endpoint per mandare messaggi
 	fastify.post("/new-message", async (request, reply) => {
 		try {
 			const msg = request.body as NewMessage;
-			if (!msg || !msg.message || !msg.chatId || !msg.linkId)
+			if (!msg || !msg.message || !msg.chatId/*  || !msg.linkId */)
 				throw new BadRequest('request non valida', 'chat');
+
+			// get the host id automatically
+			const linkid = request.headers['x-user-id'];
+			if (!linkid) throw new Unauthorized("Missing user-id", "chat");
+
+			// add it to chatData
+			msg.linkId = Number(linkid);
+
+			// creates new message
 			await newMessage(msg);
 
 			// INVIA LA LISTA AGGIORNATA DEI MESSAGGI A TUTTI I CLIENT DELLA CHAT
@@ -165,6 +201,10 @@ export async function chatEndpoint(fastify: FastifyInstance) {
 			logInfo("{chat} [200] messaggio inviato con successo");
 			return reply.status(200).send({ message: "messaggio inviato con successo" });
 		} catch (err) {
+
+			/* #debug */
+			console.log('Error', err);
+
 			if (err instanceof Error)
 				return reply.status((err as any).statusCode).send({ status: "error", error: err.message });
 			logError("{chat} [500] errore interno del server");

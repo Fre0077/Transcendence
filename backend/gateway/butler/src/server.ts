@@ -153,7 +153,16 @@ fastify.register(async function (fastify) {
 	// ... add others
 
 	// chat backend APIs
-	fastify.get('/user-list', httpforwarder(`${CHAT_URL}/api/user-list`, { auth: true}));
+	fastify.post('/user-list', httpforwarder(`${CHAT_URL}/api/user-list`, { auth: true }));
+	fastify.post('/new-message', httpforwarder(`${CHAT_URL}/api/new-message`, { auth: true }));
+	fastify.post('/new-chat', httpforwarder(`${CHAT_URL}/api/new-chat`, { auth: true }));
+	fastify.post('/delete-chat-messages', httpforwarder(`${CHAT_URL}/api/delete-chat-messages`, { auth: true }));
+	fastify.post('/delete-chat', httpforwarder(`${CHAT_URL}/api/delete-chat`, { auth: true }));
+	fastify.post('/delete-message', httpforwarder(`${CHAT_URL}/api/delete-message`, { auth: true }));
+	fastify.post('/search-message', httpforwarder(`${CHAT_URL}/api/search-message`, { auth: true }));
+	fastify.post('/search-chat', httpforwarder(`${CHAT_URL}/api/search-chat`, { auth: true }));
+	fastify.post('/block-user', httpforwarder(`${CHAT_URL}/api/block-user`, { auth: true }));
+	fastify.post('/sblock-user', httpforwarder(`${CHAT_URL}/api/sblock-user`, { auth: true }));
 	// ... add others
 
 	// Fetches the desired backend endpoint (if specified). Then on successfule response calls the 'forward' function.
@@ -219,12 +228,16 @@ fastify.register(async function (fastify) {
 	// secure websocket connection
 	fastify.get('/', { websocket: true }, (connection, request) => authWebSocket(connection, request));
 
-	// backend websockets
+	// game websockets
 	fastify.get('/pong/play', { websocket: true }, wsforwarder(`${PONG_URL}/play`));
 	fastify.get('/pong/spectate', { websocket: true }, wsforwarder(`${PONG_URL}/spectate`));
 	fastify.get('/pong/replay', { websocket: true }, wsforwarder(`${PONG_URL}/replay`));
 	fastify.get('/lobby', { websocket: true }, wsforwarder(`${LOBBY_URL}/ws`));
 	fastify.get('/tournament', { websocket: true }, wsforwarder(`${TOURNAMENT_URL}/ws`));
+
+	// chat websockets
+	fastify.get('/chat-list', { websocket: true }, wsforwarder(`${CHAT_URL}/api/chat-list`));
+	fastify.get('/message-list', { websocket: true }, wsforwarder(`${CHAT_URL}/api/message-list`));
 
 }, { prefix: '/ws' });
 

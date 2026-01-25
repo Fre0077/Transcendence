@@ -1,7 +1,7 @@
 export function sendPostRequest(
     url: string,
     data: any = null,
-    type: string
+    type?: string
 ): Promise<any> {
     return new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
@@ -10,7 +10,10 @@ export function sendPostRequest(
         // AUTH
         xhr.withCredentials = true; // 🔥 REQUIRED 4 Cookies
 
-        xhr.setRequestHeader("Content-Type", type);
+        // defualt type
+        if (type) xhr.setRequestHeader("Content-Type", type);
+        else xhr.setRequestHeader("Content-Type", 'application/json');
+
         xhr.onreadystatechange = function () {
             if (xhr.readyState === XMLHttpRequest.DONE) {
                 if (xhr.status === 200) {
