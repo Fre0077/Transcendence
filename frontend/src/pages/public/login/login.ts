@@ -96,8 +96,9 @@ export function loadLoginPage(): HTMLElement {
         const password = passwordInput.value;
 
         try {
-            const response = await fetch('http://localhost:3001/api/login',{ 
+            const response = await fetch(`http://${window.location.hostname}:3029/api/login`,{ 
                 method: 'POST',
+                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -107,12 +108,31 @@ export function loadLoginPage(): HTMLElement {
             if (!response.ok) {
                 throw new Error(data.error || 'Login fallito');
             }
-
+            
             // === SUCCESSO ===
             console.log('Login riuscito:', data);
-            const accessToken = data.accessToken || data.token;
-            persistSession(accessToken, data.user, data.refreshToken);
-            window.location.pathname = '/home'; 
+
+
+            /* @ecarbona @topiana business */
+            /* const socket =  *//* ConnectLifecycleWebsocket() */;
+            /* 	#TODO mettere il router sul butler e fare che ogni PAGE sia
+                cleanable quindi con procedura di chiusura (distruzione div, 
+                chiusura socket, rimozione eventListeners)
+            */
+
+            // @topiana- (deprecated)
+            // const accessToken = data.accessToken || data.token;
+            // persistSession(accessToken, data.user, data.refreshToken);
+            // window.location.pathname = '/home';
+            
+            // emit auth event
+            window.dispatchEvent(
+                new CustomEvent('auth:login', { bubbles: true })
+			);
+            
+            router.push('/home');
+            // router.back();
+
         } catch (error) {
             // === ERRORE ===
             let errorMessage = "Si è verificato un errore sconosciuto.";
@@ -151,6 +171,7 @@ export function loadLoginPage(): HTMLElement {
 
             // 3. Reindirizza
             router.push('/home');
+            // router.back();
 
         } catch (error) {
             // 4. Gestisci l'errore

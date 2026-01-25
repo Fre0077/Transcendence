@@ -1,9 +1,13 @@
 import { ChatWidget } from '@/components/chatWidget';
 import { loadNavbar } from '../../../components/navbar';
 import { loadHeroContent } from './heroContent';
+import { toastNotification } from '@/services/toastNotification';
 import { router } from "@/router";
+import { isauth } from '@/services/api/isauth';
+
 
 export function loadHomePage(): HTMLElement {
+
 	const div = document.createElement('div');
 	div.className = 'min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex flex-col';
 	div.innerHTML = /* html */ `
@@ -38,6 +42,16 @@ export function loadHomePage(): HTMLElement {
 
 		<!-- Quick Actions -->
 		<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
+			<!-- Test Notifications Button -->
+			<button id="test-toast-btn" class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-orange-600/30 to-yellow-600/30 p-8 border border-white/10 hover:border-orange-400/50 transition-all hover:scale-105">
+				<div class="relative z-10">
+					<div class="text-4xl mb-4">🔔</div>
+					<h3 class="text-2xl font-bold text-white mb-2">Test Notifications</h3>
+					<p class="text-white/70">Click to see toast demos</p>
+				</div>
+				<div class="absolute inset-0 bg-gradient-to-br from-orange-600/0 to-yellow-600/0 group-hover:from-orange-600/20 group-hover:to-yellow-600/20 transition"></div>
+			</button>
+
 			<a href="/game" class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-600/30 to-pink-600/30 p-8 border border-white/10 hover:border-purple-400/50 transition-all hover:scale-105">
 				<div class="relative z-10">
 					<div class="text-4xl mb-4">🎮</div>
@@ -95,29 +109,12 @@ export function loadHomePage(): HTMLElement {
         event.preventDefault(); 
         console.log("Controllo autorizzazione per giocare...");
 
-        const token = localStorage.getItem('authToken');
-
-        if (!token) {
-            console.warn("Nessun token trovato. L'utente deve fare il login.");
-            alert("Devi essere loggato per giocare!");
-            router.push('/login'); // Reindirizza al login
-            return;
-        }
-
         try {
-            const response = await fetch('http://localhost:3001/api/profile', {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                }
-            });
+            const isAuthenticated = await isauth();
 
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.error || "Sessione non valida");
-            }
+			if (!isAuthenticated) {
+                throw new Error("Sessione non valida");
+			}
 
             // === SUCCESSO ===
             console.log("Autorizzazione confermata! Avvio del gioco...");
@@ -137,6 +134,52 @@ export function loadHomePage(): HTMLElement {
     if (heroPlayButton) {
         heroPlayButton.addEventListener('click', checkAuthAndPlay);
     }
+
+	// Test toast notifications button
+	const testToastBtn = div.querySelector('#test-toast-btn');
+	if (testToastBtn) {
+		testToastBtn.addEventListener('click', () => {
+			// Show different types of notifications
+			toastNotification.success('Success!', 'Your action was completed successfully.', 5000);
+			
+			setTimeout(() => {
+				toastNotification.info('Info', 'This is an informational message.', 5000);
+			}, 500);
+			
+			setTimeout(() => {
+				toastNotification.warning('Warning', 'Please be careful with this action.', 5000);
+			}, 1000);
+			
+			setTimeout(() => {
+				toastNotification.message(
+					'New Message 💬', 
+					'John Doe: Hey, want to play a match?',
+					() => {
+						alert('Navigating to chat...');
+					},
+					5000
+				);
+			}, 1500);
+
+			setTimeout(() => {
+				toastNotification.friend(
+					'Friend Request',
+					'Diventiamo amici?',
+					() => { alert('Div cliccato');},
+					() => { alert('Accept cliccato');},
+					() => { alert('Decline cliccato');},
+					5000
+				);
+			}, 1500)
+		});
+	}
+
+	// Show toast notification when home page loads
+	toastNotification.success(
+		'Welcome Back! 🎮',
+		'You are on the home page. Ready to play some games?',
+		6000
+	);
 
 	return div;
 }

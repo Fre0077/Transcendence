@@ -1,0 +1,44 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'rabbitmq'
+    static_configs:
+      - targets: ['rabbitmq:15692']
+
+  - job_name: 'auth'
+    static_configs:
+      - targets: ['auth:3001']
+
+  - job_name: 'chat'
+    static_configs:
+      - targets: ['chat:3002']
+
+  - job_name: 'profile'
+    static_configs:
+      - targets: ['profile:3003']
+
+  - job_name: 'ft_bunny'
+    static_configs:
+      - targets: ['ft_bunny:3030']
+
+  - job_name: 'lobby'
+    static_configs:
+      - targets: ['lobby:3031']
+
+  - job_name: 'tournament'
+    static_configs:
+      - targets: ['tournament:3032']
+
+  - job_name: 'pong'
+    static_configs:
+      - targets: ['pong:3040']
+
+  - job_name: 'bots'
+    static_configs:
+      - targets: ['bots:3033']

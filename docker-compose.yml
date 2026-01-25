@@ -6,9 +6,11 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
+      - "15692:15692"
     environment:
       - RABBITMQ_DEFAULT_USER=guest
       - RABBITMQ_DEFAULT_PASS=guest
+      - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=-rabbitmq_prometheus
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 5s
@@ -25,16 +27,76 @@ services:
     container_name: frontend
     ports:
       - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - RABBITMQ_URL=amqp://trans:strongpassword@rabbitmq:5672
     depends_on:
       rabbitmq:
         condition: service_healthy
     networks:
       - transcendence
 
+# 2.25. MONITORING STUFFS
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitor/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_dat:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      frontend:
+        condition: service_started
+    networks:
+      - transcendence
+    restart: always
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3050:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SECURITY_ADMIN_USER=admin
+    volumes:
+      - grafana_dat:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - transcendence
+    restart: always
+
+
+  # 2.5 BUTLER che rompe i coglioni
+  butler:
+    build:
+      context: ./backend/gateway/butler
+      dockerfile: Dockerfile
+    container_name: butler
+    ports:
+      - "3029:3029"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - transcendence
+    restart: always
+
+
   # 3. BACKEND SERVICES START LAST
   auth:
     build:
-      context: ./backend
+      context: ./backend/database/
       dockerfile: auth/Dockerfile
     container_name: auth
     ports:
@@ -42,10 +104,14 @@ services:
     environment:
       - NODE_ENV=production
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+    volumes:
+      - auth_db:/app/database
     depends_on:
       rabbitmq:
         condition: service_healthy
       frontend:
+        condition: service_started
+      butler:
         condition: service_started
     networks:
       - transcendence
@@ -53,7 +119,7 @@ services:
 
   chat:
     build:
-      context: ./backend
+      context: ./backend/database/
       dockerfile: chat/Dockerfile
     container_name: chat
     ports:
@@ -61,10 +127,14 @@ services:
     environment:
       - NODE_ENV=production
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+    volumes:
+      - chat_db:/app/database
     depends_on:
       rabbitmq:
         condition: service_healthy
       frontend:
+        condition: service_started
+      butler:
         condition: service_started
     networks:
       - transcendence
@@ -72,28 +142,48 @@ services:
 
   profile:
     build:
-      context: ./backend
+      context: ./backend/database/
       dockerfile: profile/Dockerfile
     container_name: profile
     ports:
       - "3003:3003"
+      - "5555:5555"
     environment:
       - NODE_ENV=production
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+    volumes:
+      - profile_db:/app/database
     depends_on:
       rabbitmq:
         condition: service_healthy
       frontend:
         condition: service_started
+      butler:
+        condition: service_started
     networks:
       - transcendence
     restart: always
 
+
+
+
+
+
+
+
+  # GAME RELATED SERVICES
   ft_bunny:
     build:
-      context: ./backend/ft_bunny
+      context: ./backend/services/ft_bunny
       dockerfile: Dockerfile
     container_name: ft_bunny
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      butler:
+        condition: service_started
+    environment:
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
     ports:
       - "3030:3030"
     networks:
@@ -102,39 +192,64 @@ services:
 
   lobby:
     build:
-      context: ./backend/lobby
+      context: ./backend/services/lobby
       dockerfile: Dockerfile
     container_name: lobby
     ports:
       - "3031:3031"
     depends_on:
-      - ft_bunny
+      ft_bunny:
+        condition: service_started
+      butler:
+        condition: service_started
+    networks:
+      - transcendence
+    restart: always
+
+  tournament:
+    build:
+      context: ./backend/services/tournament
+      dockerfile: Dockerfile
+    container_name: tournament
+    ports:
+      - "3032:3032"
+    depends_on:
+      ft_bunny:
+        condition: service_started
+      butler:
+        condition: service_started
     networks:
       - transcendence
     restart: always
 
   pong:
     build:
-      context: ./backend/pong
+      context: ./backend/services/pong
       dockerfile: Dockerfile
     container_name: pong
     ports:
       - "3040:3040"
     depends_on:
-      - ft_bunny
+      ft_bunny:
+        condition: service_started
+      butler:
+        condition: service_started
     networks:
       - transcendence
     restart: always
   
   bots:
     build:
-      context: ./backend/bots
+      context: ./backend/services/bots
       dockerfile: Dockerfile
     container_name: bots
     ports:
       - "3033:3033"
     depends_on:
-      - ft_bunny
+      ft_bunny:
+        condition: service_started
+      butler:
+        condition: service_started
     networks:
       - transcendence
     restart: always
@@ -142,3 +257,11 @@ services:
 networks:
   transcendence:
     driver: bridge
+
+
+volumes:
+  auth_db:
+  chat_db:
+  profile_db:
+  prometheus_dat:
+  grafana_dat:

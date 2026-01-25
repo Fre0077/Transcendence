@@ -99,6 +99,11 @@
   .container {
     @apply mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl;
   }
+
+  /* Font styles (@topiana- lame fix) */
+  .font-arcade {
+    font-family: 'Press Start 2P', monospace;
+  }
 }
 
 /* Custom utilities */
@@ -202,4 +207,29 @@
   .no-print {
     display: none !important;
   }
+}
+
+
+/* @topiana- & ChatGPT collab */
+/* ---------- Custom animations ---------- */
+@keyframes pulse-slow {
+	0%, 100% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0.85;
+	}
+}
+
+.animate-pulse-slow {
+	animation: pulse-slow 2.5s ease-in-out infinite;
+}
+
+/* @topiana- */
+@font-face {
+  font-family: 'Press Start 2P';
+  src: url('/fonts/Press_Start_2P/PressStart2P-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
 }

@@ -2,6 +2,12 @@ import { loadNavbar } from "@/components/navbar";
 import { sendGetRequest } from "@/services/api/sendRequests";
 import { generateInitialsAvatar } from "@/components/createDefaultImage";
 
+import { GameData, createHistoryBar } from "@/components/createHistoryBar";
+import { createFriendsBar } from "@/components/createFriendBar";
+import { sendPostRequest } from "@/services/api/sendRequests";
+
+const BACKEND_APIS_URL = `http://${window.location.hostname}:3029/api`;
+
 export function loadProfilePage(): HTMLElement {
 	const div = document.createElement('div');
 	div.className = 'min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex flex-col';
@@ -34,6 +40,72 @@ export function loadProfilePage(): HTMLElement {
 					</div>
 				</div>
 			</div>
+
+		</div>
+
+		<br>
+
+		<!-- Friend Request -->
+		<section
+            id="friend-request-card"
+            class="relative rounded-xl p-8 border border-white/20
+                    bg-slate-800/60 backdrop-blur
+                    transition-all duration-300
+                    hover:shadow-lg hover:shadow-white/10
+                    focus-within:ring-2 focus-within:ring-cyan-400"
+            >
+                <div class="text-center">
+                    <!-- Icon -->
+                    <div class="text-5xl mb-4" aria-hidden="true">👤➕</div>
+
+                    <!-- Title -->
+                    <h3 class="text-xl font-bold text-white mb-2">
+                        Friend request
+                    </h3>
+
+                    <!-- Description -->
+                    <p class="text-sm text-white/70 mb-4">
+                        Send a friend request
+                    </p>
+
+                    <!-- Form -->
+                    <form id="friend-request-form" class="flex flex-col gap-3">
+                        <label for="friend-request-username" class="sr-only">
+                            Player username
+                        </label>
+
+                        <input
+                            id="friend-request-username"
+                            name="username"
+                            type="text"
+                            required
+                            placeholder="Username"
+                            class="rounded-md px-4 py-2
+                                bg-slate-900 text-white
+                                border border-white/20
+                                placeholder-white/40
+                                focus:outline-none focus:ring-2 focus:ring-cyan-400"
+                        />
+
+                        <button
+                            type="submit"
+                            class="mt-2 inline-flex items-center justify-center gap-2
+                                rounded-md px-4 py-2
+                                bg-cyan-600 hover:bg-cyan-500
+                                text-white font-semibold
+                                transition-colors
+                                focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-400"
+                        >
+                            <span aria-hidden="true">✉️</span>
+                            Send Request
+                        </button>
+                    </form>
+                </div>
+            </section>
+
+
+		<!-- MATCH HISTORY -->
+		<div id="match-history" class="mt-12 w-full max-w-4xl flex flex-col space-y-3 font-mono">
 		</div>
 	</div>
 	`;
@@ -48,7 +120,7 @@ export function loadProfilePage(): HTMLElement {
 
 		// Update avatar
 		const avatarImg = div.querySelector('img');
-		if (avatarImg) avatarImg.src = user.avatarUrl || generateInitialsAvatar(user.name, user.surname);
+		if (avatarImg) avatarImg.src = user.avatarUrl || generateInitialsAvatar(user.name, user.surname) || "";
 
 		// Update stats
 		const statsDiv = div.querySelector('#userStats');
@@ -75,6 +147,53 @@ export function loadProfilePage(): HTMLElement {
 		console.error("Error loading user profile:", error);
 	});
 	
+	getUserGames().then(games => {
+		console.log("game response:", games);
+
+		const history = div.querySelector('#match-history');
+		if (!history) throw Error("History div not found");
+
+		// loops through games and adds them
+		for (const g of games.reverse()/* .history */) {
+			history.appendChild(createHistoryBar(g));
+		}
+	}).catch(error => {
+		console.error("Error loading user profile:", error);
+	});
+
+	
+	// AGGIUNGI LA BAR DEGLI AMICI
+	document.body.appendChild(createFriendsBar());
+
+
+
+	/* -------------------------------- */
+	/*          FRIEND REQUEST          */
+
+	// friend request btn
+	const freqform = div.querySelector("#friend-request-form") as HTMLFormElement;
+	freqform.addEventListener("submit", (event) => {
+		event.preventDefault(); // stop page reload
+
+		// get the username
+		const form = event.currentTarget as HTMLFormElement;
+		const data = new FormData(form);
+
+		const username = data.get("username");
+
+		if (typeof username !== "string" || username.trim() === "") {
+			console.error("Invalid username");
+			return;
+		}
+
+
+		// send the request to the backend
+		sendPostRequest(`${BACKEND_APIS_URL}/friend-request`, {
+			target: username
+		}, 'application/json');
+	});
+
+
 	return div;
 }
 
@@ -93,14 +212,30 @@ interface UserProfile {
 }
 
 export async function getUserProfile(): Promise<UserProfile> {
-  const token = localStorage.getItem('authToken');
+	/* ----- get username (todo better) ----- */
+	const user = localStorage.getItem('user');
+	if (!user) {
+		throw new Error('No authentication token found');
+	}
+	const { username } = JSON.parse(user);
+	/* --------------------------------- */
 
-  if (!token) {
-    throw new Error('No authentication token found');
-  }
-
-  const response = await sendGetRequest(`http://localhost:3001/api/profile`, token);
-  return response;
+	const profileResponse = await sendGetRequest(`http://localhost:3029/api/user?username=${username}`);
+	// const authResponse = await sendGetRequest(`http://localhost:3001/api/profile`, token);
+	const butlerResponse = await sendGetRequest(`http://localhost:3029/api/profile?username=${username}`);
+	return {
+		id: profileResponse.id,
+		email: butlerResponse.email,
+		username: profileResponse.username,
+		name: butlerResponse.name,
+		surname: butlerResponse.surname,
+		wins: profileResponse.wins,
+		losses: profileResponse.losses,
+		tournamentWins: profileResponse.tournamentWins,
+		tournamentLosses: profileResponse.tournamentLosses,
+		bio: butlerResponse.bio,
+		avatarUrl: profileResponse.avatarUrl
+	};
 }
 
 export function createDonutChart(wins: number, losses: number, text:string): HTMLElement {
@@ -153,3 +288,22 @@ export function createDonutChart(wins: number, losses: number, text:string): HTM
 
 	return chart;
 }
+
+// @topiana- ecarbona collab
+export async function getUserGames(): Promise</* { history:  */GameData[]/*  } */> {
+	// const token = localStorage.getItem('authToken');
+	// const linkid = localStorage.getItem('userId');
+
+	/* ----- get username (todo better) ----- */
+	const user = localStorage.getItem('user');
+	if (!user) {
+		throw new Error('No authentication token found');
+	}
+	const { username } = JSON.parse(user);
+	/* --------------------------------- */
+
+
+	const response = await sendGetRequest(`http://localhost:3029/api/game?username=${username}`);
+	return response;
+}
+

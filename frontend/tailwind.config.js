@@ -40,6 +40,7 @@ export default {
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
         mono: ['JetBrains Mono', 'monospace'],
+        arcade: ['Press Start 2P', 'monospace'],  /* not working T.T */
       },
       spacing: {
         '128': '32rem',

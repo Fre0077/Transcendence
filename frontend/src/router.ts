@@ -1,14 +1,22 @@
 import { load404Page } from "./pages/errors/404";
 import { load500Page } from "./pages/errors/500";
 import { ChatsPage } from "./pages/protected/chats/chats";
-import { loadGamePage } from "./pages/protected/game/game";
+import { loadGameHub } from "./pages/protected/game/gameHub";
 import { loadOnlineLobbyPage } from "./pages/protected/game/lobby/lobby";
-import { loadOnlineGamePage } from "./pages/protected/game/onlineGame/onlineGame";
-import { loadLocalGamePage } from "./pages/protected/game/localGame";
+import { loadTournamentHubPage } from "./pages/protected/game/tournament/tournamentHub";
+import { loadOnlineTournamentPage } from "./pages/protected/game/tournament/tournamentPage";
+// import { loadOnlineGamePage } from "./pages/protected/game/online/onlineGame";
+import { loadPongPlayerPage } from '@pages/protected/game/online/loadPongPlayerPage';
+// import { loadLocalGamePage } from "./pages/protected/game/local/localGame";
+import { loadLocalPongPage } from "./pages/protected/game/local/loadLocalPongPage";
 import { loadHomePage } from "./pages/protected/home/home";
 import { loadProfilePage } from "./pages/protected/profile/profile";
 import { loadLoginPage } from "./pages/public/login/login";
 import { loadRegisterPage } from "./pages/public/register/register";
+
+
+// services
+import { isauth } from "@services/api/isauth";
 
 type RouteComponent = () => HTMLElement;
 
@@ -78,7 +86,8 @@ class Router {
 
   // Go back in history
   back() {
-    window.history.back();
+    // @topiana- #todo remove event listeners
+    window.history.back();    
   }
 
   // Find route that matches the given path
@@ -119,9 +128,15 @@ class Router {
     return params;
   }
 
+  // @topiana-
+  private stripQuery(path: string): string {
+    return path.split('?')[0];
+  }
+
   // Handle route change
   private async handleRoute(path: string) {
-    const match = this.findRoute(path);
+    const cleanPath = this.stripQuery(path);  //@topiana-
+    const match = this.findRoute(cleanPath);
 
     if (!match) {
       // Route not found - redirect to 404
@@ -136,21 +151,29 @@ class Router {
     // import { authService } from '@/services/api/auth';
     // const isAuthenticated = await authService.isAuthenticated();
     // const has2FA = await authService.has2FAEnabled();
-    //
+    
     // if (route.meta?.requiresAuth && !isAuthenticated) {
     //   this.replace('/login');
     //   return;
     // }
-    //
+    
     // if (route.meta?.requiresGuest && isAuthenticated) {
     //   this.replace('/dashboard');
     //   return;
     // }
-    //
+    
     // if (route.meta?.requires2FA && !has2FA) {
     //   this.replace('/2fa');
     //   return;
     // }
+
+    
+    // cheap guard by @topiana-
+    const isAuthenticated = await isauth();
+    if (route.meta?.requiresAuth && !isAuthenticated) {
+      this.replace('/login');
+      return;
+    }
 
     // Update page title
     if (route.meta?.title) {
@@ -318,7 +341,7 @@ const routes: RouteConfig[] = [
     path: '/game',
     name: 'game-lobby',
     component: () => {
-      return loadGamePage();
+      return loadGameHub();
     },
     meta: { title: 'Game Lobby - ft_transcendence', requiresAuth: true, requires2FA: true },
   },
@@ -326,7 +349,7 @@ const routes: RouteConfig[] = [
 		path: '/game/local',
 		name: 'local-game',
 		component: () => {
-			return loadLocalGamePage();
+			return loadLocalPongPage();
 		},
 		meta: { title: 'Local Game - ft_transcendence', requiresAuth: true, requires2FA: true },
 	},
@@ -343,7 +366,7 @@ const routes: RouteConfig[] = [
     path: '/game/:matchId',
     name: 'game-match',
     component: () => {
-      return loadOnlineGamePage();
+      return loadPongPlayerPage();
     },
     meta: { title: 'Game Match - ft_transcendence', requiresAuth: true, requires2FA: true },
   },
@@ -352,16 +375,16 @@ const routes: RouteConfig[] = [
     path: '/tournaments',
     name: 'tournaments',
     component: () => {
-      return document.createElement('div');
+      return loadTournamentHubPage();
     },
     meta: { title: 'Tournaments - ft_transcendence', requiresAuth: true, requires2FA: true },
   },
   {
     // TODO: Implement tournament details page
-    path: '/tournaments/:tournamentId',
+    path: '/tournament/:tournamentId',
     name: 'tournament-details',
     component: () => {
-      return document.createElement('div');
+      return loadOnlineTournamentPage();
     },
     meta: { title: 'Tournament Details - ft_transcendence', requiresAuth: true, requires2FA: true },
   },

@@ -6,6 +6,9 @@ import './styles/main.css';
 // Importa la funzione per renderizzare la pagina di test
 import { renderTestPage } from './pages/test/test.ts';
 
+// connect to the gateway for notifications
+import { ConnectLifecycleSocket, DisconnectLifecycleSocket } from '@services/ws/lifecycleWebSocket';
+
 // Initialize the application when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
   console.log('🚀 ft_transcendence initializing...');
@@ -39,6 +42,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize router
     router.init('app');
 
+    // connect socket to backend gateway
+    ConnectLifecycleSocket();
+
     console.log('✅ Application initialized');
   }
   // --- FINE DEL BLOCCO MODIFICATO ---
@@ -48,11 +54,19 @@ document.addEventListener('DOMContentLoaded', () => {
 // (Tutto il resto del tuo file rimane identico)
 window.addEventListener('auth:login', () => {
   console.log('User logged in');
+  
+  // connect to Gateway for notifications
+  ConnectLifecycleSocket();
+  
   router.push('/dashboard');
 });
 
 window.addEventListener('auth:logout', () => {
   console.log('User logged out');
+
+  // disconnect from gateway
+  DisconnectLifecycleSocket();
+
   router.replace('/login');
 });
 

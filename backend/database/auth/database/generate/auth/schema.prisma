@@ -1,0 +1,41 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator auth {
+  provider = "prisma-client-js"
+  output   = "./generate/auth"
+}
+
+datasource dbauth {
+  provider = "sqlite"
+  url      = "file:./auth.db"
+}
+
+model RefreshToken {
+  id          Int      @id @default(autoincrement())
+  // Salveremo un HASH del token, non il token in chiaro
+  hashedToken String   @unique
+  userId      Int
+  User        Account  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+}
+
+model Account {
+  id           Int     @id @default(autoincrement())
+  name         String
+  surname      String
+  username     String? @unique
+  bio          String?
+  avatarUrl    String?
+  email        String  @unique
+  passwordHash String?
+  googleId     String? @unique
+
+  twoFactorEnabled Boolean @default(false)
+  twoFactorSecret  String?
+
+  refreshTokens RefreshToken[]
+}

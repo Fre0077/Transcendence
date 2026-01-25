@@ -3,3 +3,4 @@
 **/.env
 VSCode.sh
 .DS_Store
+**/*.log

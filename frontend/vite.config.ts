@@ -28,6 +28,9 @@ export default defineConfig({
   },
   server: {
     port: 3000,
+    // @topiana- added this
+    allowedHosts: ['frontend', 'localhost', '127.0.0.1'],
+    // whats this?
     proxy: {
       '/api': {
         target: 'http://localhost:8000',
