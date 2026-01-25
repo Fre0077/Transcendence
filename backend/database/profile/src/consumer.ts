@@ -60,43 +60,42 @@ export async function startprofileConsumer() {
 						channel!.ack(msg); 
 						return;
 					}
-					const potentialUserIds = historyData.players.map((id: any) => {
+					console.log('data.player', historyData.players);
+					const potentialUsername = historyData.players.map((username: string) => {
 							// Se è una stringa che inizia con Guest, BOT la scarto perchè non è presente nel DB
-							if (typeof id === 'string' && (id.startsWith('Guest') || id.startsWith('BOT'))) {
+							if (username.startsWith('Guest') || username.startsWith('BOT'))
 								return null;
-							}
-							const parsed = parseInt(id, 10);
-							return isNaN(parsed) ? null : parsed;
+							return username;
 						})
-						.filter((id: number | null): id is number => id !== null);
+						.filter((username: string | null): username is string => username !== null);
 					// Eseguiamo la query solo se abbiamo trovato almeno un numero valido
-					let validLinkIds: number[] = [];
-					if (potentialUserIds.length > 0) {
+					let validUsername: string[] = [];
+					if (potentialUsername.length > 0) {
 						const existingUsers = await profilePrisma.user.findMany({
 							where: {
-								linkId: { in: potentialUserIds }
+								username: { in: potentialUsername }
 							},
-							select: { linkId: true }
+							select: { username: true }
 						});
-						validLinkIds = existingUsers.map(u => u.linkId);
+						validUsername = existingUsers.map(u => u.username!);
 					}
-					if (validLinkIds.length === 0) {
+					if (validUsername.length === 0) {
 						console.log("ℹ️ Nessun utente registrato coinvolto (es. Guest vs Bot). History non salvata su Profile.");
 						channel!.ack(msg);
 						if (historyData.metadata?.room === 'finals')
 							setTournamentScore(historyData);
 						return;
 					}
-					for (const player of validLinkIds){
+					for (const player of validUsername){
 						if (historyData.winner.includes(String(player))){
 							await profilePrisma.user.update({
-								where: { linkId: player},
+								where: { username: player},
 								data: {wins: {increment: 1}}
 							})
 						}
 						else {
 							await profilePrisma.user.update({
-								where: { linkId: player},
+								where: { username: player},
 								data: {losses: {increment: 1}}
 							})
 						}
@@ -110,7 +109,7 @@ export async function startprofileConsumer() {
 							score: JSON.stringify(historyData.score), 
 							replay: historyData.replay || "",
 							players: {
-								connect: validLinkIds.map(linkId => ({ linkId }))
+								connect: validUsername.map(username => ({ username }))
 							},
 							gamePlayers: JSON.stringify(historyData.players),
 							metadata: {
@@ -124,7 +123,7 @@ export async function startprofileConsumer() {
 					});
 					if (historyData.metadata?.room === 'finals')
                         setTournamentScore(historyData);
-					console.log(`✅ Game ${historyData.ID} salvato. Collegato agli utenti: ${validLinkIds.join(", ")}`);
+					console.log(`✅ Game ${historyData.ID} salvato. Collegato agli utenti: ${validUsername.join(", ")}`);
 					channel!.ack(msg);
 				} catch (err) {
 					console.error("❌ Errore critico salvataggio history:", err);
