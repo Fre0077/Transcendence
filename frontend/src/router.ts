@@ -15,6 +15,9 @@ import { loadLoginPage } from "./pages/public/login/login";
 import { loadRegisterPage } from "./pages/public/register/register";
 
 
+// test
+import { loadChatApiTest } from "./pages/test/chatApiTest";
+
 // services
 import { isauth } from "@services/api/isauth";
 
@@ -362,7 +365,6 @@ const routes: RouteConfig[] = [
     meta: { title: 'Online Game - ft_transcendence', requiresAuth: true, requires2FA: true },
   },
   {
-    // TODO: Implement game match page
     path: '/game/:matchId',
     name: 'game-match',
     component: () => {
@@ -371,7 +373,6 @@ const routes: RouteConfig[] = [
     meta: { title: 'Game Match - ft_transcendence', requiresAuth: true, requires2FA: true },
   },
   {
-    // TODO: Implement tournaments page
     path: '/tournaments',
     name: 'tournaments',
     component: () => {
@@ -380,11 +381,19 @@ const routes: RouteConfig[] = [
     meta: { title: 'Tournaments - ft_transcendence', requiresAuth: true, requires2FA: true },
   },
   {
-    // TODO: Implement tournament details page
     path: '/tournament/:tournamentId',
     name: 'tournament-details',
     component: () => {
       return loadOnlineTournamentPage();
+    },
+    meta: { title: 'Tournament Details - ft_transcendence', requiresAuth: true, requires2FA: true },
+  },
+  // TODO remove this, just for testing
+  {
+    path: '/test/chat',
+    name: 'test-chat-api',
+    component: () => {
+      return loadChatApiTest();
     },
     meta: { title: 'Tournament Details - ft_transcendence', requiresAuth: true, requires2FA: true },
   },

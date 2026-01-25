@@ -2,7 +2,7 @@
 	"name": "chat-service",
 	"version": "1.0.0",
 	"license": "ISC",
-	"type": "CommonJS",
+	"type": "commonjs",
 	"scripts": {
 		"start": "npx ts-node ./server.ts",
 		"migrate": "npx prisma migrate dev --name init --schema=./database/chat.prisma",
