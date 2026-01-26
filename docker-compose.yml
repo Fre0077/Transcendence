@@ -3,10 +3,6 @@ services:
   rabbitmq:
     image: rabbitmq:3-management
     container_name: rabbitmq
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-      - "15692:15692"
     environment:
       - RABBITMQ_DEFAULT_USER=guest
       - RABBITMQ_DEFAULT_PASS=guest
@@ -68,9 +64,9 @@ services:
       - GF_SECURITY_ADMIN_USER=admin
     volumes:
       - grafana_dat:/var/lib/grafana
+      - ./monitor/grafana/datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml
       - ./monitor/grafana/dashboard-provider.yml:/etc/grafana/provisioning/dashboards/provider.yml
-      - ./monitor/grafana/master-dashboard.json:/var/lib/grafana/dashboards/master-dashboard.json
-      
+      - ./monitor/grafana/master-dashboard.json:/var/lib/grafana/master-dashboard.json
     depends_on:
       - prometheus
     networks:
