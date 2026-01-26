@@ -117,8 +117,17 @@ fastify.register(async function (fastify) {
 	// helper to forwarder for backend HTTP services
 	function httpforwarder(endpoint:string, props?:any) {
 
-		// JWT interceptor
+		// JWT interceptor (login sets cookies)
 		if (endpoint === `${AUTH_URL}/api/login`) return async (request:FastifyRequest, reply:FastifyReply) => await noAuthForward(request, reply, endpoint, attachAllCookies);
+		// Logout handler (clears cookies)
+		else if (endpoint === `${AUTH_URL}/api/logout`) return async (request:FastifyRequest, reply:FastifyReply) => {
+			// Forward to auth service
+			const response = await noAuthForward(request, reply, endpoint);
+			// Also clear cookies at gateway level
+			reply.clearCookie('accessToken', { path: '/' });
+			reply.clearCookie('refreshToken', { path: '/' });
+			return response;
+		};
 		// No-Auth route
 		else if (props.auth === false) return async (request:FastifyRequest, reply:FastifyReply) => await noAuthForward(request, reply, endpoint);
 		// Auth route

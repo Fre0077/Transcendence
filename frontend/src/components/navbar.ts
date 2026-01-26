@@ -1,9 +1,26 @@
 import { chatService } from "@/services/chatService";
+import { authService } from "@/services/authService";
+import { router } from "@/router";
 
-document.addEventListener('logout', () => {
-	localStorage.removeItem('authToken');
-	window.location.href = '/login';
-});
+// Use event delegation for logout button since navbar is inserted via innerHTML
+document.addEventListener('click', async (e) => {
+	const target = e.target as HTMLElement;
+	
+	// Check if clicked element or its parent is the logout button
+	const logoutBtn = target.closest('#logoutButton');
+	if (logoutBtn) {
+		e.preventDefault();
+		e.stopPropagation();
+		
+		try {
+			await authService.logout();
+			router.replace('/login');
+		} catch (error) {
+			console.error('[Navbar] Logout error:', error);
+			router.replace('/login');
+		}
+	}
+}, true); // Use capture phase to catch events early
 
 let navbarElement: HTMLElement | null = null;
 let unreadBadge: HTMLElement | null = null;
@@ -60,7 +77,7 @@ export function loadNavbar(): HTMLElement {
 				<div class="flex items-center space-x-8">
 					<a href="/" class="text-white font-bold text-xl hover:text-purple-300 transition">ft_transcendence</a>
 					<div class="hidden md:flex space-x-6">
-						<a href="/dashboard" class="text-white/90 hover:text-white px-4 py-2 rounded-lg bg-white/10 transition">HOME</a>
+						<a href="/" class="text-white/90 hover:text-white px-4 py-2 rounded-lg bg-white/10 transition">HOME</a>
 						<a href="/game" class="text-white/70 hover:text-white px-4 py-2 rounded-lg hover:bg-white/10 transition">PLAY</a>
 						<a href="/tournaments" class="text-white/70 hover:text-white px-4 py-2 rounded-lg hover:bg-white/10 transition">TOURNAMENTS</a>
 						<a href="/leaderboard" class="text-white/70 hover:text-white px-4 py-2 rounded-lg hover:bg-white/10 transition">LEADERBOARD</a>
@@ -87,7 +104,7 @@ export function loadNavbar(): HTMLElement {
 							</svg>
 						</button>
 					</a>
-					<button class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 transition flex items-center justify-center text-white" onClick="document.dispatchEvent(new Event('logout'))">
+					<button id="logoutButton" class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 transition flex items-center justify-center text-white">
 						<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
 						</svg>

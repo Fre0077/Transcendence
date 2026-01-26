@@ -1,7 +1,7 @@
 import { googleLoginFunction } from "@/components/googleLogin";
 import { router } from "@/router";
 import { sendPostRequest } from "@/services/api/sendRequests";
-import { persistSession } from "@/services/session";
+import { authService } from "@/services/authService";
 
 export function loadLoginPage(): HTMLElement {
     const div = document.createElement('div');
@@ -106,12 +106,30 @@ export function loadLoginPage(): HTMLElement {
             });
             const data = await response.json();
             if (!response.ok) {
+                // Check if 2FA is required
+                if (response.status === 401 && data.twoFactorRequired) {
+                    // Store email for 2FA verification
+                    sessionStorage.setItem('2fa-email', email);
+                    errorEl.textContent = '2FA verification required. Redirecting...';
+                    errorEl.classList.remove('hidden');
+                    
+                    // Redirect to 2FA page (you'll need to create this)
+                    setTimeout(() => {
+                        router.push('/2fa-verify');
+                    }, 1000);
+                    return;
+                }
+                
                 throw new Error(data.error || 'Login fallito');
             }
             
             // === SUCCESSO ===
             console.log('Login riuscito:', data);
 
+            // Backend sends { ...user, user, ok: true }
+            // User data is both at root level and in data.user
+            const userData = data.user || data;
+            authService.setAuthState(userData, userData?.twoFactorEnabled ?? false);
 
             /* @ecarbona @topiana business */
             /* const socket =  *//* ConnectLifecycleWebsocket() */;
@@ -119,17 +137,14 @@ export function loadLoginPage(): HTMLElement {
                 cleanable quindi con procedura di chiusura (distruzione div, 
                 chiusura socket, rimozione eventListeners)
             */
-
-            // @topiana- (deprecated)
-            // const accessToken = data.accessToken || data.token;
-            // persistSession(accessToken, data.user, data.refreshToken);
-            // window.location.pathname = '/home';
             
             // emit auth event
             window.dispatchEvent(
                 new CustomEvent('auth:login', { bubbles: true })
 			);
             
+            // Small delay to ensure cookies are set before navigation
+            await new Promise(resolve => setTimeout(resolve, 100));
             router.push('/home');
             // router.back();
 
@@ -166,8 +181,10 @@ export function loadLoginPage(): HTMLElement {
 
             // 2. Gestisci il successo (come il login standard)
             console.log('Login con Google riuscito:', data);
-            const accessToken = data.accessToken || data.token;
-            persistSession(accessToken, data.user, data.refreshToken);
+            
+            // Update auth service state - user data could be at root or in data.user
+            const userData = data.user || data;
+            authService.setAuthState(userData, userData?.twoFactorEnabled ?? false);
 
             // 3. Reindirizza
             router.push('/home');

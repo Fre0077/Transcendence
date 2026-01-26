@@ -174,12 +174,5 @@ export function loadHomePage(): HTMLElement {
 		});
 	}
 
-	// Show toast notification when home page loads
-	toastNotification.success(
-		'Welcome Back! 🎮',
-		'You are on the home page. Ready to play some games?',
-		6000
-	);
-
 	return div;
 }

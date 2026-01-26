@@ -21,26 +21,183 @@
     
     <title>ft_transcendence</title>
     
+    <!-- Critical CSS for loading screen (before Tailwind loads) -->
+    <style>
+      /* Base styles */
+      body { 
+        margin: 0;
+        background-color: #0f172a;
+        font-family: system-ui, -apple-system, sans-serif;
+      }
+      
+      /* Loading screen layout */
+      .loading-container {
+        position: fixed;
+        inset: 0;
+        background: linear-gradient(to bottom right, #0f172a, #581c87, #0f172a);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+      }
+      
+      .loading-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2rem;
+      }
+      
+      /* Logo and title */
+      .loading-title {
+        font-size: 3rem;
+        font-weight: bold;
+        color: white;
+        margin-bottom: 0.5rem;
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+      }
+      
+      .progress-bar-container {
+        height: 0.25rem;
+        width: 16rem;
+        background: linear-gradient(to right, #9333ea, #ec4899, #9333ea);
+        border-radius: 9999px;
+        overflow: hidden;
+      }
+      
+      .progress-bar {
+        height: 100%;
+        background: white;
+        animation: loading-bar 1.5s ease-in-out infinite;
+      }
+      
+      /* Spinners */
+      .spinner-container {
+        position: relative;
+        width: 4rem;
+        height: 4rem;
+      }
+      
+      .spinner {
+        position: absolute;
+        inset: 0;
+        width: 4rem;
+        height: 4rem;
+        border: 4px solid rgba(168, 85, 247, 0.3);
+        border-radius: 9999px;
+      }
+      
+      .spinner-1 {
+        border-top-color: #a855f7;
+        animation: spin 1s linear infinite;
+      }
+      
+      .spinner-2 {
+        border-bottom-color: #ec4899;
+        animation: spin-reverse 1s linear infinite;
+      }
+      
+      /* Loading text */
+      .loading-text {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 1.125rem;
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+      }
+      
+      /* Dots */
+      .dots-container {
+        display: flex;
+        gap: 0.5rem;
+      }
+      
+      .dot {
+        width: 0.75rem;
+        height: 0.75rem;
+        border-radius: 9999px;
+        animation: bounce 1s infinite;
+      }
+      
+      .dot-1 {
+        background-color: #a855f7;
+        animation-delay: 0s;
+      }
+      
+      .dot-2 {
+        background-color: #ec4899;
+        animation-delay: 0.1s;
+      }
+      
+      .dot-3 {
+        background-color: #a855f7;
+        animation-delay: 0.2s;
+      }
+      
+      /* Animations */
+      @keyframes loading-bar {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(400%); }
+      }
+      
+      @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+      
+      @keyframes spin-reverse {
+        from { transform: rotate(360deg); }
+        to { transform: rotate(0deg); }
+      }
+      
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+      }
+      
+      @keyframes bounce {
+        0%, 100% {
+          transform: translateY(0);
+          animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+        }
+        50% {
+          transform: translateY(-25%);
+          animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+        }
+      }
+    </style>
+    
     <!-- Preconnect to API (optional, update with your API URL) -->
     <!-- <link rel="preconnect" href="http://localhost:8000"> -->
   </head>
-  <body class="antialiased">
-    <!-- Skip to main content link for accessibility -->
-    <a 
-      href="#app" 
-      class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary-600 focus:text-white focus:rounded"
-    >
-      Skip to main content
-    </a>
-
+  <body class="antialiased bg-slate-900">
     <!-- Main app container -->
     <div id="app" role="main">
-      <!-- Loading indicator shown before router initializes -->
-      <div class="flex items-center justify-center min-h-screen bg-gray-50">
-        <div class="text-center">
-          <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-primary-600 mx-auto mb-4"></div>
-          <p class="text-gray-600 text-lg">Loading ft_transcendence...</p>
-          <span class="sr-only">Application is loading, please wait...</span>
+      <!-- Loading screen shown before JavaScript loads -->
+      <div class="loading-container">
+        <div class="loading-content">
+          <!-- Logo/Brand -->
+          <div style="text-align: center;">
+            <h1 class="loading-title">ft_transcendence</h1>
+            <div class="progress-bar-container">
+              <div class="progress-bar"></div>
+            </div>
+          </div>
+          
+          <!-- Animated Spinner -->
+          <div class="spinner-container">
+            <div class="spinner spinner-1"></div>
+            <div class="spinner spinner-2"></div>
+          </div>
+          
+          <!-- Loading Message -->
+          <p class="loading-text">Loading application...</p>
+          
+          <!-- Dots Animation -->
+          <div class="dots-container">
+            <div class="dot dot-1"></div>
+            <div class="dot dot-2"></div>
+            <div class="dot dot-3"></div>
+          </div>
         </div>
       </div>
     </div>

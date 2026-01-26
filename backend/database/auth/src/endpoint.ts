@@ -281,6 +281,10 @@ export async function authEndpoint(fastify: FastifyInstance) {
 	//Enpoint POST elimina i token al logout
 	fastify.post('/logout', async (request: AuthRequest, reply: FastifyReply) => {
 		try {
+			// Clear the authentication cookies
+			reply.clearCookie('accessToken', { path: '/' });
+			reply.clearCookie('refreshToken', { path: '/' });
+			
 			logInfo('{auth} [200] Logout effettuato con successo');
 			reply.code(200).send({ message: 'Logout effettuato con successo' });
 		} catch (err) {

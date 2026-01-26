@@ -1,7 +1,7 @@
 import { router } from "@/router";
 import { googleLoginFunction } from "../../../components/googleLogin";
 import { sendPostRequest } from "@/services/api/sendRequests";
-import { persistSession } from "@/services/session";
+import { authService } from "@/services/authService";
 
 export function loadRegisterPage(): HTMLElement {
     const div = document.createElement('div');
@@ -146,8 +146,10 @@ export function loadRegisterPage(): HTMLElement {
             
             // 2. Gestisci il successo (come il login standard)
             console.log('Registrazione con Google riuscita:', data);
-            const accessToken = data.accessToken || data.token;
-            persistSession(accessToken, data.user, data.refreshToken);
+            
+            // Update auth service state - user data could be at root or in data.user
+            const userData = data.user || data;
+            authService.setAuthState(userData, userData?.twoFactorEnabled ?? false);
 
             // 3. Reindirizza
             window.location.pathname = '/home';
