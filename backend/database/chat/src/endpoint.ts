@@ -6,7 +6,7 @@ const chatPrisma = new chatPrismaClient();
 
 import { userList, chatList, messageList, newChat, newMessage, deleteChatMessages,
 		deleteMessage, searchMessage, searchChat, listChatMessage, blockUser,
-		sblockUser } from "./function";
+		sblockUser, deleteChat } from "./function";
 import { BadRequest, Unauthorized, Forbidden, NotFound, Conflict } from "../utils/exception"
 import { NewChat, NewMessage, SrcChat } from "../utils/interface";
 import { logError, logInfo } from "../utils/logger"
@@ -193,7 +193,31 @@ export async function chatEndpoint(fastify: FastifyInstance) {
 		}
 	});
 
-	// Endpoint POST per eliminare una chat
+	// Endpoint POST per eliminare una chat e i suoi collegamenti
+	fastify.post("/delete-chat", async (request, reply) => {
+		const { chatId } = request.body as { chatId?: string | number };
+		try {
+			if (!chatId)
+				throw new BadRequest('id chat non fornito', 'chat');
+			const id = typeof chatId === "string" ? parseInt(chatId, 10) : chatId;
+			if (isNaN(id))
+				throw new BadRequest("Invalid ID", 'chat');
+
+			await deleteChat(id);
+			delete messClients[id];
+			await broadcastChatListToAll();
+
+			logInfo(`{chat} [200] chat ${id} eliminata`);
+			return reply.status(200).send({ message: `chat ${id} eliminata` });
+		} catch (err) {
+			if (err instanceof Error)
+				return reply.status((err as any).statusCode).send({ error: err.message });
+			logError("{chat} [500] errore interno del server");
+			return reply.status(500).send({ error: "Internal server error" });
+		}
+	});
+
+	// Endpoint POST per eliminare un messaggio
 	fastify.post("/delete-message", async (request, reply) => {
 		const { messageId } = request.body as { messageId?: string | number };
 		try {

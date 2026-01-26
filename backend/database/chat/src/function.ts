@@ -187,6 +187,23 @@ export async function deleteChatMessages(input: number) {
 	await chatPrisma.messages.deleteMany({ where: { chat: { chatId: input } } })
 }
 
+//cancella una chat e tutti i suoi messaggi
+export async function deleteChat(input: number) {
+	if (!input || Number.isNaN(input))
+		throw new BadRequest('Invalid chatId provided', 'chat');
+
+	const chat = await chatPrisma.chats.findUnique({ where: { chatId: input }, include: { users: true } });
+	if (!chat)
+		throw new NotFound(`Chat with chatID ${input} does not exist`, 'chat');
+
+	// Remove messages, detach members, then remove the chat
+	await chatPrisma.$transaction([
+		chatPrisma.messages.deleteMany({ where: { chatId: input } }),
+		chatPrisma.chats.update({ where: { chatId: input }, data: { users: { set: [] } } }),
+		chatPrisma.chats.delete({ where: { chatId: input } })
+	]);
+}
+
 //cancella il messaggio indicato
 export async function deleteMessage(input: number) {
 	await chatPrisma.messages.deleteMany({ where: { id: input } })
