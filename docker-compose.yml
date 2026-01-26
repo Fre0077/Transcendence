@@ -68,6 +68,9 @@ services:
       - GF_SECURITY_ADMIN_USER=admin
     volumes:
       - grafana_dat:/var/lib/grafana
+      - ./monitor/grafana/dashboard-provider.yml:/etc/grafana/provisioning/dashboards/provider.yml
+      - ./monitor/grafana/master-dashboard.json:/var/lib/grafana/dashboards/master-dashboard.json
+      
     depends_on:
       - prometheus
     networks:
