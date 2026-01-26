@@ -11,11 +11,9 @@ MANDATORY:
 2. For the backend, HTTPS must be used everywhere. (???)
 3. Tournaments in local
 
-NEW
+NEW (MAYBE?)
 1. Profile level
 2. Ranked games
-3. Chess
-4. Major: A public API to interact with the database with a secured API key, rate limiting, documentation, and at least 5 endpoints:
 
 MAJOR
 13. Pong on mobile

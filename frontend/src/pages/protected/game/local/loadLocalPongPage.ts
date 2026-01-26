@@ -3,7 +3,7 @@ import { router } from "@/router";
 // import { load404Page } from "@/pages/errors/404";
 import { PongSocket } from "@/services/ws/createPongSocket";
 import { createPongBoard } from "@components/PongBoards/createPongBoard";
-import { Game } from "@pages/protected/game/local/GameClass"
+import { Game } from "@/pages/protected/game/local/classes/Pong/GameClass"
 
 function move(game:Game, data:any)
 {
@@ -28,17 +28,17 @@ function move(game:Game, data:any)
 
 function createLocalSocket(game: Game, playerid: string): PongSocket
 {
-	let messageHandler: ((msg: any) => void) | null = null;
+	let stateHandler: ((msg: any) => void) | null = null;
 
 	return {
-		playerid,
+		socket: null,
 
 		send(data: any) {
 			move(game, data);
 		},
 
 		onmessage(handler) {
-			messageHandler = handler;
+			stateHandler = handler;
 		},
 
 		handshake() {
@@ -46,7 +46,7 @@ function createLocalSocket(game: Game, playerid: string): PongSocket
 				try {
 					const state = JSON.parse(msg);
 					// mimic ws.onmessage(JSON)
-					messageHandler?.(state);
+					stateHandler?.(state);
 				} catch (err) {
 					/* console.log(err) */;
 				}
@@ -59,25 +59,43 @@ function createLocalSocket(game: Game, playerid: string): PongSocket
 		close() {
 			game.unsubscribe(playerid);
 			game.stop();
-			messageHandler = null;
+			stateHandler = null;
 		}
 	};
 }
 
-// local game
-const game = new Game([{idx:0, ID:'Guest_1'}, {idx:1, ID:'Guest_2'}]);
+export function loadLocalPongPage(
+	P1?:string,
+	P2?:string,
+	cb?: (winners:string[], score:number[]) => void): HTMLElement
+{
 
-export function loadLocalPongPage(): HTMLElement {
+	// get usernames
+	const player1 = (P1) ?? 'Guest_1';
+	const player2 = (P2) ?? 'Guest_2';
+
+	// local game
+	const game = new Game([{idx:0, ID:player1}, {idx:1, ID:player2}]);
 
 	/* ------ BUILD THE BOARD ------ */
 	// 1. create 'socket'
-	const socket = createLocalSocket(game, 'Guest_1');
+	const socket = createLocalSocket(game, player1);
 
 	// 2. create UI
 	const board = createPongBoard(socket);
 
 	// 3. connect socket → board
 	socket.onmessage((state) => {
+
+		// check if the game is finished
+		if (state.finished) {
+			cb?.(state.winners, state.score);
+		}
+
+		// lame fix to set player-status on local
+		state.players[0].status = "local";
+		state.players[1].status = "local";
+
 		// forward game state to board
 		board.update(state);
 	});
@@ -146,7 +164,6 @@ export function loadLocalPongPage(): HTMLElement {
 	const leaveGameBtn = div.querySelector('#leaveGameBtn');
 	if (leaveGameBtn) {
 		leaveGameBtn.addEventListener('click', () => {
-			socket.send({ method: 'LEAVE' });
 
 			// destroy board
 			board.destroy();

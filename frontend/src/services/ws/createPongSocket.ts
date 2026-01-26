@@ -9,7 +9,7 @@ const PONG_BACKEND_URL = `ws://${window.location.hostname}:3029/ws/pong`;
 
 // PongSocket.ts
 export interface PongSocket {
-	socket:WebSocket;
+	socket:WebSocket | null;
 	matchid?:string;
 	replay?:string;
 	send(data: unknown): void;
@@ -38,7 +38,7 @@ let playerWS:PongSocket | null = null;
 // behaviour of the player socket
 export function createPlayerSocket(): PongSocket
 {
-	if (playerWS && playerWS.socket.readyState === WebSocket.OPEN) {
+	if (playerWS && playerWS.socket?.readyState === WebSocket.OPEN) {
 		return playerWS;
 	}
 
@@ -95,7 +95,7 @@ let spectatorWS:PongSocket | null = null;
 // behaviour of the spectator socket
 export function createSpectatorSocket(/* , playerid:string */matchid:string): PongSocket
 {
-	if (spectatorWS && spectatorWS.socket.readyState === WebSocket.OPEN) {
+	if (spectatorWS && spectatorWS.socket?.readyState === WebSocket.OPEN) {
 		return spectatorWS;
 	}
 
@@ -155,7 +155,7 @@ let replayWS:PongSocket | null = null;
 // behaviour of the spectator socket
 export function createReplaySocket(/* , playerid:string */replaystring:string): PongSocket
 {
-	if (replayWS && replayWS.socket.readyState === WebSocket.OPEN) {
+	if (replayWS && replayWS.socket?.readyState === WebSocket.OPEN) {
 		return replayWS;
 	}
 

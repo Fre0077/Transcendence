@@ -9,7 +9,7 @@ const TOURNAMENT_FORMAT = 'single-eliminatin';
 
 export interface TournamentWebSocket {
 	// socket ops
-	socket: WebSocket,
+	socket: WebSocket | null,
 	send: (data:any) => void,
 	close: () => void,
 
@@ -45,7 +45,7 @@ export function ConnectTournamentSocket(
 ): TournamentWebSocket
 {
 	// if already connected don't connect
-	if (tournamentWS && tournamentWS.socket.readyState === WebSocket.OPEN)
+	if (tournamentWS && tournamentWS.socket?.readyState === WebSocket.OPEN)
 	{
 		// if an outournament id was passed
 		if (ouTournamentId !== undefined)
