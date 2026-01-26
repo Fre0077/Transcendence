@@ -114,7 +114,8 @@ export function createHistoryBar(data: GameData): HTMLElement {
 			<!-- ACTION -->
 			<div class="flex items-center min-w-[100px] justify-end">
 				<button
-					class="flex items-center gap-1 px-3 py-1.5 rounded-md bg-purple-600/30 hover:bg-purple-600/50 text-purple-200 text-sm transition"
+					class="flex items-center gap-1 px-3 py-1.5 rounded-md bg-purple-600/30 hover:bg-purple-600/50 text-purple-200 text-sm transition
+						disabled:opacity-50 disabled:cursor-not-allowed"
 					data-replay="${data.replay}"
 				>
 					<span>▶</span>
@@ -130,24 +131,56 @@ export function createHistoryBar(data: GameData): HTMLElement {
 	let replayContainer: HTMLElement | null = null;
 
 	const replayBtn = div.querySelector('button');
+	// replayBtn?.addEventListener("click", () => {
+	// 	// toggle replay
+	// 	if (replayContainer) {
+	// 		// call destroy hook
+	// 		const replayDiv = replayContainer.firstElementChild as any;
+	// 		replayDiv?.destroy?.();
+	
+	// 		replayContainer.remove();
+	// 		replayContainer = null;
+	// 		return;
+	// 	}
+
+	// 	replayContainer = document.createElement("div");
+	// 	replayContainer.className = "mt-4";
+
+	// 	const replayDiv = loadPongReplayDiv(data.replay);
+
+	// 	// 🔥 hook close button
+	// 	replayDiv.addEventListener("replay:close", () => {
+	// 		replayContainer?.remove();
+	// 		replayContainer = null;
+	// 	});
+
+	// 	replayContainer.appendChild(replayDiv);
+	// 	div.appendChild(replayContainer);
+	// });
+
 	replayBtn?.addEventListener("click", () => {
-		// toggle replay
-		if (replayContainer) {
-			replayContainer.remove();
-			replayContainer = null;
-			return;
-		}
+		// if replay already exists → ignore
+		if (replayContainer) return;
+
+		replayBtn.disabled = true;
+		replayBtn.classList.add("opacity-50", "cursor-not-allowed");
 
 		replayContainer = document.createElement("div");
 		replayContainer.className = "mt-4";
 
 		const replayDiv = loadPongReplayDiv(data.replay);
 
-		// 🔥 hook close button
-		replayDiv.addEventListener("replay:close", () => {
+		const destroyReplay = () => {
+			(replayDiv as any).destroy?.();
 			replayContainer?.remove();
 			replayContainer = null;
-		});
+
+			replayBtn.disabled = false;
+			replayBtn.classList.remove("opacity-50", "cursor-not-allowed");
+		};
+
+		// internal close button
+		replayDiv.addEventListener("replay:close", destroyReplay);
 
 		replayContainer.appendChild(replayDiv);
 		div.appendChild(replayContainer);

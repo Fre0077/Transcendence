@@ -78,8 +78,6 @@ export function sendGetRequest(
 
 export function sendDeleteRequest(
     url: string,
-    data: any = null,
-    type: string
 ): Promise<any> {
     return new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
@@ -88,7 +86,6 @@ export function sendDeleteRequest(
         // AUTH
         xhr.withCredentials = true; // 🔥 REQUIRED 4 Cookies
 
-        xhr.setRequestHeader("Content-Type", type);
         xhr.onreadystatechange = function () {
             if (xhr.readyState === XMLHttpRequest.DONE) {
                 if (xhr.status === 200) {
@@ -107,12 +104,7 @@ export function sendDeleteRequest(
                 }
             }
         };
-        console.log('Data delete', data);
-        if (data) {
-            xhr.send(JSON.stringify(data));
-        } else {
-            xhr.send();
-        }
+        xhr.send();
     });
 }
 

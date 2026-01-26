@@ -41,7 +41,7 @@ export async function authEndpoint(fastify: FastifyInstance) {
 					sameSite: 'lax',
 					path: '/',
 				}) */
-				.send({ ...user, user, ok: true });
+				.send({ ...user, ok: true });
 		
 			logInfo('{auth} [200] token generato con successo');
 		} catch (err) {

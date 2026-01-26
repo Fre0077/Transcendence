@@ -20,6 +20,7 @@ import { loadChatApiTest } from "./pages/test/chatApiTest";
 
 // services
 import { isauth } from "@services/api/isauth";
+import { sendDeleteRequest } from "@services/api/sendRequests";
 
 type RouteComponent = () => HTMLElement;
 
@@ -90,7 +91,7 @@ class Router {
   // Go back in history
   back() {
     // @topiana- #todo remove event listeners
-    window.history.back();    
+    window.history.back();   
   }
 
   // Find route that matches the given path
@@ -271,6 +272,16 @@ const routes: RouteConfig[] = [
       return loadRegisterPage();
     },
     meta: { title: 'Register - ft_transcendence', requiresGuest: true },
+  },
+  // @ecarbona & @topiana- business, deletes all cookies than redirect to login
+  {
+    path: '/logout',
+    name: 'logout',
+    component: () => {
+      sendDeleteRequest(`http://${window.location.hostname}:3029/api/logout`);
+      return loadLoginPage();
+    },
+    meta: { title: 'Login - ft_transcendence', requiresGuest: true },
   },
   {
     path: '/callback',

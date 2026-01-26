@@ -1,20 +1,14 @@
 // loadPongPlayerPage.ts
 import { createPongBoardWidget } from "@/components/PongBoards/createPongBoardWidget";
-import { load404Page } from "@/pages/errors/404";
+// import { load404Page } from "@/pages/errors/404";
 import { createReplaySocket } from "@/services/ws/createPongSocket";
 // import { createPongBoard } from "@components/PongBoards/createPongBoard";
 
 // #needs-auth-check
 // import { isauth } from "@/services/api/isauth";
 
-export function loadPongReplayDiv(replay:string): HTMLElement {
-
-	// obsolete
-	const playerid = localStorage.getItem('userId') || sessionStorage.getItem('guestID');
-	if (playerid === null) {
-		return load404Page();
-	}
-
+export function loadPongReplayDiv(replay:string): HTMLElement
+{
 	/* ------ BUILD THE BOARD ------ */
 
 	// 1. create socket
@@ -75,6 +69,12 @@ export function loadPongReplayDiv(replay:string): HTMLElement {
 			></div>
 		</div>
 	`;
+
+	// cleanup hook
+	(div as any).destroy = () => {
+		console.log("closing socket");
+		board.destroy();
+	};
 
 	// mount board BEFORE socket updates
 	const slot = div.querySelector("#pong-board-slot")!;

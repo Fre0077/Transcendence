@@ -5,7 +5,7 @@ import fastifyWebsocket from '@fastify/websocket';
 import cors from '@fastify/cors';
 
 // import { WebSocket } from "ws";
-import { isCookieAuthenticated, attachAllCookies} from './middleware.js';
+import { isCookieAuthenticated, attachAllCookies, clearAllCookies} from './middleware.js';
 
 
 // Where the Queue will listen
@@ -115,31 +115,36 @@ const PROFILE_URL = process.env.PROFILE_URL ?? 'http://profile:3003';
 fastify.register(async function (fastify) {
 
 	// helper to forwarder for backend HTTP services
-	function httpforwarder(endpoint:string, props?:any) {
+	function httpforwarder(endpoint:string, opts?:any) {
 
-		// JWT interceptor
-		if (endpoint === `${AUTH_URL}/api/login`) return async (request:FastifyRequest, reply:FastifyReply) => await noAuthForward(request, reply, endpoint, attachAllCookies);
-		// No-Auth route
-		else if (props.auth === false) return async (request:FastifyRequest, reply:FastifyReply) => await noAuthForward(request, reply, endpoint);
-		// Auth route
-		else return async (request:FastifyRequest, reply:FastifyReply) => await authForward(request, reply, endpoint);
+		// if no auth
+		if (opts?.auth === false) {
+			if (opts?.handler) return async (request:FastifyRequest, reply:FastifyReply) => await noAuthForward(request, reply, endpoint, opts.handler);
+			else return async (request:FastifyRequest, reply:FastifyReply) => await noAuthForward(request, reply, endpoint);
+		}
+		// if auth
+		else {
+			if (opts?.handler) return async (request:FastifyRequest, reply:FastifyReply) => await authForward(request, reply, endpoint, opts.handler);
+			else return async (request:FastifyRequest, reply:FastifyReply) => await authForward(request, reply, endpoint);
+		}
 	}
 
 	// authentication endpoint
 	fastify.get('/isauth', async (request, reply) => isCookieAuthenticated(request, reply));
+	fastify.delete('/logout', async (_, reply) => clearAllCookies(reply));
 
 	// auth backend APIs
-	fastify.post('/login', httpforwarder(`${AUTH_URL}/api/login`, { auth: false }));
+	fastify.post('/login', httpforwarder(`${AUTH_URL}/api/login`, { auth: false, handler: attachAllCookies }));
 	fastify.post('/register', httpforwarder(`${AUTH_URL}/api/register`, { auth: false }));
 	fastify.post('/auth/google', httpforwarder(`${AUTH_URL}/api/auth/google`, { auth: false }));
 	fastify.post('/2fa/verify', httpforwarder(`${AUTH_URL}/api/2fa/verify`, { auth: false }));
 	fastify.get('/profile',  httpforwarder(`${AUTH_URL}/api/profile`, { auth: true }));
-	fastify.patch('/profile',  httpforwarder(`${AUTH_URL}/api/profile`, { auth: true }));
+	fastify.patch('/profile',  httpforwarder(`${AUTH_URL}/api/profile`, { auth: true, handler: attachAllCookies }));
 	fastify.post('/profile/avatar',  httpforwarder(`${AUTH_URL}/api/profile/avatar`, { auth: true }));
 	fastify.post('/2fa/generate',  httpforwarder(`${AUTH_URL}/api/2fa/generate`, { auth: true }));
 	fastify.post('/2fa/enable',  httpforwarder(`${AUTH_URL}/api/2fa/enable`, { auth: true }));
 	fastify.post('/2fa/disable',  httpforwarder(`${AUTH_URL}/api/2fa/disable`, { auth: true }));
-	fastify.post('/logout',  httpforwarder(`${AUTH_URL}/api/logout`, { auth: false }));
+	// fastify.post('/logout',  httpforwarder(`${AUTH_URL}/api/logout`, { auth: false }));
 	// ... add others
 
 	// profile backend APIs

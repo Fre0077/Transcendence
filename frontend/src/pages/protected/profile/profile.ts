@@ -5,6 +5,7 @@ import { generateInitialsAvatar } from "@/components/createDefaultImage";
 import { GameData, createHistoryBar } from "@/components/createHistoryBar";
 import { createFriendsBar } from "@/components/createFriendBar";
 import { sendPostRequest, sendPatchRequest } from "@/services/api/sendRequests";
+import { router } from "@/router";
 
 const BACKEND_APIS_URL = `http://${window.location.hostname}:3029/api`;
 
@@ -113,6 +114,8 @@ export function loadProfilePage(): HTMLElement {
 		<div id="match-history" class="mt-12 w-full max-w-4xl flex flex-col space-y-3 font-mono">
 		</div>
 
+		<br>
+
 		<!-- EDIT PROFILE -->
 		<div id="edit-profile-modal"
 			class="fixed inset-0 hidden items-center justify-center bg-black/60 z-50">
@@ -220,10 +223,18 @@ export function loadProfilePage(): HTMLElement {
 			e.preventDefault();
 	
 			const data = Object.fromEntries(new FormData(form).entries());
+
 			const updated = await sendPatchRequest(`http://${window.location.hostname}:3029/api/profile`, data);
 	
-			//andrebbero aggiornati i token i think???
-			currentUser = updated;
+			if (currentUser.username !== updated.username) {
+				// delete all cookies
+
+				// send to login
+				router.push('/logout');
+			}
+			else
+				// reaload
+				router.push('/profile/me');
 		});
 	} catch (err) {
 		console.log('Erro while trying to update profile', err);
@@ -289,6 +300,9 @@ export async function getUserProfile(): Promise<UserProfile> {
 	if (user.ok === false) {
 		throw new Error('No authentication token found');
 	}
+
+	console.log('got cookie from butler', user);
+
 	const username = user.user.username;
 	if (!username) throw new Error('username not found')
 	/* --------------------------------- */
@@ -372,6 +386,9 @@ export async function getUserGames(): Promise</* { history:  */GameData[]/*  } *
 	if (user.ok === false) {
 		throw new Error('No authentication token found');
 	}
+
+	console.log('got cookie from butler', user);
+
 	const username = user.user.username;
 	if (!username) throw new Error('username not found')
 	/* --------------------------------- */

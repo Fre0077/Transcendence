@@ -10,7 +10,7 @@ const PROFILE_BASE_URL = `http://${window.location.hostname}:3029/api`;
 export interface InteractiveWidget {
 	element:HTMLElement;
 	setScore:(score:number) =>void;
-	setStatus:(status:string) => void;
+	setStatus?:(status:string) => void;
 }
 
 // (ChatGPT)
@@ -44,6 +44,21 @@ export async function createProfileWidget(linkid: string, opts?:any): Promise<In
 	// append dynamic editor functions
     const element = container.firstElementChild as HTMLElement;
 
+	// compact return
+	if (compact) {
+		const fields = {
+			score: element.querySelector('[data-field="score"]')!,
+		};
+
+		return {
+			element,
+			setScore(value: number) {
+				fields.score.textContent = String(value);
+			},
+		};
+	}
+
+	// full return
 	const fields = {
 		score: element.querySelector('[data-field="score"]')!,
 		status: element.querySelector('[data-field="status"]')!,
@@ -85,7 +100,6 @@ function loadCompactWidget(
 				>
 					0
 				</span>
-				<div data-field="status" class="text-xs font-mono text-white">waiting...</div>
 			</div>
 		</div>
 	`;
@@ -176,7 +190,6 @@ function loadCompactIconWidget(icon:string, name:string): string {
 			<div class="flex flex-col">
 				<span class="text-xs text-white">${name}</span>
 				<span data-field="score" class="text-sm font-mono text-yellow-400">0</span>
-				<div data-field="status" class="text-xs font-mono text-white">waiting...</div>
 			</div>
 		</div>
 	`;

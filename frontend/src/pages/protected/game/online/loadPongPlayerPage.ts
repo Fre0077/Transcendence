@@ -1,20 +1,14 @@
 // loadPongPlayerPage.ts
 import { router } from "@/router";
-import { load404Page } from "@/pages/errors/404";
+// import { load404Page } from "@/pages/errors/404";
 import { createPlayerSocket } from "@/services/ws/createPongSocket";
 import { createPongBoard } from "@components/PongBoards/createPongBoard";
 
 // #needs-auth-check
 // import { isauth } from "@/services/api/isauth";
 
-export function loadPongPlayerPage(): HTMLElement {
-
-	// obsolete
-	const playerid = localStorage.getItem('userId') || sessionStorage.getItem('guestID');
-	if (playerid === null) {
-		return load404Page();
-	}
-
+export function loadPongPlayerPage(): HTMLElement
+{
 	/* ------ BUILD THE BOARD ------ */
 	// 1. create socket
 	const socket = createPlayerSocket(/* ws, playerID */);

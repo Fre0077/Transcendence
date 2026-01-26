@@ -171,7 +171,11 @@ export async function fetchBackend(request:FastifyRequest, endpoint:string, auth
 }
 
 // forward request to backend services afterr checking authourization
-export async function authForward(request:FastifyRequest, reply:FastifyReply, endpoint:string)
+export async function authForward(
+	request:FastifyRequest,
+	reply:FastifyReply,
+	endpoint:string,
+	callback?: (data: any, reply: FastifyReply) => void)
 {
 	/* --- AUTH CHECK --- */
 	const auth = isCookieAuthenticated(request, reply);
@@ -199,14 +203,23 @@ export async function authForward(request:FastifyRequest, reply:FastifyReply, en
 	/* #debug */
 	// console.log('>Backend fetch', backendResponse);
 
-	// Send body
+	let data;
+	// parse body
 	if (contentType?.includes('application/json')) {
-		const data = await backendResponse.json();
+		data = await backendResponse.json();
 		reply.send(data);
 	} else {
-		const data = await backendResponse.text();
+		data = await backendResponse.text();
 		reply.send(data);
 	}
+
+	// call the post-process callback
+	if (callback && backendResponse.status === 200) {
+		const newdata = callback(data, reply);
+		// and hold the data
+		reply.send(newdata);
+	}
+	else reply.send(data);	// send the fetched reply
 }
 
 // forward to backend without checking authourization

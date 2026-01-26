@@ -40,13 +40,27 @@ export interface AuthRequest extends FastifyRequest {
 
 interface Cookie {
 	id:string,
-	value:string
+	value?:string
 }
 
 function attachCookie(reply:FastifyReply, cookie:Cookie)
 {
+	// if not value return
+	if (!cookie.value) return ;
+
 	// attach the cookie
 	reply.setCookie(cookie.id, cookie.value, {
+		httpOnly: true,
+		secure: false,		// true in production (HTTPS)
+		sameSite: 'lax',	// also check this
+		path: '/',
+	});
+}
+
+function clearCookie(reply:FastifyReply, cookie:Cookie)
+{
+	// attach the cookie
+	reply.clearCookie(cookie.id, {
 		httpOnly: true,
 		secure: false,		// true in production (HTTPS)
 		sameSite: 'lax',	// also check this
@@ -57,14 +71,16 @@ function attachCookie(reply:FastifyReply, cookie:Cookie)
 // attach bot tokens to the user reply
 export function attachAllCookies(data:any, reply:FastifyReply)
 {
-	if (!data.user) {
+	console.log('attaching cookies got', data);
+
+	if (!data.id || !data.email || !data.username) {
 		console.log("Fatal: No user found when trying to attach cookies to the user");
 		reply.code(500).send();
 		return ;
 	}
 
 	// generate new tokens
-	const { accessToken, refreshToken } = generateTokens(data.user)
+	const { accessToken, refreshToken } = generateTokens(data)
 
 	// attach the accessToken
 	attachCookie(reply, {
@@ -81,6 +97,22 @@ export function attachAllCookies(data:any, reply:FastifyReply)
 	// remove user from data
 	const newdata = (({ user, ...object }) => object)(data);
 	return newdata;
+}
+
+// delete bot tokens to the user reply
+export function clearAllCookies(reply:FastifyReply)
+{
+	// attach the accessToken
+	clearCookie(reply, {
+		id: 'accessToken',
+	});
+
+	// attach the refreshToken
+	clearCookie(reply, {
+		id: 'refreshToken',
+	});
+
+	return { ok:true }
 }
 
 /* ------------------------------------------------ */
