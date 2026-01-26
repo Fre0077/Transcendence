@@ -12,7 +12,7 @@ import { loadNavbar } from "@/components/navbar";
 import { createProfileCard } from "@components/createProfileCard.js";
 
 // URLS
-const BACKEND_APIS_URL = `http://${window.location.hostname}:3029/api`;
+const BACKEND_APIS_URL = `/api`;
 
 // globals
 interface Player {

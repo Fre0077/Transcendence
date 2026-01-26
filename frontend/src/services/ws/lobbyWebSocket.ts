@@ -1,7 +1,7 @@
 /* --------------------------------------------------------- */
 /*				  SINGLETON SOCKET CONNECTION				 */
 
-const LOBBY_WEBSOCKET_URL = `ws://${window.location.hostname}:3029/ws/lobby`;
+const LOBBY_WEBSOCKET_URL = `/ws/lobby`;
 
 const LOBBY_FORMAT = 3;
 

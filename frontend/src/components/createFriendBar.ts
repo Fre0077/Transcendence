@@ -1,11 +1,10 @@
 import { sendGetRequest } from "@/services/api/sendRequests";
 import { sendPostRequest } from "@/services/api/sendRequests";
 
-const BACKEND_APIS_URL = `http://${window.location.hostname}:3029/api`;
 
 async function getFriendsList(){
 	try {
-		const data = await sendGetRequest(`http://${window.location.hostname}:3029/api/friends`);
+		const data = await sendGetRequest(`/api/friends`);
 		console.log('data', data);
 		// const friends = JSON.parse(data);
 		// console.log('data', friends);
@@ -78,7 +77,7 @@ function createFriendCard(friend: Friend): HTMLElement {
 	cancelBtn.addEventListener("click", async () => {
 		try {
 			await sendPostRequest(
-				`${BACKEND_APIS_URL}/friend/remove`,
+				`/api/friend/remove`,
 				{ target: friend.username },
 				"application/json"
 			);
@@ -121,7 +120,7 @@ function createIncomingRequestCard(req: Request): HTMLElement {
 	acceptBtn.addEventListener("click", async () => {
 		try {
 			await sendPostRequest(
-				`${BACKEND_APIS_URL}/friend/accept`,
+				`/api/friend/accept`,
 				{ target: req.username },
 				"application/json"
 			)
@@ -141,7 +140,7 @@ function createIncomingRequestCard(req: Request): HTMLElement {
 	declineBtn.addEventListener("click", async () => {
 		try {
 			await sendPostRequest(
-				`${BACKEND_APIS_URL}/friend/remove`,
+				`/api/friend/remove`,
 				{ target: req.username },
 				"application/json")
 			.then(() => {
@@ -185,7 +184,7 @@ function createOutgoingRequestCard(req: Request): HTMLElement {
 	cancelBtn.addEventListener("click", async () => {
 		try {
 			await sendPostRequest(
-				`${BACKEND_APIS_URL}/friend/remove`,
+				`/api/friend/remove`,
 				{ target: req.username },
 				"application/json")
 			.then(() => {

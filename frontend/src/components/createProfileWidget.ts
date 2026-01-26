@@ -4,8 +4,6 @@ import { sendGetRequest } from "@/services/api/sendRequests";
 // elements
 import { generateInitialsAvatar } from "@/components/createDefaultImage";
 
-// urls
-const PROFILE_BASE_URL = `http://${window.location.hostname}:3029/api`;
 
 export interface InteractiveWidget {
 	element:HTMLElement;
@@ -148,7 +146,7 @@ async function loadPlayerWidget(username:string, compact:boolean): Promise<strin
 {
 	try {
 		// get data from backend
-		const data = await sendGetRequest(`${PROFILE_BASE_URL}/userinfo?username=${username}`);
+		const data = await sendGetRequest(`/api/userinfo?username=${username}`);
 		
 		// Dati ricevuti: username e avatarUrl (o image)
 		const avatar = data.avatarUrl || data.image || "";

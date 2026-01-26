@@ -7,8 +7,8 @@ import { /* sendGetRequest,  */sendPostRequest } from "../api/sendRequests";
 import { authWebSocket } from "@services/ws/authWebSocket";
 
 // URLs
-const BUTLER_URL = `ws://${window.location.hostname}:3029/ws`;
-const BACKEND_APIS_URL = `http://${window.location.hostname}:3029/api`;
+const BUTLER_URL = `/ws`;
+const BACKEND_APIS_URL = `/api`;
 
 let socket:WebSocket | null = null;
 

@@ -15,7 +15,8 @@ const PORT = Number(process.env.PORT) || 3029;
 
 /* ------- LOAD STUFF ------- */
 const fastify = Fastify({ 
-	logger: false //too much stuff... 
+	logger: false, //too much stuff... 
+	trustProxy: true
 });
 
 // Metrics - Register BEFORE routes
@@ -31,16 +32,7 @@ await fastify.register(fastifyCookie);
 await fastify.register(cors, {
 	// origin: 'http://frontend:3000', // frontend origin
 	/* origin: ['http://localhost:3000', 'http://frontend:3000'], */ // frontend origin
-	origin: (origin, cb) => {
-        // allow requests with no origin (Postman, curl, mobile apps)
-        if (!origin) {
-            cb(null, true);
-            return ;
-        }
-
-        // allow ANY origin
-        cb(null, origin);
-    },
+	origin: false,
 	credentials: true,              // important: allows cookies to be sent
 	methods: ["GET", "POST", "PATCH", "PUT", "DELETE"],
 });

@@ -3,7 +3,7 @@
 
 import { toastNotification } from "@services/toastNotification";
 
-const TOURNAMENT_WEBSOCKET_URL = `ws://${window.location.hostname}:3029/ws/tournament`;
+const TOURNAMENT_WEBSOCKET_URL = `/ws/tournament`;
 
 const TOURNAMENT_FORMAT = 'single-eliminatin';
 

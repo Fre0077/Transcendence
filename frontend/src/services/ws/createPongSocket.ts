@@ -5,7 +5,7 @@
 // }
 
 
-const PONG_BACKEND_URL = `ws://${window.location.hostname}:3029/ws/pong`;
+const PONG_BACKEND_URL = `/ws/pong`;
 
 // PongSocket.ts
 export interface PongSocket {

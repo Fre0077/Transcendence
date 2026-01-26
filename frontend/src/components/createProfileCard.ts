@@ -4,9 +4,6 @@ import { sendGetRequest } from "@/services/api/sendRequests";
 // elements
 import { generateInitialsAvatar } from "@/components/createDefaultImage";
 
-// urls
-const PROFILE_BASE_URL = `http://${window.location.hostname}:3029/api`;
-
 export function createProfileCard(username: string): HTMLElement {
     const container = document.createElement('div');
     
@@ -35,7 +32,7 @@ export function createProfileCard(username: string): HTMLElement {
     `;
     (async () => {
         try {
-            const data = await sendGetRequest(`${PROFILE_BASE_URL}/userinfo?username=${username}`);
+            const data = await sendGetRequest(`/api/userinfo?username=${username}`);
             // const url = `${PROFILE_BASE_URL}/userinfo?username=${username}`;
             // const authToken = localStorage.getItem("authToken");
             // const response = await fetch(url, {

@@ -51,7 +51,7 @@ function attachCookie(reply:FastifyReply, cookie:Cookie)
 	// attach the cookie
 	reply.setCookie(cookie.id, cookie.value, {
 		httpOnly: true,
-		secure: false,		// true in production (HTTPS)
+		secure: true,		// true in production (HTTPS)
 		sameSite: 'lax',	// also check this
 		path: '/',
 	});
@@ -62,7 +62,7 @@ function clearCookie(reply:FastifyReply, cookie:Cookie)
 	// attach the cookie
 	reply.clearCookie(cookie.id, {
 		httpOnly: true,
-		secure: false,		// true in production (HTTPS)
+		secure: true,		// true in production (HTTPS)
 		sameSite: 'lax',	// also check this
 		path: '/',
 	});

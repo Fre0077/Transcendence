@@ -7,7 +7,6 @@ import { createFriendsBar } from "@/components/createFriendBar";
 import { sendPostRequest, sendPatchRequest } from "@/services/api/sendRequests";
 import { router } from "@/router";
 
-const BACKEND_APIS_URL = `http://${window.location.hostname}:3029/api`;
 
 export function loadProfilePage(): HTMLElement {
 	const div = document.createElement('div');
@@ -224,7 +223,7 @@ export function loadProfilePage(): HTMLElement {
 	
 			const data = Object.fromEntries(new FormData(form).entries());
 
-			const updated = await sendPatchRequest(`http://${window.location.hostname}:3029/api/profile`, data);
+			const updated = await sendPatchRequest(`/api/profile`, data);
 	
 			if (currentUser.username !== updated.username) {
 				// delete all cookies
@@ -262,7 +261,7 @@ export function loadProfilePage(): HTMLElement {
 
 		// send the request to the backend
 		try{
-			sendPostRequest(`${BACKEND_APIS_URL}/friend-request`, {
+			sendPostRequest(`/api/friend-request`, {
 				target: username
 			}, 'application/json')
 			.then(() => {
@@ -296,7 +295,7 @@ interface UserProfile {
 
 export async function getUserProfile(): Promise<UserProfile> {
 	/* ----- get username (todo better) ----- */
-	const user = await sendGetRequest(`http://${window.location.hostname}:3029/api/isauth`);
+	const user = await sendGetRequest(`/api/isauth`);
 	if (user.ok === false) {
 		throw new Error('No authentication token found');
 	}
@@ -307,9 +306,8 @@ export async function getUserProfile(): Promise<UserProfile> {
 	if (!username) throw new Error('username not found')
 	/* --------------------------------- */
 
-	const profileResponse = await sendGetRequest(`http://${window.location.hostname}:3029/api/user?username=${username}`);
-	// const authResponse = await sendGetRequest(`http://${window.location.hostname}:3001/api/profile`, token);
-	const butlerResponse = await sendGetRequest(`http://${window.location.hostname}:3029/api/profile?username=${username}`);
+	const profileResponse = await sendGetRequest(`/api/user?username=${username}`);
+	const butlerResponse = await sendGetRequest(`/api/profile?username=${username}`);
 	return {
 		id: profileResponse.id,
 		email: butlerResponse.email,
@@ -382,7 +380,7 @@ export async function getUserGames(): Promise</* { history:  */GameData[]/*  } *
 	// const linkid = localStorage.getItem('userId');
 
 	/* ----- get username (todo better) ----- */
-	const user = await sendGetRequest(`http://${window.location.hostname}:3029/api/isauth`);
+	const user = await sendGetRequest(`/api/isauth`);
 	if (user.ok === false) {
 		throw new Error('No authentication token found');
 	}
@@ -394,7 +392,7 @@ export async function getUserGames(): Promise</* { history:  */GameData[]/*  } *
 	/* --------------------------------- */
 
 
-	const response = await sendGetRequest(`http://${window.location.hostname}:3029/api/game?username=${username}`);
+	const response = await sendGetRequest(`/api/game?username=${username}`);
 	return response;
 }
 

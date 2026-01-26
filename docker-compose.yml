@@ -25,8 +25,6 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: frontend
-    ports:
-      - "3000:3000"
     volumes:
       - ./frontend:/app
       - /app/node_modules
@@ -83,8 +81,6 @@ services:
       context: ./backend/gateway/butler
       dockerfile: Dockerfile
     container_name: butler
-    ports:
-      - "3029:3029"
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -92,6 +88,22 @@ services:
       - transcendence
     restart: always
 
+# 3. NGINX HTTPS & Certificate
+  nginx:
+      image: nginx:stable-alpine
+      container_name: nginx
+      restart: always
+      ports:
+        - "80:80"
+        - "443:443"
+      volumes:
+        - ./nginx/conf:/etc/nginx/conf.d:ro
+        - ./nginx/ssl:/etc/nginx/ssl:ro
+      depends_on:
+        - frontend
+        - butler
+      networks:
+        - transcendence
 
   # 3. BACKEND SERVICES START LAST
   auth:
@@ -99,8 +111,6 @@ services:
       context: ./backend/database/
       dockerfile: auth/Dockerfile
     container_name: auth
-    ports:
-      - "3001:3001"
     environment:
       - NODE_ENV=production
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
@@ -122,8 +132,6 @@ services:
       context: ./backend/database/
       dockerfile: chat/Dockerfile
     container_name: chat
-    ports:
-      - "3002:3002"
     environment:
       - NODE_ENV=production
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
@@ -145,9 +153,6 @@ services:
       context: ./backend/database/
       dockerfile: profile/Dockerfile
     container_name: profile
-    ports:
-      - "3003:3003"
-      - "5555:5555"
     environment:
       - NODE_ENV=production
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
@@ -164,13 +169,6 @@ services:
       - transcendence
     restart: always
 
-
-
-
-
-
-
-
   # GAME RELATED SERVICES
   ft_bunny:
     build:
@@ -184,8 +182,6 @@ services:
         condition: service_started
     environment:
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
-    ports:
-      - "3030:3030"
     networks:
       - transcendence
     restart: always
@@ -195,8 +191,6 @@ services:
       context: ./backend/services/lobby
       dockerfile: Dockerfile
     container_name: lobby
-    ports:
-      - "3031:3031"
     depends_on:
       ft_bunny:
         condition: service_started
@@ -211,8 +205,6 @@ services:
       context: ./backend/services/tournament
       dockerfile: Dockerfile
     container_name: tournament
-    ports:
-      - "3032:3032"
     depends_on:
       ft_bunny:
         condition: service_started
@@ -227,8 +219,6 @@ services:
       context: ./backend/services/pong
       dockerfile: Dockerfile
     container_name: pong
-    ports:
-      - "3040:3040"
     depends_on:
       ft_bunny:
         condition: service_started
@@ -243,8 +233,6 @@ services:
       context: ./backend/services/bots
       dockerfile: Dockerfile
     container_name: bots
-    ports:
-      - "3033:3033"
     depends_on:
       ft_bunny:
         condition: service_started
