@@ -101,7 +101,7 @@ export class Room
 		}
 
 		// check if not ingame
-		if (this.ingame === false) {
+		if (this.ingame === false && this.justwin === false) {
 			console.log('Room:finalize():: Room not in-game');
 			return ;
 		}

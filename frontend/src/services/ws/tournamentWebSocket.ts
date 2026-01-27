@@ -163,9 +163,9 @@ export function ConnectTournamentSocket(
 				socket.send(JSON.stringify({ method: 'CREATE', size: size, format: TOURNAMENT_FORMAT }));
 			}
 		},
-		join: (lobbyid:string) => {
+		join: (tournamentid:string) => {
 			if (socket.readyState === WebSocket.OPEN) {
-				socket.send(JSON.stringify({ method: 'JOIN', lobbyID: lobbyid }));
+				socket.send(JSON.stringify({ method: 'JOIN', tournamentID: tournamentid }));
 			}
 		},
 		ready: () => {

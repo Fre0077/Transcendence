@@ -13,6 +13,7 @@ interface TournamentState
 
 	// status
 	finished:boolean;
+	aborted:boolean;
 	winners:string[];
 	current_layer:number;
 
@@ -43,23 +44,15 @@ interface TournamentState
 /* --------------------------------------------------------------- */
 /* 						 FORMAT BUILDER 						   */
 
-function isPowOf(num:number, base:number): number
-{
-	let pow = 0;
-
-	while (num !== 1)
-	{
-		pow++;
-		num /= base;
-		if (num !== 1 && num % base !== 0) return 0;
-	}
-
-	return pow;
+function getPowOfTwo(n: number): number | null {
+    if (n <= 0) return null; // negative numbers or zero aren't powers of 2
+    const exp = Math.log2(n);
+    return Number.isInteger(exp) ? exp : null;
 }
 
 function buildSE(players:number, roomsize:number): string
 {
-	const pow = isPowOf(players / roomsize, 2);
+	const pow = getPowOfTwo(players / roomsize);
 
 	/* #debug */
 	// console.log(`2^${pow} = ${players}`);
@@ -221,6 +214,7 @@ export class Tournament
 	private	_closed:boolean;	// is the tournament closed? (no more player can join)
 	private _current_layer:number;
 	private _finished:boolean;
+	private _aborted:boolean;
 	private _winners:string[];
 
 	// tournament's unique code
@@ -247,6 +241,7 @@ export class Tournament
 		this._closed = false;
 		this._current_layer = 0;
 		this._finished = false;
+		this._aborted = false;
 		this._winners = [];
 
 		this._ID = "local";					// lobby code generator.
@@ -289,6 +284,10 @@ export class Tournament
 
 	public get rooms() {
 		return this._rooms;
+	}
+
+	public get aborted() {
+		return this._aborted;
 	}
 
 	public get finished() {
@@ -334,6 +333,7 @@ export class Tournament
 		const state = {
 			ID: this._ID,
 			finished: this._finished,
+			aborted: this._aborted,
 			winners: this._winners,
 			current_layer: this._current_layer,
 			/* gameID: this._gameID,
@@ -614,7 +614,8 @@ export class Tournament
 		if (finals.played === false) return false;
 
 		/* save data */
-		this._finished = true;
+		if (finals.aborted === true) this._aborted = true;
+		else this._finished = true;
 		this._winners = finals.winners;
 		
 		/* #debug */

@@ -64,45 +64,14 @@ function createLocalSocket(game: Game, playerid: string): PongSocket
 	};
 }
 
+import { PlayerData, createPlayerSelectDiv } from "@/components/tournament/createPlayerSelectDiv";
+
 export function loadLocalPongPage(
-	P1?:string,
-	P2?:string,
-	cb?: (winners:string[], score:number[]) => void): HTMLElement
+	P1?:PlayerData,
+	P2?:PlayerData,
+	gameid?:string,
+	cb?: (gameid:string, winners:string[], score:number[]) => void): HTMLElement
 {
-
-	// get usernames
-	const player1 = (P1) ?? 'Guest_1';
-	const player2 = (P2) ?? 'Guest_2';
-
-	// local game
-	const game = new Game([{idx:0, ID:player1}, {idx:1, ID:player2}]);
-
-	/* ------ BUILD THE BOARD ------ */
-	// 1. create 'socket'
-	const socket = createLocalSocket(game, player1);
-
-	// 2. create UI
-	const board = createPongBoard(socket);
-
-	// 3. connect socket → board
-	socket.onmessage((state) => {
-
-		// check if the game is finished
-		if (state.finished) {
-			cb?.(state.winners, state.score);
-		}
-
-		// lame fix to set player-status on local
-		state.players[0].status = "local";
-		state.players[1].status = "local";
-
-		// forward game state to board
-		board.update(state);
-	});
-
-	// local sockets are "instantly open"
-	socket.handshake();
-
 	/* --------- BUILD THE PAGE ----------- */
 
 	// #todo pls fix back button
@@ -110,6 +79,20 @@ export function loadLocalPongPage(
 	const div = document.createElement('div');
 	// div.className = 'min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex flex-col';
 	div.className = 'min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative flex flex-col';
+	
+	/* --- get Players if not passed */
+	if (!P1 || !P2) {
+		const playerSelect = createPlayerSelectDiv((players:any) => {
+		
+			// initialize player data
+			P1 = players[0];
+			P2 = players[1];
+		}, 2);
+
+		div.appendChild(playerSelect);
+		return div; // ⛔ stop here until players are selected
+	}
+	
 	div.innerHTML = /*html*/ `
 
 		<!-- Centered board -->
@@ -126,6 +109,41 @@ export function loadLocalPongPage(
 			Back
 		</button>
 	`;
+
+	/* ------ BUILD THE BOARD ------ */
+
+	// get usernames
+	const player1 = (P1.username);
+	const player2 = (P2.username);
+
+
+	// local game
+	const game = new Game([{idx:0, ID:player1}, {idx:1, ID:player2}]);
+
+	// 1. create 'socket'
+	const socket = createLocalSocket(game, player1);
+
+	// 2. create UI
+	const board = createPongBoard(socket, {p1: { local:true, icon:P1?.icon, phrase:P1?.phrase }, p2: { local:true, icon:P2?.icon, phrase:P2?.phrase }});
+
+	// 3. connect socket → board
+	socket.onmessage((state) => {
+
+		// check if the game is finished
+		if (state.winner !== -1) {
+			cb?.(gameid ?? "no-id", [state.players[state.winner].ID], state.score);
+		}
+
+		// lame fix to set player-status on local
+		state.players[0].status = "local";
+		state.players[1].status = "local";
+
+		// forward game state to board
+		board.update(state);
+	});
+
+	// local sockets are "instantly open"
+	socket.handshake();
 
 	// mount board BEFORE socket updates
 	const slot = div.querySelector("#pong-board-slot")!;
@@ -170,7 +188,7 @@ export function loadLocalPongPage(
 
 			// remove the eventlisteners
 			document.removeEventListener("keyup", keyup);
-			document.removeEventListener("keydown", keydown);
+			document.removeEventListener("keydown", keydown);		
 
 			// back in history
 			router.back();

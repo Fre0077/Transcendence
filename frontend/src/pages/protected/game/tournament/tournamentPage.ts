@@ -30,6 +30,7 @@ interface TournamentState
 
 	// status
 	finished:boolean;
+	aborted:boolean;
 	winners:string[];
 	current_layer:number;
 	
@@ -67,15 +68,20 @@ export function loadOnlineTournamentPage(): HTMLElement
 				class="flex-1 rounded-xl bg-gradient-to-br from-purple-600/20 to-pink-600/20
 					border border-purple-500/30 overflow-hidden"
 			>
+				<!-- Rooms (UP) -->
 				<div
 					id="tournamentRooms"
 					class="p-6 overflow-x-auto"
 				></div>
+
+				<!-- Winners (DOWN) -->
+				<div
+					id="winnersPanel"
+					class="p-6 pt-0"
+				></div>
+
 			</div>
-
 		</div>
-
-		<div id="winnersPanel"></div>
 
 		<div id="spectateGameDiv" class="w-full mt-10"></div>
 
@@ -169,9 +175,37 @@ function spectate(gameid: string) {
 /* --------------------------------------- */
 /* ----- Render Tournament (ChatGPT) ----- */
 
-function renderWinnersPanel(winners: string[]): HTMLElement
+function renderWinnersPanel(status:'aborted' | 'finished', winners: string[]): HTMLElement
 {
 	const div = document.createElement('div');
+
+	/* aborted div */
+	if (status === 'aborted')
+	{
+		div.innerHTML = /* html */`
+			<div class="w-full mt-6">
+				<div class="w-full max-w-3xl mx-auto rounded-xl bg-red-900/20 border border-red-500/30 p-6 text-center">
+					
+					<div class="flex items-center justify-center mb-3">
+						<span class="text-3xl">⛔</span>
+					</div>
+
+					<h3 class="text-red-300 font-semibold text-lg mb-1">
+						Tournament Aborted
+					</h3>
+
+					<p class="text-sm text-red-200/70">
+						This tournament was stopped before completion.
+						No winners were recorded.
+					</p>
+				</div>
+			</div>
+		`;
+
+		return div;
+	}
+
+	/* finished div */
 	div.innerHTML = /* html */`
 		<div class="w-full mt-6">
 			<div class="w-full max-w-4xl mx-auto rounded-xl bg-white/5 border border-white/10 p-4">
@@ -331,7 +365,7 @@ function updateTournamentInfo(state:TournamentState) {
 	console.log('Updating tournament info ...');
 
 	// read data
-	const { players, rooms, finished, winners } = state;
+	const { players, rooms, finished, aborted, winners } = state;
 
 	// verify
 	if (!players || !rooms || finished === undefined || !winners) {
@@ -346,9 +380,11 @@ function updateTournamentInfo(state:TournamentState) {
 	renderTournamentLayout(rooms);
 
 	// update winners panel
+	// update winners panel
 	const winnersPanel = document.getElementById('winnersPanel');
-	if (winnersPanel && finished) {
-		winnersPanel.appendChild(renderWinnersPanel(winners));
+	if (winnersPanel && (finished || aborted)) {
+		const status = (finished) ? 'finished' : 'aborted';
+		winnersPanel.appendChild(renderWinnersPanel(status, winners));
 	}
 }
 

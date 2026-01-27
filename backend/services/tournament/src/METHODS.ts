@@ -185,7 +185,7 @@ export function JOIN(msg:object,
 		console.log(`invalid JSON message ${msg}`);
 		return {
 			status: "failure",
-			reply: JSON.stringify({method: 'JOIN_REPLY', status: 'failure', comment: "invalid JSON: missing 'lobbyID'"})
+			reply: JSON.stringify({method: 'JOIN_REPLY', status: 'failure', comment: "invalid JSON: missing 'tournamentID'"})
 		};
 	}
 
@@ -237,7 +237,7 @@ export function LEAVE(outournament:string | undefined, outplayer:string): Standa
 	if (outournament === undefined) {
 		return {
 			status: "failure",
-			reply: JSON.stringify({ method: 'LEAVE_REPLY', status: 'failure', comment: "Not in a lobby" })
+			reply: JSON.stringify({ method: 'LEAVE_REPLY', status: 'failure', comment: "Not in a tournament" })
 		};
 	}
 
@@ -248,7 +248,7 @@ export function LEAVE(outournament:string | undefined, outplayer:string): Standa
 	// successfule return
 	return {
 		status: "success",
-		reply: JSON.stringify({ method: 'LEAVE_REPLY', status: 'success', comment: "Left the lobby" }),
+		reply: JSON.stringify({ method: 'LEAVE_REPLY', status: 'success', comment: "Left the tournament" }),
 		tournament: undefined,
 		player: outplayer
 	};
