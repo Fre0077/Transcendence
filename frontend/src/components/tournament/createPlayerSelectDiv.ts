@@ -326,8 +326,8 @@ export function createPlayerSelectDiv(cb: (players: PlayerData[]) => void, totpl
 			stepContainer.innerHTML = `
 				<div class="flex flex-col items-center gap-4">
 					<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 justify-center" id="players-grid"></div>
-					<button id="start-tournament-btn" class="mt-4 w-full max-w-xs bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2 rounded-md">
-						Start Tournament
+					<button id="lets-play" class="mt-4 w-full max-w-xs bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2 rounded-md">
+						Press To Play
 					</button>
 				</div>
 			`;
@@ -338,7 +338,7 @@ export function createPlayerSelectDiv(cb: (players: PlayerData[]) => void, totpl
 					grid.appendChild(widget.element);
 				});
 			}
-			const startBtn = div.querySelector('#start-tournament-btn') as HTMLButtonElement;
+			const startBtn = div.querySelector('#lets-play') as HTMLButtonElement;
 			startBtn.onclick = () => {
 				div.remove();
 				cb(players);

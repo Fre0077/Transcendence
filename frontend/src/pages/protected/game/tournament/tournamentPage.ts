@@ -5,8 +5,7 @@ import { loadNavbar } from "@/components/navbar";
 
 // services
 import { TournamentWebSocket, ConnectTournamentSocket } from "@/services/ws/tournamentWebSocket";
-import { sendGetRequest } from "@/services/api/sendRequests";
-
+import { isauth } from "@/services/api/isauth";
 // elements
 import { loadPongSpectatorDiv } from "@pages/protected/game/online/loadPongSpectatorDiv";
 import { createProfileCard } from "@/components/createProfileCard";
@@ -107,7 +106,7 @@ export function loadOnlineTournamentPage(): HTMLElement
 
 
 // add the spectated game
-function spectate(gameid: string) {
+async function spectate(gameid: string) {
     // If already spectating this game, do nothing
     if (spectatingGames.has(gameid)) {
         console.log(`Already spectating game ${gameid}`);
@@ -115,7 +114,7 @@ function spectate(gameid: string) {
     }
 
 	// refresh cookies
-	sendGetRequest('/api/isauth');
+	await isauth();
 
     console.log('Spectating game:', gameid);
 

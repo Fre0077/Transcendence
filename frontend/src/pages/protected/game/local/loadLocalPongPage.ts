@@ -1,9 +1,14 @@
-// loadPongPlayerPage.ts
+// default
 import { router } from "@/router";
 // import { load404Page } from "@/pages/errors/404";
+
+// services
 import { PongSocket } from "@/services/ws/createPongSocket";
-import { createPongBoard } from "@components/PongBoards/createPongBoard";
 import { Game } from "@/pages/protected/game/local/classes/Pong/GameClass"
+
+// elements
+import { createPongBoard } from "@components/PongBoards/createPongBoard";
+import { PlayerData, createPlayerSelectDiv } from "@/components/tournament/createPlayerSelectDiv";
 
 function move(game:Game, data:any)
 {
@@ -64,8 +69,6 @@ function createLocalSocket(game: Game, playerid: string): PongSocket
 	};
 }
 
-import { PlayerData, createPlayerSelectDiv } from "@/components/tournament/createPlayerSelectDiv";
-
 export function loadLocalPongPage(
 	P1?:PlayerData,
 	P2?:PlayerData,
@@ -77,23 +80,37 @@ export function loadLocalPongPage(
 	// #todo pls fix back button
 
 	const div = document.createElement('div');
-	// div.className = 'min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex flex-col';
 	div.className = 'min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative flex flex-col';
-	
+
 	/* --- get Players if not passed */
 	if (!P1 || !P2) {
 		const playerSelect = createPlayerSelectDiv((players:any) => {
 		
 			// initialize player data
-			P1 = players[0];
-			P2 = players[1];
+			P1 = players[0] as PlayerData;
+			P2 = players[1] as PlayerData;
+
+			// render UI
+			renderPongUI(div, P1, P2, gameid, cb);
 		}, 2);
 
 		div.appendChild(playerSelect);
 		return div; // ⛔ stop here until players are selected
 	}
-	
-	div.innerHTML = /*html*/ `
+
+	renderPongUI(div, P1, P2, gameid, cb);
+
+	return div;
+}
+
+function renderPongUI(
+	container: HTMLElement,
+	P1:PlayerData,
+	P2:PlayerData,
+	gameid?:string,
+	cb?: (gameid:string, winners:string[], score:number[]) => void)
+{
+	container.innerHTML = /*html*/ `
 
 		<!-- Centered board -->
 		<div class="flex-1 container mx-auto px-4 flex flex-col items-center justify-center gap-8 pb-8">
@@ -115,7 +132,6 @@ export function loadLocalPongPage(
 	// get usernames
 	const player1 = (P1.username);
 	const player2 = (P2.username);
-
 
 	// local game
 	const game = new Game([{idx:0, ID:player1}, {idx:1, ID:player2}]);
@@ -146,8 +162,26 @@ export function loadLocalPongPage(
 	socket.handshake();
 
 	// mount board BEFORE socket updates
-	const slot = div.querySelector("#pong-board-slot")!;
+	const slot = container.querySelector("#pong-board-slot")!;
 	slot.appendChild(board.element);
+
+		/* --- DESTROY LOGIC --- */
+	// Add event listener for leave game button
+	const leaveGameBtn = container.querySelector('#leaveGameBtn');
+	if (leaveGameBtn) {
+		leaveGameBtn.addEventListener('click', () => {
+
+			// destroy board
+			board.destroy();
+
+			// remove the eventlisteners
+			document.removeEventListener("keyup", keyup);
+			document.removeEventListener("keydown", keydown);		
+
+			// back in history
+			router.back();
+		});
+	}
 
 	/* --- REGISTER INPUTS --- */
 
@@ -176,24 +210,4 @@ export function loadLocalPongPage(
 	// inputs
 	document.addEventListener("keydown", keydown);
 	document.addEventListener("keyup", keyup);
-
-	/* --- DESTROY LOGIC --- */
-	// Add event listener for leave game button
-	const leaveGameBtn = div.querySelector('#leaveGameBtn');
-	if (leaveGameBtn) {
-		leaveGameBtn.addEventListener('click', () => {
-
-			// destroy board
-			board.destroy();
-
-			// remove the eventlisteners
-			document.removeEventListener("keyup", keyup);
-			document.removeEventListener("keydown", keydown);		
-
-			// back in history
-			router.back();
-		});
-	}
-
-	return div;
 }

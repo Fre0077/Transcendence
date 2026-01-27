@@ -1,5 +1,8 @@
 
-import { sendGetRequest } from "@/services/api/sendRequests";
+// services
+import { isauth } from "@/services/api/isauth";
+
+// components
 import { loadPongReplayDiv } from "@pages/protected/game/online/laodPongReplayDiv";
 
 export interface GameData {
@@ -132,12 +135,12 @@ export function createHistoryBar(data: GameData): HTMLElement {
 	let replayContainer: HTMLElement | null = null;
 
 	const replayBtn = div.querySelector('button');
-	replayBtn?.addEventListener("click", () => {
+	replayBtn?.addEventListener("click", async () => {
 		// if replay already exists → ignore
 		if (replayContainer) return;
 
 		// refresh cookies
-		sendGetRequest('/api/isauth');
+		await isauth();
 
 		replayBtn.disabled = true;
 		replayBtn.classList.add("opacity-50", "cursor-not-allowed");
