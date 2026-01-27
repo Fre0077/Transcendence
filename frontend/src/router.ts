@@ -326,7 +326,7 @@ const routes: RouteConfig[] = [
   },
   {
     // TODO: Implement profile page
-    path: '/profile/:userId',
+    path: '/profile/:username',
     name: 'profile',
     component: () => {
       return loadProfilePage();

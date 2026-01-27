@@ -7,8 +7,15 @@ import { createFriendsBar } from "@/components/createFriendBar";
 import { sendPostRequest, sendPatchRequest } from "@/services/api/sendRequests";
 import { router } from "@/router";
 
+let mainUsername:string = '';
 
 export function loadProfilePage(): HTMLElement {
+
+	const params = router.getParams();
+	mainUsername = params.username
+	console.log('params', mainUsername);
+
+
 	const div = document.createElement('div');
 	div.className = 'min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex flex-col';
 	div.innerHTML = /* html */ `
@@ -152,7 +159,7 @@ export function loadProfilePage(): HTMLElement {
 
 		// Update avatar
 		const avatarImg = div.querySelector('img');
-		if (avatarImg) avatarImg.src = user.avatarUrl || generateInitialsAvatar(user.name, user.surname) || "";
+		if (avatarImg) avatarImg.src = user.avatarUrl || generateInitialsAvatar(user.username) || "";
 
 		// Update stats
 		const statsDiv = div.querySelector('#userStats');
@@ -195,13 +202,14 @@ export function loadProfilePage(): HTMLElement {
 
 	
 	// AGGIUNGI LA BAR DEGLI AMICI
-	document.body.appendChild(createFriendsBar());
-
+	
+	if (!document.getElementById("FriendBar"))
+		document.body.appendChild(createFriendsBar());
+	const editBtn = div.querySelector('#edit-profile-btn') as HTMLButtonElement;
+	const modal = div.querySelector('#edit-profile-modal') as HTMLDivElement;
+	const closeBtn = div.querySelector('#close-edit-modal') as HTMLButtonElement;
+	const form = div.querySelector('#edit-profile-form') as HTMLFormElement;
 	try {
-		const editBtn = div.querySelector('#edit-profile-btn') as HTMLButtonElement;
-		const modal = div.querySelector('#edit-profile-modal') as HTMLDivElement;
-		const closeBtn = div.querySelector('#close-edit-modal') as HTMLButtonElement;
-		const form = div.querySelector('#edit-profile-form') as HTMLFormElement;
 	
 		editBtn.addEventListener('click', () => {
 			modal.classList.remove('hidden');
@@ -242,6 +250,8 @@ export function loadProfilePage(): HTMLElement {
 	/* -------------------------------- */
 	/*          FRIEND REQUEST          */
 
+	const friendCard = div.querySelector("#friend-request-card") as HTMLElement;
+
 	// friend request btn
 	const freqform = div.querySelector("#friend-request-form") as HTMLFormElement;
 	freqform.addEventListener("submit", (event) => {
@@ -274,17 +284,19 @@ export function loadProfilePage(): HTMLElement {
 			console.log('Erro while trying to friend request', err);
 		}
 	});
-
-
+	if (mainUsername !== 'me'){
+		editBtn.classList.add('hidden');
+		friendCard.classList.add('hidden');
+	}
 	return div;
 }
 
 interface UserProfile {
 	id: number;
-	email: string;
+	// email: string;
 	username: string;
-	name: string;
-	surname: string;
+	// name: string;
+	// surname: string;
 	wins: number;
 	losses: number;
 	tournamentWins: number;
@@ -295,25 +307,27 @@ interface UserProfile {
 
 export async function getUserProfile(): Promise<UserProfile> {
 	/* ----- get username (todo better) ----- */
-	const user = await sendGetRequest(`/api/isauth`);
-	if (user.ok === false) {
-		throw new Error('No authentication token found');
+	let username;
+	if (mainUsername === 'me') {
+		const user = await sendGetRequest(`/api/isauth`);
+		if (user.ok === false) {
+			throw new Error('No authentication token found');
+		}
+		username = user.user.username;
+		if (!username) throw new Error('username not found')
 	}
+	else
+		username = mainUsername;
 
-	console.log('got cookie from butler', user);
-
-	const username = user.user.username;
-	if (!username) throw new Error('username not found')
 	/* --------------------------------- */
-
 	const profileResponse = await sendGetRequest(`/api/user?username=${username}`);
 	const butlerResponse = await sendGetRequest(`/api/profile?username=${username}`);
 	return {
 		id: profileResponse.id,
-		email: butlerResponse.email,
+		// email: butlerResponse.email,
 		username: profileResponse.username,
-		name: butlerResponse.name,
-		surname: butlerResponse.surname,
+		// name: butlerResponse.name,
+		// surname: butlerResponse.surname,
 		wins: profileResponse.wins,
 		losses: profileResponse.losses,
 		tournamentWins: profileResponse.tournamentWins,
@@ -380,15 +394,18 @@ export async function getUserGames(): Promise</* { history:  */GameData[]/*  } *
 	// const linkid = localStorage.getItem('userId');
 
 	/* ----- get username (todo better) ----- */
-	const user = await sendGetRequest(`/api/isauth`);
-	if (user.ok === false) {
-		throw new Error('No authentication token found');
+	let username;
+	if (mainUsername === 'me') {
+		const user = await sendGetRequest(`/api/isauth`);
+		if (user.ok === false) {
+			throw new Error('No authentication token found');
+		}
+		console.log('got cookie from butler', user);
+		username = user.user.username;
+		if (!username) throw new Error('username not found')
 	}
-
-	console.log('got cookie from butler', user);
-
-	const username = user.user.username;
-	if (!username) throw new Error('username not found')
+	else
+		username = mainUsername;
 	/* --------------------------------- */
 
 

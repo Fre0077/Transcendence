@@ -1,6 +1,7 @@
+import { router } from "@/router";
 import { sendGetRequest } from "@/services/api/sendRequests";
 import { sendPostRequest } from "@/services/api/sendRequests";
-
+import { generateInitialsAvatar } from "./createDefaultImage";
 
 async function getFriendsList(){
 	try {
@@ -42,7 +43,7 @@ function createFriendCard(friend: Friend): HTMLElement {
 		<div class="flex items-center gap-3 p-3">
 			<img
 				class="w-10 h-10 rounded-full"
-				src="${friend.avatarUrl ?? "https://i.pravatar.cc/100"}"
+				src="${friend.avatarUrl ?? generateInitialsAvatar(friend.username)}"
 			/>
 			<div class="flex-1">
 				<div class="text-white text-sm font-medium">${friend.username}</div>
@@ -58,8 +59,8 @@ function createFriendCard(friend: Friend): HTMLElement {
 			<button class="w-full px-3 py-2 text-sm text-left text-white hover:bg-white/10">
 				Send Message
 			</button>
-			<button class="w-full px-3 py-2 text-sm text-left text-white hover:bg-white/10">
-				Invite to Game
+			<button class="view-profile w-full px-3 py-2 text-sm text-left text-white hover:bg-white/10">
+				View Profile
 			</button>
 			<button class="decline-btn w-full px-3 py-2 text-sm text-left text-red-400 hover:bg-red-500/10">
 				Remove Friend
@@ -82,6 +83,15 @@ function createFriendCard(friend: Friend): HTMLElement {
 				"application/json"
 			);
 			console.log("Friend request remove:", friend.username);
+		} catch (err) {
+			console.error(err);
+		}
+	});
+
+	const viewProfile = card.querySelector(".view-profile")!;
+	viewProfile.addEventListener("click", async () => {
+		try {
+			router.push(`/profile/${friend.username}`)
 		} catch (err) {
 			console.error(err);
 		}

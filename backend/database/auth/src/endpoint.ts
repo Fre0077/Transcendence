@@ -137,15 +137,20 @@ export async function authEndpoint(fastify: FastifyInstance) {
 	// 	}
 	// });
 
+	interface ProfileQuery {
+		username?: string;
+	}
+
 	//Enpoint GET per ottenere l'account dal database
-	fastify.get('/profile', async (request: AuthRequest, reply: FastifyReply) => {
+	fastify.get<{ Querystring: ProfileQuery }>('/profile', async (request, reply) => {
 		try {
 			const userId = Number(request.headers['x-user-id'])
 			const secret = request.headers['x-gateway-secret']
+			const { username } = request.query;
 
 			if (!userId || secret !== 'biscottini') {throw new Unauthorized('Utente non autorizzato', 'auth'); }
 			const user = await authPrisma.account.findUnique({
-			where: { id: userId},
+			where: { username: username},
 			select: {
 				id: true, email: true, username: true,
 				name: true, surname: true, bio: true, avatarUrl: true

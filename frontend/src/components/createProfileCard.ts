@@ -60,7 +60,7 @@ export function createProfileCard(username: string): HTMLElement {
                             src="${avatar}" 
                             alt="${username}" 
                             class="relative w-24 h-24 rounded-full object-cover border-2 border-slate-800 shadow-2xl"
-                            onerror="this.src=this.src=${generateInitialsAvatar(username, 'player')}"
+                            onerror="this.src=this.src=${generateInitialsAvatar(username)}"
                         />
                     </div>
                     
