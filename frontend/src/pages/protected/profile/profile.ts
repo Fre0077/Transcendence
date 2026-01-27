@@ -30,7 +30,31 @@ export function loadProfilePage(): HTMLElement {
 				✏️ Edit
 			</button>
 			<div class="text-center flex flex-row flex-grow items-center">
-				<img class="w-32 h-32 mb-6 rounded-full select-none" draggable="false" ondragstart="return false;" style="-webkit-user-drag: none; user-select: none;" src="https://i.pravatar.cc/150?img=1" alt="Under Construction" />
+				<div class="relative w-32 h-32 mb-6">
+					<img
+						id="avatar-img"
+						class="w-32 h-32 rounded-full select-none"
+						draggable="false"
+						style="-webkit-user-drag: none; user-select: none;"
+						src="https://i.pravatar.cc/150?img=1"
+						alt="Avatar"
+					/>
+
+					<!-- Pallino -->
+					<button
+						id="change-avatar-btn"
+						title="Change avatar"
+						class="absolute bottom-1 right-1 w-8 h-8
+							rounded-full bg-cyan-600 hover:bg-cyan-500
+							border-2 border-slate-900
+							flex items-center justify-center
+							text-white text-sm
+							transition-transform hover:scale-110"
+					>
+						✏️
+					</button>
+					<input id="avatar-file-input" type="file" accept="image/*" class="hidden"/>
+				</div>
 				<div class="ml-8 text-left">
 					<h1 class="text-4xl font-bold text-white mb-4">Username</h1>
 					<p class="text-white/70 mb-6">Brief description about the user.</p>
@@ -212,7 +236,6 @@ export function loadProfilePage(): HTMLElement {
 	const form = div.querySelector('#edit-profile-form') as HTMLFormElement;
 	
 	try {
-	
 		editBtn.addEventListener('click', () => {
 			modal.classList.remove('hidden');
 			modal.classList.add('flex');
