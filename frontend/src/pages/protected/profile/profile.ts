@@ -205,10 +205,12 @@ export function loadProfilePage(): HTMLElement {
 	
 	if (!document.getElementById("FriendBar"))
 		document.body.appendChild(createFriendsBar());
+
 	const editBtn = div.querySelector('#edit-profile-btn') as HTMLButtonElement;
 	const modal = div.querySelector('#edit-profile-modal') as HTMLDivElement;
 	const closeBtn = div.querySelector('#close-edit-modal') as HTMLButtonElement;
 	const form = div.querySelector('#edit-profile-form') as HTMLFormElement;
+	
 	try {
 	
 		editBtn.addEventListener('click', () => {

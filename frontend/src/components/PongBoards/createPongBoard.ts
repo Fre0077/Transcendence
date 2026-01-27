@@ -95,10 +95,15 @@ export function createPongBoard(socket:PongSocket, widget_opts?:any): PongBoard 
 				// console.log('Drawing cards...');
 
 				// save widgets
-				const { p1 } = widget_opts;
-				const { p2 } = widget_opts;
-				player1Widget = await createProfileWidget(state.players[0].ID, p1);
-				player2Widget = await createProfileWidget(state.players[1].ID, p2);
+				let player1, player2;
+				if (widget_opts) {
+					const { p1 } = widget_opts;
+					const { p2 } = widget_opts;
+					player1 = p1;
+					player2 = p2;
+				}
+				player1Widget = await createProfileWidget(state.players[0].ID, player1);
+				player2Widget = await createProfileWidget(state.players[1].ID, player2);
 
 				// append elements (the check on child is for sync problems)
 				if (player1Slot.childElementCount === 0) player1Slot.appendChild(player1Widget.element);

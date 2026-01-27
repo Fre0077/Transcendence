@@ -55,8 +55,8 @@ export function createPongBoardWidget(socket: PongSocket): PongBoard {
 				compact: true,
 			});
 
-			p1Slot.appendChild(p1Widget.element);
-			p2Slot.appendChild(p2Widget.element);
+			if (p1Slot.childElementCount === 0) p1Slot.appendChild(p1Widget.element);
+			if (p2Slot.childElementCount === 0) p2Slot.appendChild(p2Widget.element);
 
 			playersInitialized = true;
 		}

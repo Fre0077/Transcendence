@@ -5,6 +5,7 @@ import { loadNavbar } from "@/components/navbar";
 
 // services
 import { TournamentWebSocket, ConnectTournamentSocket } from "@/services/ws/tournamentWebSocket";
+import { sendGetRequest } from "@/services/api/sendRequests";
 
 // elements
 import { loadPongSpectatorDiv } from "@pages/protected/game/online/loadPongSpectatorDiv";
@@ -112,6 +113,9 @@ function spectate(gameid: string) {
         console.log(`Already spectating game ${gameid}`);
         return;
     }
+
+	// refresh cookies
+	sendGetRequest('/api/isauth');
 
     console.log('Spectating game:', gameid);
 
@@ -382,7 +386,7 @@ function updateTournamentInfo(state:TournamentState) {
 	// update winners panel
 	// update winners panel
 	const winnersPanel = document.getElementById('winnersPanel');
-	if (winnersPanel && (finished || aborted)) {
+	if (winnersPanel && winnersPanel.childElementCount === 0 && (finished || aborted)) {
 		const status = (finished) ? 'finished' : 'aborted';
 		winnersPanel.appendChild(renderWinnersPanel(status, winners));
 	}

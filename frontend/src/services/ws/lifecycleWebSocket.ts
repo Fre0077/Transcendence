@@ -53,7 +53,7 @@ export async function ConnectLifecycleSocket(): Promise<WebSocket | null>
 	}
 
 	// connect with auth refresh
-	socket = await authWebSocket('');
+	socket = await authWebSocket();
 	if (!socket) {
 		console.log("User not authenticated, can't connect to lifecycle websocket");
 		return null;
@@ -119,12 +119,12 @@ export async function ConnectLifecycleSocket(): Promise<WebSocket | null>
 	}
 
 	socket.onclose = () => {
-		console.log("Closing lifecycle websocket");
+		console.log("Closing Lifecycle WebSocket");
 		socket = null;
 	}
 
 	socket.onerror = (err) => {
-		console.log("Socket error", err);
+		console.log("Lifecycle WebSocket error", err);
 		socket?.close();
 	}
 

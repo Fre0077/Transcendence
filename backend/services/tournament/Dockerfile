@@ -12,7 +12,7 @@ RUN npm run build
 
 #ENV NODE_ENV=development
 
-EXPOSE 3032
+# EXPOSE 3032
 
 # run dev server and force bind to 0.0.0.0 so container is reachable
 CMD ["npm", "run", "start"]

@@ -93,8 +93,8 @@ services:
       container_name: nginx
       restart: always
       ports:
-        - "80:80"
-        - "443:443"
+        - "8080:80"
+        - "4443:4443"
       volumes:
         - ./nginx/conf:/etc/nginx/conf.d:ro
         - ./nginx/ssl:/etc/nginx/ssl:ro

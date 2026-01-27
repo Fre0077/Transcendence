@@ -276,7 +276,7 @@ function generateAccessToken(user: any): string
 	const id = (user.id) ? user.id : user.userId;	// get the id since we have 2 ways of storing it :D
 	const accessTokenPayload = { /* @topiana- added */username: user.username, userId: id, email: user.email };
 	const accessToken = jwt.sign(accessTokenPayload, "ft_trans(cendence)", {
-		expiresIn: "10s",
+		expiresIn: "10s",	// #prod change to 15m
 	});
 	return accessToken;
 }

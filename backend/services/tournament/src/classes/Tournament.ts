@@ -248,7 +248,7 @@ export class Tournament<T extends MySocket>
 		this._closed = false;
 		this._current_layer = 0;
 		this._finished = false;
-		this._aborted = true;
+		this._aborted = false;
 		this._winners = [];
 
 		this._ID = uuidv4();					// lobby code generator.

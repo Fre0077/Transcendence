@@ -283,6 +283,12 @@ const routes: RouteConfig[] = [
     name: 'logout',
     component: () => {
       sendDeleteRequest(`http://${window.location.hostname}:3029/api/logout`);
+      
+      // notify logout
+			document.dispatchEvent(
+				new CustomEvent("auth:logout", { bubbles: true })
+			);
+      
       return loadLoginPage();
     },
     meta: { title: 'Login - ft_transcendence', requiresGuest: true },

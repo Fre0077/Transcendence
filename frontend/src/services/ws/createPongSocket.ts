@@ -33,18 +33,12 @@ const playerSecretary = (data:any, ws:WebSocket) => {
 	ws;
 }
 
-let playerWS:PongSocket | null = null;
-
 // behaviour of the player socket
 export function createPlayerSocket(): PongSocket
 {
-	if (playerWS && playerWS.socket?.readyState === WebSocket.OPEN) {
-		return playerWS;
-	}
-
 	const ws = new WebSocket(`${PONG_BACKEND_URL}/play`);
 
-	playerWS = {
+	return {
 		socket:ws,
 		// data
 		// playerid: playerid,
@@ -71,11 +65,8 @@ export function createPlayerSocket(): PongSocket
 		},
 		close() {
 			ws.close();
-			playerWS = null;
 		}
 	};
-
-	return playerWS;
 }
 
 
@@ -90,18 +81,12 @@ const spectateSecretary = (data:any, ws:WebSocket) => {
 	ws;
 }
 
-let spectatorWS:PongSocket | null = null;
-
 // behaviour of the spectator socket
 export function createSpectatorSocket(/* , playerid:string */matchid:string): PongSocket
 {
-	if (spectatorWS && spectatorWS.socket?.readyState === WebSocket.OPEN) {
-		return spectatorWS;
-	}
-
 	const ws = new WebSocket(`${PONG_BACKEND_URL}/spectate`);
 
-	spectatorWS = {
+	return {
 		socket:ws,
 		// data
 		// playerid: playerid,
@@ -132,11 +117,8 @@ export function createSpectatorSocket(/* , playerid:string */matchid:string): Po
 		},
 		close() {
 			ws.close();
-			spectatorWS = null;
 		}
 	};
-
-	return spectatorWS;
 }
 
 /* --------------------------------------- */
@@ -150,18 +132,14 @@ const replaySecretary = (data:any, ws:WebSocket) => {
 	ws;
 }
 
-let replayWS:PongSocket | null = null;
 
 // behaviour of the spectator socket
 export function createReplaySocket(/* , playerid:string */replaystring:string): PongSocket
 {
-	if (replayWS && replayWS.socket?.readyState === WebSocket.OPEN) {
-		return replayWS;
-	}
-
+	console.log('[WS] connecting to', `${PONG_BACKEND_URL}/replay`);
 	const ws = new WebSocket(`${PONG_BACKEND_URL}/replay`);
 
-	replayWS = {
+	return {
 		socket: ws,
 		// data
 		replay:replaystring,
@@ -191,9 +169,6 @@ export function createReplaySocket(/* , playerid:string */replaystring:string): 
 		},
 		close() {
 			ws.close();
-			replayWS = null;
 		}
 	};
-
-	return replayWS;
 }

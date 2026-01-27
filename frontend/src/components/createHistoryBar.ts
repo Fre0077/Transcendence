@@ -1,4 +1,5 @@
 
+import { sendGetRequest } from "@/services/api/sendRequests";
 import { loadPongReplayDiv } from "@pages/protected/game/online/laodPongReplayDiv";
 
 export interface GameData {
@@ -131,36 +132,12 @@ export function createHistoryBar(data: GameData): HTMLElement {
 	let replayContainer: HTMLElement | null = null;
 
 	const replayBtn = div.querySelector('button');
-	// replayBtn?.addEventListener("click", () => {
-	// 	// toggle replay
-	// 	if (replayContainer) {
-	// 		// call destroy hook
-	// 		const replayDiv = replayContainer.firstElementChild as any;
-	// 		replayDiv?.destroy?.();
-	
-	// 		replayContainer.remove();
-	// 		replayContainer = null;
-	// 		return;
-	// 	}
-
-	// 	replayContainer = document.createElement("div");
-	// 	replayContainer.className = "mt-4";
-
-	// 	const replayDiv = loadPongReplayDiv(data.replay);
-
-	// 	// 🔥 hook close button
-	// 	replayDiv.addEventListener("replay:close", () => {
-	// 		replayContainer?.remove();
-	// 		replayContainer = null;
-	// 	});
-
-	// 	replayContainer.appendChild(replayDiv);
-	// 	div.appendChild(replayContainer);
-	// });
-
 	replayBtn?.addEventListener("click", () => {
 		// if replay already exists → ignore
 		if (replayContainer) return;
+
+		// refresh cookies
+		sendGetRequest('/api/isauth');
 
 		replayBtn.disabled = true;
 		replayBtn.classList.add("opacity-50", "cursor-not-allowed");
@@ -185,14 +162,6 @@ export function createHistoryBar(data: GameData): HTMLElement {
 		replayContainer.appendChild(replayDiv);
 		div.appendChild(replayContainer);
 	});
-
-	// const replayBtn = div.querySelector('button');
-	// replayBtn?.addEventListener('click', () => {
-	// 	console.log("Replay clicked:", data.replay);
-
-	// 	const replaySlot = div.querySelector('#replay-slot');
-	// 	if (replaySlot) replaySlot.appendChild(loadPongReplayDiv(data.replay));
-	// });
 
 	return div;
 }
