@@ -293,10 +293,10 @@ export function loadProfilePage(): HTMLElement {
 
 interface UserProfile {
 	id: number;
-	// email: string;
+	email?: string;
 	username: string;
-	// name: string;
-	// surname: string;
+	name?: string;
+	surname?: string;
 	wins: number;
 	losses: number;
 	tournamentWins: number;
@@ -324,10 +324,10 @@ export async function getUserProfile(): Promise<UserProfile> {
 	const butlerResponse = await sendGetRequest(`/api/profile?username=${username}`);
 	return {
 		id: profileResponse.id,
-		// email: butlerResponse.email,
+		email: butlerResponse.email,
 		username: profileResponse.username,
-		// name: butlerResponse.name,
-		// surname: butlerResponse.surname,
+		name: butlerResponse.name,
+		surname: butlerResponse.surname,
 		wins: profileResponse.wins,
 		losses: profileResponse.losses,
 		tournamentWins: profileResponse.tournamentWins,

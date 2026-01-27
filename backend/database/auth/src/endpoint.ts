@@ -149,12 +149,21 @@ export async function authEndpoint(fastify: FastifyInstance) {
 			const { username } = request.query;
 
 			if (!userId || secret !== 'biscottini') {throw new Unauthorized('Utente non autorizzato', 'auth'); }
+			const me = await authPrisma.account.findUnique({
+				where: { id: userId},
+				select: {
+					id: true, email: true, username: true,
+					name: true, surname: true, bio: true, avatarUrl: true
+				}
+			});
+			if (!me) 
+				throw new NotFound('Profilo utente non trovato', 'auth');
+			if (username === me?.username) reply.code(200).send(me);
 			const user = await authPrisma.account.findUnique({
-			where: { username: username},
-			select: {
-				id: true, email: true, username: true,
-				name: true, surname: true, bio: true, avatarUrl: true
-			}
+				where: { username: username},
+				select: {
+					id: true, username: true, bio: true, avatarUrl: true
+				}
 			});
 			if (!user) 
 				throw new NotFound('Profilo utente non trovato', 'auth');
