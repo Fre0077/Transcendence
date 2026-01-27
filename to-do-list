@@ -3,7 +3,7 @@
 
 
 WHAT-AM-I-DOING-NOW
-3. Tournaments in local
+19. finish notifications on game
 
 WHAT-AM-I-DOING-NEXT
 17. status dot on friendlist
@@ -21,7 +21,8 @@ MAJOR
 21. Sometimes freezes... after adding .dispatchEvent()??? or the persist session with no more localStorage???
 22. You can access protected pages after logout if you go back in history (top left arrow buttons) (@aleborghi)
 23. 2FA login (@aleborghi)
-24. Public profile page
+24. Lobby game got smashed in tournament game
+25. Spectator websocket failing
 
 
 MINOR
@@ -30,7 +31,6 @@ MINOR
 9. Emotes in-game
 10. Error log in lobby page
 13. Force start timers in for tournament layers and game rounds
-19. finish notifications on game
 18. rejoin button if you disconnect from a game (todo on tournaments)
 20. Better pong bot
 21. lobby chat
@@ -85,3 +85,5 @@ DONE
 12. Inconsistend player-score relation in match history (DONE)
 11. frontend api calls all in one place (DONE)
 20. auth setup that @aleborhi tought in the beginning (DONE-ish)
+3. Tournaments in local (DONE)
+24. Public profile page (DONE)

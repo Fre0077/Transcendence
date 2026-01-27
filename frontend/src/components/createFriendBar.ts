@@ -16,7 +16,7 @@ async function getFriendsList(){
 	}
 }
 
-export type FriendStatus = "online" | "offline" | "ingame";
+export type FriendStatus = "online" | "offline" | "ingame" | "away";
 
 interface Friend {
 	username: string,
@@ -34,7 +34,7 @@ function createFriendCard(friend: Friend): HTMLElement {
 	const statusColor =
 		friend.status === "online"
 			? "bg-green-500"
-			: friend.status === "ingame"
+			: friend.status === "away"
 			? "bg-yellow-400"
 			: "bg-gray-400";
 

@@ -5,7 +5,7 @@ import { loadNavbar } from "@/components/navbar";
 
 // services
 import { TournamentWebSocket, ConnectTournamentSocket } from "@/services/ws/tournamentWebSocket";
-import { isauth } from "@/services/api/isauth";
+// import { isauth } from "@/services/api/isauth";
 // elements
 import { loadPongSpectatorDiv } from "@pages/protected/game/online/loadPongSpectatorDiv";
 import { createProfileCard } from "@/components/createProfileCard";
@@ -114,7 +114,7 @@ async function spectate(gameid: string) {
     }
 
 	// refresh cookies
-	await isauth();
+	// await isauth();
 
     console.log('Spectating game:', gameid);
 

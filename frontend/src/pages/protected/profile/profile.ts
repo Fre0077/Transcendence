@@ -226,10 +226,10 @@ export function loadProfilePage(): HTMLElement {
 
 	
 	// AGGIUNGI LA BAR DEGLI AMICI
-	
 	if (!document.getElementById("FriendBar"))
 		document.body.appendChild(createFriendsBar());
 
+	// EDIT PROFILE BTN
 	const editBtn = div.querySelector('#edit-profile-btn') as HTMLButtonElement;
 	const modal = div.querySelector('#edit-profile-modal') as HTMLDivElement;
 	const closeBtn = div.querySelector('#close-edit-modal') as HTMLButtonElement;
@@ -309,6 +309,8 @@ export function loadProfilePage(): HTMLElement {
 			console.log('Erro while trying to friend request', err);
 		}
 	});
+
+	// MYSELF or NOT logic
 	if (mainUsername !== 'me'){
 		editBtn.classList.add('hidden');
 		friendCard.classList.add('hidden');

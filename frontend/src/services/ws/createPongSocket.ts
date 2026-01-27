@@ -3,6 +3,8 @@
 // 	updater(state:any): void;
 // 	secretary(message:any): void;
 // }
+// services
+import { isauth } from "@services/api/isauth";
 
 
 const PONG_BACKEND_URL = `/ws/pong`;
@@ -94,10 +96,14 @@ export function createSpectatorSocket(/* , playerid:string */matchid:string): Po
 
 		// functions
 		handshake() {
-			sleep(200)
-			.then(() => {
-				ws.send(JSON.stringify({ matchid: matchid }));
-			});
+			ws.onopen = () => {
+				sleep(200)
+				.then(() => {
+					isauth().then((auth) => {
+						if (auth === true) ws.send(JSON.stringify({ matchid: matchid }));
+					});
+				});
+			}
 		},
 		send() {},
 		onmessage(handler) {
@@ -146,10 +152,14 @@ export function createReplaySocket(/* , playerid:string */replaystring:string): 
 
 		// functions
 		handshake() {
-			sleep(200)
-			.then(() => {
-				ws.send(replaystring);
-			});
+			ws.onopen = () => {
+				sleep(200)
+				.then(() => {
+					isauth().then((auth) => {
+						if (auth === true) ws.send(replaystring);
+					});
+				});
+			}
 		},
 		send() {},
 		onmessage(handler) {

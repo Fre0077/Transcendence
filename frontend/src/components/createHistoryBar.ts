@@ -1,6 +1,6 @@
 
 // services
-import { isauth } from "@/services/api/isauth";
+// import { isauth } from "@/services/api/isauth";
 
 // components
 import { loadPongReplayDiv } from "@pages/protected/game/online/laodPongReplayDiv";
@@ -140,7 +140,7 @@ export function createHistoryBar(data: GameData): HTMLElement {
 		if (replayContainer) return;
 
 		// refresh cookies
-		await isauth();
+		// await isauth();
 
 		replayBtn.disabled = true;
 		replayBtn.classList.add("opacity-50", "cursor-not-allowed");

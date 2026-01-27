@@ -93,7 +93,8 @@ from './forwarders.js';
 import {
 	sendLobbyInvite,
 	authWebSocket,
-	sendFriendRequest
+	sendFriendRequest,
+	attachFriendStatus
 } from './backendbypass.js';
 
 
@@ -143,7 +144,7 @@ fastify.register(async function (fastify) {
 	fastify.get('/user', httpforwarder(`${PROFILE_URL}/api/user`, { auth: true }));
 	fastify.get('/game', httpforwarder(`${PROFILE_URL}/api/game`, { auth: true }));
 	fastify.get('/userinfo', httpforwarder(`${PROFILE_URL}/api/userinfo`, { auth: true }));
-	fastify.get('/friends', httpforwarder(`${PROFILE_URL}/api/friends`, { auth: true }));
+	fastify.get('/friends', httpforwarder(`${PROFILE_URL}/api/friends`, { auth: true, handler: attachFriendStatus }));
 	fastify.post('/friend/request', httpforwarder(`${PROFILE_URL}/api/friend/request`, { auth: true }));
 	fastify.post('/friend/accept', httpforwarder(`${PROFILE_URL}/api/friend/accept`, { auth: true }));
 	fastify.post('/friend/remove', httpforwarder(`${PROFILE_URL}/api/friend/remove`, { auth: true }));
@@ -171,9 +172,6 @@ fastify.register(async function (fastify) {
 			// fetch the desired endpoint
 			if (endpoint !== undefined)
 			{
-				/* #dedbug */
-				// console.log('About to fetch', endpoint, 'for user', request);
-
 				let ret;
 				try {
 					ret = await fetchBackend(request, endpoint, { ok:true, user:(request as any).user });
@@ -183,17 +181,12 @@ fastify.register(async function (fastify) {
 					return ;
 				}
 
-				/* #debug */
-				// console.log('Split-Fetched', ret);
-
+				// if fetch went wrong don't forward second part
 				if (ret.status !== 200) {
 					reply.code(ret.status).send(ret.statusText);
 					return ;
 				}
 			}
-
-			/* #debug */
-			// console.log('Forwarding request');
 
 			// execute the second part
 			forwarder(request, reply);

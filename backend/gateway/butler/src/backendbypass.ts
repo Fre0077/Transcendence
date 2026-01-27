@@ -50,6 +50,39 @@ export function authWebSocket(connection:WebSocket, request:FastifyRequest)
 	connected_users.set(auth.user.username as string /* in god we trust pt.2*/, connection);
 }
 
+
+// this function appends the status of the friend looking at the connected_users map
+/* expecting
+data {
+	...
+	friends: {
+			linkId: number;
+			username: string | null;
+			avatarUrl: string | null;
+		}[];
+	...
+} */
+// the return of this function is what will be sent back to the client
+export function attachFriendStatus(data:any)
+{
+	if (!data.friends) {
+		console.log("couldn't find 'friends' when trying to attach status", data);
+		return data;
+	}
+
+	// check status on each friend
+	data.friends = data.friends.map((f:any) => ({
+		...f,
+		status: connected_users.has(f.username) ? 'online' : 'offline'
+	}));
+
+	/* #debug */
+	console.log('--> data after attaching friends', data);
+
+	return data;
+}
+
+
 /* ------------------------------------- */
 /* 			WEBSOCKET SENDERS			 */
 /* ------------------------------------- */
