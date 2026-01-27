@@ -2,8 +2,7 @@
 /* ----------------- */
 /* ----------------- */
 
-import { v4 as uuidv4 } from "uuid";
-import { Player, MySocket } from './Player.js';
+import { Player } from './Player.js';
 import { Room, RoomPlayerController } from './Room.js';
 
 
@@ -204,7 +203,7 @@ function keyToIdx(key: RoomKey): RoomIdx
 
 /* TOURNAMENT CLASS */
 
-export class Tournament<T extends MySocket>
+export class Tournament
 {
 	// tournament specs
 	private _size:number;		// number of players
@@ -221,24 +220,18 @@ export class Tournament<T extends MySocket>
 	// tournament's unique code
 	private readonly _ID:string;
 
-	private _players:Map<string, Player<T>>;	// unique identifier for each player, sent at th beginning of every move. NOTE: the ID is generated when the websocket is connected
+	private _players:Map<string, Player>;	// unique identifier for each player, sent at th beginning of every move. NOTE: the ID is generated when the websocket is connected
 	private _rooms:Map<RoomKey, Room>;			// each room has multiple players
 	
-	private _gamecallback: (gameid:string, players:string[], metadata:any) => Promise<boolean>;
-	private _botcallback: (gameid:string, botid:string) => Promise<boolean>;
-
+	private listeners:Set<any> = new Set();
 
 	constructor(
-		__gamecallback:(gameid:string, players:string[], metadata:any) => Promise<boolean>,
-		__botcallback: (gameid:string, botid:string) => Promise<boolean>,
 		__size:number = 4,
 		__rsize = 2,
 		__format:string = 'single-elimination')
 	{
 		if (__size <= 0 || __size % __rsize !== 0) throw `Tournament::Error: Invalid player size '${__size}'`;
 		
-		this._gamecallback = __gamecallback;
-		this._botcallback = __botcallback;
 		this._size = __size;					// 4 player
 		this._rsize = __rsize;					// 2 players
 		this._format = buildformat(__format, __size, __rsize);
@@ -248,10 +241,10 @@ export class Tournament<T extends MySocket>
 		this._closed = false;
 		this._current_layer = 0;
 		this._finished = false;
-		this._aborted = true;
+		this._aborted = false;
 		this._winners = [];
 
-		this._ID = uuidv4();					// lobby code generator.
+		this._ID = "local";					// lobby code generator.
 		this._players = new Map();
 		this._rooms = new Map();
 
@@ -293,6 +286,10 @@ export class Tournament<T extends MySocket>
 		return this._rooms;
 	}
 
+	public get aborted() {
+		return this._aborted;
+	}
+
 	public get finished() {
 		return this._finished;
 	}
@@ -302,7 +299,7 @@ export class Tournament<T extends MySocket>
 	}
 
 	// getter of players
-	public get players(): Map<string, Player<T>> {
+	public get players(): Map<string, Player> {
 		return this._players;
 	}
 
@@ -350,6 +347,10 @@ export class Tournament<T extends MySocket>
 
 	public get stateJSON():string {
 		return JSON.stringify(this.state);
+	}
+
+	public onupdate(fn:any) {
+		this.listeners.add(fn);
 	}
 
 	/* ---------------------------------------------- */
@@ -432,7 +433,7 @@ export class Tournament<T extends MySocket>
 
 			const allReady = players.every(id => {
 				const p = this._players.get(id);
-				return p && (p.isBot() || p.status === "ready");
+				return p && (p.status === "ready");
 			});
 
 			if (!allReady) continue;
@@ -441,7 +442,6 @@ export class Tournament<T extends MySocket>
 			// spawn the room
 			const ok = await room.play(
 				this.roomPlayerController(),
-				this._gamecallback
 			);
 
 			// if room spawnned ...
@@ -449,12 +449,6 @@ export class Tournament<T extends MySocket>
 			{
 				// new stuff to send
 				changed = true;
-
-				// ...spawn the bots
-				for (const id of room.players) {
-					const p = this._players.get(id);
-					if (p && p.isBot()) this._botcallback(room.gameid, id);
-				}
 
 				/* #debug */
 				// console.log('Started room of', room.players);
@@ -644,7 +638,7 @@ export class Tournament<T extends MySocket>
 				{
 					const p = this._players.get(id);
 					if (!p) return false;
-					return (p.status === "ready" || p.isBot());
+					return (p.status === "ready");
 				}
 
 				return false;
@@ -684,13 +678,6 @@ export class Tournament<T extends MySocket>
 		// set the scores
 		room.finalize(winners, score);
 
-		// 'connect' bots
-		for (const id of room.players)
-		{
-			const p = this._players.get(id);
-			if (p?.isBot()) p?.connect();
-		}
-
 		// routine check
 		this.routine();
 	}
@@ -714,13 +701,6 @@ export class Tournament<T extends MySocket>
 		if (room === undefined) {
 			console.log('Tournament::killRoom()::Error: Room not found');
 			return ;
-		}
-
-		// 'connect' bots
-		for (const id of room.players)
-		{
-			const p = this._players.get(id);
-			if (p?.isBot()) p?.connect();
 		}
 
 		// set the room to aborted
@@ -747,16 +727,8 @@ export class Tournament<T extends MySocket>
 			/* #debug */
 			console.log(`Adding room ${r}`);
 
-			// setting metadata.room to 'finals' if on finals
-			const key = (r === this._finals) ? "finals" : r;
-
 			// adding room
-			this._rooms.set(r, new Room(this._rsize, {
-				origin: 'tournament',
-				ID: this._ID,
-				tournamentPlayers: (key === "finals") ? Array.from(this._players.keys()) : undefined,
-				room: key
-			}));
+			this._rooms.set(r, new Room(this._rsize));
 
 		}
 
@@ -876,7 +848,7 @@ export class Tournament<T extends MySocket>
 	}
 
 	// function to join the lobby, syntax: 'playerid'
-	public join(outPlayerid:string, ws:T | null): boolean {
+	public join(outPlayerid:string): boolean {
 		// if (this._ingame === true) {return false;}
 
 		const target = this._players.get(outPlayerid);
@@ -896,7 +868,7 @@ export class Tournament<T extends MySocket>
 			else
 			{
 				// update player
-				this._players.set(outPlayerid, new Player(ws));
+				this._players.set(outPlayerid, new Player());
 
 				// update status
 				this.sync();
@@ -913,7 +885,7 @@ export class Tournament<T extends MySocket>
 		}
 
 		// add player
-		this._players.set(outPlayerid, new Player(ws));
+		this._players.set(outPlayerid, new Player());
 
 		// check if we got all players
 		if (this._players.size === this._size) this.close();
@@ -990,28 +962,10 @@ export class Tournament<T extends MySocket>
 		return true;
 	}
 
-	// broadcast a message to the whole lobby
-	public broadcast(message:string)
-	{
-		this._players.forEach((player) => {
-			player.send(message);
-		});
-	}
-
-	// send messages to all players in the same room of 'player'
-	public roomcast(roomkey:string, message:string)
-	{
-		const room = this._rooms.get(roomkey);
-		if (room === undefined) return ;
-	
-		room.players.forEach((player) => {
-			this._players.get(player)?.send(message);
-		});
-	}
-
 	// send to all users the lobby state
 	public sync() {
-		this.broadcast(this.stateJSON);
+		// also add to all listeners
+		this.listeners.forEach((l) => l(this.state));
 	}
 
 }

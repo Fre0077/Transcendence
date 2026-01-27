@@ -82,7 +82,10 @@ function getRoomStyles(status: RoomStatus) {
 
 
 // IMPORTANT: the global event __spectate(gameid:string) should be defined for the specate button to work
-export function renderRoomCard(room: Room): string {
+export function renderRoomCard(
+	room: Room,
+	type: "local" | "online" = "online",
+): string {
 	const styles = getRoomStyles(room.status);
 
 	const containerClasses =
@@ -146,6 +149,18 @@ export function renderRoomCard(room: Room): string {
 		`
 			: '';
 
+	/* -------- Start (local only) -------- */
+	const startButton =
+		room.status === 'waiting' && type === "local" && room.players.length >= 2
+			? `
+			<button
+				class="absolute bottom-2 right-2 px-2 py-1 rounded-md bg-emerald-600/80 hover:bg-emerald-600 text-white text-xs transition"
+				onclick="__startGame('${room.gameid}', '${room.players[0]}', '${room.players[1]}')">
+				▶ Start
+			</button>
+		`
+			: '';
+
 	/* -------- Status badge -------- */
 	const badgeHtml = styles.label
 	? `
@@ -164,6 +179,7 @@ export function renderRoomCard(room: Room): string {
 	return `
 		<div class="${containerClasses}" data-room data-layer="${room.layer}" data-idx="${room.idx}">
 			${spectateButton}
+			${startButton}
 
 			<div class="flex">
 				<!-- Left content -->

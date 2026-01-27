@@ -292,7 +292,7 @@ export function loadTournamentHubPage(): HTMLElement
         // player check specific for each format
         if (selectedFormat === 'single-elimination')
         {
-            if (!isPowOf(2, playerCount))
+            if (!isPowerOfTwo(playerCount))
             {
                 alert('In Single elimination only power of 2 player count allowed');
                 return ;
@@ -337,16 +337,9 @@ function pushToTournament(tournamentID:string)
 /*                  UTILS                   */
 /* ---------------------------------------- */
 
-function isPowOf(base:number, num:number): number
-{
-	let pow = 0;
-
-	while (num !== 1)
-	{
-		pow++;
-		num /= base;
-		if (num !== 1 && num % base !== 0) return 0;
-	}
-
-	return pow;
+function isPowerOfTwo(n: number): boolean {
+    // Must be positive
+    if (n <= 0) return false;
+    // Check if only one bit is set
+    return (n & (n - 1)) === 0;
 }

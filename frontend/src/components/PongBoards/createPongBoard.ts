@@ -10,7 +10,7 @@ import type { PongSocket } from "@services/ws/createPongSocket";
 import { InteractiveWidget, createProfileWidget } from "@components/createProfileWidget";
 
 
-export function createPongBoard(socket:PongSocket): PongBoard {
+export function createPongBoard(socket:PongSocket, widget_opts?:any): PongBoard {
 
 	const div = document.createElement('div');
 	
@@ -95,8 +95,10 @@ export function createPongBoard(socket:PongSocket): PongBoard {
 				// console.log('Drawing cards...');
 
 				// save widgets
-				player1Widget = await createProfileWidget(state.players[0].ID);
-				player2Widget = await createProfileWidget(state.players[1].ID);
+				const { p1 } = widget_opts;
+				const { p2 } = widget_opts;
+				player1Widget = await createProfileWidget(state.players[0].ID, p1);
+				player2Widget = await createProfileWidget(state.players[1].ID, p2);
 
 				// append elements (the check on child is for sync problems)
 				if (player1Slot.childElementCount === 0) player1Slot.appendChild(player1Widget.element);
@@ -109,11 +111,11 @@ export function createPongBoard(socket:PongSocket): PongBoard {
 			// 2️⃣ players score/status updates (cheap)
 			if (player1Widget) {
 				player1Widget.setScore(Number(state.score[0]));
-				player1Widget.setStatus(String(state.players[0].status));
+				player1Widget.setStatus?.(String(state.players[0].status));
 			}
 			if (player2Widget) {
 				player2Widget.setScore(Number(state.score[1]));
-				player2Widget.setStatus(String(state.players[1].status));
+				player2Widget.setStatus?.(String(state.players[1].status));
 			};
 
 			if (state.paused === true) statusBox.textContent = "GAME PAUSED";

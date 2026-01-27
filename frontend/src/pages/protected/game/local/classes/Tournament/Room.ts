@@ -1,4 +1,11 @@
-import { v4 as uuidv4 } from "uuid";
+
+// lame fix
+let id = 0;
+function uuidv4()
+{
+	++id;
+	return `local_${id}`;
+}
 
 /* this is basicall a struct with steroids, having all properties
 public and with default initializations. */
@@ -26,14 +33,11 @@ export class Room
 	public score:number[] = [];							// final score of the room
 	public winners:string[] = [];
 
-	private _metadata:any;
-
 	public players:Set<string> = new Set();				// set of players ids
 
-	constructor(__rsize:number = 2, __metadata:any)
+	constructor(__rsize:number = 2)
 	{
 		this._rsize = __rsize;
-		this._metadata = __metadata;
 	}
 
 	// checkers
@@ -48,7 +52,6 @@ export class Room
 	// executors
 	public async play(
 		playersCtrl: RoomPlayerController,
-		gamecallback: (gameid:string, players:string[], metadata:any) => Promise<boolean>
 	):
 		Promise<{ status: 'success' | 'failure', reason:string }>
 	{
@@ -73,18 +76,6 @@ export class Room
 			return {
 				status: 'failure',
 				reason: "Not all players connected, or ready"
-			};
-		}
-
-		// Prepare object to send to GameService
-		const players = Array.from(this.players);
-
-		// callback for external porpouses (send to GameService)
-		if (await gamecallback(this.gameid, players, this._metadata) === false)
-		{
-			return {
-				status: 'failure',
-				reason: "Failed to connect to the Game Service"
 			};
 		}
 

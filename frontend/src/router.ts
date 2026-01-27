@@ -8,7 +8,11 @@ import { loadOnlineTournamentPage } from "./pages/protected/game/tournament/tour
 // import { loadOnlineGamePage } from "./pages/protected/game/online/onlineGame";
 import { loadPongPlayerPage } from '@pages/protected/game/online/loadPongPlayerPage';
 // import { loadLocalGamePage } from "./pages/protected/game/local/localGame";
+
+// local stuff
 import { loadLocalPongPage } from "./pages/protected/game/local/loadLocalPongPage";
+import { loadLocalTournamentPage } from "./pages/protected/game/local/loadLocalTournamentPage";
+
 import { loadHomePage } from "./pages/protected/home/home";
 import { loadProfilePage } from "./pages/protected/profile/profile";
 import { loadLoginPage } from "./pages/public/login/login";
@@ -359,6 +363,8 @@ const routes: RouteConfig[] = [
     },
     meta: { title: 'Game Lobby - ft_transcendence', requiresAuth: true, requires2FA: true },
   },
+  /* ====================== */
+  /* LOCAL STUFF (maybe to move?) */
 	{
 		path: '/game/local',
 		name: 'local-game',
@@ -367,6 +373,15 @@ const routes: RouteConfig[] = [
 		},
 		meta: { title: 'Local Game - ft_transcendence', requiresAuth: true, requires2FA: true },
 	},
+  {
+		path: '/tournament/local',
+		name: 'local-tournament',
+		component: () => {
+			return loadLocalTournamentPage();
+		},
+		meta: { title: 'Local Game - ft_transcendence', requiresAuth: true, requires2FA: true },
+	},
+  /* ======================= */
   {
     path: '/lobby/online',
     name: 'online-game',

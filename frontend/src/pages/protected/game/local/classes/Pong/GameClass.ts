@@ -566,7 +566,7 @@ export class Game
 		// advance the tick
 		++this.tick;
 
-		if (this.timeout > 0) {this.timeout--; return;}
+		if (this.timeout > 0) {this.timeout--;}
 
 		// Move players
 		this.players.forEach((player) => {
