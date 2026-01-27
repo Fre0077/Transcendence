@@ -37,8 +37,8 @@ services:
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
-    ports:
-      - "9090:9090"
+    # ports:
+    #   - "9090:9090"
     volumes:
       - ./monitor/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus_dat:/prometheus
@@ -94,7 +94,7 @@ services:
       restart: always
       ports:
         - "8080:80"
-        - "4443:4443"
+        - "4443:443"
       volumes:
         - ./nginx/conf:/etc/nginx/conf.d:ro
         - ./nginx/ssl:/etc/nginx/ssl:ro
