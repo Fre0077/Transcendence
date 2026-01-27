@@ -37,14 +37,14 @@ services:
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
-    # ports:
-    #   - "9090:9090"
     volumes:
       - ./monitor/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus_dat:/prometheus
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
       - "--storage.tsdb.path=/prometheus"
+      - "--web.external-url=https://localhost:4443/prometheus/"
+      - "--web.route-prefix=/"
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -57,11 +57,11 @@ services:
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
-    ports:
-      - "3050:3000"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_SECURITY_ADMIN_USER=admin
+      - GF_SERVER_ROOT_URL=https://localhost:4443/grafana/
+      - GF_SERVER_SERVE_FROM_SUB_PATH=true
     volumes:
       - grafana_dat:/var/lib/grafana
       - ./monitor/grafana/datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml
