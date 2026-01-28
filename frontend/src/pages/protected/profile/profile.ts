@@ -235,6 +235,11 @@ export function loadProfilePage(): HTMLElement {
 	const closeBtn = div.querySelector('#close-edit-modal') as HTMLButtonElement;
 	const form = div.querySelector('#edit-profile-form') as HTMLFormElement;
 	
+	// EDIT AVATAR BTN
+	const changeAvatarBtn = div.querySelector('#change-avatar-btn') as HTMLButtonElement;
+	const avatarFileInput = div.querySelector('#avatar-file-input') as HTMLInputElement;
+	const avatarImgElement = div.querySelector('#avatar-img') as HTMLImageElement;
+
 	try {
 		editBtn.addEventListener('click', () => {
 			modal.classList.remove('hidden');
@@ -267,6 +272,35 @@ export function loadProfilePage(): HTMLElement {
 			else
 				// reaload
 				router.push('/profile/me');
+		});
+
+		changeAvatarBtn?.addEventListener('click', () => {
+			avatarFileInput.click();
+		});
+
+		avatarFileInput?.addEventListener('change', async () => {
+			const file = avatarFileInput.files?.[0];
+			if (!file) return;
+			const formData = new FormData();
+			console.log('formData', formData);
+			formData.append('file', file);
+			const response = await fetch('/api/profile/avatar', {
+				method: 'POST',
+				credentials: 'include',
+				body: formData
+			});
+			if (response.ok) {
+				const data = await response.json();
+				// 3. Aggiorniamo l'immagine nella UI
+				if (data.avatarUrl) {
+					avatarImgElement.src = data.avatarUrl;
+					console.log("Avatar aggiornato con successo!");
+				}
+			} else {
+				const errorData = await response.json();
+				console.error("Errore durante l'upload:", errorData.error);
+				alert("Errore nel caricamento dell'immagine.");
+			}
 		});
 	} catch (err) {
 		console.log('Erro while trying to update profile', err);
@@ -314,6 +348,7 @@ export function loadProfilePage(): HTMLElement {
 	if (mainUsername !== 'me'){
 		editBtn.classList.add('hidden');
 		friendCard.classList.add('hidden');
+		changeAvatarBtn.classList.add('hidden');
 	}
 	return div;
 }

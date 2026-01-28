@@ -93,11 +93,12 @@ services:
       container_name: nginx
       restart: always
       ports:
-        - "8080:80"
-        - "4443:443"
+        - "80:80"
+        - "443:443"
       volumes:
         - ./nginx/conf:/etc/nginx/conf.d:ro
         - ./nginx/ssl:/etc/nginx/ssl:ro
+        - avatar_data:/var/www/uploads:ro
       depends_on:
         - frontend
         - butler
@@ -115,6 +116,7 @@ services:
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
     volumes:
       - auth_db:/app/database
+      - avatar_data:/app/database/public/uploads
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -252,3 +254,4 @@ volumes:
   profile_db:
   prometheus_dat:
   grafana_dat:
+  avatar_data:

@@ -2,6 +2,7 @@ import Fastify, { FastifyReply, FastifyRequest } from 'fastify';
 import fastifyCookie from '@fastify/cookie';
 import fastifyMetrics from "fastify-metrics";
 import fastifyWebsocket from '@fastify/websocket';
+import fastifyMultipart from '@fastify/multipart';
 import cors from '@fastify/cors';
 
 // import { WebSocket } from "ws";
@@ -25,6 +26,7 @@ await fastify.register(fastifyMetrics.default, {
 });
 
 // Register WebSocket plugin
+await fastify.register(fastifyMultipart);
 await fastify.register(fastifyWebsocket);
 // Register Cookies plugin
 await fastify.register(fastifyCookie);
@@ -108,17 +110,17 @@ const PROFILE_URL = process.env.PROFILE_URL ?? 'http://profile:3003';
 fastify.register(async function (fastify) {
 
 	// helper to forwarder for backend HTTP services
-	function httpforwarder(endpoint:string, opts?:any) {
+	function httpforwarder(endpoint:string, type:string, opts?:any) {
 
 		// if no auth
 		if (opts?.auth === false) {
-			if (opts?.handler) return async (request:FastifyRequest, reply:FastifyReply) => await noAuthForward(request, reply, endpoint, opts.handler);
-			else return async (request:FastifyRequest, reply:FastifyReply) => await noAuthForward(request, reply, endpoint);
+			if (opts?.handler) return async (request:FastifyRequest, reply:FastifyReply) => await noAuthForward(request, reply, endpoint, type, opts.handler);
+			else return async (request:FastifyRequest, reply:FastifyReply) => await noAuthForward(request, reply, endpoint, type);
 		}
 		// if auth
 		else {
-			if (opts?.handler) return async (request:FastifyRequest, reply:FastifyReply) => await authForward(request, reply, endpoint, opts.handler);
-			else return async (request:FastifyRequest, reply:FastifyReply) => await authForward(request, reply, endpoint);
+			if (opts?.handler) return async (request:FastifyRequest, reply:FastifyReply) => await authForward(request, reply, endpoint, type, opts.handler);
+			else return async (request:FastifyRequest, reply:FastifyReply) => await authForward(request, reply, endpoint, type);
 		}
 	}
 
@@ -127,40 +129,40 @@ fastify.register(async function (fastify) {
 	fastify.delete('/logout', async (_, reply) => clearAllCookies(reply));
 
 	// auth backend APIs
-	fastify.post('/login', httpforwarder(`${AUTH_URL}/api/login`, { auth: false, handler: attachAllCookies }));
-	fastify.post('/register', httpforwarder(`${AUTH_URL}/api/register`, { auth: false }));
-	fastify.post('/auth/google', httpforwarder(`${AUTH_URL}/api/auth/google`, { auth: false }));
-	fastify.post('/2fa/verify', httpforwarder(`${AUTH_URL}/api/2fa/verify`, { auth: false }));
-	fastify.get('/profile',  httpforwarder(`${AUTH_URL}/api/profile`, { auth: true }));
-	fastify.patch('/profile',  httpforwarder(`${AUTH_URL}/api/profile`, { auth: true, handler: attachAllCookies }));
-	fastify.post('/profile/avatar',  httpforwarder(`${AUTH_URL}/api/profile/avatar`, { auth: true }));
-	fastify.post('/2fa/generate',  httpforwarder(`${AUTH_URL}/api/2fa/generate`, { auth: true }));
-	fastify.post('/2fa/enable',  httpforwarder(`${AUTH_URL}/api/2fa/enable`, { auth: true }));
-	fastify.post('/2fa/disable',  httpforwarder(`${AUTH_URL}/api/2fa/disable`, { auth: true }));
+	fastify.post('/login', httpforwarder(`${AUTH_URL}/api/login`, 'application/json', { auth: false, handler: attachAllCookies }));
+	fastify.post('/register', httpforwarder(`${AUTH_URL}/api/register`, 'application/json', { auth: false }));
+	fastify.post('/auth/google', httpforwarder(`${AUTH_URL}/api/auth/google`, 'application/json', { auth: false }));
+	fastify.post('/2fa/verify', httpforwarder(`${AUTH_URL}/api/2fa/verify`, 'application/json', { auth: false }));
+	fastify.get('/profile',  httpforwarder(`${AUTH_URL}/api/profile`, 'application/json', { auth: true }));
+	fastify.patch('/profile',  httpforwarder(`${AUTH_URL}/api/profile`, 'application/json', { auth: true, handler: attachAllCookies }));
+	fastify.post('/profile/avatar',  httpforwarder(`${AUTH_URL}/api/profile/avatar`, 'multipart/form-data', { auth: true }));
+	fastify.post('/2fa/generate',  httpforwarder(`${AUTH_URL}/api/2fa/generate`, 'application/json', { auth: true }));
+	fastify.post('/2fa/enable',  httpforwarder(`${AUTH_URL}/api/2fa/enable`, 'application/json', { auth: true }));
+	fastify.post('/2fa/disable',  httpforwarder(`${AUTH_URL}/api/2fa/disable`, 'application/json', { auth: true }));
 	// fastify.post('/logout',  httpforwarder(`${AUTH_URL}/api/logout`, { auth: false }));
 	// ... add others
 
 	// profile backend APIs
-	fastify.get('/user', httpforwarder(`${PROFILE_URL}/api/user`, { auth: true }));
-	fastify.get('/game', httpforwarder(`${PROFILE_URL}/api/game`, { auth: true }));
-	fastify.get('/userinfo', httpforwarder(`${PROFILE_URL}/api/userinfo`, { auth: true }));
-	fastify.get('/friends', httpforwarder(`${PROFILE_URL}/api/friends`, { auth: true, handler: attachFriendStatus }));
-	fastify.post('/friend/request', httpforwarder(`${PROFILE_URL}/api/friend/request`, { auth: true }));
-	fastify.post('/friend/accept', httpforwarder(`${PROFILE_URL}/api/friend/accept`, { auth: true }));
-	fastify.post('/friend/remove', httpforwarder(`${PROFILE_URL}/api/friend/remove`, { auth: true }));
+	fastify.get('/user', httpforwarder(`${PROFILE_URL}/api/user`, 'application/json', { auth: true }));
+	fastify.get('/game', httpforwarder(`${PROFILE_URL}/api/game`, 'application/json', { auth: true }));
+	fastify.get('/userinfo', httpforwarder(`${PROFILE_URL}/api/userinfo`, 'application/json', { auth: true }));
+	fastify.get('/friends', httpforwarder(`${PROFILE_URL}/api/friends`, 'application/json', { auth: true, handler: attachFriendStatus }));
+	fastify.post('/friend/request', httpforwarder(`${PROFILE_URL}/api/friend/request`, 'application/json', { auth: true }));
+	fastify.post('/friend/accept', httpforwarder(`${PROFILE_URL}/api/friend/accept`, 'application/json', { auth: true }));
+	fastify.post('/friend/remove', httpforwarder(`${PROFILE_URL}/api/friend/remove`, 'application/json', { auth: true }));
 	// ... add others
 
 	// chat backend APIs
-	fastify.post('/user-list', httpforwarder(`${CHAT_URL}/api/user-list`, { auth: true }));
-	fastify.post('/new-message', httpforwarder(`${CHAT_URL}/api/new-message`, { auth: true }));
-	fastify.post('/new-chat', httpforwarder(`${CHAT_URL}/api/new-chat`, { auth: true }));
-	fastify.post('/delete-chat-messages', httpforwarder(`${CHAT_URL}/api/delete-chat-messages`, { auth: true }));
-	fastify.post('/delete-chat', httpforwarder(`${CHAT_URL}/api/delete-chat`, { auth: true }));
-	fastify.post('/delete-message', httpforwarder(`${CHAT_URL}/api/delete-message`, { auth: true }));
-	fastify.post('/search-message', httpforwarder(`${CHAT_URL}/api/search-message`, { auth: true }));
-	fastify.post('/search-chat', httpforwarder(`${CHAT_URL}/api/search-chat`, { auth: true }));
-	fastify.post('/block-user', httpforwarder(`${CHAT_URL}/api/block-user`, { auth: true }));
-	fastify.post('/sblock-user', httpforwarder(`${CHAT_URL}/api/sblock-user`, { auth: true }));
+	fastify.post('/user-list', httpforwarder(`${CHAT_URL}/api/user-list`, 'application/json', { auth: true }));
+	fastify.post('/new-message', httpforwarder(`${CHAT_URL}/api/new-message`, 'application/json', { auth: true }));
+	fastify.post('/new-chat', httpforwarder(`${CHAT_URL}/api/new-chat`, 'application/json', { auth: true }));
+	fastify.post('/delete-chat-messages', httpforwarder(`${CHAT_URL}/api/delete-chat-messages`, 'application/json', { auth: true }));
+	fastify.post('/delete-chat', httpforwarder(`${CHAT_URL}/api/delete-chat`, 'application/json', { auth: true }));
+	fastify.post('/delete-message', httpforwarder(`${CHAT_URL}/api/delete-message`, 'application/json', { auth: true }));
+	fastify.post('/search-message', httpforwarder(`${CHAT_URL}/api/search-message`, 'application/json', { auth: true }));
+	fastify.post('/search-chat', httpforwarder(`${CHAT_URL}/api/search-chat`, 'application/json', { auth: true }));
+	fastify.post('/block-user', httpforwarder(`${CHAT_URL}/api/block-user`, 'application/json', { auth: true }));
+	fastify.post('/sblock-user', httpforwarder(`${CHAT_URL}/api/sblock-user`, 'application/json', { auth: true }));
 	// ... add others
 
 	// Fetches the desired backend endpoint (if specified). Then on successfule response calls the 'forward' function.
@@ -174,7 +176,7 @@ fastify.register(async function (fastify) {
 			{
 				let ret;
 				try {
-					ret = await fetchBackend(request, endpoint, { ok:true, user:(request as any).user });
+					ret = await fetchBackend(request, endpoint, 'application/json', { ok:true, user:(request as any).user });
 				} catch (err) {
 					console.log('Error', err);
 					reply.code(502).send("Backend service unreachable");

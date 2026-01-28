@@ -127,7 +127,7 @@ function buildQuery(query:any):string {
 }
 
 // Careful, it throws errors
-export async function fetchBackend(request:FastifyRequest, endpoint:string, auth?:AuthReply): Promise<Response>
+export async function fetchBackend(request:FastifyRequest, endpoint:string, type:string, auth?:AuthReply): Promise<Response>
 {
 	// --- PREPARE REQUEST FOR BACKEND ---
 	const headers: Record<string, string> = {};
@@ -136,7 +136,10 @@ export async function fetchBackend(request:FastifyRequest, endpoint:string, auth
 	if (request.headers)
 	{
 		for (const [key, value] of Object.entries(request.headers)) {
-			if (value && typeof value === 'string') {headers[key] = value};
+			if (value && typeof value === 'string') {
+				if (key.toLowerCase() !== 'content-type')
+					headers[key] = value
+			};
 		}
 	}
 
@@ -154,8 +157,14 @@ export async function fetchBackend(request:FastifyRequest, endpoint:string, auth
 
 	// If there is a body, forward it
 	if (['POST', 'PUT', 'PATCH'].includes(request.method)) {
-		fetchOptions.body = request.body ? JSON.stringify(request.body) : undefined;
-		headers['content-type'] = 'application/json';
+		if (type.includes('multipart/form-data')) {
+            fetchOptions.body = request.raw;
+            headers['content-type'] = request.headers['content-type']!;
+            fetchOptions.duplex = 'half';
+        } else {
+            fetchOptions.body = request.body ? JSON.stringify(request.body) : undefined;
+            headers['content-type'] = type;
+        }
 	}
 
 	// if there is a query, add it
@@ -175,6 +184,7 @@ export async function authForward(
 	request:FastifyRequest,
 	reply:FastifyReply,
 	endpoint:string,
+	type:string,
 	callback?: (data: any, reply: FastifyReply) => void)
 {
 	/* --- AUTH CHECK --- */
@@ -185,7 +195,7 @@ export async function authForward(
 	// --- CALL BACKEND ---
 	let backendResponse;
 	try {
-		backendResponse = await fetchBackend(request, endpoint, auth);
+		backendResponse = await fetchBackend(request, endpoint, type, auth);
 	} catch (err) {
 		reply.code(502).send("Backend service unreachable");
 		return;
@@ -205,7 +215,7 @@ export async function authForward(
 
 	let data;
 	// parse body
-	if (contentType?.includes('application/json')) {
+	if (contentType?.includes(type)) {
 		data = await backendResponse.json();
 		reply.send(data);
 	} else {
@@ -225,14 +235,16 @@ export async function authForward(
 // forward to backend without checking authourization
 export async function noAuthForward(
 	request:FastifyRequest,
-	reply:FastifyReply, endpoint:string,
+	reply:FastifyReply,
+	endpoint:string,
+	type:string,
 	callback?: (data: any, reply: FastifyReply) => void)	// only called on succccessful fetch
 {
 
 	// --- CALL BACKEND ---
 	let backendResponse;
 	try {
-		backendResponse = await fetchBackend(request, endpoint);
+		backendResponse = await fetchBackend(request, endpoint, type);
 	} catch (err) {
 		reply.code(502).send("Backend service unreachable");
 		return;
@@ -249,7 +261,7 @@ export async function noAuthForward(
 	
 	// Send body
 	let data:any;
-	if (contentType?.includes('application/json')) {
+	if (contentType?.includes(type)) {
 		data = await backendResponse.json();
 	} else {
 		data = await backendResponse.text();
