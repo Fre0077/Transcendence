@@ -152,6 +152,12 @@ class Router {
       return;
     }
 
+    // call destructor of previous page @topiana-
+    if (this.rootElement && this.rootElement.firstChild) {
+      const destructor = (this.rootElement.firstChild as any).destroy;
+      if (destructor) destructor();
+    }
+
     const { route, params } = match;
     this.params = params;
 

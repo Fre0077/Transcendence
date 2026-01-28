@@ -129,7 +129,7 @@ export interface AuthReply {
 	user?:any;
 }
 
-function refreshAccessToken(refreshToken: string, reply: FastifyReply) : AuthReply
+function refreshAccessToken(refreshToken: string, reply?: FastifyReply) : AuthReply
 {
 	// verigy if refresh token is valid
 	const user = verifyAccessToken(refreshToken);
@@ -142,6 +142,10 @@ function refreshAccessToken(refreshToken: string, reply: FastifyReply) : AuthRep
 	/* #debug */
 	// console.log('Refreshed token with', user);
 
+	// if reply isn't present but the refreshToken is valid,
+	// still 'ok' return without refreshing the token 
+	if (reply === undefined) return { ok:true , user:user }
+
 	// generate new accessToken
 	const accessToken = generateAccessToken(user);
 
@@ -152,7 +156,7 @@ function refreshAccessToken(refreshToken: string, reply: FastifyReply) : AuthRep
 	});
 
 	// successful return + user
-	return { ok:true , user:user}
+	return { ok:true , user:user }
 }
 
 /* Check if the user has valid authentication tokens in the cookies.
@@ -178,7 +182,7 @@ export function isCookieAuthenticated(request:FastifyRequest, reply?:FastifyRepl
 	if (user === null)
 	{
 		// check if we got the refresh token (24h) ore we can't attach the new token to the reply
-		if (!refreshToken || !reply) {
+		if (!refreshToken/*  || !reply */) {
 
 			/* #debug */
 			console.log("Missing refresh token");
@@ -196,7 +200,7 @@ export function isCookieAuthenticated(request:FastifyRequest, reply?:FastifyRepl
 			/* #debug */
 			console.log("Failed to refresh access token");
 
-			reply.code(401).send({ error: ret.reason });
+			reply?.code(401).send({ error: ret.reason });
 			return ret;
 		}
 

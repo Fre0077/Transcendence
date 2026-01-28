@@ -103,19 +103,6 @@ interface LobbyState {
 	players:Player[];
 }
 
-<!-- ===== AUTH ===== -->
-Request:
-{
-	method: 'AUTH',	(mandatory)
-	ID: <playerID>	(mandatory)
-}
-Description: This is the first message to inoltrate to the backend, all other requests befor this (or if the Authentication fails) will be ignored.
-Reply:
-{
-	method: 'AUTH_REPLY',
-	status: 'success/failure'
-}
-
 <!-- ===== CREATE ===== -->
 Reqest:
 {
@@ -250,39 +237,6 @@ Note that the game is expected to be played in a square, so the physics of the b
 the bottom-right one is (1,1).
 
 Here is a brief explaination on how to use all the methods:
-
-<!-- ===== AUTH ===== -->
-Request:
-{
-	method: 'AUTH',	(mandatory)
-	ID: <playerID>	(mandatory)
-}
-Description: This is the first message to inoltrate to the backend, all other requests befor this (or if the Authentication fails) will be ignored.
-Reply:
-{
-	method: 'AUTH_REPLY',
-	status: 'success/failure'
-}
-
-<!-- ===== JOIN (soon outdated) ===== -->
-
-Request:
-{
-  method: 'JOIN',       (mandatory)
-  gameID: <gameID>,     (mandatory)
-}
-@gameID: the ID of the game as a string
-
-Description: Joins a game with the specified ID, if any of the property is missing
-or invalid or there is no game with the gameID requested, it fails.
-Reply:
-{
-  method: 'JOIN_REPLY',
-  status: 'success/failure',
-  value: <gameID>,						        (only on status === 'success')
-  cause: <auth/rejoin/no-id/serv-err>	(only on status === 'failure')
-  comment: <comment>					        (only on status === 'failure')
-}
 
 <!-- ===== LEAVE ===== -->
 {

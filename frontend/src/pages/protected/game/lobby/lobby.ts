@@ -154,6 +154,12 @@ export function loadOnlineLobbyPage(): HTMLElement
 		});
 	}
 
+
+	/* !!! DESTRUCTOR !!! */
+	(div as any).destroy = () => {
+		DisconnectLobbySocket();
+	}
+
 	return div;
 }
 
@@ -164,20 +170,11 @@ export function loadOnlineLobbyPage(): HTMLElement
 
 function pushToGamePage(gameid?:string)
 {
-	// close socket when leaving window
-	DisconnectLobbySocket();
-
-	/* #debug */
-	console.log('data value', gameid);
-
 	router.push(`/game/${gameid}`);
 }
 
 function pushToHubPage()
 {
-	// close socket when leaving window
-	DisconnectLobbySocket();
-
 	router.push('/game');
 }
 
@@ -509,7 +506,7 @@ function createUserInviteDiv(onclick: (event:SubmitEvent) => void): HTMLElement
 	// Add event listener
 	const inviteform = div.querySelector("#invite-form") as HTMLFormElement;
 	inviteform.addEventListener("submit", (event) => onclick(event));
-	
+
 	return div;
 }
 
