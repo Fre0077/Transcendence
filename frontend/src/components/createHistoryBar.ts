@@ -105,9 +105,9 @@ export function createHistoryBar(data: GameData): HTMLElement {
 				</span>
 
 				<span class="text-white font-bold tabular-nums">
-					${s2}
-					<span class="text-white/50 mx-1">/</span>
 					${s1}
+					<span class="text-white/50 mx-1">/</span>
+					${s2}
 				</span>
 
 				<span class="${p2Win ? "text-green-400 font-semibold" : "text-red-400"}">

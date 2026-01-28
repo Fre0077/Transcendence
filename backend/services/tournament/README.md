@@ -1,27 +1,28 @@
 This project's goal is to provide a Lobby Service's backend using Fastify with Websocket connections and the following API:
 
-<!-- Lobbystate -->
-LobbyState object that will be sent every time the lobby changes
-interface LobbyState {
+<!-- TournamnetState -->
+TournamnetState that will be sent every time the tournament changes
+interface TournamentState
+{
 	ID:string;
-	gameID:string;
+	finished:boolean;
+	aborted:boolean;
+	winners:string[];
+	current_layer:number;
 	players: {
 		ID:string;
 		status:string;
 	}[];
-}
-
-<!-- ===== AUTH ===== -->
-Request:
-{
-	method: 'AUTH',	(mandatory)
-	ID: <playerID>	(mandatory)
-}
-Description: This is the first message to inoltrate to the backend, all other requests befor this (or if the Authentication fails) will be ignored.
-Reply:
-{
-	method: 'AUTH_REPLY',
-	status: 'success/failure'
+	rooms: {
+		// id room
+		layer:number;
+		idx:number;
+		players:string[];
+		status:string;
+		gameid:string;
+		winner:string[];
+		score:number[];
+	}[];
 }
 
 <!-- ===== CREATE ===== -->

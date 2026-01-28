@@ -103,7 +103,7 @@ export type GameEntry = {
 	metadata:any
 }
 
-let games:Map<string, GameEntry> = new Map();
+const games:Map<string, GameEntry> = new Map();
 
 export function createGame(gameid:string, playerid:string[], metadata: any): Game
 {
@@ -123,9 +123,30 @@ export function createGame(gameid:string, playerid:string[], metadata: any): Gam
 // checks if a player is expected in a game, if so returns the gameid
 function findGameOf(playerid:string): Game | undefined
 {
-	for (const entry of games.values()) {
-		if (entry.game.has(playerid) !== undefined) return entry.game;
+	// for (const entry of games.values()) {
+	// 	if (entry.game.has(playerid) !== undefined) return entry.game;
+	// }
+
+
+	// find all games im in
+	const mygames = Array.from(games.values()).map((entry) => {
+		if (entry.game.players.find(p => p.ID === playerid)) return entry.game
+		else return null;
+	}).filter((game): game is Game => game !== null);
+
+
+	// check length
+	if (mygames.length === 1) {return mygames[0];}
+	else if (mygames.length > 1)
+	{
+		// leave all games but the last one
+		for (let i = 0; i < mygames.length; ++i)
+			if (i != mygames.length - 1) mygames[i].leave(playerid);
+
+		// return the last one game
+		return mygames[mygames.length - 1];
 	}
+
 	return undefined;
 }
 
@@ -297,7 +318,7 @@ fastify.register(async function (fastify) {
 		let gamecheck;
 		for (let i = 0; i < 3; i++) {
 			gamecheck = findGameOf(userid);
-			if (gamecheck) {break};
+			if (gamecheck) {break ;}
 			await sleep(100);
 		};
 		if (!gamecheck) {
@@ -334,12 +355,6 @@ fastify.register(async function (fastify) {
 		const playerid:string = userid;
 		// game reference
 		const game:Game = gamecheck;
-
-		// Send welcome message
-		connection.on('open', () => {
-			connection.send('Connected to Pong-Player WebSocket server!');
-		});
-
 		
 
 
@@ -406,11 +421,13 @@ fastify.register(async function (fastify) {
 
 		let match:Game | undefined = undefined;
 
-		// Send welcome message
-		connection.on('open', () => {
-			connection.send('Connected to Pong-Spectator WebSocket server!');
-		});
+		// timeout for disconnection (1s)
+		setTimeout(() => {
+			if (match !== undefined) return ;
+			connection.close(3008, "Didn't send the 'matchid' in time");
+		}, 1000);
 
+		// receive the matchid
 		connection.on('message', (message:string) => {
 
 			try
@@ -497,14 +514,16 @@ fastify.register(async function (fastify) {
 			return ;
 		}
 
-		// Send welcome message
-		connection.on('open', () => {
-			connection.send('Connected to Pong-Replay WebSocket server!');
-		});
-
 		// replay game
 		let game:Game | undefined = undefined;
 
+		// timeout for disconnection (1s)
+		setTimeout(() => {
+			if (game !== undefined) return ;
+			connection.close(3008, "Didn't send the 'replaystring' in time");
+		}, 1000);
+
+		// expect the replay string
 		connection.on('message', (message:string) => {
 
 			try
@@ -536,9 +555,6 @@ fastify.register(async function (fastify) {
 				// set the moves to play
 				game.setMoves(replay.moves);
 
-				// start the game
-				game.start();
-
 				// listener sends board updates to the frontend
 				const listener = (state:string) => {
 					if (state === "close") {
@@ -551,6 +567,9 @@ fastify.register(async function (fastify) {
 
 				// add listener, even if not expected AS PLAYER
 				game.subscribe(username, listener);
+
+				// start the game
+				game.start();
 				/* --------------------------- */
 			}
 			catch (err)

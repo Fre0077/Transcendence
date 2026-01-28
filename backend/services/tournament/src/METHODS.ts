@@ -1,6 +1,6 @@
 
 import { Tournament } from './classes/Tournament.js';
-import { createTournament, findTournament, joinTournament } from './index.js';
+import { createTournament, findTournament, /* joinTournament */ } from './index.js';
 import type { WebSocket } from "ws";
 
 
@@ -13,55 +13,22 @@ type StandardReturn = {
 
 /*
 {
-	method: 'AUTH',    		(mandatory)
-	playerID: <playerID>    (mandatory)
+	method: 'PING',     (mandatory)
 }
-@playerID: the ID you are logging in
 
-Description: AUTHenticates the connection, just once per connection.
+Description: ensure the client-server comunication is still alive (application level)
 Reply:
 {
-	method: 'AUTH_REPLY',
-	status: 'success/failure',
-	comment: <reason>
+	method: 'PONG',
 }
 */
-export function AUTH(msg:object, outplayer:string | undefined, ws:WebSocket): StandardReturn
+
+export function PONG()
 {
-	// check if already authenticated
-	if (outplayer !== undefined) {
-		return {
-			status: "failure",
-			reply: JSON.stringify({ method: 'AUTH_REPLY', status: "failure", comment: "Already authenticated"})
-		}
-	}
-
-	// check for playerID
-	if (!("playerID" in msg) || typeof msg.playerID !== "string") {
-		return {
-			status: "failure",
-			reply: JSON.stringify({ method: 'AUTH_REPLY', status: "failure", comment: "missing playerID"})
-		}
-	}
-
-	/* ! ! ! authentication procedure here ! ! ! */
-	
-	// if already joined previously get the tournament ID
-	const tournament = findTournament((tournament:Tournament<WebSocket>) => { return tournament.has(msg.playerID as string);})
-	const retournament = (tournament === undefined) ? undefined : tournament.ID;
-	if (retournament) {
-		// update the websocket if already in a lobby
-		console.log('Autojoining', msg.playerID);
-		joinTournament(retournament, msg.playerID, ws);
-	}
-
-
 	// success return
 	return {
 		status: "success",
-		reply: JSON.stringify({ method: 'AUTH_REPLY', status: "success", comment: "Successfully authenticated"}),
-		player: msg.playerID,
-		tournament: retournament
+		reply: JSON.stringify({ method: 'PONG' }),
 	};
 }
 

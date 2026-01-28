@@ -4,7 +4,7 @@ import { loadNavbar } from "@/components/navbar";
 // import { load404Page } from "@/pages/errors/404";
 
 // services
-import { TournamentWebSocket, ConnectTournamentSocket } from "@/services/ws/tournamentWebSocket";
+import { TournamentWebSocket, ConnectTournamentSocket, DisconnectTournamentSocket } from "@/services/ws/tournamentWebSocket";
 // import { isauth } from "@/services/api/isauth";
 // elements
 import { loadPongSpectatorDiv } from "@pages/protected/game/online/loadPongSpectatorDiv";
@@ -89,13 +89,18 @@ export function loadOnlineTournamentPage(): HTMLElement
 	`;
 
 	// connect to the backend
-	tournamentWS = ConnectTournamentSocket(() => router.push('/tournaments'), tourn_code);
+	tournamentWS = ConnectTournamentSocket(tourn_code, () => router.push('/tournaments'));
 
 	// add listeners to socket messages
 	tournamentWS.onmessage(pushToGamePage, () => {}, updateTournamentInfo);
 
 	// update tournament code
 	tourn_code = tournamentWS.getid();
+
+	/* !!! DESTRUCTOR !!! */
+	(div as any).destroy = () => {
+		DisconnectTournamentSocket();
+	}
 
 	return div;
 }
@@ -104,6 +109,7 @@ export function loadOnlineTournamentPage(): HTMLElement
 /* ------------------- SOCKET ACTIONS --------------------- */
 /* -------------------------------------------------------- */
 
+// import { isauth } from "@/services/api/isauth";
 
 // add the spectated game
 async function spectate(gameid: string) {
@@ -112,9 +118,6 @@ async function spectate(gameid: string) {
         console.log(`Already spectating game ${gameid}`);
         return;
     }
-
-	// refresh cookies
-	// await isauth();
 
     console.log('Spectating game:', gameid);
 
@@ -129,6 +132,9 @@ async function spectate(gameid: string) {
     if (btn) {
         btn.classList.add('opacity-50', 'pointer-events-none');
     }
+
+	// refresh cookies
+	// await isauth();
 
     // Create spectate view
     const spectateDiv = loadPongSpectatorDiv(gameid);
@@ -147,18 +153,19 @@ async function spectate(gameid: string) {
     spectateDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
     // Optional: If spectateDiv has a close button, remove game from set when closed
-    const closeBtn = spectateDiv.querySelector('#close-btn');
-    if (closeBtn) {
-        closeBtn.addEventListener('click', () => {
-            container.removeChild(spectateDiv);
-            spectatingGames.delete(gameid);
+	spectateDiv.addEventListener('spectate:close', () => {
 
-            // Re-enable the button
-            if (btn) {
-                btn.classList.remove('opacity-50', 'pointer-events-none');
-            }
-        });
-    }
+		console.log('Clearing spectator tab');
+
+		container.removeChild(spectateDiv);
+		spectatingGames.delete(gameid);
+
+		// Re-enable the button
+		if (btn) {
+			btn.classList.remove('opacity-50', 'pointer-events-none');
+		}
+	});
+    
 }
 
 // Expose global function for HTML string buttons

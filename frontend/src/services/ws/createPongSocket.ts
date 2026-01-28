@@ -21,9 +21,9 @@ export interface PongSocket {
 }
 
 // HELPER
-function sleep(ms:number) {
-	return new Promise(resolve => setTimeout(resolve, ms));
-}
+// function sleep(ms:number) {
+// 	return new Promise(resolve => setTimeout(resolve, ms));
+// }
 
 /* --------------------------------------- */
 /* 				PLAYER SOCKET			   */
@@ -48,7 +48,8 @@ export function createPlayerSocket(): PongSocket
 		// functions
 		handshake() {},
 		send(data) {
-			ws.send(JSON.stringify(data));
+			if (ws.readyState === WebSocket.OPEN)
+				ws.send(JSON.stringify(data));
 		},
 		onmessage(handler) {
 			ws.onmessage = (e) => {
@@ -97,11 +98,9 @@ export function createSpectatorSocket(/* , playerid:string */matchid:string): Po
 		// functions
 		handshake() {
 			ws.onopen = () => {
-				sleep(200)
-				.then(() => {
-					isauth().then((auth) => {
-						if (auth === true) ws.send(JSON.stringify({ matchid: matchid }));
-					});
+				isauth().then((auth) => {
+					if (auth === true && ws.readyState === WebSocket.OPEN)
+						ws.send(JSON.stringify({ matchid: matchid }));
 				});
 			}
 		},
@@ -123,6 +122,7 @@ export function createSpectatorSocket(/* , playerid:string */matchid:string): Po
 		},
 		close() {
 			ws.close();
+			console.log('closed spectator socket');
 		}
 	};
 }
@@ -153,11 +153,9 @@ export function createReplaySocket(/* , playerid:string */replaystring:string): 
 		// functions
 		handshake() {
 			ws.onopen = () => {
-				sleep(200)
-				.then(() => {
-					isauth().then((auth) => {
-						if (auth === true) ws.send(replaystring);
-					});
+				isauth().then((auth) => {
+					if (auth === true && ws.readyState === WebSocket.OPEN)
+						ws.send(replaystring);
 				});
 			}
 		},

@@ -38,7 +38,7 @@ const TOURNAMENT_FORMAT = 'single-eliminatin';
 // 	rembot: () => void,
 // }
 
-function connectsocket(onopen: (socket:WebSocket) => void): WebSocket
+function connectsocket(onopen: (socket:WebSocket) => void, onerr?: (err:any) => void): WebSocket
 {
 	const socket = new WebSocket(TOURNAMENT_WEBSOCKET_URL);
 	console.log("Websocketing to", TOURNAMENT_WEBSOCKET_URL);
@@ -54,14 +54,17 @@ function connectsocket(onopen: (socket:WebSocket) => void): WebSocket
 	};
 
 	socket.onerror = (error) => {
-		console.error('Lobby WebSocket error:', error);
+		console.error('Tournament WebSocket error:', error);
+
+		// onerr callback
+		onerr?.(error);
 
 		// close socket
 		socket.close();
 	};
 
 	socket.onclose = () => {
-		console.log('Disconnected from lobby WebSocket');
+		console.log('Disconnected from Tournament WebSocket');
 
 		// reset tournamentWS every time the websocket is disconnected
 		tournamentWS = null;
@@ -75,6 +78,9 @@ export class TournamentWebSocket {
 	public socket: WebSocket | null;
 	public send: (data:any) => void;
 	public close: () => void;
+
+	// ping-pong logic
+	private ping:any;
 
 	// state setter (to setup later)
 	public onmessage: (
@@ -101,8 +107,9 @@ export class TournamentWebSocket {
 
 	// the old ConnectTournamentSocket
 	constructor(
+		ouTournamentId?:string,
 		onleave?: () => void,
-		ouTournamentId?:string
+		onerr?: (err:any) => void
 	)
 	{
 		// connect socket
@@ -110,17 +117,32 @@ export class TournamentWebSocket {
 			if (ouTournamentId) {
 				socket.send(JSON.stringify({ method: 'JOIN', tournamentID: ouTournamentId }));
 			}
-		});
+		}, onerr);
 		// setup reconnect routine
 		this.persistor = (cb: (socket:WebSocket) => void) => {
 			if (this.socket?.readyState !== WebSocket.OPEN) {
 				isauth().then(auth => {
-					if (auth === true) this.socket = connectsocket(cb);
+					if (auth === true) this.socket = connectsocket(cb, onerr);
 				});
 			}
 			else {
 				cb(this.socket);
 			}
+		}
+
+
+		/* define ping-pong logic */
+		const loop = () => {
+
+			this.ping = setTimeout(() => {
+				if (this.socket?.readyState === WebSocket.OPEN) {
+					this.socket.send(JSON.stringify({ method: 'PING' }));
+				}
+				// loop back
+				loop();
+
+			// ping every 20s
+			}, 20_000);
 		}
 
 
@@ -131,7 +153,11 @@ export class TournamentWebSocket {
 				socket.send(JSON.stringify(data));
 			});
 		},
-		this.close = () => this.socket?.close(),
+		this.close = () => {
+			clearInterval(this.ping);
+			this.socket?.close();
+			tournamentWS = null;
+		},
 		
 		/* player api */
 		this.onmessage = (onstart, onjoin, onstate) => {
@@ -143,8 +169,13 @@ export class TournamentWebSocket {
 					// get method
 					const method = data.method || '';
 
+					// pong logic
+					if (method === 'PONG') {
+						/* #debug */
+						// console.log('We PONG-ing');
+					}
 					// successful START reply
-					if (method === 'START_REPLY') {
+					else if (method === 'START_REPLY') {
 						if (data.status === 'success') onstart?.(data.value);
 						else console.log('Failed to start room');
 					}
@@ -183,12 +214,11 @@ export class TournamentWebSocket {
 						// callback
 						onstate?.(data);
 					}
-					else
-					{
-						console.log("Received this message that I didn't understand", data);
-					}
+					// tnot handled method
+					else throw new Error("Didn't understand message");
 				} catch (e) {
 					console.log("Error while reading:", event.data, e);
+					onerr?.(e);
 				}
 			};
 		},
@@ -219,6 +249,8 @@ export class TournamentWebSocket {
 			this.send({ method: 'BOT', value: 'REMOVE' });
 		}
 
+		// start ping-poning
+		loop();
 
 	}
 }
@@ -229,8 +261,9 @@ let tournament_id:string | undefined = undefined;
 
 // let's build something good
 export function ConnectTournamentSocket(
+	ouTournamentId?:string,
 	onleave?: () => void,
-	ouTournamentId?:string
+	onerr?: (err:any) => void	
 ): TournamentWebSocket
 {
 	// if already connected don't connect
@@ -246,8 +279,7 @@ export function ConnectTournamentSocket(
 		return tournamentWS;
 	}
 
-	tournamentWS = new TournamentWebSocket(onleave, ouTournamentId)
-	
+	tournamentWS = new TournamentWebSocket(ouTournamentId, onleave, onerr);
 
 	// return socket
 	return tournamentWS

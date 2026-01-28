@@ -286,6 +286,11 @@ fastify.register(async function (fastify) {
 
 			console.log(`Client ${clientIP} disconnected - Code: ${code}, Reason: ${reason?.toString() || 'none'}`);
 		});
+
+		// protocol-level ping/pong
+		connection.on('pong', () => {
+			(connection as any).isAlive = true;
+		});
 	});
 });
 
@@ -363,6 +368,25 @@ function LobbiesManager()
 	}, 1000);
 }
 
+// loops asyncronously
+function ConnectionsManager()
+{
+	setTimeout(() => {
+		/* check if the socket is alive */
+		fastify.websocketServer.clients.forEach((socket) => {
+			if ((socket as any).isAlive === false) {
+				return socket.terminate();
+			}
+
+			(socket as any).isAlive = false;
+			socket.ping();
+		});
+
+		// loop
+		ConnectionsManager();
+	}, 20_000);
+}
+
 /* ============================================= */
 
 /* ------------------------------------------ */
@@ -393,6 +417,8 @@ const start = async () => {
 
 	// routine check (once every second)
 	LobbiesManager();
+	// socket check (once every 20 seconds)
+	ConnectionsManager();
 };
 
 // entrypoint

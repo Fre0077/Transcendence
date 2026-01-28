@@ -30,7 +30,8 @@ import { isauth } from "@services/api/isauth";
 function connectsocket(
 	onstart: (gameid:string) => void,
 	onstate: (data:any) => void,
-	onopen: (socket:WebSocket) => void): WebSocket
+	onopen: (socket:WebSocket) => void,
+	onerr?: (err:any) => void): WebSocket
 {
 	const socket = new WebSocket(LOBBY_WEBSOCKET_URL);
 	console.log("Websocketing to", LOBBY_WEBSOCKET_URL);
@@ -54,7 +55,12 @@ function connectsocket(
 
 
 			const method = data.method || '';
-			if (method === 'START_REPLY') {
+			// pong logic
+			if (method === 'PONG') {
+				/* #debug */
+				// console.log('We PONG-ing');
+			}
+			else if (method === 'START_REPLY') {
 				if (data.status === 'success') onstart(data.value);
 				else console.log('Failed to start lobby');
 			}
@@ -76,17 +82,18 @@ function connectsocket(
 				// callback
 				onstate(data);
 			}
-			else
-			{
-				console.log("Received this message that I didn't understand", data);
-			}
+			else throw new Error("Didn't understand message");
 		} catch (e) {
 			console.log("Error while reading:", event.data, e);
+			onerr?.(e);
 		}
 	};
 
 	socket.onerror = (error) => {
 		console.error('Lobby WebSocket error:', error);
+
+		// error callback
+		onerr?.(error);
 
 		// close socket
 		socket.close();
@@ -108,6 +115,9 @@ export class LobbyWebSocket {
 	public socket: WebSocket;
 	public send: (data:any) => void;
 	public close: () => void;
+
+	// ping-pong logic
+	private ping:any;
 
 	// lobby ops
 	public create: () => void;
@@ -131,7 +141,8 @@ export class LobbyWebSocket {
 		onstart: (gameid:string) => void,
 		onleave: () => void,
 		onstate: (data:any) => void,
-		outlobbyid?:string)
+		outlobbyid?:string,
+		onerr?: (err:any) => void)
 	{
 		// connect socket
 		this.socket = connectsocket(onstart, onstate, (socket) => {
@@ -143,12 +154,27 @@ export class LobbyWebSocket {
 		this.persistor = (cb: (socket:WebSocket) => void) => {
 			if (this.socket.readyState !== WebSocket.OPEN) {
 				isauth().then(auth => {
-					if (auth === true) this.socket = connectsocket(onstart, onstate, cb);
+					if (auth === true) this.socket = connectsocket(onstart, onstate, cb, onerr);
 				});
 			}
 			else {
 				cb(this.socket);
 			}
+		}
+
+
+		/* define ping-pong logic */
+		const loop = () => {
+
+			this.ping = setTimeout(() => {
+				if (this.socket?.readyState === WebSocket.OPEN) {
+					this.socket.send(JSON.stringify({ method: 'PING' }));
+				}
+				// loop back
+				loop();
+
+			// ping every 20s
+			}, 20_000);
 		}
 
 
@@ -159,6 +185,7 @@ export class LobbyWebSocket {
 			});
 		},
 		this.close = () => {
+			clearInterval(this.ping);
 			this.socket.close();
 			lobbyWS = null;
 		},
