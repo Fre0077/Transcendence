@@ -105,6 +105,9 @@ import {
 const AUTH_URL = process.env.AUTH_URL ?? 'http://auth:3001';
 const CHAT_URL = process.env.CHAT_URL ?? 'http://chat:3002';
 const PROFILE_URL = process.env.PROFILE_URL ?? 'http://profile:3003';
+const LOBBY_URL = process.env.LOBBY_URL ?? 'http://lobby:3031';
+const TOURNAMENT_URL = process.env.TOURNAMENT_URL ?? 'http://tournament:3032';
+const PONG_URL = process.env.PONG_URL ?? 'http://pong:3040';
 
 // http gateway endpoints
 fastify.register(async function (fastify) {
@@ -203,10 +206,6 @@ fastify.register(async function (fastify) {
 
 }, { prefix: '/api' });
 
-
-const LOBBY_URL = process.env.LOBBY_URL ?? 'http://lobby:3031';
-const TOURNAMENT_URL = process.env.TOURNAMENT_URL ?? 'http://tournament:3032';
-const PONG_URL = process.env.PONG_URL ?? 'http://pong:3040';
 
 // websocket endpoints (always need authentication)
 fastify.register(async function (fastify) {

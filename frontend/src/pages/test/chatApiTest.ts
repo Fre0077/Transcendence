@@ -10,8 +10,41 @@ import { sendPostRequest } from "@/services/api/sendRequests";
 import { loadNavbar } from "@/components/navbar";
 
 // URLS
-const BACKEND_APIS_URL = `http://${window.location.hostname}:3029/api`;
+// const BACKEND_APIS_URL = `http://${window.location.hostname}:3029/api`;
 
+/* -------------------- */
+/* CUSTOM EVENT EMITTER */
+
+class EmitterWebSocket extends WebSocket
+{
+
+}
+
+ws.on("message", function (data) {
+  const parsed = JSON.parse(data);
+  const { eventName, payload } = parsed;
+  ws.emit(eventName, payload);
+});
+// register your event handlers
+ws.on("someEventName", function (data) {
+  console.log("someEventName event happened. data: ", data);
+});
+// Then I have registered my sample event handler for a sample event name. On the client side, I have added an emit method to the WebSocket prototype to conveniently send messages to the websocket server:
+
+WebSocket.prototype.emit = function (eventName, payload) {
+  this.send(JSON.stringify({eventName, payload}));
+}
+// ...
+ws.onopen = function (event) {
+  // when connection to websocket server is opne you can emit any event with the following mentohd and signature.
+  ws.emit('someEventName', {a: 1, b: 2});
+}
+
+WebSocket.prototype.emit = function (eventName:string, payload:any) {
+  this.send(JSON.stringify({eventName, payload}));
+}
+
+/* -------------------- */
 
 export function loadChatApiTest(): HTMLElement
 {
@@ -127,14 +160,12 @@ function loadMessagesPanel(): HTMLElement
 	}
 
 	function connect() {
-		socket = new WebSocket(`ws://${location.hostname}:3029/ws/broadcast`);
+		socket = new WebSocket('/ws/broadcast');
 
 		socket.onopen = () => {
 			console.log('Dispatching chat event');
 			sleep(100).then(() => socket?.send(JSON.stringify({ chatId:1, index:0 })));
-			// socket?.dispatchEvent(
-			// 	new CustomEvent('chat', { detail: { chatId: 1, startIndex: 0 } })
-			// );
+
 		};
 
 		socket.onmessage = (event) => {
@@ -282,7 +313,7 @@ function loadCreateChatCard(): HTMLElement
 			: [];
 
 		try {
-			/* const res =  */await sendPostRequest(`${BACKEND_APIS_URL}/new-chat`, {
+			/* const res =  */await sendPostRequest('/api/new-chat', {
 				chatName,
 				members,
 			});
@@ -370,7 +401,7 @@ function loadSendMessageBar(): HTMLElement
 
 		try {
 
-			/* const res =  */await sendPostRequest(`${BACKEND_APIS_URL}/new-message`, {
+			/* const res =  */await sendPostRequest('/api/new-message', {
 				chatId,
 				message,
 			});

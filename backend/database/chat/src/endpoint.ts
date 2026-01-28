@@ -25,19 +25,16 @@ async function broadcastChatListToAll() {
 	}
 }
 
+// Funzione di broadcast per l'ultimo messaggio
 async function broadcastMessageListToAll() {
 	console.log('dentro broadcastMessageListToAll');
 	for (const [socket, data] of chatConnections) {
 		console.log('sending to', data);
-		const messages = await singleMessage(data);
-		socket.send(JSON.stringify({ messages }));
+		const message = await singleMessage(data);
+		socket.send(JSON.stringify({ message }));
 	}
 }
 
-// updatechat(chatid:number)
-// {
-// 	//broadcast if (user in chatid)
-// }
 
 export async function chatEndpoint(fastify: FastifyInstance) {
 
@@ -105,7 +102,7 @@ export async function chatEndpoint(fastify: FastifyInstance) {
 	});
 
 	// Endpoint WebSocket per ottenere gli ultimi 100 messaggi a partire da un certo indice
-	fastify.get("/broadcast", { websocket: true }, (connection: any, request) => {
+	fastify.get("/broadcast", { websocket: true }, (connection, request) => {
 
 		const linkId = Number(request.headers["x-user-id"]);
 
@@ -119,9 +116,20 @@ export async function chatEndpoint(fastify: FastifyInstance) {
 			try {
 				console.log('Got message', rawMessage.toString());
 
+
+				// ping-pong per tenere il websocket vivo
+				if (rawMessage.toString() === 'ping') {
+					if (connection.readyState === WebSocket.OPEN) {
+						connection.send('pong');
+					}
+				}
+				//----
+
+
+				// aggiorna la lista di utenti connessi alla chat
 				const data = JSON.parse(rawMessage.toString());
 
-				if (data.chatId !== undefined/* && typeof data.chatId === "number" */)
+				if (data.chatId !== undefined && typeof data.chatId === "number")
 				{
 					console.log('got chat event');
 					chatConnections.set(connection, [data.chatId, linkId]);

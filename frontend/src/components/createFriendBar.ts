@@ -82,6 +82,10 @@ function createFriendCard(friend: Friend): HTMLElement {
 				{ target: friend.username },
 				"application/json"
 			);
+			// update the UI
+			card.dispatchEvent(
+				new CustomEvent('update:friends:local', { bubbles: true })
+			);
 			console.log("Friend request remove:", friend.username);
 		} catch (err) {
 			console.error(err);
@@ -102,8 +106,8 @@ function createFriendCard(friend: Friend): HTMLElement {
 
 
 interface Request  {
-	username: true,
-	avatarUrl: true
+	username: string,
+	avatarUrl: string
 }
 
 function createIncomingRequestCard(req: Request): HTMLElement {
@@ -113,7 +117,7 @@ function createIncomingRequestCard(req: Request): HTMLElement {
 
 	div.innerHTML = /* html */ `
 		<div class="flex items-center gap-2">
-			<img class="w-8 h-8 rounded-full" src="${req.avatarUrl ?? "https://i.pravatar.cc/100"}" />
+			<img class="w-8 h-8 rounded-full" src="${req.avatarUrl ?? generateInitialsAvatar(req.username)}" />
 			<span class="text-sm text-white">${req.username}</span>
 		</div>
 		<div class="flex gap-2">
@@ -133,13 +137,11 @@ function createIncomingRequestCard(req: Request): HTMLElement {
 				`/api/friend/accept`,
 				{ target: req.username },
 				"application/json"
-			)
-			.then(() => {
-				// update the UI
-				div.dispatchEvent(
-					new CustomEvent('update:friends:local', { bubbles: true })
-				);
-			});
+			);
+			// update the UI
+			div.dispatchEvent(
+				new CustomEvent('update:friends:local', { bubbles: true })
+			);
 			console.log("Friend request accepted:", req.username);
 		} catch (err) {
 			console.error(err);
@@ -180,7 +182,7 @@ function createOutgoingRequestCard(req: Request): HTMLElement {
 
 	div.innerHTML = /* html */ `
 		<div class="flex items-center gap-2">
-			<img class="w-8 h-8 rounded-full" src="${req.avatarUrl ?? "https://i.pravatar.cc/100"}" />
+			<img class="w-8 h-8 rounded-full" src="${req.avatarUrl ?? generateInitialsAvatar(req.username)}" />
 			<span class="text-sm text-white">${req.username}</span>
 		</div>
 		<div class="flex gap-2">
@@ -263,7 +265,10 @@ export function createFriendsBar(): HTMLElement {
 	`;
 
 	// define for future removal
-	const load = () => loadFriendBarContent(bar);
+	const load = () => {
+		console.log('reloading friends');
+		loadFriendBarContent(bar);
+	}
 
 	// Initial load
 	load();

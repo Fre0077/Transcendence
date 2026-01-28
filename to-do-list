@@ -3,9 +3,12 @@
 
 
 WHAT-AM-I-DOING-NOW
+26. Chat API Test page
 
 WHAT-AM-I-DOING-NEXT
+24. fix lobby invite
 17. status dot on friendlist
+
 
 MANDATORY:
 
@@ -30,6 +33,8 @@ MINOR
 18. rejoin button if you disconnect from a game (todo on tournaments)
 20. Better pong bot
 21. lobby chat
+22. all db updating operations on friends (accepting/declining/canceling...) sends an update to the lifecycle ws { what: 'UPDATE, type: 'friend' }
+23. icons on tournament playerlist
 
 STYLE
 2. pls... the back button

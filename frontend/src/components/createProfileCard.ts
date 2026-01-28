@@ -1,3 +1,6 @@
+// defaults
+import { router } from "@/router";
+
 // services
 import { sendGetRequest } from "@/services/api/sendRequests";
 
@@ -33,21 +36,6 @@ export function createProfileCard(username: string): HTMLElement {
     (async () => {
         try {
             const data = await sendGetRequest(`/api/userinfo?username=${username}`);
-            // const url = `${PROFILE_BASE_URL}/userinfo?username=${username}`;
-            // const authToken = localStorage.getItem("authToken");
-            // const response = await fetch(url, {
-            //     method: 'GET',
-            //     credentials: 'include',
-            //     headers: {
-            //         'Content-Type': 'application/json',
-            //         'Authorization': authToken ? `Bearer ${authToken}` : ''
-            //     }
-            // });
-            // if (!response.ok) throw new Error('Utente non trovato');
-            // const data = await response.json();
-
-            /* #debug */
-            // console.log('/userinfo', response, data);
             
             // Dati ricevuti: username e avatarUrl (o image)
             const avatar = data?.avatarUrl || data?.image || "";
@@ -78,6 +66,10 @@ export function createProfileCard(username: string): HTMLElement {
                 
                 <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-t from-slate-900 via-transparent to-transparent pointer-events-none"></div>
             `;
+
+            const statbtn = container.querySelector('.btn-profile-action') as HTMLElement;
+            statbtn.addEventListener('click', () => {router.push(`/profile/${username}`)})
+
         } catch (error) {
             console.error("Errore caricamento profilo:", error);
             // Stato di Errore

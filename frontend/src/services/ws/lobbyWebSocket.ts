@@ -147,6 +147,7 @@ export class LobbyWebSocket {
 		// connect socket
 		this.socket = connectsocket(onstart, onstate, (socket) => {
 			if (outlobbyid) {
+				console.log('connecting to', outlobbyid);
 				socket.send(JSON.stringify({ method: 'JOIN', lobbyID: outlobbyid }));
 			}
 		});

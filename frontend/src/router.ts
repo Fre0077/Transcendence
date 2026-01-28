@@ -433,7 +433,7 @@ const routes: RouteConfig[] = [
     component: () => {
       return loadChatApiTest();
     },
-    meta: { title: 'Tournament Details - ft_transcendence', requiresAuth: true, requires2FA: true },
+    meta: { title: 'Chat API Test - ft_transcendence', requiresAuth: true, requires2FA: true },
   },
 
   // ============================================

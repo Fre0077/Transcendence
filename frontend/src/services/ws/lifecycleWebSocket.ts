@@ -64,12 +64,12 @@ export async function ConnectLifecycleSocket(): Promise<WebSocket | null>
 		// if (socket) socket.send("Ciao Butler");
 	}
 
-	/* #friend-request
+	/*  #friend-request
 		#lobby-invite
 		#tournament-invite
 	 */
 
-	/* notify format: { what: 'NOTIFY, type: 'friend-request/...', data:any } */
+	/* notify format: { what: 'NOTIFY/UPDATE', type: 'friend-request/...', sender?:<username>, content?:any } */
 	socket.onmessage = (ev: MessageEvent<string>) => {
 		try
 		{
@@ -97,7 +97,7 @@ export async function ConnectLifecycleSocket(): Promise<WebSocket | null>
 							undefined,
 							() => router.push(`/lobby/online?lobby-id=${msg.content}`),
 							() => {},
-							10000);
+							10_000);
 						break ;
 					case "tournament-invite":
 						console.log("Tournament invite", msg.content);
@@ -105,7 +105,27 @@ export async function ConnectLifecycleSocket(): Promise<WebSocket | null>
 							() => {alert('SAIK')},
 							undefined,
 							undefined,
-							10000);
+							10_000);
+						break ;
+					default:
+						console.log(`Unknown type ${msg.type}`, msg.content);
+				}
+			}
+
+			// status update
+			if (msg?.what === "UPDATE")
+			{
+				if (!msg.type) throw new Error("Missin Update type");
+				
+				switch (msg.type)
+				{
+					case "friend":
+						console.log("Friend update", msg.sender);
+						// update the UI
+						window.dispatchEvent(
+							new CustomEvent('update:friends', { bubbles: true })
+						);
+						
 						break ;
 					default:
 						console.log(`Unknown type ${msg.type}`, msg.content);
