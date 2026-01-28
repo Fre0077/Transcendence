@@ -4,7 +4,7 @@ import type { RawData } from "ws";
 import { PrismaClient as chatPrismaClient } from "../database/generate/chat";
 const chatPrisma = new chatPrismaClient();
 
-import { userList, chatList, messageList, newChat, newMessage, deleteChatMessages,
+import { userList, chatList, messageList, singleMessage, newChat, newMessage, deleteChatMessages,
 		deleteMessage, searchMessage, searchChat, listChatMessage, blockUser,
 		sblockUser, deleteChat } from "./function";
 import { BadRequest, Unauthorized, Forbidden, NotFound, Conflict } from "../utils/exception"
@@ -26,12 +26,18 @@ async function broadcastChatListToAll() {
 }
 
 async function broadcastMessageListToAll() {
+	console.log('dentro broadcastMessageListToAll');
 	for (const [socket, data] of chatConnections) {
 		console.log('sending to', data);
-		const messages = await messageList(data);
+		const messages = await singleMessage(data);
 		socket.send(JSON.stringify({ messages }));
 	}
 }
+
+// updatechat(chatid:number)
+// {
+// 	//broadcast if (user in chatid)
+// }
 
 export async function chatEndpoint(fastify: FastifyInstance) {
 
@@ -70,7 +76,7 @@ export async function chatEndpoint(fastify: FastifyInstance) {
 	// 	}
 	// });
 
-		// Endpoint WebSocket per ottenere la lista delle chat di uno user
+	// Endpoint GET per ottenere la lista delle chat di uno user
 	fastify.get("/chat-list", async (request, reply) => {
 		const linkid = request.headers['x-user-id'];
 		try {
@@ -84,7 +90,7 @@ export async function chatEndpoint(fastify: FastifyInstance) {
 		}
 	});
 
-		// Endpoint WebSocket per ottenere la lista delle chat di uno user
+	// Endpoint GET per ottenere la lista delle chat di uno user
 	fastify.get("/message-list", async (request, reply) => {
 		const data = request.body as number[];
 		try {
@@ -115,12 +121,10 @@ export async function chatEndpoint(fastify: FastifyInstance) {
 
 				const data = JSON.parse(rawMessage.toString());
 
-
-				if (data.chatId && typeof data.chatId === "number"
-					&& data.index && typeof data.index === "number")
+				if (data.chatId !== undefined/* && typeof data.chatId === "number" */)
 				{
 					console.log('got chat event');
-					chatConnections.set(connection, [data.chatId, data.index, linkId]);
+					chatConnections.set(connection, [data.chatId, linkId]);
 				}
 			} catch (err) {
 				console.log('err', err);
