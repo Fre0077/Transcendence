@@ -6,7 +6,6 @@ import { generateInitialsAvatar } from "./createDefaultImage";
 async function getFriendsList(){
 	try {
 		const data = await sendGetRequest(`/api/friends`);
-		console.log('data', data);
 		// const friends = JSON.parse(data);
 		// console.log('data', friends);
 		return data;
@@ -86,7 +85,6 @@ function createFriendCard(friend: Friend): HTMLElement {
 			card.dispatchEvent(
 				new CustomEvent('update:friends:local', { bubbles: true })
 			);
-			console.log("Friend request remove:", friend.username);
 		} catch (err) {
 			console.error(err);
 		}
@@ -142,7 +140,6 @@ function createIncomingRequestCard(req: Request): HTMLElement {
 			div.dispatchEvent(
 				new CustomEvent('update:friends:local', { bubbles: true })
 			);
-			console.log("Friend request accepted:", req.username);
 		} catch (err) {
 			console.error(err);
 		}
@@ -161,7 +158,6 @@ function createIncomingRequestCard(req: Request): HTMLElement {
 					new CustomEvent('update:friends:local', { bubbles: true })
 				);
 			});
-			console.log("Friend request remove:", req.username);
 		} catch (err) {
 			console.error(err);
 		}
@@ -205,7 +201,6 @@ function createOutgoingRequestCard(req: Request): HTMLElement {
 					new CustomEvent('update:friends:local', { bubbles: true })
 				);
 			});
-			console.log("Friend request remove:", req.username);
 		} catch (err) {
 			console.error(err);
 		}
@@ -292,7 +287,6 @@ export function createFriendsBar(): HTMLElement {
 
 	// define for future removal
 	const load = () => {
-		console.log('reloading friends');
 		loadFriendBarContent(bar);
 	}
 

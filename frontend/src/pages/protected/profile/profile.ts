@@ -13,7 +13,6 @@ export function loadProfilePage(): HTMLElement {
 
 	const params = router.getParams();
 	paramUsername = params.username;
-	console.log('paramUsernameIndex', paramUsername);
 	const routeUsername = router.getCurrentRoute()?.meta?.user?.username;
 
 	// overflow-hidden whitespace-nowrap text-ellispis
@@ -117,7 +116,6 @@ export function loadProfilePage(): HTMLElement {
 	let currentUser: UserProfile;
 
 	getUserProfile(routeUsername).then(user => {
-		console.log("server response:", user);
 		currentUser = user;
 		const usernameElem = div.querySelector('h1');
 		const bioElem = div.querySelector('p');
@@ -154,11 +152,8 @@ export function loadProfilePage(): HTMLElement {
 	});
 	
 	getUserGames(routeUsername).then(games => {
-		console.log("game response:", games);
-
 		const history = div.querySelector('#match-history');
 		if (!history) throw Error("History div not found");
-
 		// loops through games and adds them
 		for (const g of games.reverse()/* .history */) {
 			history.appendChild(createHistoryBar(g));
@@ -225,7 +220,6 @@ export function loadProfilePage(): HTMLElement {
 			const file = avatarFileInput.files?.[0];
 			if (!file) return;
 			const formData = new FormData();
-			console.log('formData', formData);
 			formData.append('file', file);
 			const response = await fetch('/api/profile/avatar', {
 				method: 'POST',
@@ -235,10 +229,8 @@ export function loadProfilePage(): HTMLElement {
 			if (response.ok) {
 				const data = await response.json();
 				// 3. Aggiorniamo l'immagine nella UI
-				if (data.avatarUrl) {
+				if (data.avatarUrl)
 					avatarImgElement.src = data.avatarUrl;
-					console.log("Avatar aggiornato con successo!");
-				}
 			} else {
 				const errorData = await response.json();
 				console.error("Errore durante l'upload:", errorData.error);
@@ -280,9 +272,6 @@ export async function getUserProfile(routeUsername:string): Promise<UserProfile>
 	}
 	else
 		username = paramUsername;
-	console.log('routeUsernameGet', routeUsername);
-	console.log('paramUsernameGet', paramUsername);
-	console.log('usernameGet', username);
 	/* --------------------------------- */
 	const profileResponse = await sendGetRequest(`/api/user?username=${username}`);
 	const butlerResponse = await sendGetRequest(`/api/profile?username=${username}`);
