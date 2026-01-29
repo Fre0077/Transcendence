@@ -4,3 +4,5 @@
 VSCode.sh
 .DS_Store
 **/*.log
+**/database/generate
+**/database/*.db

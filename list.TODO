@@ -1,0 +1,15 @@
+implement a proper loading page
+
+implement login and guest guard
+
+connessione alle chat sempre attiva
+    per notifiche arrivo messaggi
+        se arriva un messaggio durante un game viene inviato visualizzato alla fine del game
+
+sync messaggi al login
+
+creazione nuova chat
+    lista utenti disponibili
+        utenti bloccati non disponibili
+    utenti disponibili = tutti quelli non bloccati o solo gli amici?
+
