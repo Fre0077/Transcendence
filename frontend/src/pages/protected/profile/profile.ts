@@ -15,6 +15,7 @@ export function loadProfilePage(): HTMLElement {
 	mainUsername = params.username
 	console.log('params', mainUsername);
 
+	// overflow-hidden whitespace-nowrap text-ellispis
 
 	const div = document.createElement('div');
 	div.className = 'min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex flex-col';
@@ -29,8 +30,8 @@ export function loadProfilePage(): HTMLElement {
 				class="absolute top-4 left-4 bg-white/10 hover:bg-white/20 text-white px-3 py-1 rounded-lg text-sm">
 				✏️ Edit
 			</button>
-			<div class="text-center flex flex-row flex-grow items-center">
-				<div class="relative w-32 h-32 mb-6">
+			<div class="text-center flex flex-col items-center">
+				<div class="relative min-w-32 min-h-32 mb-6">
 					<img
 						id="avatar-img"
 						class="w-32 h-32 rounded-full select-none"

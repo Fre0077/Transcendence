@@ -241,16 +241,15 @@ export async function authForward(
 	// parse body
 	if (contentType?.includes(type)) {
 		data = await backendResponse.json();
-		reply.send(data);
 	} else {
 		data = await backendResponse.text();
-		reply.send(data);
 	}
 
 	// call the post-process callback
 	if (callback && backendResponse.status === 200) {
 		const newdata = callback(data, reply);
 		// and hold the data
+		console.log('---> sending', newdata);
 		reply.send(newdata);
 	}
 	else reply.send(data);	// send the fetched reply
