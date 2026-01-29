@@ -197,7 +197,7 @@ export async function fetchBackend(request:FastifyRequest, endpoint:string, type
 	}
 
 	/* #debug */
-	console.log('Fetching', endpoint, 'with', fetchOptions);
+	// console.log('Fetching', endpoint, 'with', fetchOptions);
 
 	// --- CALL BACKEND ---
 	return await fetch(endpoint, fetchOptions);
@@ -209,7 +209,9 @@ export async function authForward(
 	reply:FastifyReply,
 	endpoint:string,
 	type:string,
-	callback?: (data: any, reply: FastifyReply) => void)
+	handler?: (data: any, reply?: FastifyReply) => void,
+	updater?: (user:any) => void,
+	notifier?: (sender:string, data:any) => void)
 {
 	/* --- AUTH CHECK --- */
 	const auth = isCookieAuthenticated(request, reply);
@@ -245,14 +247,29 @@ export async function authForward(
 		data = await backendResponse.text();
 	}
 
-	// call the post-process callback
-	if (callback && backendResponse.status === 200) {
-		const newdata = callback(data, reply);
-		// and hold the data
-		console.log('---> sending', newdata);
-		reply.send(newdata);
+	console.log('===>> FROM BACKND', data);
+
+	try {
+
+		// call the post-process handler
+		if (backendResponse.status === 200) {
+
+			// calls the updater
+			if (updater !== undefined) updater(auth.user);
+			if (notifier !== undefined) notifier(auth.user.username, data);
+
+			// calls the handler
+			const newdata = (handler !== undefined) ? handler(data, reply) : data;
+			
+			console.log('-->scraped', newdata);
+
+			// sends the new data processed by the handler
+			reply.send(newdata);
+		}
+		else reply.send(data);	// send the fetched reply
+	} catch (err) {
+		console.log('err', err);
 	}
-	else reply.send(data);	// send the fetched reply
 }
 
 // forward to backend without checking authourization
@@ -261,7 +278,7 @@ export async function noAuthForward(
 	reply:FastifyReply,
 	endpoint:string,
 	type:string,
-	callback?: (data: any, reply: FastifyReply) => void)	// only called on succccessful fetch
+	handler?: (data: any, reply: FastifyReply) => void)	// only called on succccessful fetch
 {
 
 	// --- CALL BACKEND ---
@@ -293,9 +310,9 @@ export async function noAuthForward(
 	/* #debug */
 	// console.log('>Backend fetch', backendResponse);
 
-	// call the post-process callback
-	if (callback && backendResponse.status === 200) {
-		const newdata = callback(data, reply);
+	// call the post-process handler
+	if (handler && backendResponse.status === 200) {
+		const newdata = handler(data, reply);
 		// and hold the data
 		reply.send(newdata);
 	}

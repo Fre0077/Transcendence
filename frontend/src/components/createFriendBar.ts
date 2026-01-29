@@ -317,7 +317,7 @@ export function createFriendsBar(): HTMLElement {
 		if (typeof username !== "string" || !username.trim()) return;
 		try {
 			await sendPostRequest(
-				"/api/friend-request",
+				"/api/friend/request",
 				{ target: username.trim() },
 				"application/json"
 			);

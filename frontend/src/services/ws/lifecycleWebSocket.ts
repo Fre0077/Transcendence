@@ -104,6 +104,8 @@ export async function ConnectLifecycleSocket(): Promise<WebSocket | null>
 			// actual messages
 			const msg = JSON.parse(ev.data);
 
+			console.log('[WS] got message', msg);
+
 			// handle notifications
 			if (msg?.what === "NOTIFY")
 			{
@@ -113,6 +115,12 @@ export async function ConnectLifecycleSocket(): Promise<WebSocket | null>
 				{
 					case "friend-request":
 						console.log("Friend request", msg.sender);
+
+						// update the UI
+						window.dispatchEvent(
+							new CustomEvent('update:friends', { bubbles: true })
+						);
+						
 						toastNotification.friend('Friend Request', `${msg.sender} vorrebbe essere tuo amico`, 
 							() => { alert('Pagina Friends');},
 							() => acceptFriendRequest(msg.sender),

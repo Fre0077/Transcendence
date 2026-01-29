@@ -91,7 +91,7 @@ export async function sendFriendRequest(myLinkId: number, targetUsername: string
         }
     });
 
-    return { message: `Richiesta inviata a ${targetUsername}` };
+    return { target: targetUsername, message: `Richiesta inviata a ${targetUsername}` };
 }
 
 export async function acceptFriendRequest(myLinkId: number, senderUsername: string) {
@@ -138,7 +138,7 @@ export async function acceptFriendRequest(myLinkId: number, senderUsername: stri
         })
     ]);
     
-    return { message: `Ora sei amico di ${senderUsername}` };
+    return { target: senderUsername, message: `Ora sei amico di ${senderUsername}` };
 }
 
 //Rifiuta o Annulla una richiesta, funziona per entrambi i casi
