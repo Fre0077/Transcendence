@@ -4,8 +4,10 @@ import { loadNavbar } from "@/components/navbar";
 // import { load404Page } from "@/pages/errors/404";
 
 // services
-import { TournamentWebSocket, ConnectTournamentSocket, DisconnectTournamentSocket } from "@/services/ws/tournamentWebSocket";
 // import { isauth } from "@/services/api/isauth";
+import { toastNotification } from "@/services/toastNotification";
+import { TournamentWebSocket, ConnectTournamentSocket, DisconnectTournamentSocket } from "@/services/ws/tournamentWebSocket";
+
 // elements
 import { loadPongSpectatorDiv } from "@pages/protected/game/online/loadPongSpectatorDiv";
 import { createProfileCard } from "@/components/createProfileCard";
@@ -98,8 +100,9 @@ export function loadOnlineTournamentPage(): HTMLElement
 	tourn_code = tournamentWS.getid();
 
 	/* !!! DESTRUCTOR !!! */
+	// The tournament websocket, once connected, disconnects only if the client leaves a tournament
 	(div as any).destroy = () => {
-		DisconnectTournamentSocket();
+		if (tournamentWS?.getid() === undefined) DisconnectTournamentSocket();
 	}
 
 	return div;
@@ -369,16 +372,21 @@ function renderTournamentLayout(rooms:Room[])
 /* ------------------------------------------------------ */
 /*	 					UPDATE LOGIC					  */
 
-
+let page_layer:number = -1;
 
 function updateTournamentInfo(state:TournamentState) {
 	console.log('Updating tournament info ...');
 
 	// read data
-	const { players, rooms, finished, aborted, winners } = state;
+	const { players, rooms, current_layer, finished, aborted, winners } = state;
 
 	// verify
-	if (!players || !rooms || finished === undefined || !winners) {
+	if (!players
+		|| !rooms
+		|| current_layer === undefined
+		|| finished === undefined
+		|| aborted === undefined
+		|| !winners) {
 		console.log('Invalid tournament-state', state);
 		return ;
 	}
@@ -390,11 +398,38 @@ function updateTournamentInfo(state:TournamentState) {
 	renderTournamentLayout(rooms);
 
 	// update winners panel
-	// update winners panel
 	const winnersPanel = document.getElementById('winnersPanel');
 	if (winnersPanel && winnersPanel.childElementCount === 0 && (finished || aborted)) {
 		const status = (finished) ? 'finished' : 'aborted';
 		winnersPanel.appendChild(renderWinnersPanel(status, winners));
+	}
+
+
+	/* NOTIFICATION */
+	// send round update notification
+	if (finished === false && aborted === false && page_layer !== current_layer) {
+		toastNotification.info(
+			'New Round',
+			`The Round ${current_layer + 1} of the tournament just started!`,
+			() => {
+				if (router.getCurrentRoute()?.path !== '/tournament/:tournamentId') {
+					console.log('we are in', router.getCurrentRoute()?.path, 'so we go in', `/tournament/${tourn_code}`);
+					router.push(`/tournament/${tourn_code}`);
+				}
+			},
+			10000
+		);
+		page_layer = current_layer;
+	}
+
+	// tournament finished notification
+	if (finished === true) {
+		toastNotification.success('Tournament Finished', `The Tournament Finished. Winners: ${winners}`);
+	}
+
+	// tournament aborted notification
+	if (aborted === true) {
+		toastNotification.error('Tournament Aborted', `The Tournament was aborted before it's conclusion`);
 	}
 }
 

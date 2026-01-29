@@ -9,7 +9,7 @@ const GATEWAY_SECRET = process.env.GATEWAY_SECRET ?? 'biscottini';
 /* 		  WEBSOCKETS		*/
 /* ------------------------ */
 
-import WebSocket/* , { RawData } */ from 'ws';	// important to use backend websockets
+import WebSocket, { RawData } from 'ws';	// important to use backend websockets
 
 /* 
 	@service:
@@ -56,11 +56,20 @@ export function fwdWebSocket(
 	);
 
 	let backendReady = false;
+	const presentMessages:RawData[] = [];
 
 	// we are ready to send to backend
 	backendSocket.on('open', () => {
 		backendReady = true;
 		console.log('Connected to backend:', endpoint);
+
+		// send all the present messages
+		for (const msg of presentMessages) {
+			if (backendSocket.readyState === WebSocket.OPEN)
+				backendSocket.send(msg.toString());
+		}
+		// clear the array
+		presentMessages.splice(0, presentMessages.length);
 	});
 
 	// close client socket on backend error
@@ -81,8 +90,23 @@ export function fwdWebSocket(
 
 	/* --- BRIDGE CLIENT → BACKEND --- */
 
+	// since the 'open' event on the client will happen before
+	// the 'open' event here on the gateway, we store the messages
+	// sent before the gateway connects to the backend and we send them
+	// afterwards
+
 	clientSocket.on('message', (message) => {
-		if (backendReady && backendSocket.readyState === WebSocket.OPEN) {
+
+		// if backend not ready or we still sending present messages
+		if (backendReady === false || presentMessages.length !== 0)
+		{
+			// store the message
+			presentMessages.push(message);
+		}
+		// else if the connection is ready
+		else if (backendSocket.readyState === WebSocket.OPEN)
+		{
+			// send the message
 			backendSocket.send(message.toString());
 		}
 	});

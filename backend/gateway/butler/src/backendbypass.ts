@@ -29,6 +29,14 @@ export function authWebSocket(connection:WebSocket, request:FastifyRequest)
 	// Handle incoming messages
 	socket.on('message', (message:any) => {
 		console.log(`Message received '${message.toString()}'`);
+
+		// application-level ping-pong
+		if (message.toString() === 'ping') {
+			if (socket.readyState === WebSocket.OPEN) {
+				socket.send('pong');
+			}
+		}
+
 	});
 
 	// Handle WebSocket errors

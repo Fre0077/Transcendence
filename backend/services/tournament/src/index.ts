@@ -1,7 +1,7 @@
 import Fastify from 'fastify';
 import fastifyMetrics from "fastify-metrics";
 import { Tournament } from './classes/Tournament.js'
-import type { WebSocket } from "ws";
+import { WebSocket } from "ws";
 
 
 // Where the Queue will listen
@@ -293,9 +293,19 @@ fastify.register(async function (fastify) {
 		});
 
 		// Handle incoming messages
-		connection.on('message', (message:string) => {
+		connection.on('message', (message) => {
 			
-			interpreter(message, tournament, player, connection, (retlobby:string | undefined) => {
+			const msg = message.toString();
+
+			// application-level ping-pong logic
+			if (msg === 'ping') {
+				if (connection.readyState === WebSocket.OPEN) {
+					connection.send('pong');
+				}
+				return ;
+			}
+
+			interpreter(msg, tournament, player, connection, (retlobby:string | undefined) => {
 
 				tournament = retlobby;
 				// player = retPlayer;

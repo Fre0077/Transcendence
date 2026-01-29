@@ -600,7 +600,8 @@ export class Tournament<T extends MySocket>
 			await sleep(1000);
 		
 			// advance current layer
-			this._current_layer++;
+			if (this._current_layer !== keyToIdx(this._finals).layer)
+				this._current_layer++;
 
 			// register the status change
 			changed = true;
