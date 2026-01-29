@@ -105,9 +105,8 @@ export async function authEndpoint(fastify: FastifyInstance) {
 			if (!googleData.email || !googleData.code)
 				throw new BadRequest('Email e codice 2FA sono richiesti', 'auth');
 			const user = await auth2FA(googleData);
-			const tokens = await generateTokens(user);
 			logInfo('{auth} [200] 2FA riuscita');
-			reply.code(200).send({ ...tokens, user });
+			reply.code(200).send({ ...user, user, ok: true });
 		} catch (err) {
 			if (err instanceof Error) {
 				reply.code((err as any).statusCode).send({ error: err.message });
@@ -148,7 +147,8 @@ export async function authEndpoint(fastify: FastifyInstance) {
 			where: { id: userId},
 			select: {
 				id: true, email: true, username: true,
-				name: true, surname: true, bio: true, avatarUrl: true
+				name: true, surname: true, bio: true, avatarUrl: true,
+				twoFactorEnabled: true
 			}
 			});
 			if (!user) 
@@ -215,10 +215,19 @@ export async function authEndpoint(fastify: FastifyInstance) {
 			const userId = Number(request.headers['x-user-id'])
 			const secretG = request.headers['x-gateway-secret']
 
+			logInfo(`{auth} /2fa/generate called - userId: ${userId}, secret: ${secretG ? 'present' : 'missing'}`);
+
 			if (!userId || secretG !== 'biscottini') {throw new Unauthorized('Utente non autorizzato', 'auth'); }
-			if (!request.user) throw new Error ("Undefined request user");
-			const email = request.user.email;
-			const [qrDataUrl, secret] = await generateQR(email, userId);
+			
+			// Get user email from database
+			const user = await authPrisma.account.findUnique({
+				where: { id: userId },
+				select: { email: true }
+			});
+			if (!user) throw new NotFound('Utente non trovato', 'auth');
+			
+			logInfo(`{auth} Generating QR for email: ${user.email}`);
+			const [qrDataUrl, secret] = await generateQR(user.email, userId);
 			logInfo('{auth} [200] QR generato con successo');
 			reply.code(200).send({ qrCodeUrl: qrDataUrl, secret: secret });
 		} catch (err) {

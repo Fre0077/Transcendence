@@ -6,7 +6,7 @@ import { router } from "@/router";
 import { isauth } from '@/services/api/isauth';
 
 
-export function loadHomePage(): HTMLElement {
+export async function loadHomePage(): Promise<HTMLElement> {
 
 	const div = document.createElement('div');
 	div.className = 'min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex flex-col';
@@ -22,8 +22,8 @@ export function loadHomePage(): HTMLElement {
 		<!-- Hero Content -->
 		${loadHeroContent()}
 
-		<!-- Global Chat Widget -->
-		${new ChatWidget().loadChatWidget().outerHTML}
+		<!-- Global Chat Widget Placeholder -->
+		<div id="chatWidgetContainer"></div>
 	</div>
 
 	<!-- Content Sections -->
@@ -103,6 +103,13 @@ export function loadHomePage(): HTMLElement {
 				<p class="text-white/60 text-xs">${player.rank}</p>
 			</a>
 		`).join('');
+	}
+
+	// Load chat widget asynchronously
+	const chatWidget = await new ChatWidget().loadChatWidget();
+	const chatWidgetContainer = div.querySelector('#chatWidgetContainer');
+	if (chatWidgetContainer) {
+		chatWidgetContainer.replaceWith(chatWidget);
 	}
 
 	async function checkAuthAndPlay(event: MouseEvent) {

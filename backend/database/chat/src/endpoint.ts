@@ -6,7 +6,7 @@ const chatPrisma = new chatPrismaClient();
 
 import { userList, chatList, messageList, newChat, newMessage, deleteChatMessages,
 		deleteMessage, searchMessage, searchChat, listChatMessage, blockUser,
-		sblockUser, deleteChat } from "./function";
+		sblockUser, deleteChat, getBlockedUsers } from "./function";
 import { BadRequest, Unauthorized, Forbidden, NotFound, Conflict } from "../utils/exception"
 import { NewChat, NewMessage, SrcChat } from "../utils/interface";
 import { logError, logInfo } from "../utils/logger"
@@ -302,6 +302,24 @@ export async function chatEndpoint(fastify: FastifyInstance) {
 
 			logInfo(`{chat} [200] `+ output);
 			return reply.status(200).send({ message: output });
+		} catch (err) {
+			if (err instanceof Error)
+				return reply.status((err as any).statusCode).send({ error: err.message });
+			logError("{chat} [500] errore interno del server");
+			return reply.status(500).send({ error: "Internal server error" });
+		}
+	});
+	
+	// Endpoint GET per ottenere la lista degli user bloccati
+	fastify.post("/blocked-users", async (request, reply) => {
+		const { linkId } = request.body as { linkId?: number };
+		try {
+			if (!linkId)
+				throw new BadRequest('linkId non fornito', 'chat');
+			const output = await getBlockedUsers(linkId);
+
+			logInfo(`{chat} [200] lista user bloccati inviata`);
+			return reply.status(200).send({ reply: output });
 		} catch (err) {
 			if (err instanceof Error)
 				return reply.status((err as any).statusCode).send({ error: err.message });

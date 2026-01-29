@@ -150,8 +150,8 @@ export async function fetchBackend(request:FastifyRequest, endpoint:string, auth
 	};
 
 	// If there is a body, forward it
-	if (['POST', 'PUT', 'PATCH'].includes(request.method)) {
-		fetchOptions.body = request.body ? JSON.stringify(request.body) : undefined;
+	if (['POST', 'PUT', 'PATCH'].includes(request.method) && request.body) {
+		fetchOptions.body = JSON.stringify(request.body);
 		headers['content-type'] = 'application/json';
 	}
 
