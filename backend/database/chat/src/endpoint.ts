@@ -87,8 +87,8 @@ export async function chatEndpoint(fastify: FastifyInstance) {
 		}
 	});
 
-	// Endpoint GET per ottenere la lista delle chat di uno user
-	fastify.get("/message-list", async (request, reply) => {
+	// Endpoint POST per ottenere la lista dei messaggi
+	fastify.post("/message-list", async (request, reply) => {
 		const data = request.body as number[];
 		try {
 			const output = await messageList(data);

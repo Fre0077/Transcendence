@@ -5,7 +5,7 @@
 
 import { loadStoredSession, clearSession, persistSession } from './session';
 
-const GATEWAY_URL = `http://${window.location.hostname}:3029/api`;
+const GATEWAY_URL = `/api`;
 
 interface AuthState {
     isAuthenticated: boolean;

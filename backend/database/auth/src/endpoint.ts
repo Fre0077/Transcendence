@@ -158,16 +158,14 @@ export async function authEndpoint(fastify: FastifyInstance) {
 			});
 			if (!me) 
 				throw new NotFound('Profilo utente non trovato', 'auth');
-			if (username === me?.username) reply.code(200).send(me);
-			const user = await authPrisma.account.findUnique({
-				where: { username: username},
-				select: {
-					id: true, username: true, bio: true, avatarUrl: true
-				}
-			});
-			if (!me) 
-				throw new NotFound('Profilo utente non trovato', 'auth');
-			if (username === me?.username) reply.code(200).send(me);
+			
+			// If no username query param, return own profile
+			if (!username || username === me.username) {
+				logInfo('{auth} [200] Account trovato');
+				return reply.code(200).send(me);
+			}
+			
+			// Otherwise, lookup the requested user
 			const user = await authPrisma.account.findUnique({
 				where: { username: username},
 				select: {
@@ -177,7 +175,7 @@ export async function authEndpoint(fastify: FastifyInstance) {
 			if (!user) 
 				throw new NotFound('Profilo utente non trovato', 'auth');
 			logInfo('{auth} [200] Account trovato');
-			reply.code(200).send(user);
+			return reply.code(200).send(user);
 		} catch (err) {
 			if (err instanceof Error) {
 				reply.code((err as any).statusCode).send({ error: err.message });
@@ -252,13 +250,13 @@ export async function authEndpoint(fastify: FastifyInstance) {
 			logInfo(`{auth} Generating QR for email: ${user.email}`);
 			const [qrDataUrl, secret] = await generateQR(user.email, userId);
 			logInfo('{auth} [200] QR generato con successo');
-			reply.code(200).send({ qrCodeUrl: qrDataUrl, secret: secret });
+			return reply.code(200).send({ qrCodeUrl: qrDataUrl, secret: secret });
 		} catch (err) {
 			if (err instanceof Error) {
-				reply.code((err as any).statusCode).send({ error: err.message });
+				return reply.code((err as any).statusCode).send({ error: err.message });
 			} else {
 				logError('{auth} [500] errore interno del server');
-				reply.code(500).send({ error: "Internal server error" });
+				return reply.code(500).send({ error: "Internal server error" });
 			}
 		}
 	});

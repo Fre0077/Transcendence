@@ -30,14 +30,21 @@ export default defineConfig({
     port: 3000,
     // @topiana- added this
     allowedHosts: ['frontend', 'localhost', '127.0.0.1'],
+
+    hmr: {
+        host: 'localhost',
+        protocol: 'wss',   // Force Secure WebSocket (since you use HTTPS)
+        clientPort: 4443,  // Tell the browser to connect to Nginx's port
+    },
+    
     // whats this?
     proxy: {
       '/api': {
-        target: 'http://localhost:8000',
+        target: 'http://butler:3029',
         changeOrigin: true,
       },
       '/ws': {
-        target: 'ws://localhost:8000',
+        target: 'ws://butler:3029',
         ws: true,
       },
     },
