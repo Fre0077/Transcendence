@@ -347,7 +347,7 @@ const routes: RouteConfig[] = [
     component: () => {
       return loadProfilePage();
     },
-    meta: { title: 'User Profile - ft_transcendence' },
+    meta: { title: 'User Profile - ft_transcendence', requiresAuth: true, requires2FA: true },
   },
   {
     // TODO: Implement edit profile page

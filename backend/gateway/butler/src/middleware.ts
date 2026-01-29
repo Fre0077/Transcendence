@@ -187,7 +187,10 @@ export function isCookieAuthenticated(request:FastifyRequest, reply?:FastifyRepl
 			/* #debug */
 			console.log("Missing refresh token");
 
-			reply?.code(401).send({ error: 'Missing token' });
+			// if used as a prehandler send the reply yourself
+			if (done) reply?.code(401).send({ error: 'Missing token' });
+
+			// if standard user, return object
 			return { ok:false, reason: 'Missing token' };
 		}
 
@@ -200,7 +203,10 @@ export function isCookieAuthenticated(request:FastifyRequest, reply?:FastifyRepl
 			/* #debug */
 			console.log("Failed to refresh access token");
 
-			reply?.code(401).send({ error: ret.reason });
+			// if used as a prehandler send the reply yourself
+			if (done) reply?.code(401).send({ error: ret.reason });
+
+			// if standard user, return object
 			return ret;
 		}
 
