@@ -4,13 +4,11 @@ import { sendGetRequest } from "@/services/api/sendRequests";
 // elements
 import { generateInitialsAvatar } from "@/components/createDefaultImage";
 
-// urls
-const PROFILE_BASE_URL = `http://${window.location.hostname}:3029/api`;
 
 export interface InteractiveWidget {
 	element:HTMLElement;
 	setScore:(score:number) =>void;
-	setStatus:(status:string) => void;
+	setStatus?:(status:string) => void;
 }
 
 // (ChatGPT)
@@ -18,24 +16,33 @@ export async function createProfileWidget(linkid: string, opts?:any): Promise<In
 	
 	// get the widget options
 	const compact = opts?.compact ?? false;
+	const local = opts?.local ?? false;
 	const container = document.createElement('div');
 
 	// set class and format based on options
 	container.className = compact
 		? 'flex items-center gap-2 px-2 py-1 rounded-md bg-slate-800/60 border border-white/10'
-		: 'relative w-full bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex flex-col rounded-xl border border-white/10 shadow-lg overflow-hidden transition-all duration-300';
+    	: 'flex items-center justify-center w-full h-full min-h-[250px] flex-col bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 rounded-xl border border-white/10 shadow-lg overflow-hidden transition-all duration-300';
+		// ? 'flex items-center gap-2 px-2 py-1 rounded-md bg-slate-800/60 border border-white/10'
+		// : 'relative w-full flex items-center justify-center flex-col bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 rounded-xl border border-white/10 shadow-lg overflow-hidden transition-all duration-300';
 
 	if (!compact) {
 		container.style.minHeight = '250px';
 	}
+	// Local check
+	if (local === true) {
+		if (!opts?.icon || !opts?.phrase) container.innerHTML = loadGuestWidget(linkid, compact);
+		else if (compact) container.innerHTML = loadCompactIconWidget(opts.icon, linkid);
+		else container.innerHTML = loadIconWidget(opts.icon, linkid, opts.phrase);
+	}
     // Bot Check
-    if (linkid.startsWith('BOT')) {
+    else if (linkid.startsWith('BOT')) {
         container.innerHTML = loadBotWidget(linkid, compact);
     }
     // Guest Check
     else if (linkid.startsWith('Guest')) {
         container.innerHTML = loadGuestWidget(linkid, compact);
-    }
+	}
 	// then it's a player
 	else {
 		container.innerHTML = await loadPlayerWidget(linkid, compact);
@@ -44,6 +51,21 @@ export async function createProfileWidget(linkid: string, opts?:any): Promise<In
 	// append dynamic editor functions
     const element = container.firstElementChild as HTMLElement;
 
+	// compact return
+	if (compact) {
+		const fields = {
+			score: element.querySelector('[data-field="score"]')!,
+		};
+
+		return {
+			element,
+			setScore(value: number) {
+				fields.score.textContent = String(value);
+			},
+		};
+	}
+
+	// full return
 	const fields = {
 		score: element.querySelector('[data-field="score"]')!,
 		status: element.querySelector('[data-field="status"]')!,
@@ -80,12 +102,9 @@ function loadCompactWidget(
 					${username}
 				</span>
 				<span
-					data-field="score"
-					class="text-sm font-mono text-yellow-400"
-				>
+					data-field="score" class="text-sm font-mono text-yellow-400">
 					0
 				</span>
-				<div data-field="status" class="text-xs font-mono text-white">waiting...</div>
 			</div>
 		</div>
 	`;
@@ -119,7 +138,7 @@ function loadWidget(
 
 			<!-- 📊 DATA SLOT -->
 			<div data-role="data">
-				<div data-field="score" class="text-4xl font-mono text-yellow-400">0</div>
+				<div data-field="score" class="text-center text-4xl font-mono text-yellow-400">0</div>
 				<div data-field="status" class="text-xs font-mono text-white">waiting...</div>
 			</div>
 		</div>`;
@@ -134,7 +153,7 @@ async function loadPlayerWidget(username:string, compact:boolean): Promise<strin
 {
 	try {
 		// get data from backend
-		const data = await sendGetRequest(`${PROFILE_BASE_URL}/userinfo?username=${username}`);
+		const data = await sendGetRequest(`/api/userinfo?username=${username}`);
 		
 		// Dati ricevuti: username e avatarUrl (o image)
 		const avatar = data.avatarUrl || data.image || "";
@@ -176,7 +195,6 @@ function loadCompactIconWidget(icon:string, name:string): string {
 			<div class="flex flex-col">
 				<span class="text-xs text-white">${name}</span>
 				<span data-field="score" class="text-sm font-mono text-yellow-400">0</span>
-				<div data-field="status" class="text-xs font-mono text-white">waiting...</div>
 			</div>
 		</div>
 	`;
@@ -185,10 +203,10 @@ function loadCompactIconWidget(icon:string, name:string): string {
 function loadIconWidget(icon:string, name:string, phrase:string): string
 {
     return /* html */`
-		<div class="player-widget relative flex flex-col items-center p-4 rounded-xl bg-slate-800/60 border border-white/10 shadow-lg backdrop-blur">
+		<div class="player-widget relative flex flex-col items-center justify-center p-4 rounded-xl bg-slate-800/60 border border-white/10 shadow-lg backdrop-blur">
 
 			<!-- Avatar -->
-			<div class="relative group mb-2">
+			<div class="text-3xl relative group mb-2">
 				${icon}
 			</div>
 
@@ -207,92 +225,9 @@ function loadIconWidget(icon:string, name:string, phrase:string): string
 
 			<!-- 📊 DATA SLOT -->
 			<div data-role="data">
-				<div data-field="score" class="text-4xl font-mono text-yellow-400">0</div>
+				<div data-field="score" class="text-center text-4xl font-mono text-yellow-400">0</div>
 				<div data-field="status" class="text-xs font-mono text-white">waiting...</div>
 			</div>
 		</div>
 	`;
 }
-
-// function loadErrorWidget(linkid:string): string
-// {
-//     return /* html */`
-// 		<div class="player-widget relative flex flex-col items-center p-4 rounded-xl bg-slate-800/60 border border-white/10 shadow-lg backdrop-blur">
-
-// 			<!-- Avatar -->
-// 			<div class="relative group mb-2">
-// 				⚠️
-// 			</div>
-
-// 			<!-- Username -->
-// 			<h3
-// 				data-role="username"
-// 				class="text-sm font-semibold text-white tracking-wide"
-// 			>
-// 				${linkid}
-// 			</h3>
-
-// 			<!-- Subtitle -->
-// 			<p class="text-[10px] text-indigo-300 uppercase tracking-widest mb-2">
-// 				Could't load player profile
-// 			</p>
-
-// 			<!-- 📊 DATA SLOT -->
-// 			<div data-role="data">
-// 				<div data-field="score" class="text-4xl font-mono text-yellow-400">0</div>
-// 			</div>
-// 		</div>
-// 	`;
-// }
-
-// function loadBotWidget(botid:string): string
-// {
-//     return /* html */`
-// 		<div class="player-widget relative flex flex-col items-center p-4 rounded-xl bg-slate-800/60 border border-white/10 shadow-lg backdrop-blur">
-
-// 			<!-- Avatar -->
-// 			<div class="relative group mb-2">
-// 				🤖
-// 			</div>
-
-// 			<!-- Username -->
-// 			<h3
-// 				data-role="username"
-// 				class="text-sm font-semibold text-white tracking-wide"
-// 			>
-// 				${botid}
-// 			</h3>
-
-// 			<!-- 📊 DATA SLOT -->
-// 			<div data-role="data">
-// 				<div data-field="score" class="text-4xl font-mono text-yellow-400">0</div>
-// 			</div>
-// 		</div>
-// 	`;
-// }
-
-// function loadGuestWidget(guestid:string): string
-// {
-//     return /* html */`
-// 		<div class="player-widget relative flex flex-col items-center p-4 rounded-xl bg-slate-800/60 border border-white/10 shadow-lg backdrop-blur">
-
-// 			<!-- Avatar -->
-// 			<div class="relative group mb-2">
-// 				🥷
-// 			</div>
-
-// 			<!-- Username -->
-// 			<h3
-// 				data-role="username"
-// 				class="text-sm font-semibold text-white tracking-wide"
-// 			>
-// 				${guestid}
-// 			</h3>
-
-// 			<!-- 📊 DATA SLOT -->
-// 			<div data-role="data">
-// 				<div data-field="score" class="text-4xl font-mono text-yellow-400">0</div>
-// 			</div>
-// 		</div>
-// 	`;
-// }

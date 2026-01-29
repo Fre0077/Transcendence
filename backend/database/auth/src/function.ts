@@ -206,13 +206,13 @@ export async function changeAvatar(input: any, userId: number): Promise<any> {
 
 	// 3. Genera l'URL pubblico
 	// (Questo URL funziona solo se hai configurato fastify-static per servire la cartella 'public')
-	const serverUrl = 'http://localhost:3001'; // Dovresti prenderlo dal .env
-	const avatarUrl = `${serverUrl}/uploads/${filename}`;
+	// const serverUrl = 'http://localhost:3001'; // Dovresti prenderlo dal .env
+	const avatarUrl = `/uploads/${filename}`;
 
 	// 4. Salva l'URL in Prisma
 	const updatedUser = await authPrisma.account.update({
-	where: { id: userId },
-	data: { avatarUrl: avatarUrl },
+		where: { id: userId },
+		data: { avatarUrl: avatarUrl },
 	});
 	await publishUserRegistered(
         undefined, 

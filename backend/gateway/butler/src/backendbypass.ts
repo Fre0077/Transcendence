@@ -50,6 +50,39 @@ export function authWebSocket(connection:WebSocket, request:FastifyRequest)
 	connected_users.set(auth.user.username as string /* in god we trust pt.2*/, connection);
 }
 
+
+// this function appends the status of the friend looking at the connected_users map
+/* expecting
+data {
+	...
+	friends: {
+			linkId: number;
+			username: string | null;
+			avatarUrl: string | null;
+		}[];
+	...
+} */
+// the return of this function is what will be sent back to the client
+export function attachFriendStatus(data:any)
+{
+	if (!data.friends) {
+		console.log("couldn't find 'friends' when trying to attach status", data);
+		return data;
+	}
+
+	// check status on each friend
+	data.friends = data.friends.map((f:any) => ({
+		...f,
+		status: connected_users.has(f.username) ? 'online' : 'offline'
+	}));
+
+	/* #debug */
+	console.log('--> data after attaching friends', data);
+
+	return data;
+}
+
+
 /* ------------------------------------- */
 /* 			WEBSOCKET SENDERS			 */
 /* ------------------------------------- */
@@ -121,6 +154,11 @@ interface FriendRequestBody {
 	target:string
 }
 
+// HELPER
+// function sleep(ms:number) {
+// 	return new Promise(resolve => setTimeout(resolve, ms));
+// }
+
 export async function sendFriendRequest(request:FastifyRequest, reply:FastifyReply)
 {
 	// get target data
@@ -134,6 +172,8 @@ export async function sendFriendRequest(request:FastifyRequest, reply:FastifyRep
 		return ; // important
 	}
 
+	// await sleep(1000);
+
 	// send lobby invite
 	const ret = sendMessageTo(target, {
 		what: "NOTIFY",
@@ -141,6 +181,6 @@ export async function sendFriendRequest(request:FastifyRequest, reply:FastifyRep
 		sender: (request as any).user.username
 	});
 
-	if (ret === false) reply.code(404).send(JSON.stringify({ ok:false, comment:"The user isn't connected" }));
+	if (ret === false) reply.code(200).send(JSON.stringify({ ok:false, comment:"The user isn't connected" }));
 	else reply.code(200).send(JSON.stringify({ ok:true, comment:"Message sent correctly" }));
 }

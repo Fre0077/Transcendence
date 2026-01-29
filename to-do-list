@@ -3,28 +3,25 @@
 
 
 WHAT-AM-I-DOING-NOW
-20. auth setup that @aleborhi tought in the beginning
+26. Chat API Test page
 
 WHAT-AM-I-DOING-NEXT
+24. fix lobby invite
 17. status dot on friendlist
 
-MANDATORY:
-1. The project must include accessible Privacy Policy and Terms of Service pages with relevant content.
-2. For the backend, HTTPS must be used everywhere. (???)
 
-NEW
+MANDATORY:
+
+NEW (MAYBE?)
 1. Profile level
 2. Ranked games
-3. Chess
-4. Major: A public API to interact with the database with a secured API key, rate limiting, documentation, and at least 5 endpoints:
 
 MAJOR
-7. Get profile data via username (current linkId deprecated)
-11. Match History non viene piu' salvata perche' adesso viene passato l'username al profile
-12. Auth with /api/isauth API
 13. Pong on mobile
-16. Full frontend update with gateway API
 18. Bot handshake on creation (only 'bot' container can create bots)
+21. Sometimes freezes... after adding .dispatchEvent()??? or the persist session with no more localStorage???
+22. You can access protected pages after logout if you go back in history (top left arrow buttons) (@aleborghi)
+23. 2FA login (@aleborghi)
 
 
 MINOR
@@ -32,12 +29,12 @@ MINOR
 8. cheering mentre specti (come clash)
 9. Emotes in-game
 10. Error log in lobby page
-12. Inconsistend player-score relation in match history
 13. Force start timers in for tournament layers and game rounds
-18. rejoin button if you disconnect from a game (really marginal)
-19. finish notifications on game
+18. rejoin button if you disconnect from a game (todo on tournaments)
 20. Better pong bot
 21. lobby chat
+22. all db updating operations on friends (accepting/declining/canceling...) sends an update to the lifecycle ws { what: 'UPDATE, type: 'friend' }
+23. icons on tournament playerlist
 
 STYLE
 2. pls... the back button
@@ -49,9 +46,7 @@ CLEANUPS
 3. save MQueues messages in DB
 6. Game less laggy
 7. keep track of bots (better unique id not needing for manual lobby/tournament counter) and the backend containers need a more solid way to know if an user is a bot
-8. Shared Game module for replays (and get there via url)
 9. Gateway double-socket safety net (if you already connected to a websocket endpoint, on retry: disconnect -> reconnect)
-11. frontend api calls all in one place
 
 DONE
 1. remove JOIN method for games (DONE)
@@ -84,3 +79,16 @@ DONE
 15. Review NOTIFICATION and merge into topiana- (DONE)
 16. review friend handling (DONE)
 19. If a player disconnects from the game it should be shown and the game should pause when possible (DONE)
+7. Get profile data via username (current linkId deprecated) (DONE)
+11. Match History non viene piu' salvata perche' adesso viene passato l'username al profile (DONE)
+12. Auth with /api/isauth API (DONE)
+16. Full frontend update with gateway API (DONE)
+12. Inconsistend player-score relation in match history (DONE)
+11. frontend api calls all in one place (DONE)
+20. auth setup that @aleborhi tought in the beginning (DONE-ish)
+3. Tournaments in local (DONE)
+24. Public profile page (DONE)
+19. finish notifications on game (DONE)
+2. For the backend, HTTPS must be used everywhere. (DONE)
+25. Spectator websocket failing (DONE)
+24. Lobby game got smashed in tournament game (DONE)

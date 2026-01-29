@@ -1,4 +1,8 @@
 
+// services
+// import { isauth } from "@/services/api/isauth";
+
+// components
 import { loadPongReplayDiv } from "@pages/protected/game/online/laodPongReplayDiv";
 
 export interface GameData {
@@ -101,9 +105,9 @@ export function createHistoryBar(data: GameData): HTMLElement {
 				</span>
 
 				<span class="text-white font-bold tabular-nums">
-					${s2}
-					<span class="text-white/50 mx-1">/</span>
 					${s1}
+					<span class="text-white/50 mx-1">/</span>
+					${s2}
 				</span>
 
 				<span class="${p2Win ? "text-green-400 font-semibold" : "text-red-400"}">
@@ -114,7 +118,8 @@ export function createHistoryBar(data: GameData): HTMLElement {
 			<!-- ACTION -->
 			<div class="flex items-center min-w-[100px] justify-end">
 				<button
-					class="flex items-center gap-1 px-3 py-1.5 rounded-md bg-purple-600/30 hover:bg-purple-600/50 text-purple-200 text-sm transition"
+					class="flex items-center gap-1 px-3 py-1.5 rounded-md bg-purple-600/30 hover:bg-purple-600/50 text-purple-200 text-sm transition
+						disabled:opacity-50 disabled:cursor-not-allowed"
 					data-replay="${data.replay}"
 				>
 					<span>▶</span>
@@ -130,36 +135,36 @@ export function createHistoryBar(data: GameData): HTMLElement {
 	let replayContainer: HTMLElement | null = null;
 
 	const replayBtn = div.querySelector('button');
-	replayBtn?.addEventListener("click", () => {
-		// toggle replay
-		if (replayContainer) {
-			replayContainer.remove();
-			replayContainer = null;
-			return;
-		}
+	replayBtn?.addEventListener("click", async () => {
+		// if replay already exists → ignore
+		if (replayContainer) return;
+
+		// refresh cookies
+		// await isauth();
+
+		replayBtn.disabled = true;
+		replayBtn.classList.add("opacity-50", "cursor-not-allowed");
 
 		replayContainer = document.createElement("div");
 		replayContainer.className = "mt-4";
 
 		const replayDiv = loadPongReplayDiv(data.replay);
 
-		// 🔥 hook close button
-		replayDiv.addEventListener("replay:close", () => {
+		const destroyReplay = () => {
+			(replayDiv as any).destroy?.();
 			replayContainer?.remove();
 			replayContainer = null;
-		});
+
+			replayBtn.disabled = false;
+			replayBtn.classList.remove("opacity-50", "cursor-not-allowed");
+		};
+
+		// internal close button
+		replayDiv.addEventListener("replay:close", destroyReplay);
 
 		replayContainer.appendChild(replayDiv);
 		div.appendChild(replayContainer);
 	});
-
-	// const replayBtn = div.querySelector('button');
-	// replayBtn?.addEventListener('click', () => {
-	// 	console.log("Replay clicked:", data.replay);
-
-	// 	const replaySlot = div.querySelector('#replay-slot');
-	// 	if (replaySlot) replaySlot.appendChild(loadPongReplayDiv(data.replay));
-	// });
 
 	return div;
 }

@@ -15,6 +15,7 @@
   "devDependencies": {
     "@fastify/cookie": "^11.0.2",
     "@fastify/cors": "^11.2.0",
+    "@fastify/multipart": "^9.4.0",
     "@types/amqplib": "^0.10.8",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^25.0.9",

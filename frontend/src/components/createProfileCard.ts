@@ -1,11 +1,11 @@
+// defaults
+import { router } from "@/router";
+
 // services
 import { sendGetRequest } from "@/services/api/sendRequests";
 
 // elements
 import { generateInitialsAvatar } from "@/components/createDefaultImage";
-
-// urls
-const PROFILE_BASE_URL = `http://${window.location.hostname}:3029/api`;
 
 export function createProfileCard(username: string): HTMLElement {
     const container = document.createElement('div');
@@ -35,22 +35,7 @@ export function createProfileCard(username: string): HTMLElement {
     `;
     (async () => {
         try {
-            const data = await sendGetRequest(`${PROFILE_BASE_URL}/userinfo?username=${username}`);
-            // const url = `${PROFILE_BASE_URL}/userinfo?username=${username}`;
-            // const authToken = localStorage.getItem("authToken");
-            // const response = await fetch(url, {
-            //     method: 'GET',
-            //     credentials: 'include',
-            //     headers: {
-            //         'Content-Type': 'application/json',
-            //         'Authorization': authToken ? `Bearer ${authToken}` : ''
-            //     }
-            // });
-            // if (!response.ok) throw new Error('Utente non trovato');
-            // const data = await response.json();
-
-            /* #debug */
-            // console.log('/userinfo', response, data);
+            const data = await sendGetRequest(`/api/userinfo?username=${username}`);
             
             // Dati ricevuti: username e avatarUrl (o image)
             const avatar = data?.avatarUrl || data?.image || "";
@@ -63,7 +48,7 @@ export function createProfileCard(username: string): HTMLElement {
                             src="${avatar}" 
                             alt="${username}" 
                             class="relative w-24 h-24 rounded-full object-cover border-2 border-slate-800 shadow-2xl"
-                            onerror="this.src=this.src=${generateInitialsAvatar(username, 'player')}"
+                            onerror="this.src=this.src=${generateInitialsAvatar(username)}"
                         />
                     </div>
                     
@@ -81,6 +66,10 @@ export function createProfileCard(username: string): HTMLElement {
                 
                 <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-t from-slate-900 via-transparent to-transparent pointer-events-none"></div>
             `;
+
+            const statbtn = container.querySelector('.btn-profile-action') as HTMLElement;
+            statbtn.addEventListener('click', () => {router.push(`/profile/${username}`)})
+
         } catch (error) {
             console.error("Errore caricamento profilo:", error);
             // Stato di Errore

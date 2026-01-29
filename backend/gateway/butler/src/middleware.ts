@@ -40,15 +40,29 @@ export interface AuthRequest extends FastifyRequest {
 
 interface Cookie {
 	id:string,
-	value:string
+	value?:string
 }
 
 function attachCookie(reply:FastifyReply, cookie:Cookie)
 {
+	// if not value return
+	if (!cookie.value) return ;
+
 	// attach the cookie
 	reply.setCookie(cookie.id, cookie.value, {
 		httpOnly: true,
-		secure: false,		// true in production (HTTPS)
+		secure: true,		// true in production (HTTPS)
+		sameSite: 'lax',	// also check this
+		path: '/',
+	});
+}
+
+function clearCookie(reply:FastifyReply, cookie:Cookie)
+{
+	// attach the cookie
+	reply.clearCookie(cookie.id, {
+		httpOnly: true,
+		secure: true,		// true in production (HTTPS)
 		sameSite: 'lax',	// also check this
 		path: '/',
 	});
@@ -57,14 +71,16 @@ function attachCookie(reply:FastifyReply, cookie:Cookie)
 // attach bot tokens to the user reply
 export function attachAllCookies(data:any, reply:FastifyReply)
 {
-	if (!data.user) {
+	console.log('attaching cookies got', data);
+
+	if (!data.id || !data.email || !data.username) {
 		console.log("Fatal: No user found when trying to attach cookies to the user");
 		reply.code(500).send();
 		return ;
 	}
 
 	// generate new tokens
-	const { accessToken, refreshToken } = generateTokens(data.user)
+	const { accessToken, refreshToken } = generateTokens(data)
 
 	// attach the accessToken
 	attachCookie(reply, {
@@ -83,6 +99,22 @@ export function attachAllCookies(data:any, reply:FastifyReply)
 	return newdata;
 }
 
+// delete bot tokens to the user reply
+export function clearAllCookies(reply:FastifyReply)
+{
+	// attach the accessToken
+	clearCookie(reply, {
+		id: 'accessToken',
+	});
+
+	// attach the refreshToken
+	clearCookie(reply, {
+		id: 'refreshToken',
+	});
+
+	return { ok:true }
+}
+
 /* ------------------------------------------------ */
 
 
@@ -97,7 +129,7 @@ export interface AuthReply {
 	user?:any;
 }
 
-function refreshAccessToken(refreshToken: string, reply: FastifyReply) : AuthReply
+function refreshAccessToken(refreshToken: string, reply?: FastifyReply) : AuthReply
 {
 	// verigy if refresh token is valid
 	const user = verifyAccessToken(refreshToken);
@@ -110,6 +142,10 @@ function refreshAccessToken(refreshToken: string, reply: FastifyReply) : AuthRep
 	/* #debug */
 	// console.log('Refreshed token with', user);
 
+	// if reply isn't present but the refreshToken is valid,
+	// still 'ok' return without refreshing the token 
+	if (reply === undefined) return { ok:true , user:user }
+
 	// generate new accessToken
 	const accessToken = generateAccessToken(user);
 
@@ -120,7 +156,7 @@ function refreshAccessToken(refreshToken: string, reply: FastifyReply) : AuthRep
 	});
 
 	// successful return + user
-	return { ok:true , user:user}
+	return { ok:true , user:user }
 }
 
 /* Check if the user has valid authentication tokens in the cookies.
@@ -146,7 +182,7 @@ export function isCookieAuthenticated(request:FastifyRequest, reply?:FastifyRepl
 	if (user === null)
 	{
 		// check if we got the refresh token (24h) ore we can't attach the new token to the reply
-		if (!refreshToken || !reply) {
+		if (!refreshToken/*  || !reply */) {
 
 			/* #debug */
 			console.log("Missing refresh token");
@@ -164,7 +200,7 @@ export function isCookieAuthenticated(request:FastifyRequest, reply?:FastifyRepl
 			/* #debug */
 			console.log("Failed to refresh access token");
 
-			reply.code(401).send({ error: ret.reason });
+			reply?.code(401).send({ error: ret.reason });
 			return ret;
 		}
 
@@ -244,7 +280,7 @@ function generateAccessToken(user: any): string
 	const id = (user.id) ? user.id : user.userId;	// get the id since we have 2 ways of storing it :D
 	const accessTokenPayload = { /* @topiana- added */username: user.username, userId: id, email: user.email };
 	const accessToken = jwt.sign(accessTokenPayload, "ft_trans(cendence)", {
-		expiresIn: "10s",
+		expiresIn: "10s",	// #prod change to 15m
 	});
 	return accessToken;
 }

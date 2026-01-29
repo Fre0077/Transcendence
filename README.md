@@ -2,7 +2,6 @@
 
 ### 1. Architettura e Sicurezza (Punti Chiave)
 
-<<<<<<< HEAD
 * **Google Login lato Backend (Spiegazione):**
 Quando si dice che il login "deve essere gestito dal backend", si intende che il frontend non deve limitarsi a confermare l'identità dell'utente. Il processo corretto è:
 1. Il **Frontend** ottiene un token da Google.
@@ -102,19 +101,6 @@ interface LobbyState {
 	ID:string;
 	gameID:string;
 	players:Player[];
-}
-
-<!-- ===== AUTH ===== -->
-Request:
-{
-	method: 'AUTH',	(mandatory)
-	ID: <playerID>	(mandatory)
-}
-Description: This is the first message to inoltrate to the backend, all other requests befor this (or if the Authentication fails) will be ignored.
-Reply:
-{
-	method: 'AUTH_REPLY',
-	status: 'success/failure'
 }
 
 <!-- ===== CREATE ===== -->
@@ -252,39 +238,6 @@ the bottom-right one is (1,1).
 
 Here is a brief explaination on how to use all the methods:
 
-<!-- ===== AUTH ===== -->
-Request:
-{
-	method: 'AUTH',	(mandatory)
-	ID: <playerID>	(mandatory)
-}
-Description: This is the first message to inoltrate to the backend, all other requests befor this (or if the Authentication fails) will be ignored.
-Reply:
-{
-	method: 'AUTH_REPLY',
-	status: 'success/failure'
-}
-
-<!-- ===== JOIN (soon outdated) ===== -->
-
-Request:
-{
-  method: 'JOIN',       (mandatory)
-  gameID: <gameID>,     (mandatory)
-}
-@gameID: the ID of the game as a string
-
-Description: Joins a game with the specified ID, if any of the property is missing
-or invalid or there is no game with the gameID requested, it fails.
-Reply:
-{
-  method: 'JOIN_REPLY',
-  status: 'success/failure',
-  value: <gameID>,						        (only on status === 'success')
-  cause: <auth/rejoin/no-id/serv-err>	(only on status === 'failure')
-  comment: <comment>					        (only on status === 'failure')
-}
-
 <!-- ===== LEAVE ===== -->
 {
 	method: 'LEAVE'
@@ -324,4 +277,3 @@ When the Game is finished or someone RESETted the game, the data regarding that 
 
 //----
 @aleborghi: il back-to-lobby ora funziona dalla parte del backend. quando finisci il game devi tornare alla lobby con un JOIN, pero` aspetta un attimo prima di farlo che i due backend si devono parlare
->>>>>>> origin/topiana-

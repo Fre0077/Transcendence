@@ -4,8 +4,8 @@ import { loadNavbar } from "@/components/navbar";
 // import { load404Page } from "@/pages/errors/404";
 
 // services
-import { TournamentWebSocket, ConnectTournamentSocket } from "@/services/ws/tournamentWebSocket";
-
+import { TournamentWebSocket, ConnectTournamentSocket, DisconnectTournamentSocket } from "@/services/ws/tournamentWebSocket";
+// import { isauth } from "@/services/api/isauth";
 // elements
 import { loadPongSpectatorDiv } from "@pages/protected/game/online/loadPongSpectatorDiv";
 import { createProfileCard } from "@/components/createProfileCard";
@@ -30,6 +30,7 @@ interface TournamentState
 
 	// status
 	finished:boolean;
+	aborted:boolean;
 	winners:string[];
 	current_layer:number;
 	
@@ -67,15 +68,20 @@ export function loadOnlineTournamentPage(): HTMLElement
 				class="flex-1 rounded-xl bg-gradient-to-br from-purple-600/20 to-pink-600/20
 					border border-purple-500/30 overflow-hidden"
 			>
+				<!-- Rooms (UP) -->
 				<div
 					id="tournamentRooms"
 					class="p-6 overflow-x-auto"
 				></div>
+
+				<!-- Winners (DOWN) -->
+				<div
+					id="winnersPanel"
+					class="p-6 pt-0"
+				></div>
+
 			</div>
-
 		</div>
-
-		<div id="winnersPanel"></div>
 
 		<div id="spectateGameDiv" class="w-full mt-10"></div>
 
@@ -83,13 +89,18 @@ export function loadOnlineTournamentPage(): HTMLElement
 	`;
 
 	// connect to the backend
-	tournamentWS = ConnectTournamentSocket(() => router.push('/tournaments'), tourn_code);
+	tournamentWS = ConnectTournamentSocket(tourn_code, () => router.push('/tournaments'));
 
 	// add listeners to socket messages
 	tournamentWS.onmessage(pushToGamePage, () => {}, updateTournamentInfo);
 
 	// update tournament code
 	tourn_code = tournamentWS.getid();
+
+	/* !!! DESTRUCTOR !!! */
+	(div as any).destroy = () => {
+		DisconnectTournamentSocket();
+	}
 
 	return div;
 }
@@ -98,9 +109,10 @@ export function loadOnlineTournamentPage(): HTMLElement
 /* ------------------- SOCKET ACTIONS --------------------- */
 /* -------------------------------------------------------- */
 
+// import { isauth } from "@/services/api/isauth";
 
 // add the spectated game
-function spectate(gameid: string) {
+async function spectate(gameid: string) {
     // If already spectating this game, do nothing
     if (spectatingGames.has(gameid)) {
         console.log(`Already spectating game ${gameid}`);
@@ -121,6 +133,9 @@ function spectate(gameid: string) {
         btn.classList.add('opacity-50', 'pointer-events-none');
     }
 
+	// refresh cookies
+	// await isauth();
+
     // Create spectate view
     const spectateDiv = loadPongSpectatorDiv(gameid);
 
@@ -138,18 +153,19 @@ function spectate(gameid: string) {
     spectateDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
     // Optional: If spectateDiv has a close button, remove game from set when closed
-    const closeBtn = spectateDiv.querySelector('#close-btn');
-    if (closeBtn) {
-        closeBtn.addEventListener('click', () => {
-            container.removeChild(spectateDiv);
-            spectatingGames.delete(gameid);
+	spectateDiv.addEventListener('spectate:close', () => {
 
-            // Re-enable the button
-            if (btn) {
-                btn.classList.remove('opacity-50', 'pointer-events-none');
-            }
-        });
-    }
+		console.log('Clearing spectator tab');
+
+		container.removeChild(spectateDiv);
+		spectatingGames.delete(gameid);
+
+		// Re-enable the button
+		if (btn) {
+			btn.classList.remove('opacity-50', 'pointer-events-none');
+		}
+	});
+    
 }
 
 // Expose global function for HTML string buttons
@@ -169,9 +185,37 @@ function spectate(gameid: string) {
 /* --------------------------------------- */
 /* ----- Render Tournament (ChatGPT) ----- */
 
-function renderWinnersPanel(winners: string[]): HTMLElement
+function renderWinnersPanel(status:'aborted' | 'finished', winners: string[]): HTMLElement
 {
 	const div = document.createElement('div');
+
+	/* aborted div */
+	if (status === 'aborted')
+	{
+		div.innerHTML = /* html */`
+			<div class="w-full mt-6">
+				<div class="w-full max-w-3xl mx-auto rounded-xl bg-red-900/20 border border-red-500/30 p-6 text-center">
+					
+					<div class="flex items-center justify-center mb-3">
+						<span class="text-3xl">⛔</span>
+					</div>
+
+					<h3 class="text-red-300 font-semibold text-lg mb-1">
+						Tournament Aborted
+					</h3>
+
+					<p class="text-sm text-red-200/70">
+						This tournament was stopped before completion.
+						No winners were recorded.
+					</p>
+				</div>
+			</div>
+		`;
+
+		return div;
+	}
+
+	/* finished div */
 	div.innerHTML = /* html */`
 		<div class="w-full mt-6">
 			<div class="w-full max-w-4xl mx-auto rounded-xl bg-white/5 border border-white/10 p-4">
@@ -331,7 +375,7 @@ function updateTournamentInfo(state:TournamentState) {
 	console.log('Updating tournament info ...');
 
 	// read data
-	const { players, rooms, finished, winners } = state;
+	const { players, rooms, finished, aborted, winners } = state;
 
 	// verify
 	if (!players || !rooms || finished === undefined || !winners) {
@@ -346,9 +390,11 @@ function updateTournamentInfo(state:TournamentState) {
 	renderTournamentLayout(rooms);
 
 	// update winners panel
+	// update winners panel
 	const winnersPanel = document.getElementById('winnersPanel');
-	if (winnersPanel && finished) {
-		winnersPanel.appendChild(renderWinnersPanel(winners));
+	if (winnersPanel && winnersPanel.childElementCount === 0 && (finished || aborted)) {
+		const status = (finished) ? 'finished' : 'aborted';
+		winnersPanel.appendChild(renderWinnersPanel(status, winners));
 	}
 }
 

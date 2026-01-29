@@ -216,6 +216,8 @@ export class Game
 	// last time a player moved
 	private lastmovetime:number;
 
+	private gameLoopInterval:any | undefined = undefined;
+
 	/* ======================== CONSTRUCTORS ======================== */
 	// the constructor expliccitly wants the variables initialized
 	constructor(players:{ idx:number, ID:string }[]) {
@@ -482,7 +484,6 @@ export class Game
 
 	// bring the gamestate back to the start not affecting the score
 	private ballInTheMiddle() {
-		this.timeout = 180;				// 3 sec of timeout
 	
 		this.round += 1;				// go to next round
 		this.roundStart = false;		// round not started
@@ -502,6 +503,7 @@ export class Game
 			this.winner = 1;
 			this.stop();
 		}
+		else this.timeout = 180;		// 3 sec of timeout
 	}
 
 
@@ -566,7 +568,7 @@ export class Game
 		// advance the tick
 		++this.tick;
 
-		if (this.timeout > 0) {this.timeout--; return;}
+		if (this.timeout > 0) {this.timeout--;}
 
 		// Move players
 		this.players.forEach((player) => {
@@ -637,7 +639,7 @@ export class Game
 			}
 	  
 			// loop again
-			setTimeout(loop, 0);
+			this.gameLoopInterval = setTimeout(loop, 0);
 		};
 	  
 		// prevent multiple loops
@@ -651,6 +653,8 @@ export class Game
 	// }
 
 	public stop() {
+		if (this.gameLoopInterval) clearInterval(this.gameLoopInterval);
+		this.gameLoopInterval = undefined;
 		this.running = false;
 	}
 }

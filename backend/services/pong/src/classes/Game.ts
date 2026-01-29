@@ -176,7 +176,7 @@ export class Game
 	constructor(players:{ idx:number, ID:string }[], replay?:boolean) {
 		this.tick = 0;					// start -> 0
 		this._paused = false;
-		this._alljoined = false;
+		this._alljoined = (replay === true )? true : false;
 		this.timeout = 0;				// 0 sec of timeout
 	
 		this.round = 0;					// start at round 0

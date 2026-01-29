@@ -1,11 +1,11 @@
+import { router } from "@/router";
 import { sendGetRequest } from "@/services/api/sendRequests";
 import { sendPostRequest } from "@/services/api/sendRequests";
-
-const BACKEND_APIS_URL = `http://${window.location.hostname}:3029/api`;
+import { generateInitialsAvatar } from "./createDefaultImage";
 
 async function getFriendsList(){
 	try {
-		const data = await sendGetRequest(`http://${window.location.hostname}:3029/api/friends`);
+		const data = await sendGetRequest(`/api/friends`);
 		console.log('data', data);
 		// const friends = JSON.parse(data);
 		// console.log('data', friends);
@@ -16,7 +16,7 @@ async function getFriendsList(){
 	}
 }
 
-export type FriendStatus = "online" | "offline" | "ingame";
+export type FriendStatus = "online" | "offline" | "ingame" | "away";
 
 interface Friend {
 	username: string,
@@ -34,7 +34,7 @@ function createFriendCard(friend: Friend): HTMLElement {
 	const statusColor =
 		friend.status === "online"
 			? "bg-green-500"
-			: friend.status === "ingame"
+			: friend.status === "away"
 			? "bg-yellow-400"
 			: "bg-gray-400";
 
@@ -43,7 +43,7 @@ function createFriendCard(friend: Friend): HTMLElement {
 		<div class="flex items-center gap-3 p-3">
 			<img
 				class="w-10 h-10 rounded-full"
-				src="${friend.avatarUrl ?? "https://i.pravatar.cc/100"}"
+				src="${friend.avatarUrl ?? generateInitialsAvatar(friend.username)}"
 			/>
 			<div class="flex-1">
 				<div class="text-white text-sm font-medium">${friend.username}</div>
@@ -59,8 +59,8 @@ function createFriendCard(friend: Friend): HTMLElement {
 			<button class="w-full px-3 py-2 text-sm text-left text-white hover:bg-white/10">
 				Send Message
 			</button>
-			<button class="w-full px-3 py-2 text-sm text-left text-white hover:bg-white/10">
-				Invite to Game
+			<button class="view-profile w-full px-3 py-2 text-sm text-left text-white hover:bg-white/10">
+				View Profile
 			</button>
 			<button class="decline-btn w-full px-3 py-2 text-sm text-left text-red-400 hover:bg-red-500/10">
 				Remove Friend
@@ -78,11 +78,24 @@ function createFriendCard(friend: Friend): HTMLElement {
 	cancelBtn.addEventListener("click", async () => {
 		try {
 			await sendPostRequest(
-				`${BACKEND_APIS_URL}/friend/remove`,
+				`/api/friend/remove`,
 				{ target: friend.username },
 				"application/json"
 			);
+			// update the UI
+			card.dispatchEvent(
+				new CustomEvent('update:friends:local', { bubbles: true })
+			);
 			console.log("Friend request remove:", friend.username);
+		} catch (err) {
+			console.error(err);
+		}
+	});
+
+	const viewProfile = card.querySelector(".view-profile")!;
+	viewProfile.addEventListener("click", async () => {
+		try {
+			router.push(`/profile/${friend.username}`)
 		} catch (err) {
 			console.error(err);
 		}
@@ -93,8 +106,8 @@ function createFriendCard(friend: Friend): HTMLElement {
 
 
 interface Request  {
-	username: true,
-	avatarUrl: true
+	username: string,
+	avatarUrl: string
 }
 
 function createIncomingRequestCard(req: Request): HTMLElement {
@@ -104,7 +117,7 @@ function createIncomingRequestCard(req: Request): HTMLElement {
 
 	div.innerHTML = /* html */ `
 		<div class="flex items-center gap-2">
-			<img class="w-8 h-8 rounded-full" src="${req.avatarUrl ?? "https://i.pravatar.cc/100"}" />
+			<img class="w-8 h-8 rounded-full" src="${req.avatarUrl ?? generateInitialsAvatar(req.username)}" />
 			<span class="text-sm text-white">${req.username}</span>
 		</div>
 		<div class="flex gap-2">
@@ -121,9 +134,13 @@ function createIncomingRequestCard(req: Request): HTMLElement {
 	acceptBtn.addEventListener("click", async () => {
 		try {
 			await sendPostRequest(
-				`${BACKEND_APIS_URL}/friend/accept`,
+				`/api/friend/accept`,
 				{ target: req.username },
 				"application/json"
+			);
+			// update the UI
+			div.dispatchEvent(
+				new CustomEvent('update:friends:local', { bubbles: true })
 			);
 			console.log("Friend request accepted:", req.username);
 		} catch (err) {
@@ -135,10 +152,15 @@ function createIncomingRequestCard(req: Request): HTMLElement {
 	declineBtn.addEventListener("click", async () => {
 		try {
 			await sendPostRequest(
-				`${BACKEND_APIS_URL}/friend/remove`,
+				`/api/friend/remove`,
 				{ target: req.username },
-				"application/json"
-			);
+				"application/json")
+			.then(() => {
+				// update the UI
+				div.dispatchEvent(
+					new CustomEvent('update:friends:local', { bubbles: true })
+				);
+			});
 			console.log("Friend request remove:", req.username);
 		} catch (err) {
 			console.error(err);
@@ -160,7 +182,7 @@ function createOutgoingRequestCard(req: Request): HTMLElement {
 
 	div.innerHTML = /* html */ `
 		<div class="flex items-center gap-2">
-			<img class="w-8 h-8 rounded-full" src="${req.avatarUrl ?? "https://i.pravatar.cc/100"}" />
+			<img class="w-8 h-8 rounded-full" src="${req.avatarUrl ?? generateInitialsAvatar(req.username)}" />
 			<span class="text-sm text-white">${req.username}</span>
 		</div>
 		<div class="flex gap-2">
@@ -174,10 +196,15 @@ function createOutgoingRequestCard(req: Request): HTMLElement {
 	cancelBtn.addEventListener("click", async () => {
 		try {
 			await sendPostRequest(
-				`${BACKEND_APIS_URL}/friend/remove`,
+				`/api/friend/remove`,
 				{ target: req.username },
-				"application/json"
-			);
+				"application/json")
+			.then(() => {
+				// update the UI
+				div.dispatchEvent(
+					new CustomEvent('update:friends:local', { bubbles: true })
+				);
+			});
 			console.log("Friend request remove:", req.username);
 		} catch (err) {
 			console.error(err);
@@ -238,7 +265,10 @@ export function createFriendsBar(): HTMLElement {
 	`;
 
 	// define for future removal
-	const load = () => loadFriendBarContent(bar);
+	const load = () => {
+		console.log('reloading friends');
+		loadFriendBarContent(bar);
+	}
 
 	// Initial load
 	load();
@@ -248,11 +278,13 @@ export function createFriendsBar(): HTMLElement {
 
 	// refresh friend bar on update
 	window.addEventListener('update:friends', load);
+	bar.addEventListener('update:friends:local', load);
 
 	// clean closup
 	bar.querySelector("#close-bar-btn")?.addEventListener("click", () => {
-		// remove listener
+		// remove listeners
 		window.removeEventListener('update:friends', load);
+		bar.removeEventListener('update:friends:local', load);
 		// remove object
 		bar.remove();
 	});
