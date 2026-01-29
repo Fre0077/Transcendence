@@ -7,13 +7,14 @@ import { createFriendsBar } from "@/components/createFriendBar";
 import { sendPostRequest, sendPatchRequest } from "@/services/api/sendRequests";
 import { router } from "@/router";
 
-let mainUsername:string = '';
+let paramUsername:string = '';
 
 export function loadProfilePage(): HTMLElement {
 
 	const params = router.getParams();
-	mainUsername = params.username
-	console.log('params', mainUsername);
+	paramUsername = params.username;
+	console.log('paramUsernameIndex', paramUsername);
+	const routeUsername = router.getCurrentRoute()?.meta?.user?.username;
 
 	// overflow-hidden whitespace-nowrap text-ellispis
 
@@ -30,8 +31,8 @@ export function loadProfilePage(): HTMLElement {
 				class="absolute top-4 left-4 bg-white/10 hover:bg-white/20 text-white px-3 py-1 rounded-lg text-sm">
 				✏️ Edit
 			</button>
-			<div class="text-center flex flex-col items-center">
-				<div class="relative min-w-32 min-h-32 mb-6">
+			<div class="text-center flex flex-col items-center mt-10">
+				<div class="relative min-w-32 min-h-32">
 					<img
 						id="avatar-img"
 						class="w-32 h-32 rounded-full select-none"
@@ -56,9 +57,9 @@ export function loadProfilePage(): HTMLElement {
 					</button>
 					<input id="avatar-file-input" type="file" accept="image/*" class="hidden"/>
 				</div>
-				<div class="ml-8 text-left">
-					<h1 class="text-4xl font-bold text-white mb-4">Username</h1>
-					<p class="text-white/70 mb-6">Brief description about the user.</p>
+				<div>
+					<h1 class="text-4xl font-bold text-white mb-2 truncate max-w-[240px]">Username</h1>
+					<p class="text-white/70 mb-4">Brief description about the user.</p>
 				</div>
 			</div>
 			<div id="userStats" class="text-left flex-grow">
@@ -174,7 +175,7 @@ export function loadProfilePage(): HTMLElement {
 
 	let currentUser: UserProfile;
 
-	getUserProfile().then(user => {
+	getUserProfile(routeUsername).then(user => {
 		console.log("server response:", user);
 		currentUser = user;
 		const usernameElem = div.querySelector('h1');
@@ -211,7 +212,7 @@ export function loadProfilePage(): HTMLElement {
 		console.error("Error loading user profile:", error);
 	});
 	
-	getUserGames().then(games => {
+	getUserGames(routeUsername).then(games => {
 		console.log("game response:", games);
 
 		const history = div.querySelector('#match-history');
@@ -346,7 +347,7 @@ export function loadProfilePage(): HTMLElement {
 	});
 
 	// MYSELF or NOT logic
-	if (mainUsername !== 'me'){
+	if (paramUsername !== 'me' && paramUsername !== routeUsername) {
 		editBtn.classList.add('hidden');
 		friendCard.classList.add('hidden');
 		changeAvatarBtn.classList.add('hidden');
@@ -368,20 +369,18 @@ interface UserProfile {
 	avatarUrl: string | null;
 }
 
-export async function getUserProfile(): Promise<UserProfile> {
+export async function getUserProfile(routeUsername:string): Promise<UserProfile> {
 	/* ----- get username (todo better) ----- */
 	let username;
-	if (mainUsername === 'me') {
-		const user = await sendGetRequest(`/api/isauth`);
-		if (user.ok === false) {
-			throw new Error('No authentication token found');
-		}
-		username = user.user.username;
+	if (paramUsername === 'me') {
+		username = routeUsername;
 		if (!username) throw new Error('username not found')
 	}
 	else
-		username = mainUsername;
-
+		username = paramUsername;
+	console.log('routeUsernameGet', routeUsername);
+	console.log('paramUsernameGet', paramUsername);
+	console.log('usernameGet', username);
 	/* --------------------------------- */
 	const profileResponse = await sendGetRequest(`/api/user?username=${username}`);
 	const butlerResponse = await sendGetRequest(`/api/profile?username=${username}`);
@@ -452,23 +451,18 @@ export function createDonutChart(wins: number, losses: number, text:string): HTM
 }
 
 // @topiana- ecarbona collab
-export async function getUserGames(): Promise</* { history:  */GameData[]/*  } */> {
+export async function getUserGames(routeUsername:string): Promise</* { history:  */GameData[]/*  } */> {
 	// const token = localStorage.getItem('authToken');
 	// const linkid = localStorage.getItem('userId');
 
 	/* ----- get username (todo better) ----- */
 	let username;
-	if (mainUsername === 'me') {
-		const user = await sendGetRequest(`/api/isauth`);
-		if (user.ok === false) {
-			throw new Error('No authentication token found');
-		}
-		console.log('got cookie from butler', user);
-		username = user.user.username;
+	if (paramUsername === 'me') {
+		username = routeUsername;
 		if (!username) throw new Error('username not found')
 	}
 	else
-		username = mainUsername;
+		username = paramUsername;
 	/* --------------------------------- */
 
 

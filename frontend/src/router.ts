@@ -23,8 +23,8 @@ import { loadRegisterPage } from "./pages/public/register/register";
 import { loadChatApiTest } from "./pages/test/chatApiTest";
 
 // services
-import { isauth } from "@services/api/isauth";
-import { sendDeleteRequest } from "@services/api/sendRequests";
+// import { isauth } from "@services/api/isauth";
+import { sendDeleteRequest, sendGetRequest } from "@services/api/sendRequests";
 
 type RouteComponent = () => HTMLElement;
 
@@ -37,6 +37,7 @@ interface RouteConfig {
     requiresGuest?: boolean;
     requires2FA?: boolean;
     title?: string;
+    user?:any;
   };
 }
 
@@ -183,11 +184,15 @@ class Router {
 
     
     // cheap guard by @topiana-
-    const isAuthenticated = await isauth();
-    if (route.meta?.requiresAuth && !isAuthenticated) {
-      this.replace('/login');
-      return;
-    }
+    // const isAuthenticated = await isauth();
+    const auth = await sendGetRequest('/api/isauth').catch(() => null);
+    if (route.meta?.requiresAuth && !auth) {
+        this.replace('/login');
+        return;
+      }
+      
+    // append auth to route.meta if present
+    if (auth && route?.meta) Object.assign(route.meta, { user:auth.user });
 
     // Update page title
     if (route.meta?.title) {
@@ -196,6 +201,7 @@ class Router {
 
     // Update current route and render
     this.currentRoute = route;
+    console.log('route', this.currentRoute);
     this.render(route);
   }
 
