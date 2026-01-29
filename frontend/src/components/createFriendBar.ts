@@ -261,6 +261,32 @@ export function createFriendsBar(): HTMLElement {
 				<h4 class="text-xs text-white/60 mb-2">Outgoing Requests</h4>
 				<div id="outgoing-requests" class="space-y-2"></div>
 			</div>
+			<div class="pt-3 border-t border-white/10">
+				<h4 class="text-xs text-white/60 mb-2">Send friend request</h4>
+				<form id="send-friend-form" class="flex gap-2">
+					<input
+						type="text"
+						name="username"
+						required
+						placeholder="Username"
+						class="flex-1 rounded-md px-3 py-1.5
+							bg-slate-900 text-white text-sm
+							border border-white/20
+							placeholder-white/40
+							focus:outline-none focus:ring-1 focus:ring-cyan-400"
+					/>
+					<button
+						type="submit"
+						class="px-3 py-1.5 rounded-md
+							bg-cyan-600 hover:bg-cyan-500
+							text-white text-sm font-medium
+							transition"
+						title="Send request"
+					>
+						📨
+					</button>
+				</form>
+			</div>
 		</div>
 	`;
 
@@ -289,6 +315,28 @@ export function createFriendsBar(): HTMLElement {
 		bar.remove();
 	});
 
+	const sendForm = bar.querySelector("#send-friend-form") as HTMLFormElement;
+	sendForm?.addEventListener("submit", async (e) => {
+		e.preventDefault();
+		const formData = new FormData(sendForm);
+		const username = formData.get("username");
+		if (typeof username !== "string" || !username.trim()) return;
+		try {
+			await sendPostRequest(
+				"/api/friend-request",
+				{ target: username.trim() },
+				"application/json"
+			);
+			sendForm.reset();
+			// refresh the bar
+			bar.dispatchEvent(
+				new CustomEvent("update:friends:local", { bubbles: true })
+			);
+		} catch (err) {
+			console.error("Error sending friend request:", err);
+		}
+	});
+	
 	return bar;
 }
 

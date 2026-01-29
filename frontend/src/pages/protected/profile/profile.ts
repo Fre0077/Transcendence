@@ -83,65 +83,6 @@ export function loadProfilePage(): HTMLElement {
 
 		<br>
 
-		<!-- Friend Request -->
-		<section
-            id="friend-request-card"
-            class="relative rounded-xl p-8 border border-white/20
-                    bg-slate-800/60 backdrop-blur
-                    transition-all duration-300
-                    hover:shadow-lg hover:shadow-white/10
-                    focus-within:ring-2 focus-within:ring-cyan-400"
-            >
-                <div class="text-center">
-                    <!-- Icon -->
-                    <div class="text-5xl mb-4" aria-hidden="true">👤➕</div>
-
-                    <!-- Title -->
-                    <h3 class="text-xl font-bold text-white mb-2">
-                        Friend request
-                    </h3>
-
-                    <!-- Description -->
-                    <p class="text-sm text-white/70 mb-4">
-                        Send a friend request
-                    </p>
-
-                    <!-- Form -->
-                    <form id="friend-request-form" class="flex flex-col gap-3">
-                        <label for="friend-request-username" class="sr-only">
-                            Player username
-                        </label>
-
-                        <input
-                            id="friend-request-username"
-                            name="username"
-                            type="text"
-                            required
-                            placeholder="Username"
-                            class="rounded-md px-4 py-2
-                                bg-slate-900 text-white
-                                border border-white/20
-                                placeholder-white/40
-                                focus:outline-none focus:ring-2 focus:ring-cyan-400"
-                        />
-
-                        <button
-                            type="submit"
-                            class="mt-2 inline-flex items-center justify-center gap-2
-                                rounded-md px-4 py-2
-                                bg-cyan-600 hover:bg-cyan-500
-                                text-white font-semibold
-                                transition-colors
-                                focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-400"
-                        >
-                            <span aria-hidden="true">✉️</span>
-                            Send Request
-                        </button>
-                    </form>
-                </div>
-            </section>
-
-
 		<!-- MATCH HISTORY -->
 		<div id="match-history" class="mt-12 w-full max-w-4xl flex flex-col space-y-3 font-mono">
 		</div>
@@ -308,48 +249,9 @@ export function loadProfilePage(): HTMLElement {
 		console.log('Erro while trying to update profile', err);
 	}
 
-	/* -------------------------------- */
-	/*          FRIEND REQUEST          */
-
-	const friendCard = div.querySelector("#friend-request-card") as HTMLElement;
-
-	// friend request btn
-	const freqform = div.querySelector("#friend-request-form") as HTMLFormElement;
-	freqform.addEventListener("submit", (event) => {
-		event.preventDefault(); // stop page reload
-
-		// get the username
-		const form = event.currentTarget as HTMLFormElement;
-		const data = new FormData(form);
-
-		const username = data.get("username");
-
-		if (typeof username !== "string" || username.trim() === "") {
-			console.error("Invalid username");
-			return;
-		}
-
-
-		// send the request to the backend
-		try{
-			sendPostRequest(`/api/friend-request`, {
-				target: username
-			}, 'application/json')
-			.then(() => {
-				// update the UI
-				window.dispatchEvent(
-					new CustomEvent('update:friends', { bubbles: true })
-				);
-			});
-		} catch (err) {
-			console.log('Erro while trying to friend request', err);
-		}
-	});
-
 	// MYSELF or NOT logic
 	if (paramUsername !== 'me' && paramUsername !== routeUsername) {
 		editBtn.classList.add('hidden');
-		friendCard.classList.add('hidden');
 		changeAvatarBtn.classList.add('hidden');
 	}
 	return div;
@@ -469,4 +371,3 @@ export async function getUserGames(routeUsername:string): Promise</* { history: 
 	const response = await sendGetRequest(`/api/game?username=${username}`);
 	return response;
 }
-
