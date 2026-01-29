@@ -7,11 +7,40 @@ import { /* sendGetRequest,  */sendPostRequest } from "../api/sendRequests";
 import { authWebSocket } from "@services/ws/authWebSocket";
 
 // URLs
-const BUTLER_URL = `ws://${window.location.hostname}:3029/ws`;
-const BACKEND_APIS_URL = `http://${window.location.hostname}:3029/api`;
+const BUTLER_URL = `/ws`;
+const BACKEND_APIS_URL = `/api`;
 
 let socket:WebSocket | null = null;
 
+
+/* HELPERS */
+function acceptFriendRequest(target:string)
+{
+	sendPostRequest(`${BACKEND_APIS_URL}/friend/accept`, {
+			target : target
+		}, 'application/json')
+	.then(() => {
+
+		// update the UI
+		window.dispatchEvent(
+			new CustomEvent('update:friends', { bubbles: true })
+		);
+	});
+}
+
+function declineFriendRequest(target:string)
+{
+	sendPostRequest(`${BACKEND_APIS_URL}/friend/remove`, {
+			target : target
+		}, 'application/json')
+	.then(() => {
+
+		// update the UI
+		window.dispatchEvent(
+			new CustomEvent('update:friends', { bubbles: true })
+		);
+	});
+}
 
 // this function is async because authWebSocket() fetch()es the '/isauth' endpoint to refresh tokens.
 // If it didn't the connection could fail
@@ -24,7 +53,7 @@ export async function ConnectLifecycleSocket(): Promise<WebSocket | null>
 	}
 
 	// connect with auth refresh
-	socket = await authWebSocket('');
+	socket = await authWebSocket();
 	if (!socket) {
 		console.log("User not authenticated, can't connect to lifecycle websocket");
 		return null;
@@ -35,12 +64,12 @@ export async function ConnectLifecycleSocket(): Promise<WebSocket | null>
 		// if (socket) socket.send("Ciao Butler");
 	}
 
-	/* #friend-request
+	/*  #friend-request
 		#lobby-invite
 		#tournament-invite
 	 */
 
-	/* notify format: { what: 'NOTIFY, type: 'friend-request/...', data:any } */
+	/* notify format: { what: 'NOTIFY/UPDATE', type: 'friend-request/...', sender?:<username>, content?:any } */
 	socket.onmessage = (ev: MessageEvent<string>) => {
 		try
 		{
@@ -57,18 +86,10 @@ export async function ConnectLifecycleSocket(): Promise<WebSocket | null>
 						console.log("Friend request", msg.sender);
 						toastNotification.friend('Friend Request', `${msg.sender} vorrebbe essere tuo amico`, 
 							() => { alert('Pagina Friends');},
-							() => { sendPostRequest(`${BACKEND_APIS_URL}/friend/accept`, {
-										target : msg.sender
-									}, 'application/json');},
-							() => { sendPostRequest(`${BACKEND_APIS_URL}/friend/remove`, {
-										target : msg.sender
-									}, 'application/json');},
+							() => acceptFriendRequest(msg.sender),
+							() => declineFriendRequest(msg.sender),
 							5000);
-
-						// update the UI
-						window.dispatchEvent(
-							new CustomEvent('update:friends', { bubbles: true })
-						);
+						
 						break ;
 					case "lobby-invite":
 						console.log("Lobby invite", msg.content);
@@ -76,7 +97,7 @@ export async function ConnectLifecycleSocket(): Promise<WebSocket | null>
 							undefined,
 							() => router.push(`/lobby/online?lobby-id=${msg.content}`),
 							() => {},
-							10000);
+							10_000);
 						break ;
 					case "tournament-invite":
 						console.log("Tournament invite", msg.content);
@@ -84,7 +105,27 @@ export async function ConnectLifecycleSocket(): Promise<WebSocket | null>
 							() => {alert('SAIK')},
 							undefined,
 							undefined,
-							10000);
+							10_000);
+						break ;
+					default:
+						console.log(`Unknown type ${msg.type}`, msg.content);
+				}
+			}
+
+			// status update
+			if (msg?.what === "UPDATE")
+			{
+				if (!msg.type) throw new Error("Missin Update type");
+				
+				switch (msg.type)
+				{
+					case "friend":
+						console.log("Friend update", msg.sender);
+						// update the UI
+						window.dispatchEvent(
+							new CustomEvent('update:friends', { bubbles: true })
+						);
+						
 						break ;
 					default:
 						console.log(`Unknown type ${msg.type}`, msg.content);
@@ -98,12 +139,12 @@ export async function ConnectLifecycleSocket(): Promise<WebSocket | null>
 	}
 
 	socket.onclose = () => {
-		console.log("Closing lifecycle websocket");
+		console.log("Closing Lifecycle WebSocket");
 		socket = null;
 	}
 
 	socket.onerror = (err) => {
-		console.log("Socket error", err);
+		console.log("Lifecycle WebSocket error", err);
 		socket?.close();
 	}
 

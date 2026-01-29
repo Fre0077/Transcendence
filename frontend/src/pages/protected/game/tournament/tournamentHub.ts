@@ -4,7 +4,7 @@ import { loadNavbar } from "@/components/navbar";
 // import { load404Page } from "@/pages/errors/404";
 
 // servicets
-import { TournamentWebSocket, ConnectTournamentSocket } from "@/services/ws/tournamentWebSocket";
+import { TournamentWebSocket, ConnectTournamentSocket, DisconnectTournamentSocket } from "@/services/ws/tournamentWebSocket";
 
 // const TOURNAMENT_WEBSOCKET_URL = `ws://${window.location.hostname}:3029/ws/tournament`;
 
@@ -142,7 +142,7 @@ export function loadTournamentHubPage(): HTMLElement
     `;
 
     // connect to the backend
-    tournamentWS = ConnectTournamentSocket(() => {}, tourn_code);
+    tournamentWS = ConnectTournamentSocket(tourn_code);
 
     // add listeners to socket messages
     tournamentWS.onmessage(() => {}, pushToTournament);
@@ -292,7 +292,7 @@ export function loadTournamentHubPage(): HTMLElement
         // player check specific for each format
         if (selectedFormat === 'single-elimination')
         {
-            if (!isPowOf(2, playerCount))
+            if (!isPowerOfTwo(playerCount))
             {
                 alert('In Single elimination only power of 2 player count allowed');
                 return ;
@@ -308,6 +308,12 @@ export function loadTournamentHubPage(): HTMLElement
         }
         
     });
+
+
+    /* !!! DESTRUCTOR !!! */
+    (div as any).destroy = () => {
+        DisconnectTournamentSocket();
+    }
 
     return div;
 }
@@ -337,16 +343,9 @@ function pushToTournament(tournamentID:string)
 /*                  UTILS                   */
 /* ---------------------------------------- */
 
-function isPowOf(base:number, num:number): number
-{
-	let pow = 0;
-
-	while (num !== 1)
-	{
-		pow++;
-		num /= base;
-		if (num !== 1 && num % base !== 0) return 0;
-	}
-
-	return pow;
+function isPowerOfTwo(n: number): boolean {
+    // Must be positive
+    if (n <= 0) return false;
+    // Check if only one bit is set
+    return (n & (n - 1)) === 0;
 }

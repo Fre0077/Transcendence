@@ -1,7 +1,7 @@
 export function sendPostRequest(
     url: string,
     data: any = null,
-    type: string
+    type?: string
 ): Promise<any> {
     return new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
@@ -10,7 +10,10 @@ export function sendPostRequest(
         // AUTH
         xhr.withCredentials = true; // 🔥 REQUIRED 4 Cookies
 
-        xhr.setRequestHeader("Content-Type", type);
+        // defualt type
+        if (type) xhr.setRequestHeader("Content-Type", type);
+        else xhr.setRequestHeader("Content-Type", 'application/json');
+
         xhr.onreadystatechange = function () {
             if (xhr.readyState === XMLHttpRequest.DONE) {
                 if (xhr.status === 200) {
@@ -75,8 +78,6 @@ export function sendGetRequest(
 
 export function sendDeleteRequest(
     url: string,
-    data: any = null,
-    type: string
 ): Promise<any> {
     return new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
@@ -85,7 +86,6 @@ export function sendDeleteRequest(
         // AUTH
         xhr.withCredentials = true; // 🔥 REQUIRED 4 Cookies
 
-        xhr.setRequestHeader("Content-Type", type);
         xhr.onreadystatechange = function () {
             if (xhr.readyState === XMLHttpRequest.DONE) {
                 if (xhr.status === 200) {
@@ -104,11 +104,33 @@ export function sendDeleteRequest(
                 }
             }
         };
-        console.log('Data delete', data);
-        if (data) {
-            xhr.send(JSON.stringify(data));
-        } else {
-            xhr.send();
-        }
+        xhr.send();
+    });
+}
+
+export function sendPatchRequest(
+    url: string,
+    data: any = null,
+    type: string = "application/json"
+): Promise<any> {
+    return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("PATCH", url, true);
+        xhr.withCredentials = true;
+        xhr.setRequestHeader("Content-Type", type);
+        xhr.onreadystatechange = () => {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                if (xhr.status === 200) {
+                    try {
+                        resolve(JSON.parse(xhr.responseText));
+                    } catch (e: any) {
+                        reject(new Error("JSON parse error: " + e.message));
+                    }
+                } else {
+                    reject(new Error(`HTTP ${xhr.status}: ${xhr.statusText}`));
+                }
+            }
+        };
+        xhr.send(data ? JSON.stringify(data) : null);
     });
 }

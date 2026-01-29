@@ -3,12 +3,15 @@
 // 	updater(state:any): void;
 // 	secretary(message:any): void;
 // }
+// services
+import { isauth } from "@services/api/isauth";
 
 
-const PONG_BACKEND_URL = `ws://${window.location.hostname}:3029/ws/pong`;
+const PONG_BACKEND_URL = `/ws/pong`;
 
 // PongSocket.ts
 export interface PongSocket {
+	socket:WebSocket | null;
 	matchid?:string;
 	replay?:string;
 	send(data: unknown): void;
@@ -18,9 +21,9 @@ export interface PongSocket {
 }
 
 // HELPER
-function sleep(ms:number) {
-	return new Promise(resolve => setTimeout(resolve, ms));
-}
+// function sleep(ms:number) {
+// 	return new Promise(resolve => setTimeout(resolve, ms));
+// }
 
 /* --------------------------------------- */
 /* 				PLAYER SOCKET			   */
@@ -33,18 +36,20 @@ const playerSecretary = (data:any, ws:WebSocket) => {
 }
 
 // behaviour of the player socket
-export function createPlayerSocket(/* , playerid:string */): PongSocket
+export function createPlayerSocket(): PongSocket
 {
 	const ws = new WebSocket(`${PONG_BACKEND_URL}/play`);
 
 	return {
+		socket:ws,
 		// data
 		// playerid: playerid,
 
 		// functions
 		handshake() {},
 		send(data) {
-			ws.send(JSON.stringify(data));
+			if (ws.readyState === WebSocket.OPEN)
+				ws.send(JSON.stringify(data));
 		},
 		onmessage(handler) {
 			ws.onmessage = (e) => {
@@ -85,16 +90,19 @@ export function createSpectatorSocket(/* , playerid:string */matchid:string): Po
 	const ws = new WebSocket(`${PONG_BACKEND_URL}/spectate`);
 
 	return {
+		socket:ws,
 		// data
 		// playerid: playerid,
 		matchid: matchid,
 
 		// functions
 		handshake() {
-			sleep(200)
-			.then(() => {
-				ws.send(JSON.stringify({ matchid: matchid }));
-			});
+			ws.onopen = () => {
+				isauth().then((auth) => {
+					if (auth === true && ws.readyState === WebSocket.OPEN)
+						ws.send(JSON.stringify({ matchid: matchid }));
+				});
+			}
 		},
 		send() {},
 		onmessage(handler) {
@@ -114,6 +122,7 @@ export function createSpectatorSocket(/* , playerid:string */matchid:string): Po
 		},
 		close() {
 			ws.close();
+			console.log('closed spectator socket');
 		}
 	};
 }
@@ -129,21 +138,26 @@ const replaySecretary = (data:any, ws:WebSocket) => {
 	ws;
 }
 
+
 // behaviour of the spectator socket
 export function createReplaySocket(/* , playerid:string */replaystring:string): PongSocket
 {
+	console.log('[WS] connecting to', `${PONG_BACKEND_URL}/replay`);
 	const ws = new WebSocket(`${PONG_BACKEND_URL}/replay`);
 
 	return {
+		socket: ws,
 		// data
 		replay:replaystring,
 
 		// functions
 		handshake() {
-			sleep(200)
-			.then(() => {
-				ws.send(replaystring);
-			});
+			ws.onopen = () => {
+				isauth().then((auth) => {
+					if (auth === true && ws.readyState === WebSocket.OPEN)
+						ws.send(replaystring);
+				});
+			}
 		},
 		send() {},
 		onmessage(handler) {

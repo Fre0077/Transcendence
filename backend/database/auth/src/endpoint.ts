@@ -41,7 +41,7 @@ export async function authEndpoint(fastify: FastifyInstance) {
 					sameSite: 'lax',
 					path: '/',
 				}) */
-				.send({ ...user, user, ok: true });
+				.send({ ...user, ok: true });
 		
 			logInfo('{auth} [200] token generato con successo');
 		} catch (err) {
@@ -136,20 +136,43 @@ export async function authEndpoint(fastify: FastifyInstance) {
 	// 	}
 	// });
 
+	interface ProfileQuery {
+		username?: string;
+	}
+
 	//Enpoint GET per ottenere l'account dal database
-	fastify.get('/profile', async (request: AuthRequest, reply: FastifyReply) => {
+	fastify.get<{ Querystring: ProfileQuery }>('/profile', async (request, reply) => {
 		try {
 			const userId = Number(request.headers['x-user-id'])
 			const secret = request.headers['x-gateway-secret']
+			const { username } = request.query;
 
 			if (!userId || secret !== 'biscottini') {throw new Unauthorized('Utente non autorizzato', 'auth'); }
-			const user = await authPrisma.account.findUnique({
+			const me = await authPrisma.account.findUnique({
 			where: { id: userId},
 			select: {
 				id: true, email: true, username: true,
 				name: true, surname: true, bio: true, avatarUrl: true,
 				twoFactorEnabled: true
 			}
+			});
+			if (!me) 
+				throw new NotFound('Profilo utente non trovato', 'auth');
+			if (username === me?.username) reply.code(200).send(me);
+			const user = await authPrisma.account.findUnique({
+				where: { username: username},
+				select: {
+					id: true, username: true, bio: true, avatarUrl: true
+				}
+			});
+			if (!me) 
+				throw new NotFound('Profilo utente non trovato', 'auth');
+			if (username === me?.username) reply.code(200).send(me);
+			const user = await authPrisma.account.findUnique({
+				where: { username: username},
+				select: {
+					id: true, username: true, bio: true, avatarUrl: true
+				}
 			});
 			if (!user) 
 				throw new NotFound('Profilo utente non trovato', 'auth');

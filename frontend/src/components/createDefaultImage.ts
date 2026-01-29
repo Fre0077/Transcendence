@@ -1,6 +1,6 @@
-function getInitials(name: string, surname: string): string {
-		const firstInitial = name.charAt(0).toUpperCase();
-		const lastInitial = surname.charAt(0).toUpperCase();
+function getInitials(username: string): string {
+		const firstInitial = username.charAt(0).toUpperCase();
+		const lastInitial = username.charAt(username.length - 1).toUpperCase();
 		return `${firstInitial}${lastInitial}`;
 }
 
@@ -16,9 +16,9 @@ function getAvatarColor(name: string): string {
 		return colors[hash % colors.length];
 }
 
-export function generateInitialsAvatar(name: string, surname: string): string {
-		const initials = getInitials(name, surname);
-		const bgColor = getAvatarColor(name);
+export function generateInitialsAvatar(username: string): string {
+		const initials = getInitials(username);
+		const bgColor = getAvatarColor(username);
 		
 		return `data:image/svg+xml,${encodeURIComponent(`
 				<svg xmlns="http://www.w3.org/2000/svg" width="150" height="150" viewBox="0 0 150 150">

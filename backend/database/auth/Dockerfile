@@ -15,6 +15,6 @@ RUN chmod +x ./entrypoint.sh
 ENV NODE_ENV=production
 ENV TS_NODE_TRANSPILE_ONLY=true
 
-EXPOSE 3001
+# EXPOSE 3001
 
 ENTRYPOINT ["./entrypoint.sh"]

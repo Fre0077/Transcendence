@@ -4,11 +4,18 @@ import { generateInitialsAvatar } from "@/components/createDefaultImage";
 
 import { GameData, createHistoryBar } from "@/components/createHistoryBar";
 import { createFriendsBar } from "@/components/createFriendBar";
-import { sendPostRequest } from "@/services/api/sendRequests";
+import { sendPostRequest, sendPatchRequest } from "@/services/api/sendRequests";
+import { router } from "@/router";
 
-const BACKEND_APIS_URL = `http://${window.location.hostname}:3029/api`;
+let mainUsername:string = '';
 
 export function loadProfilePage(): HTMLElement {
+
+	const params = router.getParams();
+	mainUsername = params.username
+	console.log('params', mainUsername);
+
+
 	const div = document.createElement('div');
 	div.className = 'min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex flex-col';
 	div.innerHTML = /* html */ `
@@ -17,8 +24,37 @@ export function loadProfilePage(): HTMLElement {
 	<div class="flex items-center flex-grow flex-col bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
 		<!-- this div will only expand vertically -->
 		<div class="flex flex-row space-x-8 mt-12 p-8 bg-slate-800/70 backdrop-blur-sm rounded-lg max-w-4xl w-full">
+			<button
+				id="edit-profile-btn"
+				class="absolute top-4 left-4 bg-white/10 hover:bg-white/20 text-white px-3 py-1 rounded-lg text-sm">
+				✏️ Edit
+			</button>
 			<div class="text-center flex flex-row flex-grow items-center">
-				<img class="w-32 h-32 mb-6 rounded-full select-none" draggable="false" ondragstart="return false;" style="-webkit-user-drag: none; user-select: none;" src="https://i.pravatar.cc/150?img=1" alt="Under Construction" />
+				<div class="relative w-32 h-32 mb-6">
+					<img
+						id="avatar-img"
+						class="w-32 h-32 rounded-full select-none"
+						draggable="false"
+						style="-webkit-user-drag: none; user-select: none;"
+						src="https://i.pravatar.cc/150?img=1"
+						alt="Avatar"
+					/>
+
+					<!-- Pallino -->
+					<button
+						id="change-avatar-btn"
+						title="Change avatar"
+						class="absolute bottom-1 right-1 w-8 h-8
+							rounded-full bg-cyan-600 hover:bg-cyan-500
+							border-2 border-slate-900
+							flex items-center justify-center
+							text-white text-sm
+							transition-transform hover:scale-110"
+					>
+						✏️
+					</button>
+					<input id="avatar-file-input" type="file" accept="image/*" class="hidden"/>
+				</div>
 				<div class="ml-8 text-left flex-grow">
 					<div class="flex items-center justify-between mb-4">
 						<h1 class="text-4xl font-bold text-white">Username</h1>
@@ -115,12 +151,39 @@ export function loadProfilePage(): HTMLElement {
 		<!-- MATCH HISTORY -->
 		<div id="match-history" class="mt-12 w-full max-w-4xl flex flex-col space-y-3 font-mono">
 		</div>
+
+		<br>
+
+		<!-- EDIT PROFILE -->
+		<div id="edit-profile-modal"
+			class="fixed inset-0 hidden items-center justify-center bg-black/60 z-50">
+
+			<div class="bg-slate-900 p-6 rounded-xl w-full max-w-md text-white">
+				<h2 class="text-xl font-bold mb-4">Edit profile</h2>
+
+				<form id="edit-profile-form" class="space-y-3">
+					<input name="name" class="w-full p-2 rounded bg-slate-800" placeholder="Name">
+					<input name="surname" class="w-full p-2 rounded bg-slate-800" placeholder="Surname">
+					<input name="username" class="w-full p-2 rounded bg-slate-800" placeholder="Username">
+					<textarea name="bio" class="w-full p-2 rounded bg-slate-800" placeholder="Bio"></textarea>
+
+					<div class="flex justify-end gap-2">
+						<button type="button" id="close-edit-modal"
+							class="px-4 py-2 bg-slate-700 rounded">Cancel</button>
+						<button type="submit"
+							class="px-4 py-2 bg-cyan-600 rounded">Save</button>
+					</div>
+				</form>
+			</div>
+		</div>
 	</div>
 	`;
 
-	// Load user stats
+	let currentUser: UserProfile;
+
 	getUserProfile().then(user => {
 		console.log("server response:", user);
+		currentUser = user;
 		const usernameElem = div.querySelector('h1');
 		const bioElem = div.querySelector('p');
 		if (usernameElem) usernameElem.textContent = user.username;
@@ -128,7 +191,7 @@ export function loadProfilePage(): HTMLElement {
 
 		// Update avatar
 		const avatarImg = div.querySelector('img');
-		if (avatarImg) avatarImg.src = user.avatarUrl || generateInitialsAvatar(user.name, user.surname) || "";
+		if (avatarImg) avatarImg.src = user.avatarUrl || generateInitialsAvatar(user.username) || "";
 
 		// Update stats
 		const statsDiv = div.querySelector('#userStats');
@@ -171,12 +234,90 @@ export function loadProfilePage(): HTMLElement {
 
 	
 	// AGGIUNGI LA BAR DEGLI AMICI
-	document.body.appendChild(createFriendsBar());
+	if (!document.getElementById("FriendBar"))
+		document.body.appendChild(createFriendsBar());
 
+	// EDIT PROFILE BTN
+	const editBtn = div.querySelector('#edit-profile-btn') as HTMLButtonElement;
+	const modal = div.querySelector('#edit-profile-modal') as HTMLDivElement;
+	const closeBtn = div.querySelector('#close-edit-modal') as HTMLButtonElement;
+	const form = div.querySelector('#edit-profile-form') as HTMLFormElement;
+	
+	// EDIT AVATAR BTN
+	const changeAvatarBtn = div.querySelector('#change-avatar-btn') as HTMLButtonElement;
+	const avatarFileInput = div.querySelector('#avatar-file-input') as HTMLInputElement;
+	const avatarImgElement = div.querySelector('#avatar-img') as HTMLImageElement;
 
+	try {
+		editBtn.addEventListener('click', () => {
+			modal.classList.remove('hidden');
+			modal.classList.add('flex');
+	
+			form.name.value = currentUser.name;
+			form.surname.value = currentUser.surname;
+			form.username.value = currentUser.username;
+			form.bio.value = currentUser.bio ?? '';
+		});
+	
+		closeBtn.addEventListener('click', () => {
+			modal.classList.add('hidden');
+			modal.classList.remove('flex');
+		});
+	
+		form.addEventListener('submit', async (e) => {
+			e.preventDefault();
+	
+			const data = Object.fromEntries(new FormData(form).entries());
+
+			const updated = await sendPatchRequest(`/api/profile`, data);
+	
+			if (currentUser.username !== updated.username) {
+				// delete all cookies
+
+				// send to login
+				router.push('/logout');
+			}
+			else
+				// reaload
+				router.push('/profile/me');
+		});
+
+		changeAvatarBtn?.addEventListener('click', () => {
+			avatarFileInput.click();
+		});
+
+		avatarFileInput?.addEventListener('change', async () => {
+			const file = avatarFileInput.files?.[0];
+			if (!file) return;
+			const formData = new FormData();
+			console.log('formData', formData);
+			formData.append('file', file);
+			const response = await fetch('/api/profile/avatar', {
+				method: 'POST',
+				credentials: 'include',
+				body: formData
+			});
+			if (response.ok) {
+				const data = await response.json();
+				// 3. Aggiorniamo l'immagine nella UI
+				if (data.avatarUrl) {
+					avatarImgElement.src = data.avatarUrl;
+					console.log("Avatar aggiornato con successo!");
+				}
+			} else {
+				const errorData = await response.json();
+				console.error("Errore durante l'upload:", errorData.error);
+				alert("Errore nel caricamento dell'immagine.");
+			}
+		});
+	} catch (err) {
+		console.log('Erro while trying to update profile', err);
+	}
 
 	/* -------------------------------- */
 	/*          FRIEND REQUEST          */
+
+	const friendCard = div.querySelector("#friend-request-card") as HTMLElement;
 
 	// friend request btn
 	const freqform = div.querySelector("#friend-request-form") as HTMLFormElement;
@@ -197,29 +338,35 @@ export function loadProfilePage(): HTMLElement {
 
 		// send the request to the backend
 		try{
-			sendPostRequest(`${BACKEND_APIS_URL}/friend-request`, {
+			sendPostRequest(`/api/friend-request`, {
 				target: username
-			}, 'application/json');
-
-			// update the UI
-			window.dispatchEvent(
-				new CustomEvent('update:friends', { bubbles: true })
-			);
+			}, 'application/json')
+			.then(() => {
+				// update the UI
+				window.dispatchEvent(
+					new CustomEvent('update:friends', { bubbles: true })
+				);
+			});
 		} catch (err) {
 			console.log('Erro while trying to friend request', err);
 		}
 	});
 
-
+	// MYSELF or NOT logic
+	if (mainUsername !== 'me'){
+		editBtn.classList.add('hidden');
+		friendCard.classList.add('hidden');
+		changeAvatarBtn.classList.add('hidden');
+	}
 	return div;
 }
 
 interface UserProfile {
 	id: number;
-	email: string;
+	email?: string;
 	username: string;
-	name: string;
-	surname: string;
+	name?: string;
+	surname?: string;
 	wins: number;
 	losses: number;
 	tournamentWins: number;
@@ -230,16 +377,21 @@ interface UserProfile {
 
 export async function getUserProfile(): Promise<UserProfile> {
 	/* ----- get username (todo better) ----- */
-	const user = localStorage.getItem('user');
-	if (!user) {
-		throw new Error('No authentication token found');
+	let username;
+	if (mainUsername === 'me') {
+		const user = await sendGetRequest(`/api/isauth`);
+		if (user.ok === false) {
+			throw new Error('No authentication token found');
+		}
+		username = user.user.username;
+		if (!username) throw new Error('username not found')
 	}
-	const { username } = JSON.parse(user);
-	/* --------------------------------- */
+	else
+		username = mainUsername;
 
-	const profileResponse = await sendGetRequest(`http://localhost:3029/api/user?username=${username}`);
-	// const authResponse = await sendGetRequest(`http://localhost:3001/api/profile`, token);
-	const butlerResponse = await sendGetRequest(`http://localhost:3029/api/profile?username=${username}`);
+	/* --------------------------------- */
+	const profileResponse = await sendGetRequest(`/api/user?username=${username}`);
+	const butlerResponse = await sendGetRequest(`/api/profile?username=${username}`);
 	return {
 		id: profileResponse.id,
 		email: butlerResponse.email,
@@ -312,15 +464,22 @@ export async function getUserGames(): Promise</* { history:  */GameData[]/*  } *
 	// const linkid = localStorage.getItem('userId');
 
 	/* ----- get username (todo better) ----- */
-	const user = localStorage.getItem('user');
-	if (!user) {
-		throw new Error('No authentication token found');
+	let username;
+	if (mainUsername === 'me') {
+		const user = await sendGetRequest(`/api/isauth`);
+		if (user.ok === false) {
+			throw new Error('No authentication token found');
+		}
+		console.log('got cookie from butler', user);
+		username = user.user.username;
+		if (!username) throw new Error('username not found')
 	}
-	const { username } = JSON.parse(user);
+	else
+		username = mainUsername;
 	/* --------------------------------- */
 
 
-	const response = await sendGetRequest(`http://localhost:3029/api/game?username=${username}`);
+	const response = await sendGetRequest(`/api/game?username=${username}`);
 	return response;
 }
 

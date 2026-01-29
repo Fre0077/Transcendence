@@ -108,6 +108,55 @@ export async function messageList(input: number[]): Promise<string> {
 	return JSON.stringify(messages);
 }
 
+//ricerca tutti i messaggi apperteneti ad una chat
+export async function singleMessage(input: number[]): Promise<string> {
+	if (!Array.isArray(input) || input.length < 2)
+		throw new BadRequest('Input must be an array: [chatId, linkId]', "chat");
+
+	const chatId = input[0];
+ 	const linkId = input[1];
+
+	// Controlla che l'utente esista
+	const user = await chatPrisma.user.findUnique({ where: { linkId: linkId }, include: { blockedUsers: true, blockedBy: true } });
+	if (!user)
+		throw new NotFound(`User with linkID ${linkId} does not exist`, "chat");
+
+	// Trova tutti gli altri utenti della chat
+	const chat = await chatPrisma.chats.findUnique({ where: { chatId }, include: { users: true, host: true } });
+	if (!chat)
+		throw new NotFound(`Chat with chatID ${chatId} does not exist`, "chat");
+	
+	const otherlinkIds = chat.users
+		.filter(u => u.linkId !== linkId)
+		.map(u => u.linkId);
+	if (chat.host && chat.host.linkId !== linkId)
+		otherlinkIds.push(chat.host.linkId);
+
+	// Controlla se uno degli altri utenti ha bloccato chi richiede, o viceversa
+	for (const otherlinkId of otherlinkIds) {
+		if (user.blockedUsers.some(u => u.linkId === otherlinkId))
+			throw new Unauthorized(`You have blocked a participant in this chat`, "chat");
+		
+		const otherUser = await chatPrisma.user.findUnique({ where: { linkId: otherlinkId }, include: { blockedUsers: true } });
+		if (otherUser && otherUser.blockedUsers.some(u => u.linkId === user.linkId)) 
+			throw new Unauthorized(`You are blocked by a participant in this chat`, "chat");
+	}
+
+	//ricerca dei messaggi
+	const messages = await chatPrisma.messages.findMany({
+		where: { chatId },
+		orderBy: { date: 'desc' },
+		take: 1,
+		select: {
+			id: true,
+			linkId: true,
+			message: true,
+			date: true
+		}
+	});
+	return JSON.stringify(messages);
+}
+
 //creazione di una nuova chat
 export async function newChat(input: NewChat): Promise<void> {
 	//controllo input

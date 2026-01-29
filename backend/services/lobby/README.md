@@ -11,19 +11,6 @@ interface LobbyState {
 	}[];
 }
 
-<!-- ===== AUTH ===== -->
-Request:
-{
-	method: 'AUTH',	(mandatory)
-	ID: <playerID>	(mandatory)
-}
-Description: This is the first message to inoltrate to the backend, all other requests befor this (or if the Authentication fails) will be ignored.
-Reply:
-{
-	method: 'AUTH_REPLY',
-	status: 'success/failure'
-}
-
 <!-- ===== CREATE ===== -->
 Reqest:
 {

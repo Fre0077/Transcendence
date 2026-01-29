@@ -52,6 +52,15 @@ export async function loadHomePage(): Promise<HTMLElement> {
 				<div class="absolute inset-0 bg-gradient-to-br from-orange-600/0 to-yellow-600/0 group-hover:from-orange-600/20 group-hover:to-yellow-600/20 transition"></div>
 			</button>
 
+			<a href="/test/chat" class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-600/30 to-pink-600/30 p-8 border border-white/10 hover:border-purple-400/50 transition-all hover:scale-105">
+				<div class="relative z-10">
+					<div class="text-4xl mb-4">⚙️</div>
+					<h3 class="text-2xl font-bold text-white mb-2">Test Chat API</h3>
+					<p class="text-white/70">Go to test chat page</p>
+				</div>
+				<div class="absolute inset-0 bg-gradient-to-br from-purple-600/0 to-pink-600/0 group-hover:from-purple-600/20 group-hover:to-pink-600/20 transition"></div>
+			</a>
+
 			<a href="/game" class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-600/30 to-pink-600/30 p-8 border border-white/10 hover:border-purple-400/50 transition-all hover:scale-105">
 				<div class="relative z-10">
 					<div class="text-4xl mb-4">🎮</div>

@@ -266,7 +266,6 @@ fastify.register(async function (fastify) {
 		const clientIP = request.socket.remoteAddress;
 		console.log(`Client connected from ${clientIP}`);
 
-
 		/* --------- CHECK AUTH --------- */
 		const username = request.headers['x-user-username'] as string;
   		const secret = request.headers['x-gateway-secret'];
@@ -331,6 +330,11 @@ fastify.register(async function (fastify) {
 			}
 
 			console.log(`Client ${clientIP} disconnected - Code: ${code}, Reason: ${reason?.toString() || 'none'}`);
+		});
+
+		// protocol-level ping/pong
+		connection.on('pong', () => {
+			(connection as any).isAlive = true;
 		});
 	});
 });
@@ -422,6 +426,25 @@ function TournamentsManager()
 	}, 1000);
 }
 
+// loops asyncronously
+function ConnectionsManager()
+{
+	setTimeout(() => {
+		/* check if the socket is alive */
+		fastify.websocketServer.clients.forEach((socket) => {
+			if ((socket as any).isAlive === false) {
+				return socket.terminate();
+			}
+
+			(socket as any).isAlive = false;
+			socket.ping();
+		});
+
+		// loop
+		ConnectionsManager();
+	}, 20_000);
+}
+
 /* ============================================= */
 
 /* ------------------------------------------ */
@@ -452,6 +475,8 @@ const start = async () => {
 
 	// routine check (once every second)
 	TournamentsManager();
+	// socket check (once every 20 seconds)
+	ConnectionsManager();
 };
 
 // entrypoint
