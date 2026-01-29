@@ -16,7 +16,6 @@ NEW (MAYBE?)
 MAJOR
 13. Pong on mobile
 18. Bot handshake on creation (only 'bot' container can create bots)
-22. You can access protected pages after logout if you go back in history (top left arrow buttons) (@aleborghi)
 23. 2FA login (@aleborghi)
 
 
@@ -34,7 +33,6 @@ MINOR
 STYLE
 2. pls... the back button
 4. Better friendlist
-6. Better friend request, and profile pic/box gets weird at different username length
 
 CLEANUPS
 2. Log all major messages
@@ -91,6 +89,8 @@ DONE
 5. Better default avatar (DONE)
 17. status dot on friendlist (DONE)
 22. all db updating operations on friends (accepting/declining/canceling...) sends an update to the lifecycle ws { what: 'UPDATE, type: 'friend' } (DONE)
+6. Better friend request, and profile pic/box gets weird at different username length (DONE)
+22. You can access protected pages after logout if you go back in history (top left arrow buttons) (DONE)
 
 FORGOTTEN:
 21. Sometimes freezes... after adding .dispatchEvent()??? or the persist session with no more localStorage???

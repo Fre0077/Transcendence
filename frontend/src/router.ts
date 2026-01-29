@@ -186,13 +186,13 @@ class Router {
     // cheap guard by @topiana-
     // const isAuthenticated = await isauth();
     const auth = await sendGetRequest('/api/isauth').catch(() => null);
-    if (route.meta?.requiresAuth && !auth) {
+    if (route.meta?.requiresAuth && !auth.ok) {
         this.replace('/login');
         return;
       }
       
     // append auth to route.meta if present
-    if (auth && route?.meta) Object.assign(route.meta, { user:auth.user });
+    if (auth.ok && route?.meta) Object.assign(route.meta, { user:auth.user });
 
     // Update page title
     if (route.meta?.title) {
