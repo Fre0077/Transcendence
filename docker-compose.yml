@@ -182,13 +182,13 @@ services:
       context: ./backend/services/ft_bunny
       dockerfile: Dockerfile
     container_name: ft_bunny
+    env_file:
+      - .env
     depends_on:
       rabbitmq:
         condition: service_healthy
       butler:
         condition: service_started
-    environment:
-      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
     networks:
       - transcendence
     restart: always
