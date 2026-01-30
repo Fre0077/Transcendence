@@ -4,7 +4,7 @@ import type { RawData } from "ws";
 import { PrismaClient as chatPrismaClient } from "../database/generate/chat";
 const chatPrisma = new chatPrismaClient();
 
-import { userList, chatList, messageList, singleMessage, newChat, newMessage, deleteChatMessages,
+import { userList, chatList, chatIdList, messageList, singleMessage, newChat, newMessage, deleteChatMessages,
 		deleteMessage, searchMessage, searchChat, listChatMessage, blockUser,
 		sblockUser, deleteChat, getBlockedUsers } from "./function";
 import { BadRequest, Unauthorized, Forbidden, NotFound, Conflict } from "../utils/exception"
@@ -14,24 +14,49 @@ import { authMiddleware } from "./middleware";
 
 import { WebSocket } from "ws";
 
-const connections: Map<number, WebSocket> = new Map;
-const chatConnections: Map<WebSocket, number[]> = new Map;
+class ChatUser
+{
+	public readonly socket:WebSocket;
+	public chats:Set<number>;
+
+	constructor(__socket:WebSocket, __chats:{ chatId:number }[]) {
+		this.socket = __socket;
+		this.chats = new Set(__chats.map(c => c.chatId));
+	}
+}
+
+const connections: Map<number, ChatUser> = new Map;
+// const chatConnections: Map<WebSocket, number[]> = new Map;
 
 // Funzione di broadcast per la chat-list
 async function broadcastChatListToAll() {
-	for (const [id, socket] of connections) {
-		const chats = await chatList(id);
-		socket.send(JSON.stringify({ chats }));
+	for (const [id, user] of connections) {
+		user.socket.send(JSON.stringify({ type: 'chats-updated' }));
 	}
 }
 
 // Funzione di broadcast per l'ultimo messaggio
-async function broadcastMessageListToAll() {
+async function broadcastMessageListToAll(chatId:number) {
 	console.log('dentro broadcastMessageListToAll');
-	for (const [socket, data] of chatConnections) {
-		console.log('sending to', data);
-		const message = await singleMessage(data);
-		socket.send(JSON.stringify({ message }));
+	for (const [ID, user] of connections) {
+		if (user.chats.has(chatId) === false) return ;
+		// get the message
+		const msg = await singleMessage([chatId, ID]);
+		if (msg === null) return ;
+
+		// reassemble for frontend
+		const { id, linkId, message, date} = msg;
+		const frontendMessage = {
+			messageId: id,
+			chatId: chatId,
+			userId: linkId,
+			message: message,
+			date: date,
+		}
+
+		// send
+		if (user.socket.readyState === WebSocket.OPEN)
+			user.socket.send(JSON.stringify({ type: 'message-received', data: { chatId:chatId, message: frontendMessage } }));
 	}
 }
 
@@ -102,7 +127,7 @@ export async function chatEndpoint(fastify: FastifyInstance) {
 	});
 
 	// Endpoint WebSocket per ottenere gli ultimi 100 messaggi a partire da un certo indice
-	fastify.get("/broadcast", { websocket: true }, (connection, request) => {
+	fastify.get("/broadcast", { websocket: true }, async (connection, request) => {
 
 		const linkId = Number(request.headers["x-user-id"]);
 
@@ -110,7 +135,7 @@ export async function chatEndpoint(fastify: FastifyInstance) {
 		console.log('Connection from',linkId);
 
 		// storing connection
-		connections.set(linkId, connection);
+		connections.set(linkId, new ChatUser(connection, await chatIdList(linkId)));
 
 		connection.on('message', async (rawMessage: RawData) => {
 			try {
@@ -126,14 +151,14 @@ export async function chatEndpoint(fastify: FastifyInstance) {
 				//----
 
 
-				// aggiorna la lista di utenti connessi alla chat
-				const data = JSON.parse(rawMessage.toString());
+				// // aggiorna la lista di utenti connessi alla chat
+				// const data = JSON.parse(rawMessage.toString());
 
-				if (data.chatId !== undefined && typeof data.chatId === "number")
-				{
-					console.log('got chat event');
-					chatConnections.set(connection, [data.chatId, linkId]);
-				}
+				// if (data.chatId !== undefined && typeof data.chatId === "number")
+				// {
+				// 	console.log('got chat event');
+				// 	chatConnections.set(connection, [data.chatId, linkId]);
+				// }
 			} catch (err) {
 				console.log('err', err);
 			}
@@ -141,7 +166,7 @@ export async function chatEndpoint(fastify: FastifyInstance) {
 
 		connection.on('close', () => {
 			connections.delete(linkId)
-			chatConnections.delete(connection)
+			// chatConnections.delete(connection)
 		});
 	});
 
@@ -199,7 +224,7 @@ export async function chatEndpoint(fastify: FastifyInstance) {
 			const messageArray = [chatId, 0, msg.linkId];
 			const output = await listChatMessage(messageArray);
 
-			await broadcastMessageListToAll();
+			await broadcastMessageListToAll(chatId);
 			await broadcastChatListToAll();
 
 			logInfo("{chat} [200] messaggio inviato con successo");

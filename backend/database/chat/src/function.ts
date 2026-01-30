@@ -57,6 +57,33 @@ export async function chatList(linkId: number): Promise<string> {
 	return JSON.stringify(result);
 }
 
+/* @topiana- funzione che ritorna un array di chatId */
+export async function chatIdList(linkId: number): Promise<{ chatId:number }[]> {
+	//ricerca dello user
+	const user = await chatPrisma.user.findUnique({
+		where: { linkId: linkId },
+		include: { members: true }
+	});
+	if (!user)
+		throw new NotFound(`User with linkId '${linkId}' does not exist`, "chat");
+
+	//ricerca delle chat
+	const chats = await chatPrisma.chats.findMany({
+		where: {
+			OR: [
+				{ users: { some: { linkId: linkId } } },
+				{ host: { linkId: linkId } }
+			]
+		},
+		select: {
+			chatId: true,
+		},
+
+	});
+
+	return chats;
+}
+
 //ricerca tutti i messaggi apperteneti ad una chat
 export async function messageList(input: number[]): Promise<string> {
 	if (!Array.isArray(input) || input.length < 2)
@@ -108,8 +135,17 @@ export async function messageList(input: number[]): Promise<string> {
 	return JSON.stringify(messages);
 }
 
+// @topiana- greasy hands
+interface Message {
+	linkId: number,
+	id: number,
+	message:
+	string,
+	date: Date,
+}
+
 //ricerca tutti i messaggi apperteneti ad una chat
-export async function singleMessage(input: number[]): Promise<string> {
+export async function singleMessage(input: number[]): Promise<Message | null> {
 	if (!Array.isArray(input) || input.length < 2)
 		throw new BadRequest('Input must be an array: [chatId, linkId]', "chat");
 
@@ -143,10 +179,9 @@ export async function singleMessage(input: number[]): Promise<string> {
 	}
 
 	//ricerca dei messaggi
-	const messages = await chatPrisma.messages.findMany({
+	const message = await chatPrisma.messages.findFirst({
 		where: { chatId },
 		orderBy: { date: 'desc' },
-		take: 1,
 		select: {
 			id: true,
 			linkId: true,
@@ -154,7 +189,8 @@ export async function singleMessage(input: number[]): Promise<string> {
 			date: true
 		}
 	});
-	return JSON.stringify(messages);
+
+	return message;
 }
 
 //creazione di una nuova chat

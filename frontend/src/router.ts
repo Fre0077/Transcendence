@@ -188,6 +188,8 @@ class Router {
         return;
       }
     }
+
+    // route.meta?.user = user
     
     const has2FA = authService.has2FAEnabled();
     
