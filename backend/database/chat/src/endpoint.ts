@@ -4,7 +4,7 @@ import type { RawData } from "ws";
 import { PrismaClient as chatPrismaClient } from "../database/generate/chat";
 const chatPrisma = new chatPrismaClient();
 
-import { userList, chatList, chatIdList, messageList, singleMessage, newChat, newMessage, deleteChatMessages,
+import { userList, userInChat, chatList, chatIdList, messageList, singleMessage, newChat, newMessage, deleteChatMessages,
 		deleteMessage, searchMessage, searchChat, listChatMessage, blockUser,
 		sblockUser, deleteChat, getBlockedUsers } from "./function";
 import { BadRequest, Unauthorized, Forbidden, NotFound, Conflict } from "../utils/exception"
@@ -89,9 +89,11 @@ export async function chatEndpoint(fastify: FastifyInstance) {
 		try {
 			if (!chatId)
 				throw new BadRequest("chatId non inviato", 'chat');
-			const output = await userList(Number(chatId));
+			const output = await userInChat(Number(chatId));
 
-			logInfo("{chat} [201] file inviati con successo");
+			if (output === undefined) throw new NotFound("Chat not found");
+
+			logInfo("{chat} [201] users inviati con successo");
 			return reply.status(201).send({ chatId:chatId, users:output });
 		} catch (err) {
 			if (err instanceof Error)
