@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		// Redirect base path "/" to landing or login page
 		if (window.location.pathname === '/') {
 		// Simple redirect to landing page (change to '/login' or '/dashboard' as needed)
-		window.history.replaceState({}, '', '/home');
+		window.history.replaceState({}, '', '/select');
 		}
 
 		// Initialize router

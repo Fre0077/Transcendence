@@ -4,7 +4,7 @@ import { router } from "@/router";
 
 // services
 import { PongSocket } from "@/services/ws/createPongSocket";
-import { Game } from "@/pages/protected/game/local/classes/Pong/GameClass"
+import { Game } from "@/pages/public/local/game/classes/Pong/GameClass"
 
 // elements
 import { createPongBoard } from "@components/PongBoards/createPongBoard";
