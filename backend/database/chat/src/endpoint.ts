@@ -1,7 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import type { RawData } from "ws";
 
-import { PrismaClient as chatPrismaClient } from "../database/generate/chat";
+import { PrismaClient as chatPrismaClient, PrismaClient } from "../database/generate/chat";
 const chatPrisma = new chatPrismaClient();
 
 import {
@@ -59,7 +59,10 @@ async function broadcastChatListToAll() {
 // Funzione di broadcast per l'ultimo messaggio
 async function broadcastMessageListToAll(chatId: number) {
 	console.log("dentro broadcastMessageListToAll");
+	logError("[broadcastMessageListToAll] starting broadcast");
 	for (const [ID, user] of connections) {
+		// log users.chats in a readable way
+		logError(`[broadcastMessageListToAll] broadcasting to ${ID} with chats: ${Array.from(user.chats).join(", ")}`);
 		if (user.chats.has(chatId) === false) return;
 		// get the message
 		const msg = await singleMessage([chatId, ID]);
@@ -67,10 +70,13 @@ async function broadcastMessageListToAll(chatId: number) {
 
 		// reassemble for frontend
 		const { id, linkId, message, date } = msg;
+		const senderUsername = await chatPrisma.user.findUnique({ where: { linkId: linkId }, select: { username: true } });
+
 		const frontendMessage = {
 			messageId: id,
 			chatId: chatId,
 			userId: linkId,
+			senderUsername: senderUsername?.username,
 			message: message,
 			date: date,
 		};
@@ -248,6 +254,18 @@ export async function chatEndpoint(fastify: FastifyInstance) {
 			await broadcastChatListToAll();
 
 			logInfo("{chat} [200] chat creata con successo");
+			
+			for (const member of chatData.members) {
+				// log users.chats in a readable way
+				const user = connections.get(member);
+				if (!user) continue;
+				user.chats.add(output);
+			}
+			
+			const user = connections.get(chatData.host);
+			if (!user) throw new Error("User not found");
+			user.chats.add(output);
+			
 			return reply.status(200).send({ message: "chat creata con successo" });
 		} catch (err) {
 			/* #debug */

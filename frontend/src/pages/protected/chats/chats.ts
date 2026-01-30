@@ -180,8 +180,6 @@ export class ChatsPage {
 			if (success) {
 				chatInput.value = "";
 				chatInput.focus();
-				// Note: Don't add optimistic UI update here
-				// The message will be added via WebSocket when server confirms
 			}
 		});
 
@@ -250,7 +248,7 @@ export class ChatsPage {
 				sender:
 					data.message.userId === this.currentUserId
 						? "You"
-						: "User " + data.message.userId,
+						: data.message.senderUsername,
 				content: data.message.message,
 				timestamp: msgDate.toLocaleTimeString([], {
 					hour: "2-digit",
@@ -261,7 +259,7 @@ export class ChatsPage {
 			};
 			this.messages.push(displayMsg);
 			if (this.rootElement) {
-				this.appendMessage(this.rootElement, displayMsg);
+				this.renderMessages(this.rootElement);
 			}
 
 			// Mark as read if viewing
@@ -457,41 +455,6 @@ export class ChatsPage {
 		}
 		messagesDiv.innerHTML = messageElements.join("");
 
-		messagesDiv.scrollTop = messagesDiv.scrollHeight;
-	}
-
-	private appendMessage(root: HTMLElement, message: DisplayMessage) {
-		const messagesDiv = root.querySelector("#chatMessages") as HTMLElement;
-		if (!messagesDiv) return;
-
-		// Remove "no messages" placeholder if it exists
-		const placeholder = messagesDiv.querySelector(".chat-placeholder");
-		if (placeholder) {
-			messagesDiv.innerHTML = "";
-		}
-
-		const messageDiv = document.createElement("div");
-		const alignClass =
-			message.userId === this.currentUserId ? "text-right" : "";
-		const bgClass =
-			message.userId === this.currentUserId ? "bg-purple-600" : "bg-white/10";
-		messageDiv.className = "mb-3 " + alignClass;
-		messageDiv.innerHTML =
-			'<div class="inline-block max-w-[70%] ' +
-			bgClass +
-			' rounded-lg px-4 py-2">' +
-			'<div class="font-semibold text-sm mb-1">' +
-			this.escapeHtml(message.sender) +
-			"</div>" +
-			'<div class="break-words">' +
-			this.escapeHtml(message.content) +
-			"</div>" +
-			'<div class="text-xs text-white/50 mt-1">' +
-			message.timestamp +
-			"</div>" +
-			"</div>";
-
-		messagesDiv.appendChild(messageDiv);
 		messagesDiv.scrollTop = messagesDiv.scrollHeight;
 	}
 

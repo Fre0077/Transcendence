@@ -5,6 +5,8 @@
 
 import { loadStoredSession } from "@/services/session";
 import { chatService } from "@/services/chatService";
+import { lobby_id, LobbyWebSocket, lobbyWS } from "@/services/ws/lobbyWebSocket";
+import { sendPostRequest } from "@/services/api/sendRequests";
 
 interface ChatParticipant {
 	userId: number;
@@ -148,10 +150,10 @@ function renderChatInfo(
 				// TODO: change online to be a green or red dot
 				return `<div class="flex items-center space-x-2">
 				<span class="text-white">${user.username}</span>
-				<a id="userProfileLink" href="/profile/${user.username}" class="text-white/60 hover:text-white transition">
+				<a class="user-profile-link text-white/60 hover:text-white transition" href="/profile/${user.username}">
 					👤
 				</a>
-				<button id="inviteToGameBtn" class="text-white/60 hover:text-white transition">
+				<button class="invite-to-game-btn text-white/60 hover:text-white transition" data-user-id="${user.userId}">
 					🎮
 				</button>
 				<span class="text-white/60 text-sm">${user.online}</span>
@@ -179,6 +181,26 @@ function renderChatInfo(
 	searchBtn?.addEventListener("click", () => {
 		alert("Search functionality coming soon!");
 	});
+
+	userListContainer?.addEventListener("click", (event) => {
+		const target = event.target as HTMLElement;
+		const inviteButton = target.closest('.invite-to-game-btn');
+
+		if (inviteButton) {
+			const userId = inviteButton.getAttribute('data-user-id');
+			if (lobbyWS && lobbyWS.getid() && userId) {
+				sendPostRequest(
+					`/api/lobby-invite`,
+					{
+						lobbyid: lobbyWS.getid(),
+						target: userId,
+					},
+					"application/json",
+				);
+			}
+		}
+	});
+	
 }
 
 function escapeHtml(text: string): string {

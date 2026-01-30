@@ -26,7 +26,7 @@ export function authWebSocket(connection:WebSocket, request:FastifyRequest)
 	/* ------------------- */
 
 	/* #debug */
-	console.log(`[WS] connected with Authorized user '${auth.user.username}'`);
+	console.log(`[WS] connected with Authorized user '${auth.user.userId}'`);
 
 	// Handle incoming messages
 	socket.on('message', (message:any) => {
@@ -149,12 +149,12 @@ interface Message {
 }
 
 /* actually send  the message to the user */
-/* export  */function sendMessageTo(username:string, message:Message): boolean
+/* export  */function sendMessageTo(linkId:string, message:Message): boolean
 {
 	// searches the user
-	const user = connected_users.get(username);
+	const user = connected_users.get(linkId);
 
-	console.log('sendMessageTo', username, user?.ID, user?.status);
+	console.log('sendMessageTo', linkId, user?.ID, user?.status);
 
 	if (!user || user.status !== "online") {
 		// error back to the frontend
@@ -280,4 +280,3 @@ export function sendFriendUpdate(user:any)
 		sender: user.userId
 	});
 }
-
