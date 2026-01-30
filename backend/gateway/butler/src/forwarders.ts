@@ -9,7 +9,7 @@ const GATEWAY_SECRET = process.env.GATEWAY_SECRET ?? 'biscottini';
 /* 		  WEBSOCKETS		*/
 /* ------------------------ */
 
-import WebSocket/* , { RawData } */ from 'ws';	// important to use backend websockets
+import WebSocket, { RawData } from 'ws';	// important to use backend websockets
 
 /* 
 	@service:
@@ -56,11 +56,20 @@ export function fwdWebSocket(
 	);
 
 	let backendReady = false;
+	const presentMessages:RawData[] = [];
 
 	// we are ready to send to backend
 	backendSocket.on('open', () => {
 		backendReady = true;
 		console.log('Connected to backend:', endpoint);
+
+		// send all the present messages
+		for (const msg of presentMessages) {
+			if (backendSocket.readyState === WebSocket.OPEN)
+				backendSocket.send(msg.toString());
+		}
+		// clear the array
+		presentMessages.splice(0, presentMessages.length);
 	});
 
 	// close client socket on backend error
@@ -81,8 +90,23 @@ export function fwdWebSocket(
 
 	/* --- BRIDGE CLIENT → BACKEND --- */
 
+	// since the 'open' event on the client will happen before
+	// the 'open' event here on the gateway, we store the messages
+	// sent before the gateway connects to the backend and we send them
+	// afterwards
+
 	clientSocket.on('message', (message) => {
-		if (backendReady && backendSocket.readyState === WebSocket.OPEN) {
+
+		// if backend not ready or we still sending present messages
+		if (backendReady === false || presentMessages.length !== 0)
+		{
+			// store the message
+			presentMessages.push(message);
+		}
+		// else if the connection is ready
+		else if (backendSocket.readyState === WebSocket.OPEN)
+		{
+			// send the message
 			backendSocket.send(message.toString());
 		}
 	});
@@ -178,7 +202,7 @@ export async function fetchBackend(request:FastifyRequest, endpoint:string, type
 	}
 
 	/* #debug */
-	console.log('Fetching', endpoint, 'with', fetchOptions);
+	// console.log('Fetching', endpoint, 'with', fetchOptions);
 
 	// --- CALL BACKEND ---
 	// Add timeout to prevent indefinite hanging
@@ -206,7 +230,9 @@ export async function authForward(
 	reply:FastifyReply,
 	endpoint:string,
 	type:string,
-	callback?: (data: any, reply: FastifyReply) => void)
+	handler?: (data: any, reply?: FastifyReply) => void,
+	updater?: (user:any) => void,
+	notifier?: (sender:string, data:any) => void)
 {
 	/* --- AUTH CHECK --- */
 	const auth = isCookieAuthenticated(request, reply);
@@ -239,10 +265,17 @@ export async function authForward(
 		data = await backendResponse.text();
 	}
 
-	// call the post-process callback if present and response is success
-	if (callback && backendResponse.status === 200) {
-		const newdata = callback(data, reply);
-		// Only send if reply hasn't been sent already and callback returned data
+	// call the post-process handler
+	if (backendResponse.status === 200)
+	{
+		// calls the updater & the notifier
+		if (updater !== undefined) updater(auth.user);
+		if (notifier !== undefined) notifier(auth.user.username, data);
+
+		// calls the handler
+		const newdata = (handler !== undefined) ? handler(data, reply) : data;
+
+		// and hold the data
 		if (!reply.sent && newdata !== undefined) {
 			reply.send(newdata);
 		} else if (!reply.sent) {
@@ -250,9 +283,9 @@ export async function authForward(
 			reply.send(data);
 		}
 	} else if (!reply.sent) {
-		// No callback or non-200 status, send the data
+		// send the fetched reply
 		reply.send(data);
-	}
+	}	
 }
 
 // forward to backend without checking authourization
@@ -261,7 +294,7 @@ export async function noAuthForward(
 	reply:FastifyReply,
 	endpoint:string,
 	type:string,
-	callback?: (data: any, reply: FastifyReply) => void)	// only called on succccessful fetch
+	handler?: (data: any, reply: FastifyReply) => void)	// only called on succccessful fetch
 {
 
 	// --- CALL BACKEND ---
@@ -294,8 +327,8 @@ export async function noAuthForward(
 	// console.log('>Backend fetch', backendResponse);
 
 	// call the post-process callback if present and response is success
-	if (callback && backendResponse.status === 200) {
-		const newdata = callback(data, reply);
+	if (handler && backendResponse.status === 200) {
+		const newdata = handler(data, reply);
 		// Only send if reply hasn't been sent already and callback returned data
 		if (!reply.sent && newdata !== undefined) {
 			reply.send(newdata);

@@ -222,7 +222,7 @@ function renderWinnersPanel(status:'aborted' | 'finished', winners: string[]): H
 	const uniqueWinners = Array.from(new Set(winners));
 
 	for (const p of uniqueWinners) {
-		wall.appendChild(createProfileCard(p));
+		wall.appendChild(createProfileCard(p, { local:true, ...playersData?.[p]}));
 	}
 
 	return div;

@@ -311,8 +311,9 @@ export function loadTournamentHubPage(): HTMLElement
 
 
     /* !!! DESTRUCTOR !!! */
+    // The tournament websocket, once connected, disconnects only if the client leaves a tournament
     (div as any).destroy = () => {
-        DisconnectTournamentSocket();
+        if (tournamentWS?.getid() === undefined) DisconnectTournamentSocket();
     }
 
     return div;

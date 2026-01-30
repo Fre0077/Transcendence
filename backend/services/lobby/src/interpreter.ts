@@ -1,4 +1,4 @@
-import { PONG,/* AUTH, */ CREATE, JOIN, STATE, LEAVE, START, BOT } from './METHODS.js';
+import {/* AUTH, */ CREATE, JOIN, STATE, LEAVE, START, BOT } from './METHODS.js';
 
 import type { WebSocket } from "ws";
 
@@ -52,12 +52,6 @@ export async function interpreter(
 	// various lobby operations
 	switch (msg.method)
 	{
-		case "PING":
-			/* { method: 'PING' }
-			Description: ensure the client-server comunication is still alive */
-			let pret = PONG();
-
-			return pret.reply;
 		case "AUTH":
 			/* {method: 'AUTH', playerID: <playerID>}
 				@playerID: the ID you are logging in
@@ -107,9 +101,8 @@ export async function interpreter(
 			return jret.reply;
 		
 		case "STATE":
-			/* { method: 'LEAVE' }
-				Description: Leaves the lobby. If not authenticated or not joined a lobby the
-				request fails.
+			/* { method: 'STATE' }
+				Description: asks for the state of the lobby.
 			*/
 			let stret = STATE(lobby);
 

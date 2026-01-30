@@ -10,8 +10,10 @@ import { loadPongPlayerPage } from '@pages/protected/game/online/loadPongPlayerP
 // import { loadLocalGamePage } from "./pages/protected/game/local/localGame";
 
 // local stuff
-import { loadLocalPongPage } from "./pages/protected/game/local/loadLocalPongPage";
-import { loadLocalTournamentPage } from "./pages/protected/game/local/loadLocalTournamentPage";
+import { loadLocalPongPage } from "./pages/public/local/game/loadLocalPongPage";
+import { loadLocalTournamentPage } from "./pages/public/local/game/loadLocalTournamentPage";
+import { loadSelectionPage } from "./pages/public/loadSelectionPage";
+import { loadLocalGameHub } from "./pages/public/local/loadLocalGameHub";
 
 import { loadHomePage } from "./pages/protected/home/home";
 import { loadProfilePage } from "./pages/protected/profile/profile";
@@ -40,6 +42,7 @@ interface RouteConfig {
     requiresGuest?: boolean;
     requires2FA?: boolean;
     title?: string;
+    user?:any;
   };
 }
 
@@ -208,6 +211,7 @@ class Router {
 
     // Update current route and render
     this.currentRoute = route;
+    console.log('route', this.currentRoute);
     this.render(route);
   }
 
@@ -285,6 +289,22 @@ const routes: RouteConfig[] = [
   // ============================================
   // PUBLIC ROUTES (No authentication required)
   // ============================================
+  {
+    path: '/select',
+    name: 'select',
+    component: () => {
+      return loadSelectionPage();
+    },
+    meta: { title: 'Welcome - ft_transcendence', },
+  },
+  {
+    path: '/local',
+    name: 'local',
+    component: () => {
+      return loadLocalGameHub();
+    },
+    meta: { title: 'Local Host - ft_transcendence', },
+  },
   {
     path: '/login',
     name: 'login',
@@ -373,7 +393,7 @@ const routes: RouteConfig[] = [
     component: () => {
       return loadProfilePage();
     },
-    meta: { title: 'User Profile - ft_transcendence' },
+    meta: { title: 'User Profile - ft_transcendence', requiresAuth: true, requires2FA: true },
   },
   {
     // TODO: Implement edit profile page

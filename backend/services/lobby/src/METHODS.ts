@@ -14,27 +14,6 @@ type StandardReturn = {
 
 /*
 {
-	method: 'PING',     (mandatory)
-}
-
-Description: ensure the client-server comunication is still alive (application level)
-Reply:
-{
-	method: 'PONG',
-}
-*/
-
-export function PONG()
-{
-	// success return
-	return {
-		status: "success",
-		reply: JSON.stringify({ method: 'PONG' }),
-	};
-}
-
-/*
-{
 	method: 'AUTH',    		(mandatory)
 	playerID: <playerID>    (mandatory)
 }

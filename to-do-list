@@ -3,11 +3,8 @@
 
 
 WHAT-AM-I-DOING-NOW
-26. Chat API Test page
 
 WHAT-AM-I-DOING-NEXT
-24. fix lobby invite
-17. status dot on friendlist
 
 
 MANDATORY:
@@ -19,8 +16,6 @@ NEW (MAYBE?)
 MAJOR
 13. Pong on mobile
 18. Bot handshake on creation (only 'bot' container can create bots)
-21. Sometimes freezes... after adding .dispatchEvent()??? or the persist session with no more localStorage???
-22. You can access protected pages after logout if you go back in history (top left arrow buttons) (@aleborghi)
 23. 2FA login (@aleborghi)
 
 
@@ -33,20 +28,17 @@ MINOR
 18. rejoin button if you disconnect from a game (todo on tournaments)
 20. Better pong bot
 21. lobby chat
-22. all db updating operations on friends (accepting/declining/canceling...) sends an update to the lifecycle ws { what: 'UPDATE, type: 'friend' }
 23. icons on tournament playerlist
 
 STYLE
 2. pls... the back button
 4. Better friendlist
-5. Better default avatar
 
 CLEANUPS
 2. Log all major messages
 3. save MQueues messages in DB
 6. Game less laggy
 7. keep track of bots (better unique id not needing for manual lobby/tournament counter) and the backend containers need a more solid way to know if an user is a bot
-9. Gateway double-socket safety net (if you already connected to a websocket endpoint, on retry: disconnect -> reconnect)
 
 DONE
 1. remove JOIN method for games (DONE)
@@ -92,3 +84,14 @@ DONE
 2. For the backend, HTTPS must be used everywhere. (DONE)
 25. Spectator websocket failing (DONE)
 24. Lobby game got smashed in tournament game (DONE)
+24. fix lobby invite (DONE)
+25. Tournament notification on newround or finish/aborted (DONE)
+5. Better default avatar (DONE)
+17. status dot on friendlist (DONE)
+22. all db updating operations on friends (accepting/declining/canceling...) sends an update to the lifecycle ws { what: 'UPDATE, type: 'friend' } (DONE)
+6. Better friend request, and profile pic/box gets weird at different username length (DONE)
+22. You can access protected pages after logout if you go back in history (top left arrow buttons) (DONE)
+
+FORGOTTEN:
+21. Sometimes freezes... after adding .dispatchEvent()??? or the persist session with no more localStorage???
+9. Gateway double-socket safety net (if you already connected to a websocket endpoint, on retry: disconnect -> reconnect)

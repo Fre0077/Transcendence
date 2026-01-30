@@ -1,42 +1,14 @@
 /* --------------------------------------------------------- */
 /*				  SINGLETON SOCKET CONNECTION				 */
 
-
-
 // services
-import { toastNotification } from "@services/toastNotification";
 import { isauth } from "@services/api/isauth";
+import { toastNotification } from "@services/toastNotification";
 
+// URLs and other constants
 const TOURNAMENT_WEBSOCKET_URL = `/ws/tournament`;
-
 const TOURNAMENT_FORMAT = 'single-eliminatin';
 
-// export interface TournamentWebSocket {
-// 	// socket ops
-// 	socket: WebSocket | null,
-// 	send: (data:any) => void,
-// 	close: () => void,
-
-// 	// state setter (to setup later)
-// 	onmessage: (
-// 			onstart?: (gameid:string) => void,
-// 			onjoin?: (tournamentid:string) =>void,
-// 			onstate?: (state:any) => void
-// 		) => void,
-
-// 	// tournament ops
-// 	create: (size:number, format?:string) => void,
-// 	join: (tournament:string) => void,
-// 	ready: () => void,
-// 	leave: () => void,
-
-// 	// stored variables
-// 	getid: () => string | undefined,
-
-// 	// bot ops
-// 	addbot: (level:number) => void,
-// 	rembot: () => void,
-// }
 
 function connectsocket(onopen: (socket:WebSocket) => void, onerr?: (err:any) => void): WebSocket
 {
@@ -46,10 +18,6 @@ function connectsocket(onopen: (socket:WebSocket) => void, onerr?: (err:any) => 
 	socket.onopen = () => {
 		console.log('Connected to tournament WebSocket');
 
-		// join lobby if id was passed
-		 /* else {
-			createLobby(3, ws);
-		} */
 		onopen(socket);
 	};
 
@@ -102,7 +70,7 @@ export class TournamentWebSocket {
 	public addbot: (level:number) => void;
 	public rembot: () => void;
 
-	// reenstablish the connection if websocket disconnects automatically
+	// re-enstablish the connection if websocket disconnects automatically
 	private persistor: (cb: (socket:WebSocket) => void) => void;
 
 	// the old ConnectTournamentSocket
@@ -132,14 +100,14 @@ export class TournamentWebSocket {
 
 
 		/* define ping-pong logic */
-		const loop = () => {
+		const ping = () => {
 
 			this.ping = setTimeout(() => {
 				if (this.socket?.readyState === WebSocket.OPEN) {
-					this.socket.send(JSON.stringify({ method: 'PING' }));
+					this.socket.send('ping');
 				}
 				// loop back
-				loop();
+				ping();
 
 			// ping every 20s
 			}, 20_000);
@@ -163,19 +131,22 @@ export class TournamentWebSocket {
 		this.onmessage = (onstart, onjoin, onstate) => {
 			if (this.socket) this.socket.onmessage = (event) => {
 				try {
+					// pong logic
+					if (event.data.toString() === 'pong') {
+						/* #debug */
+						// console.log('We Tournament PONG-ing');
+						return ;
+					}
+
+					// actual tournament operation
 					const data = JSON.parse(event.data);
 					console.log('Tournament WebSocket message received:', data);
 
 					// get method
-					const method = data.method || '';
+					const method = data.method || undefined;
 
-					// pong logic
-					if (method === 'PONG') {
-						/* #debug */
-						// console.log('We PONG-ing');
-					}
 					// successful START reply
-					else if (method === 'START_REPLY') {
+					if (method === 'START_REPLY') {
 						if (data.status === 'success') onstart?.(data.value);
 						else console.log('Failed to start room');
 					}
@@ -215,9 +186,9 @@ export class TournamentWebSocket {
 						onstate?.(data);
 					}
 					// tnot handled method
-					else throw new Error("Didn't understand message");
+					else if (method === undefined) throw new Error("Didn't understand message");
 				} catch (e) {
-					console.log("Error while reading:", event.data, e);
+					console.warn("Error while reading:", event.data, e);
 					onerr?.(e);
 				}
 			};
@@ -250,7 +221,7 @@ export class TournamentWebSocket {
 		}
 
 		// start ping-poning
-		loop();
+		ping();
 
 	}
 }
@@ -270,10 +241,15 @@ export function ConnectTournamentSocket(
 	if (tournamentWS && tournamentWS.socket?.readyState === WebSocket.OPEN)
 	{
 		// if an outournament id was passed
-		if (ouTournamentId !== undefined)
+		if (ouTournamentId !== undefined && ouTournamentId !== tournament_id)
 		{
 			// notify the error
 			toastNotification.error('Already in a Toruament', 'You must leave a tournament before joining a new one', 10000);
+		}
+		else
+		{
+			console.log('Asking for state');
+			tournamentWS.send({ method: 'STATE' });
 		}
 
 		return tournamentWS;

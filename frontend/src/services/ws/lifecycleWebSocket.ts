@@ -52,16 +52,37 @@ export async function ConnectLifecycleSocket(): Promise<WebSocket | null>
 		return socket;
 	}
 
+	
 	// connect with auth refresh
 	socket = await authWebSocket();
 	if (!socket) {
 		console.log("User not authenticated, can't connect to lifecycle websocket");
 		return null;
 	}
+	
+	// ping logic
+	let pingtimeout: number | undefined = undefined;
+
+	/* define ping-pong logic */
+	const ping = () => {
+
+		pingtimeout = setTimeout(() => {
+			if (socket?.readyState === WebSocket.OPEN) {
+				socket.send('ping');
+			}
+			// loop back
+			ping();
+
+		// ping every 20s
+		}, 20_000);
+	}
+
 
 	socket.onopen = () => {
 		console.log('[WS] connected to \'' + BUTLER_URL + '\'');
-		// if (socket) socket.send("Ciao Butler");
+
+		// start pinging
+		ping();
 	}
 
 	/*  #friend-request
@@ -73,7 +94,17 @@ export async function ConnectLifecycleSocket(): Promise<WebSocket | null>
 	socket.onmessage = (ev: MessageEvent<string>) => {
 		try
 		{
+			// pong logic
+			if (ev.data.toString() === 'pong') {
+				/* #debug */
+				// console.log('We Lobby PONG-ing');
+				return ;
+			}
+
+			// actual messages
 			const msg = JSON.parse(ev.data);
+
+			console.log('[WS] got message', msg);
 
 			// handle notifications
 			if (msg?.what === "NOTIFY")
@@ -84,6 +115,12 @@ export async function ConnectLifecycleSocket(): Promise<WebSocket | null>
 				{
 					case "friend-request":
 						console.log("Friend request", msg.sender);
+
+						// update the UI
+						window.dispatchEvent(
+							new CustomEvent('update:friends', { bubbles: true })
+						);
+						
 						toastNotification.friend('Friend Request', `${msg.sender} vorrebbe essere tuo amico`, 
 							() => { alert('Pagina Friends');},
 							() => acceptFriendRequest(msg.sender),
@@ -132,14 +169,14 @@ export async function ConnectLifecycleSocket(): Promise<WebSocket | null>
 				}
 			}
 		}
-		catch (err)
-		{
-			console.log('Error while receiving from butler', err);
+		catch (err) {
+			console.warn('Error while receiving from butler', err);
 		}
 	}
 
 	socket.onclose = () => {
 		console.log("Closing Lifecycle WebSocket");
+		if (pingtimeout) clearInterval(pingtimeout);
 		socket = null;
 	}
 

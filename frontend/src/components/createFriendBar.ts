@@ -1,12 +1,51 @@
 import { router } from "@/router";
-import { sendGetRequest } from "@/services/api/sendRequests";
-import { sendPostRequest } from "@/services/api/sendRequests";
+import { HttpError, sendGetRequest, sendPostRequest } from "@/services/api/sendRequests";
 import { generateInitialsAvatar } from "./createDefaultImage";
+
+// HELPER
+function makeDraggable(el: HTMLElement, handle: HTMLElement) {
+    let offsetX = 0;
+    let offsetY = 0;
+    let dragging = false;
+
+    el.style.position = 'fixed';
+
+    handle.addEventListener('pointerdown', (e) => {
+        // If the user clicked a button (or anything inside a button), 
+        // don't start dragging.
+        const target = e.target as HTMLElement;
+        if (target.closest('button')) {
+            return;
+        }
+
+        dragging = true;
+        offsetX = e.clientX - el.offsetLeft;
+        offsetY = e.clientY - el.offsetTop;
+        
+        // This is what was "trapping" the events
+        handle.setPointerCapture(e.pointerId);
+    });
+
+    handle.addEventListener('pointermove', (e) => {
+        if (!dragging) return;
+        // Use standard Template Literals for the units
+        el.style.left = `${e.clientX - offsetX}px`;
+        el.style.top = `${e.clientY - offsetY}px`;
+    });
+
+    handle.addEventListener('pointerup', (e) => {
+        dragging = false;
+        // Clean up the capture
+        if (handle.hasPointerCapture(e.pointerId)) {
+            handle.releasePointerCapture(e.pointerId);
+        }
+    });
+}
+
 
 async function getFriendsList(){
 	try {
 		const data = await sendGetRequest(`/api/friends`);
-		console.log('data', data);
 		// const friends = JSON.parse(data);
 		// console.log('data', friends);
 		return data;
@@ -25,7 +64,7 @@ interface Friend {
 	linkId: 2,	// #todo remove
 }
 
-function createFriendCard(friend: Friend): HTMLElement {
+function createFriendCard(root:HTMLElement, friend: Friend): HTMLElement {
 	const card = document.createElement("div");
 	card.className =
 		"relative rounded-xl bg-slate-900/70 hover:bg-slate-700/70 " +
@@ -62,7 +101,7 @@ function createFriendCard(friend: Friend): HTMLElement {
 			<button class="view-profile w-full px-3 py-2 text-sm text-left text-white hover:bg-white/10">
 				View Profile
 			</button>
-			<button class="decline-btn w-full px-3 py-2 text-sm text-left text-red-400 hover:bg-red-500/10">
+			<button class="remove-btn w-full px-3 py-2 text-sm text-left text-red-400 hover:bg-red-500/10">
 				Remove Friend
 			</button>
 		</div>
@@ -74,7 +113,7 @@ function createFriendCard(friend: Friend): HTMLElement {
 		actions.classList.toggle("hidden");
 	});
 	
-	const cancelBtn = card.querySelector(".decline-btn")!;
+	const cancelBtn = card.querySelector(".remove-btn")!;
 	cancelBtn.addEventListener("click", async () => {
 		try {
 			await sendPostRequest(
@@ -86,9 +125,16 @@ function createFriendCard(friend: Friend): HTMLElement {
 			card.dispatchEvent(
 				new CustomEvent('update:friends:local', { bubbles: true })
 			);
-			console.log("Friend request remove:", friend.username);
 		} catch (err) {
-			console.error(err);
+			// console.error(err);
+
+			if (err instanceof HttpError) {
+				root.dispatchEvent(
+					new CustomEvent('friend-error', {
+						detail: { message: `Error [${err.status}] while removing/declining` }
+					})
+				);
+			}
 		}
 	});
 
@@ -97,7 +143,7 @@ function createFriendCard(friend: Friend): HTMLElement {
 		try {
 			router.push(`/profile/${friend.username}`)
 		} catch (err) {
-			console.error(err);
+			// console.error(err);
 		}
 	});
 
@@ -110,7 +156,7 @@ interface Request  {
 	avatarUrl: string
 }
 
-function createIncomingRequestCard(req: Request): HTMLElement {
+function createIncomingRequestCard(root:HTMLElement, req: Request): HTMLElement {
 	const div = document.createElement("div");
 	div.className =
 		"flex items-center justify-between p-2 rounded-lg bg-slate-900/70";
@@ -142,9 +188,16 @@ function createIncomingRequestCard(req: Request): HTMLElement {
 			div.dispatchEvent(
 				new CustomEvent('update:friends:local', { bubbles: true })
 			);
-			console.log("Friend request accepted:", req.username);
 		} catch (err) {
-			console.error(err);
+			// console.error(err);
+
+			if (err instanceof HttpError) {
+				root.dispatchEvent(
+					new CustomEvent('friend-error', {
+						detail: { message: `Error [${err.status}] while accepting friend request` }
+					})
+				);
+			}
 		}
 	});
 
@@ -161,9 +214,16 @@ function createIncomingRequestCard(req: Request): HTMLElement {
 					new CustomEvent('update:friends:local', { bubbles: true })
 				);
 			});
-			console.log("Friend request remove:", req.username);
 		} catch (err) {
-			console.error(err);
+			// console.error(err);
+
+			if (err instanceof HttpError) {
+				root.dispatchEvent(
+					new CustomEvent('friend-error', {
+						detail: { message: `Error [${err.status}] while removing/declining` }
+					})
+				);
+			}
 		}
 	});
 
@@ -175,7 +235,7 @@ function createIncomingRequestCard(req: Request): HTMLElement {
 
 
 
-function createOutgoingRequestCard(req: Request): HTMLElement {
+function createOutgoingRequestCard(root:HTMLElement, req: Request): HTMLElement {
 	const div = document.createElement("div");
 	div.className =
 		"flex items-center justify-between p-2 rounded-lg bg-slate-900/70";
@@ -205,9 +265,16 @@ function createOutgoingRequestCard(req: Request): HTMLElement {
 					new CustomEvent('update:friends:local', { bubbles: true })
 				);
 			});
-			console.log("Friend request remove:", req.username);
 		} catch (err) {
-			console.error(err);
+			// console.error(err);
+
+			if (err instanceof HttpError) {
+				root.dispatchEvent(
+					new CustomEvent('friend-error', {
+						detail: { message: `Error [${err.status}] while removing/declining` }
+					})
+				);
+			}
 		}
 	});
 
@@ -225,7 +292,7 @@ export function createFriendsBar(): HTMLElement {
 
 	bar.innerHTML = /* html */ `
 		<!-- Header -->
-		<div class="flex items-center justify-between px-4 py-3
+		<div id="header" class="flex items-center justify-between px-4 py-3
 					bg-gradient-to-r from-purple-600/50 to-pink-600/50
 					border-b border-white/10">
 			<h3 class="text-white font-semibold">FRIENDS</h3>
@@ -261,17 +328,90 @@ export function createFriendsBar(): HTMLElement {
 				<h4 class="text-xs text-white/60 mb-2">Outgoing Requests</h4>
 				<div id="outgoing-requests" class="space-y-2"></div>
 			</div>
+			<div class="pt-3 border-t border-white/10">
+				<h4 class="text-xs text-white/60 mb-2">Send friend request</h4>
+				<form id="send-friend-form" class="flex gap-2">
+					<input
+						type="text"
+						name="username"
+						required
+						placeholder="Username"
+						class="flex-1 rounded-md px-3 py-1.5
+							bg-slate-900 text-white text-sm
+							border border-white/20
+							placeholder-white/40
+							focus:outline-none focus:ring-1 focus:ring-cyan-400"
+					/>
+					<button
+						type="submit"
+						class="px-3 py-1.5 rounded-md
+							bg-cyan-600 hover:bg-cyan-500
+							text-white text-sm font-medium
+							transition"
+						title="Send request"
+					>
+						📨
+					</button>
+				</form>
+			</div>
+			<p id="error-msg" class="text-xs text-red-400 hidden"></p>
 		</div>
 	`;
 
+	// Define form hook
+	const sendForm = bar.querySelector("#send-friend-form") as HTMLFormElement;
+	sendForm?.addEventListener("submit", async (e) => {
+		e.preventDefault();
+		const formData = new FormData(sendForm);
+		const username = formData.get("username");
+		if (typeof username !== "string" || !username.trim()) return;
+		try {
+			await sendPostRequest(
+				"/api/friend/request",
+				{ target: username.trim() },
+				"application/json"
+			);
+			sendForm.reset();
+			// refresh the bar
+			bar.dispatchEvent(
+				new CustomEvent("update:friends:local", { bubbles: true })
+			);
+		} catch (err) {
+			// console.error("Error sending friend request:", err);
+
+			if (err instanceof HttpError) {
+				bar.dispatchEvent(
+					new CustomEvent('friend-error', {
+						detail: { message: `Error [${err.status}] while sending friend request` }
+					})
+				);
+			}
+		}
+	});
+
 	// define for future removal
 	const load = () => {
-		console.log('reloading friends');
 		loadFriendBarContent(bar);
 	}
 
-	// Initial load
-	load();
+
+	// Make the bar draggable
+	// !!! IMPORTANT TO DO BEFORE ASSIGNING OTHER EVENTLISTENERS !!!
+	const header = bar.querySelector('#header') as HTMLElement;
+
+	// cursor styling
+	header.style.cursor = 'grab';
+	header.addEventListener('pointerdown', () => {
+		header.style.cursor = 'grabbing';
+	});
+	header.addEventListener('pointerup', () => {
+		header.style.cursor = 'grab';
+	});
+
+	// make the bar draggable
+	makeDraggable(bar, header);
+
+
 
 	// Refresh button (dev only)
 	bar.querySelector("#friend-refresh")?.addEventListener("click", load);
@@ -288,6 +428,19 @@ export function createFriendsBar(): HTMLElement {
 		// remove object
 		bar.remove();
 	});
+	
+	// get the elements
+	const errorMsg = bar.querySelector('#error-msg')!;
+
+	// Catch errors on friend bar
+	bar.addEventListener('friend-error', (e) => {
+		const event = e as CustomEvent<{ message: string }>;
+		errorMsg.textContent = event.detail.message;
+		errorMsg.classList.remove('hidden');
+	});
+
+	// Initial load
+	load();
 
 	return bar;
 }
@@ -297,23 +450,27 @@ function loadFriendBarContent(bar: HTMLElement) {
 	const friendsList = bar.querySelector("#friends-list")!;
 	const incoming = bar.querySelector("#incoming-requests")!;
 	const outgoing = bar.querySelector("#outgoing-requests")!;
+	const errorMsg = bar.querySelector('#error-msg')!;
 
 	// Clear previous content
 	friendsList.innerHTML = "";
 	incoming.innerHTML = "";
 	outgoing.innerHTML = "";
 
+	// clear error paragraph
+	errorMsg.classList.add('hidden');
+
 	getFriendsList().then(data => {
 		if(friendsList && data.friends) data.friends.forEach((f: Friend) =>
-			friendsList.appendChild(createFriendCard(f))
+			friendsList.appendChild(createFriendCard(bar, f))
 		);
 
 		if(incoming && data.incomingRequests)data.incomingRequests.forEach((r: Request) =>
-			incoming.appendChild(createIncomingRequestCard(r))
+			incoming.appendChild(createIncomingRequestCard(bar, r))
 		);
 
 		if(outgoing && data.outgoingRequests) data.outgoingRequests.forEach((r: Request) =>
-			outgoing.appendChild(createOutgoingRequestCard(r))
+			outgoing.appendChild(createOutgoingRequestCard(bar, r))
 		);
 	});
 }

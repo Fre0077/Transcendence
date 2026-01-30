@@ -249,9 +249,19 @@ fastify.register(async function (fastify) {
 		});
 
 		// Handle incoming messages
-		connection.on('message', (message:string) => {
+		connection.on('message', (message) => {
 			
-			interpreter(message, lobby, player, connection, (retLobby:string | undefined/* , retPlayer:string | undefined */) => {
+			const msg = message.toString();
+
+			// application-level ping-pong logic
+			if (msg === 'ping') {
+				if (connection.readyState === WebSocket.OPEN) {
+					connection.send('pong');
+				}
+				return ;
+			}
+
+			interpreter(msg, lobby, player, connection, (retLobby:string | undefined/* , retPlayer:string | undefined */) => {
 				// save lobbyid
 				lobby = retLobby;
 			})

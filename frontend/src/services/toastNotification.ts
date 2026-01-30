@@ -225,8 +225,8 @@ class ToastNotificationService {
         this.show(title, message, { type: 'warning', duration });
     }
 
-    info(title: string, message: string, duration?: number): void {
-        this.show(title, message, { type: 'info', duration });
+    info(title: string, message: string, onClickDiv?: () => void, duration?: number): void {
+        this.show(title, message, { type: 'info', onClickDiv, duration });
     }
 
     message(title: string, message: string, onClickDiv?: () => void, duration?: number): void {
