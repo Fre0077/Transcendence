@@ -272,8 +272,8 @@ function verifyAccessToken(token: string) {
 function generateRefreshToken(user: any): string
 {
 	// Crea il Refresh Token (lungo)
-	const id = (user.id) ? user.id : user.userId;	// get the id since we have 2 ways of storing it :D
-	const refreshTokenPayload = { /* @topiana- added */username: user.username, userId: id, email: user.email };
+	const id = (user.id) ? user.id : user.linkId;	// get the id since we have 2 ways of storing it :D
+	const refreshTokenPayload = { /* @topiana- added */username: user.username, linkId: id, email: user.email };
 	const refreshToken = jwt.sign(refreshTokenPayload, "ft_trans(cendence)", {
 		expiresIn: "24h",
 	});
@@ -283,8 +283,8 @@ function generateRefreshToken(user: any): string
 function generateAccessToken(user: any): string
 {
 	// Crea l'Access Token (breve)
-	const id = (user.id) ? user.id : user.userId;	// get the id since we have 2 ways of storing it :D
-	const accessTokenPayload = { /* @topiana- added */username: user.username, userId: id, email: user.email };
+	const id = (user.id) ? user.id : user.linkId;	// get the id since we have 2 ways of storing it :D
+	const accessTokenPayload = { /* @topiana- added */username: user.username, linkId: id, email: user.email };
 	const accessToken = jwt.sign(accessTokenPayload, "ft_trans(cendence)", {
 		expiresIn: "10s",	// #prod change to 15m
 	});

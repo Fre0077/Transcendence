@@ -81,6 +81,26 @@ export async function chatEndpoint(fastify: FastifyInstance) {
 		}
 	});
 
+	// Endpoint POST per avere la lista degli user
+	fastify.get("/chat-users/:chatId", async (request, reply) => {
+		
+		const chatId = request.params
+
+		try {
+			if (!chatId)
+				throw new BadRequest("chatId non inviato", 'chat');
+			const output = await userList(Number(chatId));
+
+			logInfo("{chat} [201] file inviati con successo");
+			return reply.status(201).send({ chatId:chatId, users:output });
+		} catch (err) {
+			if (err instanceof Error)
+				return reply.status((err as any).statusCode).send({ error: err.message });
+			logError("{chat} [500] errore interno del server");
+			return reply.status(500).send({ error: "Internal server error" });
+		}
+	});
+
 	// fastify.post("/user-list", async (request, reply) => {
 	// 	const { linkId } = request.body as { linkId?: number };
 	// 	try {

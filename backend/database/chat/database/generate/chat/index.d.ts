@@ -4773,7 +4773,7 @@ export namespace Prisma {
     host?: XOR<UserScalarRelationFilter, userWhereInput>
     users?: UserListRelationFilter
     messages?: MessagesListRelationFilter
-  }, "chatId">
+  }, "chatId" | "chatId">
 
   export type chatsOrderByWithAggregationInput = {
     chatId?: SortOrder

@@ -305,7 +305,7 @@ fastify.register(async function (fastify) {
 
 
 		/* --------- CHECK AUTH --------- */
-		const userid = request.headers['x-user-username'] as string;	// dangerous?
+		const userid = request.headers['x-user-id'] as string;	// dangerous?
 		const secret = request.headers['x-gateway-secret'];
 		
 		if (!userid || secret !== GATEWAY_SECRET) {
@@ -410,7 +410,7 @@ fastify.register(async function (fastify) {
 
 
 		/* --------- CHECK AUTH --------- */
-		const userid = request.headers['x-user-username'] as string;	// dangerous?
+		const userid = request.headers['x-user-id'] as string;	// dangerous?
 		const secret = request.headers['x-gateway-secret'];
 		
 		if (!userid || secret !== GATEWAY_SECRET) {
@@ -505,7 +505,7 @@ fastify.register(async function (fastify) {
 
 
 		/* --------- CHECK AUTH --------- */
-		const username = request.headers['x-user-username'] as string;	// dangerous?
+		const username = request.headers['x-user-id'] as string;	// dangerous?
 		const secret = request.headers['x-gateway-secret'];
 		
 		if (!username || secret !== GATEWAY_SECRET) {

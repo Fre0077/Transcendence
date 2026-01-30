@@ -106,7 +106,7 @@ export async function authEndpoint(fastify: FastifyInstance) {
 				throw new BadRequest('Email e codice 2FA sono richiesti', 'auth');
 			const user = await auth2FA(googleData);
 			logInfo('{auth} [200] 2FA riuscita');
-			reply.code(200).send({ ...user, user, ok: true });
+			reply.code(200).send({ ...user, ok: true });
 		} catch (err) {
 			if (err instanceof Error) {
 				reply.code((err as any).statusCode).send({ error: err.message });

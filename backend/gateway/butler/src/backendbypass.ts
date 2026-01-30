@@ -55,17 +55,17 @@ export function authWebSocket(connection:WebSocket, request:FastifyRequest)
 		sendFriendUpdate(auth.user);
 
 		// set as offline
-		const user = connected_users.get(auth.user.username);
+		const user = connected_users.get(auth.user.linkId);
 		if (user) user.status = "offline";
 	});
 
 
 	// check if already stored
-	const user = connected_users.get(auth.user.username);
+	const user = connected_users.get(auth.user.linkId);
 
 	// store the connection
 	if (user === undefined)
-		connected_users.set(auth.user.username as string /* in god we trust pt.2*/, new ConnectedUser(auth.user.username, connection));
+		connected_users.set(auth.user.linkId as string /* in god we trust pt.2*/, new ConnectedUser(auth.user.username, connection));
 	else
 	{
 		// save new socket
@@ -96,20 +96,20 @@ export function attachFriendStatus(data:any)
 	}
 
 	// #relation scrape friend relations #todo maybe in some other places
-	if (data.username === undefined) {
+	if (data.linkId === undefined) {
 		console.log("Missing username of '/api/friend' return");
 	} else {
-		const user = connected_users.get(data.username);
-		console.log('updating relations for', data.username);
+		const user = connected_users.get(data.linkId);
+		console.log('updating relations for', data.linkId);
 		if (!user) return ;	// user not connected
 
 		// clearing relations
 		user.relations.clear();
 
 		// getting all relations
-		const friends = Array.from(data.friends.map((f:any) => f.username)) as string[];
-		const incoming = Array.from(data.incomingRequests.map((f:any) => f.username)) as string[];
-		const outgoing = Array.from(data.outgoingRequests.map((f:any) => f.username)) as string[];
+		const friends = Array.from(data.friends.map((f:any) => f.linkId)) as string[];
+		const incoming = Array.from(data.incomingRequests.map((f:any) => f.linkId)) as string[];
+		const outgoing = Array.from(data.outgoingRequests.map((f:any) => f.linkId)) as string[];
 	
 		// adding all relations
 		user.relations.add_block(friends);
@@ -122,7 +122,7 @@ export function attachFriendStatus(data:any)
 
 	// check status on each friend
 	data.friends = data.friends.map((f:any) => {
-		const connected = connected_users.get(f.username);
+		const connected = connected_users.get(f.linkId);
 
 		return {
 			...f,
