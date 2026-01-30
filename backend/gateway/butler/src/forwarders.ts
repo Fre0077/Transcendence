@@ -47,7 +47,7 @@ export function fwdWebSocket(
 		endpoint,
 		{
 			headers: {
-				'x-user-id': String(auth.user.linkId),
+				'x-user-id': String(auth.user.userId),
 				'x-user-username': String(auth.user.username),
 				'x-gateway-secret': String(GATEWAY_SECRET),
 				// 'x-ws-query': JSON.stringify(request.query),
@@ -169,7 +169,7 @@ export async function fetchBackend(request:FastifyRequest, endpoint:string, type
 
 	// Add your auth info to backend
 	if (auth) {
-		headers['x-user-id'] = String(auth.user.linkId);
+		headers['x-user-id'] = String(auth.user.userId);
 		headers['x-gateway-secret'] = String(GATEWAY_SECRET);
 	}
 

@@ -61,23 +61,23 @@ export async function startprofileConsumer() {
 						return;
 					}
 					console.log('data.player', historyData.players);
-					const potentialLinkId = historyData.players.map((username: string) => {
+					const potentialLinkId = historyData.players.map((userid: string) => {
 							// Se è una stringa che inizia con Guest, BOT la scarto perchè non è presente nel DB
-							if (username.startsWith('Guest') || username.startsWith('BOT'))
+							if (isNaN(Number(userid)))
 								return null;
-							return username;
+							return Number(userid);
 						})
-						.filter((username: string | null): username is string => username !== null);
+						.filter((userid: number | null): userid is number => userid !== null);
 					// Eseguiamo la query solo se abbiamo trovato almeno un numero valido
-					let validUsername: string[] = [];
+					let validUsername: number[] = [];
 					if (potentialLinkId.length > 0) {
 						const existingUsers = await profilePrisma.user.findMany({
 							where: {
 								linkId: { in: potentialLinkId }
 							},
-							select: { username: true }
+							select: { linkId: true }
 						});
-						validUsername = existingUsers.map(u => u.username!);
+						validUsername = existingUsers.map(u => u.linkId!);
 					}
 					if (validUsername.length === 0) {
 						console.log("ℹ️ Nessun utente registrato coinvolto (es. Guest vs Bot). History non salvata su Profile.");
@@ -109,7 +109,7 @@ export async function startprofileConsumer() {
 							score: JSON.stringify(historyData.score), 
 							replay: historyData.replay || "",
 							players: {
-								connect: validUsername.map(username => ({ username }))
+								connect: validUsername.map(linkId => ({ linkId }))
 							},
 							gamePlayers: JSON.stringify(historyData.players),
 							metadata: {

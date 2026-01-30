@@ -11,7 +11,7 @@ import {
     getUserInfo,
     getUserId,
     getUserGames,
-    replaceAllData
+    /* replaceAllData */
 } from "./function";
 
 // @topiana-
@@ -65,9 +65,9 @@ export async function profileEndpoint(fastify: FastifyInstance) {
             if (!username) {throw new NotFound('Username query not found', 'profile'); }
             
             const data = await getUserGames(username);
-            const validUsername = await replaceAllData(data)
+            // const validUsername = await replaceAllData(data)
             logInfo('{profile} [200] Dati game utente recuperati con successo');
-            return reply.status(200).send(validUsername);
+            return reply.status(200).send(data);
         } catch (err) {
             if (err instanceof Error) {
                 const status = (err as any).statusCode || 500;

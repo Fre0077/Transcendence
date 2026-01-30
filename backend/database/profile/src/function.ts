@@ -251,60 +251,60 @@ export interface GameData {
 	winner:string;		// winner as a string array
 }
 
-export async function replaceLinkId(data: GameData) {
-    try {
-        const winnerid:string[] = JSON.parse(data.winner);
-        const players = JSON.parse(data.gamePlayers);
+// export async function replaceLinkId(data: GameData) {
+//     try {
+//         const winnerid:string[] = JSON.parse(data.winner);
+//         const players = JSON.parse(data.gamePlayers);
 
-        const idToUser:Map<string, string> = new Map();
-        // save bot
-        for (const p of players)
-        {
-            if (isNaN(Number(p)))
-                idToUser.set(p, p);
-        }
+//         const idToUser:Map<string, string> = new Map();
+//         // save bot
+//         for (const p of players)
+//         {
+//             if (isNaN(Number(p)))
+//                 idToUser.set(p, p);
+//         }
 
-        const maybeLinkIds: number[] = players
-            .filter((p: string) => !isNaN(Number(p)))
-            .map((p: string) => Number(p));
+//         const maybeLinkIds: number[] = players
+//             .filter((p: string) => !isNaN(Number(p)))
+//             .map((p: string) => Number(p));
 
-        // get usernames
-        if (data.gamePlayers.length > 0) {
-            const existingUsers = await profilePrisma.user.findMany({
-                where: {
-                    linkId: { in: maybeLinkIds }
-                },
-                select: { linkId: true, username: true }
-            });
+//         // get usernames
+//         if (data.gamePlayers.length > 0) {
+//             const existingUsers = await profilePrisma.user.findMany({
+//                 where: {
+//                     linkId: { in: maybeLinkIds }
+//                 },
+//                 select: { linkId: true, username: true }
+//             });
 
-            // save usernames
-            for (const user of existingUsers) {
-                idToUser.set(String(user.linkId), String(user.username));
-            }
-        }
+//             // save usernames
+//             for (const user of existingUsers) {
+//                 idToUser.set(String(user.linkId), String(user.username));
+//             }
+//         }
 
-        // swap players
-        data.gamePlayers = JSON.stringify(Array.from(idToUser.values()));
+//         // swap players
+//         data.gamePlayers = JSON.stringify(Array.from(idToUser.values()));
 
-        // swap winners
-        const replaceWinners = winnerid
-            .map(id => idToUser.get(id))
-            .filter((v): v is string => v !== undefined);
-        data.winner = JSON.stringify(replaceWinners);
+//         // swap winners
+//         const replaceWinners = winnerid
+//             .map(id => idToUser.get(id))
+//             .filter((v): v is string => v !== undefined);
+//         data.winner = JSON.stringify(replaceWinners);
 
-        console.log("replaced linkids with usernames:", data);
-    } catch (err) {
-        console.log("⚠️:", err);
-    }
-    return data;
-}
+//         console.log("replaced linkids with usernames:", data);
+//     } catch (err) {
+//         console.log("⚠️:", err);
+//     }
+//     return data;
+// }
 
-export async function replaceAllData(GameData: GameData[]) {
-    for (let i = 0; i < GameData.length; i++){
-        GameData[i] = await replaceLinkId(GameData[i]);
-    }
-    return GameData;
-}
+// export async function replaceAllData(GameData: GameData[]) {
+//     for (let i = 0; i < GameData.length; i++){
+//         GameData[i] = await replaceLinkId(GameData[i]);
+//     }
+//     return GameData;
+// }
 
 //Ottieni la lista dei games
 export async function getUserGames(user: string) : Promise<GameData[]> {

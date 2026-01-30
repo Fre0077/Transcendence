@@ -7,7 +7,7 @@ import { sendGetRequest } from "@/services/api/sendRequests";
 // elements
 import { generateInitialsAvatar } from "@/components/createDefaultImage";
 
-export function createProfileCard(username: string, opts?:any): HTMLElement {
+export function createProfileCard(playerid: string, opts?:any): HTMLElement {
     const container = document.createElement('div');
     
     const local = (opts?.local) ? opts.local : false;
@@ -18,20 +18,20 @@ export function createProfileCard(username: string, opts?:any): HTMLElement {
 
     if (local) {
         if (opts.icon && opts.phrase)
-            container.innerHTML = loadIconCard(username, opts.icon, opts.phrase);
-        else container.innerHTML = loadGuestCard(username);
+            container.innerHTML = loadIconCard(playerid, opts.icon, opts.phrase);
+        else container.innerHTML = loadGuestCard(playerid);
         return container;
     }
 
     // Bot Check
-    if (username.startsWith('BOT')) {
-        container.innerHTML = loadBotCard(username);
+    if (playerid.startsWith('BOT')) {
+        container.innerHTML = loadBotCard(playerid);
         return container;
     }
 
     // Guest Check
-    if (username.startsWith('Guest')) {
-        container.innerHTML = loadGuestCard(username);
+    if (playerid.startsWith('Guest')) {
+        container.innerHTML = loadGuestCard(playerid);
         return container;
     }
 
@@ -44,10 +44,11 @@ export function createProfileCard(username: string, opts?:any): HTMLElement {
     `;
     (async () => {
         try {
-            const data = await sendGetRequest(`/api/userinfo?username=${username}`);
+            const data = await sendGetRequest(`/api/userinfo?linkId=${playerid}`);
             
             // Dati ricevuti: username e avatarUrl (o image)
             const avatar = data?.avatarUrl || data?.image || "";
+            const username = data.username;
             // 4. Aggiorniamo l'HTML con i dati reali
             container.innerHTML = /* html */`
                 <div class="flex flex-col items-center p-8 z-10 w-full">
@@ -55,7 +56,7 @@ export function createProfileCard(username: string, opts?:any): HTMLElement {
                         <div class="absolute -inset-1 bg-gradient-to-r from-pink-600 to-purple-600 rounded-full opacity-70 blur transition duration-200"></div>
                         <img 
                             src="${avatar}" 
-                            alt="${username}" 
+                            alt="${playerid}" 
                             class="relative w-24 h-24 rounded-full object-cover border-2 border-slate-800 shadow-2xl"
                             onerror="this.src=this.src=${generateInitialsAvatar(username)}"
                         />
@@ -82,7 +83,7 @@ export function createProfileCard(username: string, opts?:any): HTMLElement {
         } catch (error) {
             console.error("Errore caricamento profilo:", error);
             // Stato di Errore
-            container.innerHTML = loadErrorCard(username);
+            container.innerHTML = loadErrorCard('Error_' + playerid);
         }
     })();
 

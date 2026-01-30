@@ -3,6 +3,7 @@
 // import { isauth } from "@/services/api/isauth";
 
 // components
+import { sendGetRequest } from "@/services/api/sendRequests";
 import { loadPongReplayDiv } from "@pages/protected/game/online/laodPongReplayDiv";
 
 export interface GameData {
@@ -56,7 +57,7 @@ function getGameIcon(game: string): string {
 	}
 }
 
-export function createHistoryBar(data: GameData): HTMLElement {
+export async function createHistoryBar(data: GameData): Promise<HTMLElement> {
 	const div = document.createElement('div');
 
 	div.className =
@@ -67,13 +68,14 @@ export function createHistoryBar(data: GameData): HTMLElement {
 	const winners = safeParseArray(data.winner);
 	const gameIcon = getGameIcon(data.game);
 
-	const p1 = players[0] ?? "Player 1";
-	const p2 = players[1] ?? "Player 2";
+	// :)
+	const p1 = !isNaN(Number(players[0])) ? (await sendGetRequest('/api/userinfo?linkId=' + players[0]))?.username ?? "Player 1" : players[0];
+	const p2 = !isNaN(Number(players[1])) ? (await sendGetRequest('/api/userinfo?linkId=' + players[1]))?.username ?? "Player 2" : players[1];
 	const s1 = scores[0] ?? "-";
 	const s2 = scores[1] ?? "-";
 
-	const p1Win = winners.includes(p1);
-	const p2Win = winners.includes(p2);
+	const p1Win = winners.includes(players[0]);
+	const p2Win = winners.includes(players[1]);
 
 	div.innerHTML = /* html */ `
 		<!-- TOP ROW -->
