@@ -22,6 +22,24 @@ export async function userList(linkId: number): Promise<string> {
 	return JSON.stringify(userList)
 }
 
+interface ChatUser {
+	linkId:number,
+	username:string | null,
+}
+
+// ritorna la lista degli user in una chat
+export async function userInChat(chatId: number): Promise<ChatUser[] | undefined> {
+	const userList = await chatPrisma.chats.findFirst({ 
+		where: { chatId: chatId },
+		select: {
+			users: true
+		}
+	});
+
+	const users = userList?.users;
+	return users;
+}
+
 //ricerca delle chat  a cui uno user appartiene
 export async function chatList(linkId: number): Promise<string> {
 	//ricerca dello user

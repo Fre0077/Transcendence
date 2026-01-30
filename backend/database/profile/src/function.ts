@@ -207,7 +207,8 @@ export async function getProfileData(myLinkId: number) {
         where: { linkId: myLinkId },
         select: {
             username: true,
-            friends: { select: { username: true, avatarUrl: true, /* #todo remove */linkId: true } },
+            linkId: true,
+            friends: { select: { username: true, avatarUrl: true, linkId: true } },
             incomingRequests: { select: { username: true, avatarUrl: true } },
             outgoingRequests: { select: { username: true, avatarUrl: true } }
         }

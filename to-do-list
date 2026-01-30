@@ -5,7 +5,8 @@
 WHAT-AM-I-DOING-NOW
 
 WHAT-AM-I-DOING-NEXT
-
+24. query backend col linkId
+25. automatically reconnect Lifecycle
 
 MANDATORY:
 
@@ -16,7 +17,6 @@ NEW (MAYBE?)
 MAJOR
 13. Pong on mobile
 18. Bot handshake on creation (only 'bot' container can create bots)
-23. 2FA login (@aleborghi)
 
 
 MINOR
@@ -91,6 +91,7 @@ DONE
 22. all db updating operations on friends (accepting/declining/canceling...) sends an update to the lifecycle ws { what: 'UPDATE, type: 'friend' } (DONE)
 6. Better friend request, and profile pic/box gets weird at different username length (DONE)
 22. You can access protected pages after logout if you go back in history (top left arrow buttons) (DONE)
+23. 2FA login (@aleborghi) (DONE)
 
 FORGOTTEN:
 21. Sometimes freezes... after adding .dispatchEvent()??? or the persist session with no more localStorage???

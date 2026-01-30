@@ -156,6 +156,7 @@ fastify.register(async function (fastify) {
 	fastify.get('/chat-list', httpforwarder(`${CHAT_URL}/api/chat-list`, 'application/json', { auth: true }));
 	fastify.post('/message-list', httpforwarder(`${CHAT_URL}/api/message-list`, 'application/json', { auth: true }));
 	fastify.post('/user-list', httpforwarder(`${CHAT_URL}/api/user-list`, 'application/json', { auth: true }));
+	fastify.get('/chat-users/:chatId', httpforwarder(`${CHAT_URL}/api/chat-users/:chatId`, 'application/json', { auth: true }));
 	fastify.post('/new-message', httpforwarder(`${CHAT_URL}/api/new-message`, 'application/json', { auth: true }));
 	fastify.post('/new-chat', httpforwarder(`${CHAT_URL}/api/new-chat`, 'application/json', { auth: true }));
 	fastify.post('/delete-chat-messages', httpforwarder(`${CHAT_URL}/api/delete-chat-messages`, 'application/json', { auth: true }));

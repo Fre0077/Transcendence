@@ -138,7 +138,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/home/fre007/Desktop/temp/Transcendence/backend/database/chat/database/generate/chat",
+      "value": "/home/topiana-/live_projects/github/Transcendence/backend/database/chat/database/generate/chat",
       "fromEnvVar": null
     },
     "config": {
@@ -152,7 +152,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/home/fre007/Desktop/temp/Transcendence/backend/database/chat/database/chat.prisma",
+    "sourceFilePath": "/home/topiana-/live_projects/github/Transcendence/backend/database/chat/database/chat.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
@@ -165,6 +165,7 @@ const config = {
     "dbchat"
   ],
   "activeProvider": "sqlite",
+  "postinstall": false,
   "inlineDatasources": {
     "dbchat": {
       "url": {
@@ -173,8 +174,8 @@ const config = {
       }
     }
   },
-  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\n// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?\n// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init\n\ngenerator chat {\n  provider = \"prisma-client-js\"\n  output   = \"./generate/chat\"\n}\n\ndatasource dbchat {\n  provider = \"sqlite\"\n  url      = \"file:./chat.db\"\n}\n\nmodel messages {\n  id      Int      @id @default(autoincrement())\n  chatId  Int\n  linkId  Int\n  chat    chats    @relation(fields: [chatId], references: [chatId], onDelete: Cascade)\n  user    user     @relation(fields: [linkId], references: [linkId], onDelete: Cascade)\n  message String\n  date    DateTime @default(now())\n}\n\nmodel chats {\n  chatId       Int        @id @default(autoincrement())\n  hostId       Int\n  host         user       @relation(\"host\", fields: [hostId], references: [linkId], onDelete: Cascade)\n  users        user[]     @relation(\"members\")\n  messages     messages[]\n  name         String\n  lastAccessed DateTime?  @updatedAt\n}\n\nmodel user {\n  userId       Int        @id @default(autoincrement())\n  linkId       Int        @unique\n  messages     messages[]\n  chatHost     chats[]    @relation(\"host\")\n  members      chats[]    @relation(\"members\")\n  blockedUsers user[]     @relation(\"BlockedUsers\")\n  blockedBy    user[]     @relation(\"BlockedUsers\")\n  username     String?    @unique\n}\n",
-  "inlineSchemaHash": "75088fcea333097a02586ecbceb335bfdbdcba7c90c552f042f2a3a9d5cc4759",
+  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\n// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?\n// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init\n\ngenerator chat {\n  provider = \"prisma-client-js\"\n  output   = \"./generate/chat\"\n}\n\ndatasource dbchat {\n  provider = \"sqlite\"\n  url      = \"file:./chat.db\"\n}\n\nmodel messages {\n  id      Int      @id @default(autoincrement())\n  chatId  Int\n  linkId  Int\n  chat    chats    @relation(fields: [chatId], references: [chatId], onDelete: Cascade)\n  user    user     @relation(fields: [linkId], references: [linkId], onDelete: Cascade)\n  message String\n  date    DateTime @default(now())\n}\n\nmodel chats {\n  chatId       Int        @id @unique @default(autoincrement())\n  hostId       Int\n  host         user       @relation(\"host\", fields: [hostId], references: [linkId], onDelete: Cascade)\n  users        user[]     @relation(\"members\")\n  messages     messages[]\n  name         String\n  lastAccessed DateTime?  @updatedAt\n}\n\nmodel user {\n  userId       Int        @id @default(autoincrement())\n  linkId       Int        @unique\n  messages     messages[]\n  chatHost     chats[]    @relation(\"host\")\n  members      chats[]    @relation(\"members\")\n  blockedUsers user[]     @relation(\"BlockedUsers\")\n  blockedBy    user[]     @relation(\"BlockedUsers\")\n  username     String?    @unique\n}\n",
+  "inlineSchemaHash": "64f0bcaf887f4636388144db0a51184e439556284e95da4603a629aeec95c9bd",
   "copyEngine": true
 }
 config.dirname = '/'
