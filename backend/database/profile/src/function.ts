@@ -330,13 +330,23 @@ export async function getUserGames(user: string) : Promise<GameData[]> {
 }
 
 //Ottieni username e avatarUrl
-export async function getUserInfo(user: string) {
+export async function getUserInfo(linkId: string) {
     const data = await profilePrisma.user.findUnique({
-        where: { username: user },
+        where: { linkId: Number(linkId) },
         select: {
             username: true,
             avatarUrl: true
         }
+    });
+    if (!data)
+        throw new NotFound("Profilo utente non trovato.", "profile");
+    return data;
+}
+
+export async function getUserId(username: string) {
+    const data = await profilePrisma.user.findUnique({
+        where: { username: username },
+        select: { linkId: true }
     });
     if (!data)
         throw new NotFound("Profilo utente non trovato.", "profile");

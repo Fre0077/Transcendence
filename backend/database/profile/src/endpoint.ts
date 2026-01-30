@@ -9,6 +9,7 @@ import {
     getProfileData,
     getUserData,
     getUserInfo,
+    getUserId,
     getUserGames,
     replaceAllData
 } from "./function";
@@ -84,13 +85,39 @@ export async function profileEndpoint(fastify: FastifyInstance) {
             // check della query
             const userId = Number(request.headers['x-user-id'])
 			const secret = request.headers['x-gateway-secret']
+            const { linkId } = request.query;
+
+			if (!userId || secret !== 'biscottini') {throw new Unauthorized('Utente non autorizzato', 'profile'); }
+            if (!linkId) {throw new NotFound('Username query not found', 'profile'); }
+
+            // get the user info (username and avarat url)
+            const data = await getUserInfo(linkId);
+            // successfule return
+            logInfo('{profile} [200] Account trovato');
+            reply.code(200).send(data);
+        } catch (err) {
+            if (err instanceof Error) {
+                const status = (err as any).statusCode || 500;
+                return reply.status(status).send({ error: err.message });
+            }
+            logError('{profile} [500] errore interno del server');
+            return reply.status(500).send({ error: "Internal server error" });
+        }
+    });
+
+    fastify.get<{ Querystring: ProfileQuery }>('/id-to-username', async (request, reply) => {
+        
+        try {
+            // check della query
+            const userId = Number(request.headers['x-user-id'])
+			const secret = request.headers['x-gateway-secret']
             const { username } = request.query;
 
 			if (!userId || secret !== 'biscottini') {throw new Unauthorized('Utente non autorizzato', 'profile'); }
             if (!username) {throw new NotFound('Username query not found', 'profile'); }
 
             // get the user info (username and avarat url)
-            const data = await getUserInfo(username);
+            const data = await getUserId(username);
             // successfule return
             logInfo('{profile} [200] Account trovato');
             reply.code(200).send(data);

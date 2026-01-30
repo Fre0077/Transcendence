@@ -61,7 +61,7 @@ export async function startprofileConsumer() {
 						return;
 					}
 					console.log('data.player', historyData.players);
-					const potentialUsername = historyData.players.map((username: string) => {
+					const potentialLinkId = historyData.players.map((username: string) => {
 							// Se è una stringa che inizia con Guest, BOT la scarto perchè non è presente nel DB
 							if (username.startsWith('Guest') || username.startsWith('BOT'))
 								return null;
@@ -70,10 +70,10 @@ export async function startprofileConsumer() {
 						.filter((username: string | null): username is string => username !== null);
 					// Eseguiamo la query solo se abbiamo trovato almeno un numero valido
 					let validUsername: string[] = [];
-					if (potentialUsername.length > 0) {
+					if (potentialLinkId.length > 0) {
 						const existingUsers = await profilePrisma.user.findMany({
 							where: {
-								username: { in: potentialUsername }
+								linkId: { in: potentialLinkId }
 							},
 							select: { username: true }
 						});
@@ -87,15 +87,15 @@ export async function startprofileConsumer() {
 						return;
 					}
 					for (const player of validUsername){
-						if (historyData.winner.includes(String(player))){
+						if (historyData.winner.includes(player)){
 							await profilePrisma.user.update({
-								where: { username: player},
+								where: { linkId: Number(player)},
 								data: {wins: {increment: 1}}
 							})
 						}
 						else {
 							await profilePrisma.user.update({
-								where: { username: player},
+								where: { linkId: Number(player)},
 								data: {losses: {increment: 1}}
 							})
 						}
