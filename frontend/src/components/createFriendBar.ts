@@ -118,7 +118,7 @@ function createFriendCard(root:HTMLElement, friend: Friend): HTMLElement {
 		try {
 			await sendPostRequest(
 				`/api/friend/remove`,
-				{ target: friend.username },
+				{ target: friend.linkId },
 				"application/json"
 			);
 			// update the UI
@@ -152,6 +152,7 @@ function createFriendCard(root:HTMLElement, friend: Friend): HTMLElement {
 
 
 interface Request  {
+	linkId: number,
 	username: string,
 	avatarUrl: string
 }
@@ -181,7 +182,7 @@ function createIncomingRequestCard(root:HTMLElement, req: Request): HTMLElement 
 		try {
 			await sendPostRequest(
 				`/api/friend/accept`,
-				{ target: req.username },
+				{ target: req.linkId },
 				"application/json"
 			);
 			// update the UI
@@ -206,7 +207,7 @@ function createIncomingRequestCard(root:HTMLElement, req: Request): HTMLElement 
 		try {
 			await sendPostRequest(
 				`/api/friend/remove`,
-				{ target: req.username },
+				{ target: req.linkId },
 				"application/json")
 			.then(() => {
 				// update the UI
@@ -257,7 +258,7 @@ function createOutgoingRequestCard(root:HTMLElement, req: Request): HTMLElement 
 		try {
 			await sendPostRequest(
 				`/api/friend/remove`,
-				{ target: req.username },
+				{ target: req.linkId },
 				"application/json")
 			.then(() => {
 				// update the UI

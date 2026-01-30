@@ -91,11 +91,11 @@ export async function sendFriendRequest(myLinkId: number, targetUsername: string
         }
     });
 
-    return { target: targetUsername, message: `Richiesta inviata a ${targetUsername}` };
+    return { target: targetUser.linkId, message: `Richiesta inviata a ${targetUser.linkId}` };
 }
 
-export async function acceptFriendRequest(myLinkId: number, senderUsername: string) {
-    const senderUser = await profilePrisma.user.findFirst({ where: { username: senderUsername } });
+export async function acceptFriendRequest(myLinkId: number, senderLinkId: number) {
+    const senderUser = await profilePrisma.user.findFirst({ where: { linkId: senderLinkId } });
     if (!senderUser) 
         throw new NotFound("Utente non trovato.", "profile");
     if (senderUser.linkId === myLinkId) 
@@ -138,12 +138,12 @@ export async function acceptFriendRequest(myLinkId: number, senderUsername: stri
         })
     ]);
     
-    return { target: senderUsername, message: `Ora sei amico di ${senderUsername}` };
+    return { target: senderLinkId, message: `Ora sei amico di ${senderLinkId}` };
 }
 
 //Rifiuta o Annulla una richiesta, funziona per entrambi i casi
-export async function removeFriendRequest(myLinkId: number, targetUsername: string) {
-    const targetUser = await profilePrisma.user.findFirst({ where: { username: targetUsername } });
+export async function removeFriendRequest(myLinkId: number, targetLinkId: number) {
+    const targetUser = await profilePrisma.user.findFirst({ where: { linkId: targetLinkId } });
     if (!targetUser) 
         throw new NotFound("Utente non trovato.", "profile");
     if (targetUser.linkId === myLinkId) 
@@ -208,9 +208,9 @@ export async function getProfileData(myLinkId: number) {
         select: {
             username: true,
             linkId: true,
-            friends: { select: { username: true, avatarUrl: true, linkId: true } },
-            incomingRequests: { select: { username: true, avatarUrl: true } },
-            outgoingRequests: { select: { username: true, avatarUrl: true } }
+            friends: { select: { linkId: true, username: true, avatarUrl: true, } },
+            incomingRequests: { select: { linkId: true, username: true, avatarUrl: true } },
+            outgoingRequests: { select: { linkId: true, username: true, avatarUrl: true } }
         }
     });
 

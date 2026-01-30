@@ -30,14 +30,13 @@ export function authWebSocket(connection:WebSocket, request:FastifyRequest)
 
 	// Handle incoming messages
 	socket.on('message', (message:any) => {
-		console.log(`Message received '${message.toString()}'`);
-
 		// application-level ping-pong
 		if (message.toString() === 'ping') {
 			if (socket.readyState === WebSocket.OPEN) {
 				socket.send('pong');
 			}
 		}
+		else console.log(`Message received '${message.toString()}'`);
 
 	});
 
@@ -55,17 +54,17 @@ export function authWebSocket(connection:WebSocket, request:FastifyRequest)
 		sendFriendUpdate(auth.user);
 
 		// set as offline
-		const user = connected_users.get(auth.user.linkId);
+		const user = connected_users.get(auth.user.userId);
 		if (user) user.status = "offline";
 	});
 
 
 	// check if already stored
-	const user = connected_users.get(auth.user.linkId);
+	const user = connected_users.get(auth.user.userId);
 
 	// store the connection
 	if (user === undefined)
-		connected_users.set(auth.user.linkId as string /* in god we trust pt.2*/, new ConnectedUser(auth.user.username, connection));
+		connected_users.set(auth.user.userId as string /* in god we trust pt.2*/, new ConnectedUser(auth.user.userId, connection));
 	else
 	{
 		// save new socket
@@ -233,39 +232,11 @@ export function sendLobbyInvite(request:FastifyRequest, reply:FastifyReply)
 	else reply.code(200).send(JSON.stringify({ ok:true, comment:"Message sent correctly" }));
 }
 
-// interface FriendRequestBody {
-// 	target:string
-// }
-
 // HELPER
 // function sleep(ms:number) {
 // 	return new Promise(resolve => setTimeout(resolve, ms));
 // }
 
-// export function sendFriendRequest(request:FastifyRequest, reply:FastifyReply)
-// {
-// 	// get target data
-// 	const { target } = request.body as FriendRequestBody;
-// 	if (!target)
-// 	{
-// 		// #todo send error page?
-// 		reply
-// 			.code(400)
-// 			.send("Invalid body");
-// 		return ; // important
-// 	}
-
-
-// 	// send lobby invite
-// 	const ret = sendMessageTo(target, {
-// 		what: "NOTIFY",
-// 		type: 'friend-request',
-// 		sender: (request as any).user.username
-// 	});
-
-// 	if (ret === false) reply.code(200).send(JSON.stringify({ ok:false, comment:"The user isn't connected" }));
-// 	else reply.code(200).send(JSON.stringify({ ok:true, comment:"Message sent correctly" }));
-// }
 
 // /api/friend/request endpoint in PROFILE database returns { target:string, message:string }
 export function sendFriendNotification(sender:string, data:any)
@@ -284,6 +255,9 @@ export function sendFriendNotification(sender:string, data:any)
 		user2.relations.add(user1.ID)
 	}
 
+	console.log('target', target);
+	console.log('sender', sender);
+
 	// send friend request
 	sendMessageTo(target, {
 		what: "NOTIFY",
@@ -295,15 +269,15 @@ export function sendFriendNotification(sender:string, data:any)
 // sends a fried update to all connected users related to the target
 export function sendFriendUpdate(user:any)
 {
-	if (!user.username) {
-		console.log("Missing user.username");
+	if (!user.userId) {
+		console.log("Missing user.userId");
 		return ;
 	}
 
-	updateRelatedUsers(user.username, {
+	updateRelatedUsers(user.userId, {
 		what: "UPDATE",
 		type: 'friend',
-		sender: user.username
+		sender: user.userId
 	});
 }
 

@@ -1,0 +1,188 @@
+groups:
+  - name: service_health
+    interval: 30s
+    rules:
+      # Service Down Alerts
+      - alert: PrometheusDown
+        expr: up{job="prometheus"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Prometheus is down"
+          description: "Prometheus server has been unreachable for more than 1 minute."
+
+      - alert: RabbitMQDown
+        expr: up{job="rabbitmq"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "RabbitMQ is down"
+          description: "RabbitMQ service is not responding. Critical for inter-service communication."
+
+      - alert: AuthServiceDown
+        expr: up{job="auth"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Auth service is down"
+          description: "Authentication service has been unreachable for more than 2 minutes."
+
+      - alert: ChatServiceDown
+        expr: up{job="chat"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Chat service is down"
+          description: "Chat service has been unreachable for more than 2 minutes."
+
+      - alert: ProfileServiceDown
+        expr: up{job="profile"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Profile service is down"
+          description: "Profile service has been unreachable for more than 2 minutes."
+
+      - alert: FtBunnyServiceDown
+        expr: up{job="ft_bunny"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Ft_bunny service is down"
+          description: "Game service connector has been unreachable for more than 2 minutes."
+
+      - alert: LobbyServiceDown
+        expr: up{job="lobby"} == 0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Lobby service is down"
+          description: "Lobby service has been unreachable for more than 2 minutes."
+
+      - alert: TournamentServiceDown
+        expr: up{job="tournament"} == 0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Tournament service is down"
+          description: "Tournament service has been unreachable for more than 2 minutes."
+
+      - alert: PongServiceDown
+        expr: up{job="pong"} == 0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Pong game service is down"
+          description: "Pong game service has been unreachable for more than 2 minutes."
+
+      - alert: BotsServiceDown
+        expr: up{job="bots"} == 0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Bots service is down"
+          description: "Bots service has been unreachable for more than 2 minutes."
+
+  - name: resource_usage
+    interval: 30s
+    rules:
+      # CPU and Memory alerts for critical services
+      - alert: HighCPUUsage
+        expr: 'process_cpu_seconds_total > 50'
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage detected"
+          description: "Service {{ $labels.job }} has high CPU usage ({{ $value }}s)"
+
+      - alert: ContainerHighMemoryUsage
+        expr: 'container_memory_usage_bytes / container_spec_memory_limit_bytes > 0.85'
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage"
+          description: "Container {{ $labels.name }} is using more than 85% of allocated memory"
+
+  - name: rabbitmq_monitoring
+    interval: 30s
+    rules:
+      - alert: RabbitMQHighQueueLength
+        expr: 'rabbitmq_queue_messages > 10000'
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "RabbitMQ queue is backing up"
+          description: "Queue {{ $labels.queue }} has {{ $value }} messages"
+
+      - alert: RabbitMQConnectionsCritical
+        expr: 'rabbitmq_connections > 800'
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "RabbitMQ connection limit approaching"
+          description: "RabbitMQ has {{ $value }} active connections"
+
+      - alert: RabbitMQDiskAlertFired
+        expr: 'rabbitmq_disk_free_alarm > 0'
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "RabbitMQ disk space critical"
+          description: "RabbitMQ has triggered disk space alarm"
+
+  - name: prometheus_alerts
+    interval: 30s
+    rules:
+      - alert: PrometheusConfigReloadFailures
+        expr: 'increase(prometheus_config_last_reload_failure_timestamp_seconds[15m]) > 0'
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Prometheus configuration reload failed"
+          description: "Prometheus failed to reload its configuration"
+
+      - alert: PrometheusRuleEvaluationFailures
+        expr: 'increase(prometheus_rule_evaluation_failures_total[1h]) > 0'
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Prometheus rule evaluation failed"
+          description: "Prometheus encountered errors evaluating rules"
+
+  - name: http_monitoring
+    interval: 30s
+    rules:
+      - alert: HighErrorRate
+        expr: 'rate(http_requests_total{status=~"5.."}[5m]) > 0.05'
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High HTTP error rate"
+          description: "Service {{ $labels.job }} has error rate of {{ $value | humanizePercentage }}"
+
+      - alert: SlowResponseTime
+        expr: 'histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 1'
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Slow response times"
+          description: "Service {{ $labels.job }} 95th percentile response time is {{ $value }}s"

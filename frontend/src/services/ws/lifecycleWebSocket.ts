@@ -121,17 +121,18 @@ export async function ConnectLifecycleSocket(): Promise<WebSocket | null>
 							new CustomEvent('update:friends', { bubbles: true })
 						);
 						
-						toastNotification.friend('Friend Request', `${msg.sender} vorrebbe essere tuo amico`, 
-							() => { alert('Pagina Friends');},
-							() => acceptFriendRequest(msg.sender),
-							() => declineFriendRequest(msg.sender),
-							5000);
+						if (router.getCurrentRoute()?.path !== '/profile/:username')
+							toastNotification.friend('Friend Request', `${msg.sender} vorrebbe essere tuo amico`, 
+								() => { },
+								() => acceptFriendRequest(msg.sender),
+								() => declineFriendRequest(msg.sender),
+								5000);
 						
 						break ;
 					case "lobby-invite":
 						console.log("Lobby invite", msg.content);
 						toastNotification.invite('Lobby Invite', `${msg.sender} ti ha invitato nella sua lobby`,
-							undefined,
+							() => { },
 							() => router.push(`/lobby/online?lobby-id=${msg.content}`),
 							() => {},
 							10_000);

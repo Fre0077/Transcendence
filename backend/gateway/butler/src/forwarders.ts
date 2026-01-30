@@ -270,7 +270,7 @@ export async function authForward(
 	{
 		// calls the updater & the notifier
 		if (updater !== undefined) updater(auth.user);
-		if (notifier !== undefined) notifier(auth.user.username, data);
+		if (notifier !== undefined) notifier(auth.user.userId, data);
 
 		// calls the handler
 		const newdata = (handler !== undefined) ? handler(data, reply) : data;
