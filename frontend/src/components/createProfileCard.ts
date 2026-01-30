@@ -10,7 +10,7 @@ import { generateInitialsAvatar } from "@/components/createDefaultImage";
 export function createProfileCard(username: string, opts?:any): HTMLElement {
     const container = document.createElement('div');
     
-    const local = (opts.local) ? opts.local : false;
+    const local = (opts?.local) ? opts.local : false;
 
     // Classi Tailwind come da tua richiesta
     container.className = 'relative w-full bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex flex-col rounded-xl border border-white/10 shadow-lg overflow-hidden transition-all duration-300';

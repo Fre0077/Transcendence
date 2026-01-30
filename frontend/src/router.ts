@@ -42,7 +42,6 @@ interface RouteConfig {
     requiresGuest?: boolean;
     requires2FA?: boolean;
     title?: string;
-    user?:any;
   };
 }
 
@@ -298,14 +297,6 @@ const routes: RouteConfig[] = [
     meta: { title: 'Welcome - ft_transcendence', },
   },
   {
-    path: '/local',
-    name: 'local',
-    component: () => {
-      return loadLocalGameHub();
-    },
-    meta: { title: 'Local Host - ft_transcendence', },
-  },
-  {
     path: '/login',
     name: 'login',
     component: () => {
@@ -326,7 +317,7 @@ const routes: RouteConfig[] = [
     path: '/logout',
     name: 'logout',
     component: () => {
-      sendDeleteRequest(`http://${window.location.hostname}:3029/api/logout`);
+      sendDeleteRequest('/api/logout');
       
       // notify logout
 			document.dispatchEvent(
@@ -365,6 +356,33 @@ const routes: RouteConfig[] = [
     },
     meta: { title: 'Forgot Password - ft_transcendence', requiresGuest: true },
   },
+  /* ====================== */
+  /*      LOCAL STUFF       */
+  {
+    path: '/local',
+    name: 'local',
+    component: () => {
+      return loadLocalGameHub();
+    },
+    meta: { title: 'Local Host - ft_transcendence' },
+  },
+	{
+		path: '/game/local',
+		name: 'local-game',
+		component: () => {
+			return loadLocalPongPage();
+		},
+		meta: { title: 'Local Game - ft_transcendence' },
+	},
+  {
+		path: '/tournament/local',
+		name: 'local-tournament',
+		component: () => {
+			return loadLocalTournamentPage();
+		},
+		meta: { title: 'Local Tournament - ft_transcendence' },
+	},
+  /* ======================= */
 
   // ============================================
   // PROTECTED ROUTES (Authentication required)
@@ -429,25 +447,6 @@ const routes: RouteConfig[] = [
     },
     meta: { title: 'Game Lobby - ft_transcendence', requiresAuth: true, requires2FA: true },
   },
-  /* ====================== */
-  /* LOCAL STUFF (maybe to move?) */
-	{
-		path: '/game/local',
-		name: 'local-game',
-		component: () => {
-			return loadLocalPongPage();
-		},
-		meta: { title: 'Local Game - ft_transcendence', requiresAuth: true, requires2FA: true },
-	},
-  {
-		path: '/tournament/local',
-		name: 'local-tournament',
-		component: () => {
-			return loadLocalTournamentPage();
-		},
-		meta: { title: 'Local Game - ft_transcendence', requiresAuth: true, requires2FA: true },
-	},
-  /* ======================= */
   {
     path: '/lobby/online',
     name: 'online-game',
