@@ -32,11 +32,15 @@ export async function userInChat(chatId: number): Promise<ChatUser[] | undefined
 	const userList = await chatPrisma.chats.findFirst({ 
 		where: { chatId: chatId },
 		select: {
-			users: true
+			users: true,
+			host: true
 		}
 	});
 
 	const users = userList?.users;
+	if (!users)
+		return userList?.host ? [userList?.host] : undefined;
+	users?.push(userList?.host);
 	return users;
 }
 
