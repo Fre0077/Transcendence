@@ -83,7 +83,6 @@ async function sendNotify(username: string, ) {
 
 import { 
 	/* HTTP */
-	fetchBackend,
 	authForward,
 	noAuthForward,
 
@@ -93,10 +92,9 @@ import {
 from './forwarders.js';
 
 import {
-	sendLobbyInvite,
 	authWebSocket,
-	/* sendFriendRequest, */
 	attachFriendStatus,
+	sendLobbyInvite,
 	sendFriendUpdate,
 	sendFriendNotification,
 } from './backendbypass.js';
@@ -170,39 +168,10 @@ fastify.register(async function (fastify) {
 	fastify.post('/blocked-users', httpforwarder(`${CHAT_URL}/api/blocked-users`, 'application/json', { auth: true }));
 	// ... add others
 
-	// Fetches the desired backend endpoint (if specified). Then on successfule response calls the 'forward' function.
-	// NOTE that the 'splitforwarder()' needs 'isCookieAuthenticated()' as preHandler, so that it cann attach the 'user' to the request.
-	function splitforwarder(endpoint:string | undefined, forwarder: (request:FastifyRequest, reply:FastifyReply) => void)
-	{
-		return async (request:FastifyRequest, reply:FastifyReply) => {
-
-			// fetch the desired endpoint
-			if (endpoint !== undefined)
-			{
-				let ret;
-				try {
-					ret = await fetchBackend(request, endpoint, 'application/json', { ok:true, user:(request as any).user });
-				} catch (err) {
-					console.log('Error', err);
-					reply.code(502).send("Backend service unreachable");
-					return ;
-				}
-
-				// if fetch went wrong don't forward second part
-				if (ret.status !== 200) {
-					reply.code(ret.status).send(ret.statusText);
-					return ;
-				}
-			}
-
-			// execute the second part
-			forwarder(request, reply);
-		};
-	}
 
 	// backend bypass endpoints (interact with the users connected to butler)
 	// All these endpoint require an authenticated connection
-	fastify.post('/lobby-invite', { preHandler: [isCookieAuthenticated] }, splitforwarder(undefined, sendLobbyInvite));
+	fastify.post('/lobby-invite', { preHandler: [isCookieAuthenticated] }, sendLobbyInvite);
 	// fastify.post('/friend-request', { preHandler: [isCookieAuthenticated] }, splitforwarder(`${PROFILE_URL}/api/friend/request`, sendFriendRequest));
 
 
