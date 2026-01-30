@@ -1,15 +1,16 @@
 /**
- * Global Chat Service - Singleton WebSocket manager
- * Maintains persistent connection to chat backend, handles real-time updates,
- * stores data in IndexedDB, and emits events for components to subscribe to
+ * Global Chat Service - Singleton with HTTP API + Single WebSocket
+ * Uses HTTP for data fetching (chat-list, message-list)
+ * Uses single /ws/broadcast WebSocket for real-time updates
+ * Stores data in IndexedDB and emits events for components
  */
 
 import { loadStoredSession } from './session';
 import { chatStorage, type Chat, type Message } from './storage/chatStorage';
 import { notificationService } from './notificationService';
 
-const CHAT_WS_URL = 'ws://localhost:3002/api';
-const CHAT_HTTP_URL = 'http://localhost:3002/api';
+const CHAT_WS_URL = '/ws/broadcast'; 
+const CHAT_HTTP_URL = '/api';
 
 export type ChatEventType = 
     | 'connected' 
@@ -33,11 +34,9 @@ type ChatEventListener<T extends ChatEventType> = (data: ChatEventData[T]) => vo
 class ChatService {
     private static instance: ChatService | null = null;
     
-    private chatListWs: WebSocket | null = null;
-    private messageWsMap: Map<number, WebSocket> = new Map();
+    private broadcastWs: WebSocket | null = null;
     
     private userId: number | null = null;
-    private accessToken: string | null = null;
     private isInitialized: boolean = false;
     private isConnecting: boolean = false;
     
@@ -75,7 +74,6 @@ class ChatService {
 
         const session = loadStoredSession();
         this.userId = session.userId;
-        this.accessToken = session.token;
 
         if (!this.userId) {
             console.error('[ChatService] Cannot initialize: no user ID');
@@ -92,8 +90,11 @@ class ChatService {
             this.emit('error', { message: 'Failed to initialize local storage', error });
         }
 
-        // Connect to chat list WebSocket
-        await this.connectToChatList();
+        // Connect to broadcast WebSocket
+        await this.connectToBroadcast();
+        
+        // Load initial chat list via HTTP
+        await this.fetchChatList();
         
         this.isInitialized = true;
         return true;
@@ -105,8 +106,7 @@ class ChatService {
     shutdown(): void {
         console.log('[ChatService] Shutting down...');
         
-        this.disconnectChatList();
-        this.disconnectAllMessageStreams();
+        this.disconnectBroadcast();
         
         if (this.reconnectTimer) {
             clearTimeout(this.reconnectTimer);
@@ -116,7 +116,6 @@ class ChatService {
         this.listeners.clear();
         this.isInitialized = false;
         this.userId = null;
-        this.accessToken = null;
         this.reconnectAttempts = 0;
         
         // Close IndexedDB
@@ -127,14 +126,14 @@ class ChatService {
      * Check if service is ready
      */
     isReady(): boolean {
-        return this.isInitialized && this.chatListWs?.readyState === WebSocket.OPEN;
+        return this.isInitialized && this.broadcastWs?.readyState === WebSocket.OPEN;
     }
 
     /**
      * Get connection status
      */
     getConnectionStatus(): 'connected' | 'connecting' | 'disconnected' {
-        if (this.chatListWs?.readyState === WebSocket.OPEN) {
+        if (this.broadcastWs?.readyState === WebSocket.OPEN) {
             return 'connected';
         }
         if (this.isConnecting) {
@@ -143,9 +142,9 @@ class ChatService {
         return 'disconnected';
     }
 
-    // ==================== WEBSOCKET: CHAT LIST ====================
+    // ==================== WEBSOCKET: BROADCAST ====================
 
-    private async connectToChatList(): Promise<void> {
+    private async connectToBroadcast(): Promise<void> {
         if (!this.userId) {
             console.error('[ChatService] Cannot connect: no user ID');
             return;
@@ -156,38 +155,35 @@ class ChatService {
             return;
         }
 
-        this.disconnectChatList();
+        this.disconnectBroadcast();
         this.isConnecting = true;
 
-        const wsUrl = `${CHAT_WS_URL}/chat-list`;
-        console.log('[ChatService] Connecting to chat-list:', wsUrl);
+        const wsUrl = CHAT_WS_URL;
+        console.log('[ChatService] Connecting to broadcast:', wsUrl);
 
         try {
-            this.chatListWs = new WebSocket(wsUrl);
+            this.broadcastWs = new WebSocket(wsUrl);
 
-            this.chatListWs.onopen = () => {
-                console.log('[ChatService] Connected to chat-list');
+            this.broadcastWs.onopen = () => {
+                console.log('[ChatService] Connected to broadcast');
                 this.isConnecting = false;
                 this.reconnectAttempts = 0;
-                
-                // Send user ID to start receiving updates
-                this.chatListWs?.send(this.userId!.toString());
                 
                 this.emit('connected', { reconnect: this.reconnectAttempts > 0 });
             };
 
-            this.chatListWs.onmessage = async (event) => {
-                await this.handleChatListMessage(event.data);
+            this.broadcastWs.onmessage = async (event) => {
+                await this.handleBroadcastMessage(event.data);
             };
 
-            this.chatListWs.onerror = (error) => {
+            this.broadcastWs.onerror = (error) => {
                 console.error('[ChatService] WebSocket error:', error);
                 this.isConnecting = false;
                 this.emit('error', { message: 'WebSocket connection error', error });
             };
 
-            this.chatListWs.onclose = () => {
-                console.log('[ChatService] Disconnected from chat-list');
+            this.broadcastWs.onclose = () => {
+                console.log('[ChatService] Disconnected from broadcast');
                 this.isConnecting = false;
                 this.emit('disconnected', { reason: 'Connection closed' });
                 
@@ -203,24 +199,67 @@ class ChatService {
         }
     }
 
-    private disconnectChatList(): void {
-        if (this.chatListWs) {
-            this.chatListWs.close();
-            this.chatListWs = null;
+    private disconnectBroadcast(): void {
+        if (this.broadcastWs) {
+            this.broadcastWs.close();
+            this.broadcastWs = null;
         }
     }
 
-    private async handleChatListMessage(data: string): Promise<void> {
+    private async handleBroadcastMessage(data: string): Promise<void> {
         try {
-            const response = JSON.parse(data);
+            const event = JSON.parse(data);
 
-            if (response.error) {
-                console.error('[ChatService] Server error:', response.error);
-                this.emit('error', { message: response.error });
+            if (event.error) {
+                console.error('[ChatService] Broadcast error:', event.error);
+                this.emit('error', { message: event.error });
                 return;
             }
 
-            let chats = response.chats;
+            // Handle different event types
+            switch (event.type) {
+                case 'chats-updated':
+                    // Refresh chat list
+                    await this.fetchChatList();
+                    break;
+
+                case 'message-received':
+                    // Handle new message
+                    const { chatId, message } = event.data;
+                    await this.handleIncomingMessage(chatId, message);
+                    break;
+
+                default:
+                    console.log('[ChatService] Unknown broadcast event:', event.type);
+            }
+
+        } catch (error) {
+            console.error('[ChatService] Failed to parse broadcast message:', error);
+            this.emit('error', { message: 'Failed to parse broadcast message', error });
+        }
+    }
+
+    // ==================== HTTP API: DATA FETCHING ====================
+
+    /**
+     * Fetch chat list via HTTP
+     */
+    async fetchChatList(): Promise<Chat[]> {
+        try {
+            const res = await fetch(`${CHAT_HTTP_URL}/chat-list`, {
+                method: 'GET',
+                credentials: 'include',
+            });
+
+            const data = await res.json();
+
+            if (data.error) {
+                console.error('[ChatService] Fetch chat list error:', data.error);
+                this.emit('error', { message: data.error });
+                return [];
+            }
+
+            let chats = data.reply;
             if (typeof chats === 'string') {
                 chats = JSON.parse(chats);
             }
@@ -243,89 +282,46 @@ class ChatService {
                 // Emit update event
                 this.emit('chats-updated', { chats: normalizedChats });
 
-                console.log(`[ChatService] Updated ${normalizedChats.length} chats`);
+                console.log(`[ChatService] Fetched ${normalizedChats.length} chats`);
+                return normalizedChats;
             }
+
+            return [];
         } catch (error) {
-            console.error('[ChatService] Failed to parse chat list:', error);
-            this.emit('error', { message: 'Failed to parse chat list', error });
+            console.error('[ChatService] Failed to fetch chat list:', error);
+            this.emit('error', { message: 'Failed to fetch chat list', error });
+            return [];
         }
     }
 
-    // ==================== WEBSOCKET: MESSAGES ====================
-
     /**
-     * Connect to message stream for a specific chat
+     * Fetch messages for a specific chat via HTTP
      */
-    connectToMessages(chatId: number): void {
+    async fetchMessages(chatId: number): Promise<Message[]> {
         if (!this.userId) {
-            console.error('[ChatService] Cannot connect to messages: no user ID');
-            return;
+            console.error('[ChatService] Cannot fetch messages: no user ID');
+            return [];
         }
-
-        if (this.messageWsMap.has(chatId)) {
-            console.log(`[ChatService] Already connected to messages for chat ${chatId}`);
-            return;
-        }
-
-        const wsUrl = `${CHAT_WS_URL}/message-list`;
-        console.log(`[ChatService] Connecting to messages for chat ${chatId}`);
 
         try {
-            const ws = new WebSocket(wsUrl);
+            const res = await fetch(`${CHAT_HTTP_URL}/message-list`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify([chatId, 0, this.userId])
+            });
 
-            ws.onopen = () => {
-                console.log(`[ChatService] Connected to messages for chat ${chatId}`);
-                const payload = JSON.stringify({ message: [chatId, 0, this.userId] });
-                ws.send(payload);
-            };
+            const data = await res.json();
 
-            ws.onmessage = async (event) => {
-                await this.handleMessageListMessage(chatId, event.data);
-            };
+            if (data.error) {
+                console.error('[ChatService] Fetch messages error:', data.error);
+                this.emit('error', { message: data.error });
+                return [];
+            }
 
-            ws.onerror = (error) => {
-                console.error(`[ChatService] Message WebSocket error for chat ${chatId}:`, error);
-            };
-
-            ws.onclose = () => {
-                console.log(`[ChatService] Disconnected from messages for chat ${chatId}`);
-                this.messageWsMap.delete(chatId);
-            };
-
-            this.messageWsMap.set(chatId, ws);
-
-        } catch (error) {
-            console.error(`[ChatService] Failed to connect to messages for chat ${chatId}:`, error);
-        }
-    }
-
-    /**
-     * Disconnect from message stream for a specific chat
-     */
-    disconnectFromMessages(chatId: number): void {
-        const ws = this.messageWsMap.get(chatId);
-        if (ws) {
-            ws.close();
-            this.messageWsMap.delete(chatId);
-            console.log(`[ChatService] Disconnected from messages for chat ${chatId}`);
-        }
-    }
-
-    /**
-     * Disconnect from all message streams
-     */
-    private disconnectAllMessageStreams(): void {
-        this.messageWsMap.forEach((ws) => {
-            ws.close();
-        });
-        this.messageWsMap.clear();
-    }
-
-    private async handleMessageListMessage(chatId: number, data: string): Promise<void> {
-        try {
-            const response = JSON.parse(data);
-
-            let messages = response.reply || response.messages;
+            let messages = data.reply;
             if (typeof messages === 'string') {
                 messages = JSON.parse(messages);
             }
@@ -340,66 +336,57 @@ class ChatService {
                     date: m.date || new Date().toISOString()
                 }));
 
-                // Get existing messages from IndexedDB to avoid duplicates
-                const existingMessages = await chatStorage.getMessages(chatId);
-                const existingMessageIds = new Set(existingMessages.map(m => m.messageId));
+                // Save to IndexedDB
+                await chatStorage.saveMessages(normalizedMessages);
+                console.log(`[ChatService] Fetched ${normalizedMessages.length} messages for chat ${chatId}`);
 
-                // Filter out messages that already exist
-                const newMessages = normalizedMessages.filter(m => !existingMessageIds.has(m.messageId));
-
-                // Only save new messages
-                if (newMessages.length > 0) {
-                    await chatStorage.saveMessages(newMessages);
-                    console.log(`[ChatService] Saved ${newMessages.length} new messages for chat ${chatId}`);
-
-                    // Emit event for each new message
-                    newMessages.forEach(msg => {
-                        this.emit('message-received', { chatId, message: msg });
-                    });
-
-                    // Update chat's last message
-                    const lastMsg = normalizedMessages[normalizedMessages.length - 1];
-                    const chat = await chatStorage.getChat(chatId);
-                    if (chat) {
-                        chat.lastMessage = lastMsg.message;
-                        chat.lastMessageDate = lastMsg.date;
-                        await chatStorage.saveChat(chat);
-                    }
-
-                    // If message is from another user, increment unread and show notification
-                    const newMessagesFromOthers = newMessages.filter(m => m.userId !== this.userId);
-                    if (newMessagesFromOthers.length > 0) {
-                        for (const msg of newMessagesFromOthers) {
-                            await this.handleIncomingMessage(chatId, msg);
-                        }
-                    }
-                } else {
-                    console.log(`[ChatService] No new messages for chat ${chatId} (${normalizedMessages.length} already saved)`);
-                }
+                return normalizedMessages;
             }
+
+            return [];
         } catch (error) {
-            console.error('[ChatService] Failed to parse message list:', error);
+            console.error('[ChatService] Failed to fetch messages:', error);
+            this.emit('error', { message: 'Failed to fetch messages', error });
+            return [];
         }
     }
 
+    // ==================== MESSAGE HANDLING ====================
+
     private async handleIncomingMessage(chatId: number, message: Message): Promise<void> {
-        // Increment unread count
-        await chatStorage.incrementUnreadCount(chatId);
-        const count = await chatStorage.getUnreadCount(chatId);
-        const total = await chatStorage.getTotalUnreadCount();
+        // Save message to IndexedDB
+        await chatStorage.saveMessages([message]);
 
-        this.emit('unread-updated', { chatId, count, total });
+        // Emit event
+        this.emit('message-received', { chatId, message });
 
-        // Show notification
+        // If message is from another user, increment unread and show notification
+        if (message.userId !== this.userId) {
+            await chatStorage.incrementUnreadCount(chatId);
+            const count = await chatStorage.getUnreadCount(chatId);
+            const total = await chatStorage.getTotalUnreadCount();
+
+            this.emit('unread-updated', { chatId, count, total });
+
+            // Show notification
+            const chat = await chatStorage.getChat(chatId);
+            if (chat) {
+                notificationService.showMessageNotification({
+                    chatId,
+                    chatName: chat.name,
+                    senderName: `User ${message.userId}`,
+                    message: message.message,
+                    timestamp: new Date(message.date)
+                });
+            }
+        }
+
+        // Update chat's last message
         const chat = await chatStorage.getChat(chatId);
         if (chat) {
-            notificationService.showMessageNotification({
-                chatId,
-                chatName: chat.name,
-                senderName: `User ${message.userId}`,
-                message: message.message,
-                timestamp: new Date(message.date)
-            });
+            chat.lastMessage = message.message;
+            chat.lastMessageDate = message.date;
+            await chatStorage.saveChat(chat);
         }
     }
 
@@ -409,7 +396,7 @@ class ChatService {
      * Send a message via HTTP
      */
     async sendMessage(chatId: number, message: string): Promise<boolean> {
-        if (!this.userId || !this.accessToken) {
+        if (!this.userId) {
             console.error('[ChatService] Cannot send message: not authenticated');
             return false;
         }
@@ -421,8 +408,8 @@ class ChatService {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${this.accessToken}`
                 },
+                credentials: 'include',
                 body: JSON.stringify(body)
             });
 
@@ -448,7 +435,7 @@ class ChatService {
      * Create a new chat via HTTP
      */
     async createChat(chatName: string, members: number[]): Promise<boolean> {
-        if (!this.userId || !this.accessToken) {
+        if (!this.userId) {
             console.error('[ChatService] Cannot create chat: not authenticated');
             return false;
         }
@@ -460,8 +447,8 @@ class ChatService {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${this.accessToken}`
                 },
+                credentials: 'include',
                 body: JSON.stringify(body)
             });
 
@@ -590,7 +577,7 @@ class ChatService {
         this.reconnectTimer = setTimeout(() => {
             this.reconnectTimer = null;
             this.reconnectAttempts++;
-            this.connectToChatList();
+            this.connectToBroadcast();
         }, delay);
     }
 }

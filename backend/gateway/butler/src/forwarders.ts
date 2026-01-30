@@ -162,7 +162,12 @@ export async function fetchBackend(request:FastifyRequest, endpoint:string, type
             headers['content-type'] = request.headers['content-type']!;
             fetchOptions.duplex = 'half';
         } else {
-            fetchOptions.body = request.body ? JSON.stringify(request.body) : undefined;
+			// Fastify already parses the body, so don't double-stringify
+			if (typeof request.body === 'string') {
+				fetchOptions.body = request.body;
+			} else {
+				fetchOptions.body = request.body ? JSON.stringify(request.body) : JSON.stringify({});
+			}
             headers['content-type'] = type;
         }
 	}
@@ -176,7 +181,23 @@ export async function fetchBackend(request:FastifyRequest, endpoint:string, type
 	console.log('Fetching', endpoint, 'with', fetchOptions);
 
 	// --- CALL BACKEND ---
-	return await fetch(endpoint, fetchOptions);
+	// Add timeout to prevent indefinite hanging
+	const controller = new AbortController();
+	const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+	
+	try {
+		const response = await fetch(endpoint, { ...fetchOptions, signal: controller.signal });
+		clearTimeout(timeoutId);
+		console.log('Backend response:', response.status, response.statusText);
+		return response;
+	} catch (err) {
+		clearTimeout(timeoutId);
+		if ((err as any).name === 'AbortError') {
+			console.error('Backend request timed out after 10 seconds');
+			throw new Error('Backend request timeout');
+		}
+		throw err;
+	}
 }
 
 // forward request to backend services afterr checking authourization
@@ -209,27 +230,29 @@ export async function authForward(
 	backendResponse.headers.forEach((value, key) => {
 		reply.header(key, value);
 	});
-	
-	/* #debug */
-	// console.log('>Backend fetch', backendResponse);
 
 	let data;
 	// parse body
 	if (contentType?.includes(type)) {
 		data = await backendResponse.json();
-		reply.send(data);
 	} else {
 		data = await backendResponse.text();
-		reply.send(data);
 	}
 
-	// call the post-process callback
+	// call the post-process callback if present and response is success
 	if (callback && backendResponse.status === 200) {
 		const newdata = callback(data, reply);
-		// and hold the data
-		reply.send(newdata);
+		// Only send if reply hasn't been sent already and callback returned data
+		if (!reply.sent && newdata !== undefined) {
+			reply.send(newdata);
+		} else if (!reply.sent) {
+			// Callback didn't return data but also didn't send response, send original data
+			reply.send(data);
+		}
+	} else if (!reply.sent) {
+		// No callback or non-200 status, send the data
+		reply.send(data);
 	}
-	else reply.send(data);	// send the fetched reply
 }
 
 // forward to backend without checking authourization
@@ -270,12 +293,19 @@ export async function noAuthForward(
 	/* #debug */
 	// console.log('>Backend fetch', backendResponse);
 
-	// call the post-process callback
+	// call the post-process callback if present and response is success
 	if (callback && backendResponse.status === 200) {
 		const newdata = callback(data, reply);
-		// and hold the data
-		reply.send(newdata);
+		// Only send if reply hasn't been sent already and callback returned data
+		if (!reply.sent && newdata !== undefined) {
+			reply.send(newdata);
+		} else if (!reply.sent) {
+			// Callback didn't return data but also didn't send response, send original data
+			reply.send(data);
+		}
+	} else if (!reply.sent) {
+		// No callback or non-200 status, send the data
+		reply.send(data);
 	}
-	else reply.send(data);	// send the fetched reply
 }
 

@@ -105,9 +105,8 @@ export async function authEndpoint(fastify: FastifyInstance) {
 			if (!googleData.email || !googleData.code)
 				throw new BadRequest('Email e codice 2FA sono richiesti', 'auth');
 			const user = await auth2FA(googleData);
-			const tokens = await generateTokens(user);
 			logInfo('{auth} [200] 2FA riuscita');
-			reply.code(200).send({ ...tokens, user });
+			reply.code(200).send({ ...user, user, ok: true });
 		} catch (err) {
 			if (err instanceof Error) {
 				reply.code((err as any).statusCode).send({ error: err.message });
@@ -150,15 +149,23 @@ export async function authEndpoint(fastify: FastifyInstance) {
 
 			if (!userId || secret !== 'biscottini') {throw new Unauthorized('Utente non autorizzato', 'auth'); }
 			const me = await authPrisma.account.findUnique({
-				where: { id: userId},
-				select: {
-					id: true, email: true, username: true,
-					name: true, surname: true, bio: true, avatarUrl: true
-				}
+			where: { id: userId},
+			select: {
+				id: true, email: true, username: true,
+				name: true, surname: true, bio: true, avatarUrl: true,
+				twoFactorEnabled: true
+			}
 			});
 			if (!me) 
 				throw new NotFound('Profilo utente non trovato', 'auth');
-			if (username === me?.username) reply.code(200).send(me);
+			
+			// If no username query param, return own profile
+			if (!username || username === me.username) {
+				logInfo('{auth} [200] Account trovato');
+				return reply.code(200).send(me);
+			}
+			
+			// Otherwise, lookup the requested user
 			const user = await authPrisma.account.findUnique({
 				where: { username: username},
 				select: {
@@ -168,7 +175,7 @@ export async function authEndpoint(fastify: FastifyInstance) {
 			if (!user) 
 				throw new NotFound('Profilo utente non trovato', 'auth');
 			logInfo('{auth} [200] Account trovato');
-			reply.code(200).send(user);
+			return reply.code(200).send(user);
 		} catch (err) {
 			if (err instanceof Error) {
 				reply.code((err as any).statusCode).send({ error: err.message });
@@ -229,18 +236,27 @@ export async function authEndpoint(fastify: FastifyInstance) {
 			const userId = Number(request.headers['x-user-id'])
 			const secretG = request.headers['x-gateway-secret']
 
+			logInfo(`{auth} /2fa/generate called - userId: ${userId}, secret: ${secretG ? 'present' : 'missing'}`);
+
 			if (!userId || secretG !== 'biscottini') {throw new Unauthorized('Utente non autorizzato', 'auth'); }
-			if (!request.user) throw new Error ("Undefined request user");
-			const email = request.user.email;
-			const [qrDataUrl, secret] = await generateQR(email, userId);
+			
+			// Get user email from database
+			const user = await authPrisma.account.findUnique({
+				where: { id: userId },
+				select: { email: true }
+			});
+			if (!user) throw new NotFound('Utente non trovato', 'auth');
+			
+			logInfo(`{auth} Generating QR for email: ${user.email}`);
+			const [qrDataUrl, secret] = await generateQR(user.email, userId);
 			logInfo('{auth} [200] QR generato con successo');
-			reply.code(200).send({ qrCodeUrl: qrDataUrl, secret: secret });
+			return reply.code(200).send({ qrCodeUrl: qrDataUrl, secret: secret });
 		} catch (err) {
 			if (err instanceof Error) {
-				reply.code((err as any).statusCode).send({ error: err.message });
+				return reply.code((err as any).statusCode).send({ error: err.message });
 			} else {
 				logError('{auth} [500] errore interno del server');
-				reply.code(500).send({ error: "Internal server error" });
+				return reply.code(500).send({ error: "Internal server error" });
 			}
 		}
 	});
@@ -295,6 +311,10 @@ export async function authEndpoint(fastify: FastifyInstance) {
 	//Enpoint POST elimina i token al logout
 	fastify.post('/logout', async (request: AuthRequest, reply: FastifyReply) => {
 		try {
+			// Clear the authentication cookies
+			reply.clearCookie('accessToken', { path: '/' });
+			reply.clearCookie('refreshToken', { path: '/' });
+			
 			logInfo('{auth} [200] Logout effettuato con successo');
 			reply.code(200).send({ message: 'Logout effettuato con successo' });
 		} catch (err) {

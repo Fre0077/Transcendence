@@ -1,6 +1,7 @@
 // --- TUE IMPORT ORIGINALI ---
 import { router } from './router';
 import './styles/main.css';
+import { createLoadingPage } from './components/loadingPage';
 
 // --- 1. AGGIUNGI QUESTO IMPORT ---
 // Importa la funzione per renderizzare la pagina di test
@@ -8,6 +9,12 @@ import { renderTestPage } from './pages/test/test.ts';
 
 // connect to the gateway for notifications
 import { ConnectLifecycleSocket, DisconnectLifecycleSocket } from '@services/ws/lifecycleWebSocket';
+
+// Initialize chat service
+import { chatService } from '@services/chatService';
+
+// Session management
+import { loadStoredSession } from '@services/session';
 
 // Initialize the application when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
@@ -33,32 +40,64 @@ document.addEventListener('DOMContentLoaded', () => {
 		// --- 3. QUESTA ERA LA TUA LOGICA ORIGINALE (...FINO A QUI) ---
 		// ALTRIMENTI, ESEGUI L'APP NORMALE (come prima)
 		
-		// Redirect base path "/" to landing or login page
-		if (window.location.pathname === '/') {
-		// Simple redirect to landing page (change to '/login' or '/dashboard' as needed)
-		window.history.replaceState({}, '', '/home');
-		}
+    // Show loading screen
+    if (rootElement) {
+      rootElement.appendChild(createLoadingPage('Initializing application...'));
+    }
 
-		// Initialize router
-		router.init('app');
+    // Small delay to show loading before routing
+    setTimeout(async () => {
+  		// Redirect base path "/" to landing or login page
+  		if (window.location.pathname === '/') {
+  		// Simple redirect to landing page (change to '/login' or '/home' as needed)
+  		window.history.replaceState({}, '', '/home');
+  		}
 
-		// connect socket to backend gateway
-		ConnectLifecycleSocket();
+      // Initialize router
+      router.init('app');
+
+      // Check if user is already logged in (page reload)
+      const session = loadStoredSession();
+      if (session.userId && session.user) {
+        console.log('User already authenticated, reconnecting services...');
+        
+        // Reconnect WebSocket
+        ConnectLifecycleSocket();
+        
+        // Reinitialize chat service
+        try {
+          await chatService.initialize();
+          console.log('✅ Chat service reconnected');
+        } catch (error) {
+          console.error('Failed to reconnect chat service:', error);
+        }
+      }
 
 		console.log('✅ Application initialized');
-	}
-	// --- FINE DEL BLOCCO MODIFICATO ---
+	  // --- FINE DEL BLOCCO MODIFICATO ---
+      console.log('✅ Application initialized');
+    }, 500);
+  }
+  // --- FINE DEL BLOCCO MODIFICATO ---
 });
 
 // Handle authentication events (for future use)
 // (Tutto il resto del tuo file rimane identico)
-window.addEventListener('auth:login', () => {
-	console.log('User logged in');
+window.addEventListener('auth:login', async () => {
+  console.log('User logged in');
   
 	// connect to Gateway for notifications
   	ConnectLifecycleSocket();
   
-	router.push('/dashboard');
+  // Initialize chat service
+  try {
+    await chatService.initialize();
+    console.log('✅ Chat service initialized');
+  } catch (error) {
+    console.error('Failed to initialize chat service:', error);
+  }
+  
+  router.push('/home');
 });
 
 window.addEventListener('auth:logout', () => {

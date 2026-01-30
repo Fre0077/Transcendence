@@ -17,16 +17,19 @@ import { loadHomePage } from "./pages/protected/home/home";
 import { loadProfilePage } from "./pages/protected/profile/profile";
 import { loadLoginPage } from "./pages/public/login/login";
 import { loadRegisterPage } from "./pages/public/register/register";
+import { load2FAVerifyPage } from "./pages/public/2fa-verify/2fa-verify";
+import { load2FASetupPage } from "./pages/protected/2fa-setup/2fa-setup";
+import { createLoadingPage } from "./components/loadingPage";
 
 
 // test
 import { loadChatApiTest } from "./pages/test/chatApiTest";
 
 // services
-import { isauth } from "@services/api/isauth";
+import { authService } from "@services/authService";
 import { sendDeleteRequest } from "@services/api/sendRequests";
 
-type RouteComponent = () => HTMLElement;
+type RouteComponent = () => HTMLElement | Promise<HTMLElement>;
 
 interface RouteConfig {
   path: string;
@@ -161,33 +164,40 @@ class Router {
     const { route, params } = match;
     this.params = params;
 
-    // TODO: Implement authentication guards
-    // import { authService } from '@/services/api/auth';
-    // const isAuthenticated = await authService.isAuthenticated();
-    // const has2FA = await authService.has2FAEnabled();
+    // ============================================
+    // AUTHENTICATION GUARDS
+    // ============================================
     
-    // if (route.meta?.requiresAuth && !isAuthenticated) {
-    //   this.replace('/login');
-    //   return;
-    // }
-    
-    // if (route.meta?.requiresGuest && isAuthenticated) {
-    //   this.replace('/dashboard');
-    //   return;
-    // }
-    
-    // if (route.meta?.requires2FA && !has2FA) {
-    //   this.replace('/2fa');
-    //   return;
-    // }
-
-    
-    // cheap guard by @topiana-
-    const isAuthenticated = await isauth();
-    if (route.meta?.requiresAuth && !isAuthenticated) {
-      this.replace('/login');
-      return;
+    // For guest routes (login, register, 2fa-verify), skip auth check
+    // These routes explicitly require NOT being authenticated
+    if (route.meta?.requiresGuest) {
+      // Check cached state only (no backend call)
+      const isAuthenticated = authService.isAuthenticated();
+      if (isAuthenticated) {
+        this.replace('/home');
+        return;
+      }
+      // Don't check with backend - user should not be authenticated here
+    } else {
+      // For all other routes, check authentication with backend
+      const isAuthenticated = await authService.checkAuth();
+      
+      // Protected routes - redirect to login if not authenticated
+      if (route.meta?.requiresAuth && !isAuthenticated) {
+        this.replace('/login');
+        return;
+      }
     }
+    
+    const has2FA = authService.has2FAEnabled();
+    
+    // 2FA protected routes - For now, we allow access even without 2FA
+    // In the future, you can uncomment this to enforce 2FA for certain routes
+    // if (route.meta?.requires2FA && !has2FA) {
+    //   // Redirect to 2FA setup page
+    //   this.replace('/2fa-setup');
+    //   return;
+    // }
 
     // Update page title
     if (route.meta?.title) {
@@ -200,24 +210,25 @@ class Router {
   }
 
   // Render the component
-  private render(route: RouteConfig) {
+  private async render(route: RouteConfig) {
     if (!this.rootElement) return;
 
     // Show loading state
-    this.rootElement.innerHTML = /* html */ `
-      <div class="flex items-center justify-center min-h-screen">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-        <span class="sr-only">Loading...</span>
-      </div>
-    `;
+    this.rootElement.innerHTML = '';
+    this.rootElement.appendChild(createLoadingPage('Loading page...'));
 
-    // Small delay to show loading (optional, remove in production if not needed)
-    setTimeout(() => {
-      if (!this.rootElement) return;
+    // Small delay to show loading animation
+    await new Promise(resolve => setTimeout(resolve, 150));
 
-      // Clear and render new component
+    if (!this.rootElement) return;
+
+    try {
+      // Clear and render new component (handle both sync and async components)
       this.rootElement.innerHTML = '';
-      const component = route.component();
+      const componentResult = route.component();
+      const component = componentResult instanceof Promise 
+        ? await componentResult 
+        : componentResult;
       this.rootElement.appendChild(component);
 
       // Scroll to top
@@ -225,7 +236,12 @@ class Router {
 
       // Announce page change for screen readers (accessibility)
       this.announcePageChange(route.meta?.title || 'Page loaded');
-    }, 100);
+    } catch (error) {
+      console.error('Error rendering component:', error);
+      if (this.rootElement) {
+        this.rootElement.innerHTML = '<div class="text-red-500 p-8">Error loading page. Please try again.</div>';
+      }
+    }
   }
 
   // Get current route parameters
@@ -300,6 +316,14 @@ const routes: RouteConfig[] = [
     meta: { title: 'Login - ft_transcendence', requiresGuest: true },
   },
   {
+    path: '/2fa-verify',
+    name: '2fa-verify',
+    component: () => {
+      return load2FAVerifyPage();
+    },
+    meta: { title: '2FA Verification - ft_transcendence', requiresGuest: true },
+  },
+  {
     path: '/callback',
     name: 'oauth-callback',
     component: () => {
@@ -357,6 +381,14 @@ const routes: RouteConfig[] = [
       return document.createElement('div');
     },
     meta: { title: 'Edit Profile - ft_transcendence', requiresAuth: true, requires2FA: true },
+  },
+  {
+    path: '/settings/2fa',
+    name: '2fa-setup',
+    component: () => {
+      return load2FASetupPage();
+    },
+    meta: { title: 'Two-Factor Authentication - ft_transcendence', requiresAuth: true },
   },
   {
     path: '/chats',

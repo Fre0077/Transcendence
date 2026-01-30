@@ -135,7 +135,7 @@ fastify.register(async function (fastify) {
 	fastify.post('/login', httpforwarder(`${AUTH_URL}/api/login`, 'application/json', { auth: false, handler: attachAllCookies }));
 	fastify.post('/register', httpforwarder(`${AUTH_URL}/api/register`, 'application/json', { auth: false }));
 	fastify.post('/auth/google', httpforwarder(`${AUTH_URL}/api/auth/google`, 'application/json', { auth: false }));
-	fastify.post('/2fa/verify', httpforwarder(`${AUTH_URL}/api/2fa/verify`, 'application/json', { auth: false }));
+	fastify.post('/2fa/verify', httpforwarder(`${AUTH_URL}/api/2fa/verify`, 'application/json', { auth: false, handler: attachAllCookies }));
 	fastify.get('/profile',  httpforwarder(`${AUTH_URL}/api/profile`, 'application/json', { auth: true }));
 	fastify.patch('/profile',  httpforwarder(`${AUTH_URL}/api/profile`, 'application/json', { auth: true, handler: attachAllCookies }));
 	fastify.post('/profile/avatar',  httpforwarder(`${AUTH_URL}/api/profile/avatar`, 'multipart/form-data', { auth: true }));
@@ -156,6 +156,8 @@ fastify.register(async function (fastify) {
 	// ... add others
 
 	// chat backend APIs
+	fastify.get('/chat-list', httpforwarder(`${CHAT_URL}/api/chat-list`, 'application/json', { auth: true }));
+	fastify.post('/message-list', httpforwarder(`${CHAT_URL}/api/message-list`, 'application/json', { auth: true }));
 	fastify.post('/user-list', httpforwarder(`${CHAT_URL}/api/user-list`, 'application/json', { auth: true }));
 	fastify.post('/new-message', httpforwarder(`${CHAT_URL}/api/new-message`, 'application/json', { auth: true }));
 	fastify.post('/new-chat', httpforwarder(`${CHAT_URL}/api/new-chat`, 'application/json', { auth: true }));
@@ -166,6 +168,7 @@ fastify.register(async function (fastify) {
 	fastify.post('/search-chat', httpforwarder(`${CHAT_URL}/api/search-chat`, 'application/json', { auth: true }));
 	fastify.post('/block-user', httpforwarder(`${CHAT_URL}/api/block-user`, 'application/json', { auth: true }));
 	fastify.post('/sblock-user', httpforwarder(`${CHAT_URL}/api/sblock-user`, 'application/json', { auth: true }));
+	fastify.post('/blocked-users', httpforwarder(`${CHAT_URL}/api/blocked-users`, 'application/json', { auth: true }));
 	// ... add others
 
 	// Fetches the desired backend endpoint (if specified). Then on successfule response calls the 'forward' function.

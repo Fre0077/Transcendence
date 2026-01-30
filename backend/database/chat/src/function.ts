@@ -375,7 +375,23 @@ export async function sblockUser(input: number[]): Promise<string> {
 	return `User ${blockedUserId} unblocked by ${blockerUserId}`;
 }
 
+//ritorna la lista degli user bloccati da uno user
+export async function getBlockedUsers(linkId: number): Promise<string> {
+	const user = await chatPrisma.user.findUnique({
+		where: { linkId: linkId },
+		include: { blockedUsers: true }
+	});
 
+	if (!user)
+		throw new NotFound('User not found', "chat");
+
+	const blockedUsers = user.blockedUsers.map(u => ({
+		linkId: u.linkId,
+		username: u.username
+	}));
+
+	return JSON.stringify(blockedUsers);
+}
 
 
 

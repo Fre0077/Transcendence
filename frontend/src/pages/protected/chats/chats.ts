@@ -2,12 +2,16 @@ import { loadNavbar } from "@/components/navbar";
 import { chatService } from "@/services/chatService";
 import { loadStoredSession } from "@/services/session";
 import type { Chat, Message } from "@/services/storage/chatStorage";
+import { createNewChatModal, openNewChatModal } from "@/components/newChatModal";
+import { createBlockUserModal, openBlockUserModal } from "@/components/blockUserModal";
+import { createChatInfoModal, openChatInfoModal } from "@/components/chatInfoModal";
 
 interface DisplayMessage {
 	sender: string;
 	content: string;
 	timestamp: string;
 	userId: number;
+	date: Date;
 }
 
 export class ChatsPage {
@@ -44,8 +48,23 @@ export class ChatsPage {
 			<div class="flex-1 container mx-auto px-6 py-8">
 				<div class="flex justify-between items-center mb-6">
 					<h1 class="text-3xl font-bold text-white">Chats</h1>
-					<div id="connectionStatus" class="px-3 py-1 rounded-full text-sm font-semibold">
-						<span id="statusText">Connecting...</span>
+					<div class="flex items-center gap-4">
+						<button
+							id="manageBlockedBtn"
+							class="px-4 py-2 rounded-lg font-semibold text-white bg-slate-700 hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-slate-400/50 transition"
+							title="Manage blocked users"
+						>
+							🚫 Blocked Users
+						</button>
+						<button
+							id="newChatBtn"
+							class="px-4 py-2 rounded-lg font-semibold text-white bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 focus:outline-none focus:ring-2 focus:ring-purple-400/50 transition"
+						>
+							+ New Chat
+						</button>
+						<div id="connectionStatus" class="px-3 py-1 rounded-full text-sm font-semibold">
+							<span id="statusText">Connecting...</span>
+						</div>
 					</div>
 				</div>
 				<div class="bg-white/5 border border-white/10 rounded-xl p-6 text-white flex flex-row gap-4" style="height: calc(100vh - 200px);">
@@ -56,8 +75,12 @@ export class ChatsPage {
 					
 					<!-- Chat Display -->
 					<div id="chatDisplay" class="flex-1 flex flex-col">
-						<div id="chatHeader" class="mb-4 pb-3 border-b border-white/10">
-							<div class="text-white/50 text-center py-4">Select a chat to start messaging</div>
+						<div id="chatHeader" class="mb-4 pb-3 border-b border-white/10 flex justify-between items-center">
+							<div class="text-white/50 text-center flex-1 py-4">
+								<div class="text-6xl mb-4">💬</div>
+								<div class="text-xl font-semibold text-white mb-2">No Chat Selected</div>
+								<div class="text-sm">Choose a chat from the list or start a new conversation</div>
+							</div>
 						</div>
 						<div id="chatMessages" class="flex-1 overflow-y-auto mb-4 p-4 bg-white/5 border border-white/10 rounded-lg">
 						</div>
@@ -72,6 +95,7 @@ export class ChatsPage {
 							<button
 								type="submit"
 								class="ml-2 px-4 py-2 rounded-lg font-semibold text-white bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 focus:outline-none focus:ring-2 focus:ring-purple-400/50 transition"
+								id="sendButton"
 							>
 								Send
 							</button>
@@ -81,6 +105,30 @@ export class ChatsPage {
 			</div>
 		`;
 
+		// Add new chat modal to the page
+		const modal = createNewChatModal();
+		div.appendChild(modal);
+		
+		// Add block user modal to the page
+		const blockModal = createBlockUserModal();
+		div.appendChild(blockModal);
+		
+		// Add chat info modal to the page
+		const chatInfoModal = createChatInfoModal();
+		div.appendChild(chatInfoModal);
+		
+		// New chat button handler
+		const newChatBtn = div.querySelector('#newChatBtn');
+		newChatBtn?.addEventListener('click', () => {
+			openNewChatModal();
+		});
+		
+		// Manage blocked users button handler
+		const manageBlockedBtn = div.querySelector('#manageBlockedBtn');
+		manageBlockedBtn?.addEventListener('click', () => {
+			openBlockUserModal();
+		});
+		
 		// Subscribe to chat events
 		chatService.on('chats-updated', this.chatUpdateListener);
 		chatService.on('message-received', this.messageListener);
@@ -97,25 +145,30 @@ export class ChatsPage {
 		// Setup form submission
 		const chatForm = div.querySelector('#chatForm') as HTMLFormElement;
 		const chatInput = div.querySelector('#chatInput') as HTMLInputElement;
+		const sendButton = div.querySelector('#sendButton') as HTMLButtonElement;
 
 		chatForm.addEventListener('submit', async (event) => {
 			event.preventDefault();
 			const message = chatInput.value.trim();
 			if (!message || !this.currentChat) return;
 			
+			// Disable input while sending
+			chatInput.disabled = true;
+			sendButton.disabled = true;
+			sendButton.textContent = 'Sending...';
+			
 			const success = await chatService.sendMessage(this.currentChat.chatId, message);
+			
+			// Re-enable input
+			chatInput.disabled = false;
+			sendButton.disabled = false;
+			sendButton.textContent = 'Send';
+			
 			if (success) {
 				chatInput.value = '';
-				
-				// Optimistic UI update
-				const newMsg: DisplayMessage = {
-					sender: "You",
-					content: message,
-					timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-					userId: this.currentUserId || 0
-				};
-				this.messages.push(newMsg);
-				this.appendMessage(div, newMsg);
+				chatInput.focus();
+				// Note: Don't add optimistic UI update here
+				// The message will be added via WebSocket when server confirms
 			}
 		});
 
@@ -176,11 +229,13 @@ export class ChatsPage {
 	private handleMessageReceived(data: { chatId: number; message: Message }) {
 		// If viewing this chat, update messages
 		if (this.currentChat && this.currentChat.chatId === data.chatId) {
+			const msgDate = new Date(data.message.date);
 			const displayMsg: DisplayMessage = {
-				sender: data.message.userId === this.currentUserId ? "You" : `User ${data.message.userId}`,
+				sender: data.message.userId === this.currentUserId ? "You" : "User " + data.message.userId,
 				content: data.message.message,
-				timestamp: new Date(data.message.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-				userId: data.message.userId
+				timestamp: msgDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+				userId: data.message.userId,
+				date: msgDate
 			};
 			this.messages.push(displayMsg);
 			if (this.rootElement) {
@@ -208,25 +263,27 @@ export class ChatsPage {
 			return;
 		}
 
-		chatListDiv.innerHTML = this.chats.map(chat => {
+		const chatElements: string[] = [];
+		for (const chat of this.chats) {
 			const unread = this.unreadCounts.get(chat.chatId) || 0;
 			const isSelected = this.currentChat?.chatId === chat.chatId;
+			const selectedClass = isSelected ? ' ring-2 ring-purple-400' : '';
+			const unreadBadge = unread > 0 ? '<div class="bg-purple-600 text-white text-xs font-semibold px-2 py-1 rounded-full ml-2">' + unread + '</div>' : '';
 			
-			return `
-				<div 
-					class="mb-2 p-4 bg-white/5 border border-white/10 rounded-lg cursor-pointer hover:bg-white/10 transition ${isSelected ? 'ring-2 ring-purple-400' : ''}"
-					data-chat-id="${chat.chatId}"
-				>
-					<div class="flex items-center justify-between">
-						<div class="flex-1 min-w-0">
-							<div class="font-medium truncate">${this.escapeHtml(chat.name)}</div>
-							<div class="text-white/70 text-sm truncate">${this.escapeHtml(chat.lastMessage || 'No messages')}</div>
-						</div>
-						${unread > 0 ? `<div class="bg-purple-600 text-white text-xs font-semibold px-2 py-1 rounded-full ml-2">${unread}</div>` : ''}
-					</div>
-				</div>
-			`;
-		}).join('');
+			const html = '<div class="mb-2 p-4 bg-white/5 border border-white/10 rounded-lg cursor-pointer hover:bg-white/10 transition' + selectedClass + '" data-chat-id="' + chat.chatId + '">' +
+				'<div class="flex items-center justify-between">' +
+					'<div class="flex-1 min-w-0">' +
+						'<div class="font-medium truncate">' + this.escapeHtml(chat.name) + '</div>' +
+						'<div class="text-white/70 text-sm truncate">' + this.escapeHtml(chat.lastMessage || 'No messages') + '</div>' +
+					'</div>' +
+					unreadBadge +
+				'</div>' +
+			'</div>';
+			
+			chatElements.push(html);
+		}
+		
+		chatListDiv.innerHTML = chatElements.join('');
 
 		// Add click handlers
 		chatListDiv.querySelectorAll('[data-chat-id]').forEach(el => {
@@ -242,20 +299,21 @@ export class ChatsPage {
 
 	private async selectChat(root: HTMLElement, chat: Chat) {
 		this.currentChat = chat;
-		
-		// Connect to message stream
-		chatService.connectToMessages(chat.chatId);
-		
+ 		
 		// Mark as read
 		await chatService.markChatAsRead(chat.chatId);
+		
+		// Fetch messages from backend (will be cached in IndexedDB)
+		await chatService.fetchMessages(chat.chatId);
 		
 		// Load messages from IndexedDB
 		const messages = await chatService.getMessages(chat.chatId);
 		this.messages = messages.map(m => ({
-			sender: m.userId === this.currentUserId ? "You" : `User ${m.userId}`,
+			sender: m.userId === this.currentUserId ? "You" : "User " + m.userId,
 			content: m.message,
 			timestamp: new Date(m.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-			userId: m.userId
+			userId: m.userId,
+			date: new Date(m.date)
 		}));
 		
 		// Update UI
@@ -274,10 +332,28 @@ export class ChatsPage {
 		const headerDiv = root.querySelector('#chatHeader') as HTMLElement;
 		if (!headerDiv) return;
 		
-		headerDiv.innerHTML = `
-			<h2 class="text-xl font-bold text-white">${this.escapeHtml(chat.name)}</h2>
-			<div class="text-white/50 text-sm">${chat.type === 'GROUP' ? 'Group Chat' : 'Direct Message'}</div>
-		`;
+		const chatTypeLabel = chat.type === 'GROUP' ? 'Group Chat' : 'Direct Message';
+		const chatTypeIcon = chat.type === 'GROUP' ? '👥' : '💬';
+		
+		headerDiv.className = 'mb-4 pb-3 border-b border-white/10 flex justify-between items-center';
+		headerDiv.innerHTML = '<div class="flex items-center gap-3">' +
+			'<div class="text-2xl">' + chatTypeIcon + '</div>' +
+			'<div>' +
+				'<h2 class="text-xl font-bold text-white">' + this.escapeHtml(chat.name) + '</h2>' +
+				'<div class="text-white/50 text-sm">' + chatTypeLabel + '</div>' +
+			'</div>' +
+		'</div>' +
+		'<button id="chatInfoBtn" class="px-3 py-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition" title="Chat Info">' +
+			'<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">' +
+				'<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>' +
+			'</svg>' +
+		'</button>';
+		
+		// Add chat info button handler
+		const chatInfoBtn = headerDiv.querySelector('#chatInfoBtn');
+		chatInfoBtn?.addEventListener('click', () => {
+			openChatInfoModal(chat.chatId, chat.name, chat.type, chat.participants);
+		});
 	}
 
 	private renderMessages(root: HTMLElement) {
@@ -289,15 +365,20 @@ export class ChatsPage {
 			return;
 		}
 		
-		messagesDiv.innerHTML = this.messages.map(msg => `
-			<div class="mb-3 ${msg.userId === this.currentUserId ? 'text-right' : ''}">
-				<div class="inline-block max-w-[70%] ${msg.userId === this.currentUserId ? 'bg-purple-600' : 'bg-white/10'} rounded-lg px-4 py-2">
-					<div class="font-semibold text-sm mb-1">${this.escapeHtml(msg.sender)}</div>
-					<div class="break-words">${this.escapeHtml(msg.content)}</div>
-					<div class="text-xs text-white/50 mt-1">${msg.timestamp}</div>
-				</div>
-			</div>
-		`).join('');
+		const messageElements: string[] = [];
+		for (const msg of this.messages) {
+			const alignClass = msg.userId === this.currentUserId ? 'text-right' : '';
+			const bgClass = msg.userId === this.currentUserId ? 'bg-purple-600' : 'bg-white/10';
+			const html = '<div class="mb-3 ' + alignClass + '">' +
+				'<div class="inline-block max-w-[70%] ' + bgClass + ' rounded-lg px-4 py-2">' +
+					'<div class="font-semibold text-sm mb-1">' + this.escapeHtml(msg.sender) + '</div>' +
+					'<div class="break-words">' + this.escapeHtml(msg.content) + '</div>' +
+					'<div class="text-xs text-white/50 mt-1">' + msg.timestamp + '</div>' +
+				'</div>' +
+			'</div>';
+			messageElements.push(html);
+		}
+		messagesDiv.innerHTML = messageElements.join('');
 		
 		messagesDiv.scrollTop = messagesDiv.scrollHeight;
 	}
@@ -307,19 +388,20 @@ export class ChatsPage {
 		if (!messagesDiv) return;
 		
 		// Remove "no messages" placeholder if it exists
-		if (messagesDiv.querySelector('.text-white\\/50')) {
+		const placeholder = messagesDiv.querySelector('.text-white\\/50, [class*="text-white/50"]');
+		if (placeholder && messagesDiv.children.length === 1) {
 			messagesDiv.innerHTML = '';
 		}
 		
 		const messageDiv = document.createElement('div');
-		messageDiv.className = `mb-3 ${message.userId === this.currentUserId ? 'text-right' : ''}`;
-		messageDiv.innerHTML = `
-			<div class="inline-block max-w-[70%] ${message.userId === this.currentUserId ? 'bg-purple-600' : 'bg-white/10'} rounded-lg px-4 py-2">
-				<div class="font-semibold text-sm mb-1">${this.escapeHtml(message.sender)}</div>
-				<div class="break-words">${this.escapeHtml(message.content)}</div>
-				<div class="text-xs text-white/50 mt-1">${message.timestamp}</div>
-			</div>
-		`;
+		const alignClass = message.userId === this.currentUserId ? 'text-right' : '';
+		const bgClass = message.userId === this.currentUserId ? 'bg-purple-600' : 'bg-white/10';
+		messageDiv.className = 'mb-3 ' + alignClass;
+		messageDiv.innerHTML = '<div class="inline-block max-w-[70%] ' + bgClass + ' rounded-lg px-4 py-2">' +
+			'<div class="font-semibold text-sm mb-1">' + this.escapeHtml(message.sender) + '</div>' +
+			'<div class="break-words">' + this.escapeHtml(message.content) + '</div>' +
+			'<div class="text-xs text-white/50 mt-1">' + message.timestamp + '</div>' +
+		'</div>';
 		
 		messagesDiv.appendChild(messageDiv);
 		messagesDiv.scrollTop = messagesDiv.scrollHeight;
@@ -337,10 +419,5 @@ export class ChatsPage {
 		chatService.off('chats-updated', this.chatUpdateListener);
 		chatService.off('message-received', this.messageListener);
 		chatService.off('unread-updated', this.unreadListener);
-		
-		// Disconnect from current chat messages
-		if (this.currentChat) {
-			chatService.disconnectFromMessages(this.currentChat.chatId);
-		}
 	}
 }
