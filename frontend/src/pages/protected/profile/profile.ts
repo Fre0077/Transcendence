@@ -4,17 +4,20 @@ import { generateInitialsAvatar } from "@/components/createDefaultImage";
 
 import { GameData, createHistoryBar } from "@/components/createHistoryBar";
 import { createFriendsBar } from "@/components/createFriendBar";
-import { sendPostRequest, sendPatchRequest } from "@/services/api/sendRequests";
+import { sendPatchRequest } from "@/services/api/sendRequests";
 import { router } from "@/router";
 
-let mainUsername:string = '';
+let paramUsername:string = '';
 
-export function loadProfilePage(): HTMLElement {
+export async function loadProfilePage(): Promise<HTMLElement> {
 
 	const params = router.getParams();
-	mainUsername = params.username
-	console.log('params', mainUsername);
+	paramUsername = params.username;
+	const me = await sendGetRequest(`/api/isauth`);
+	if (me.ok === false) throw new Error('No authentication token found');
+	if (!me.user.username) throw new Error('username not found')
 
+	// overflow-hidden whitespace-nowrap text-ellispis
 
 	const div = document.createElement('div');
 	div.className = 'min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex flex-col';
@@ -29,8 +32,8 @@ export function loadProfilePage(): HTMLElement {
 				class="absolute top-4 left-4 bg-white/10 hover:bg-white/20 text-white px-3 py-1 rounded-lg text-sm">
 				✏️ Edit
 			</button>
-			<div class="text-center flex flex-row flex-grow items-center">
-				<div class="relative w-32 h-32 mb-6">
+			<div class="text-center flex flex-col items-center mt-10">
+				<div class="relative min-w-32 min-h-32">
 					<img
 						id="avatar-img"
 						class="w-32 h-32 rounded-full select-none"
@@ -57,8 +60,8 @@ export function loadProfilePage(): HTMLElement {
 				</div>
 				<div class="ml-8 text-left flex-grow">
 					<div class="flex items-center justify-between mb-4">
-						<h1 class="text-4xl font-bold text-white">Username</h1>
-						<a href="/settings/2fa" class="ml-4 p-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all" title="Security Settings">
+						<h1 class="text-4xl font-bold text-white mb-2 truncate max-w-[240px]">Username</h1>
+						<a id="settingFa" href="/settings/2fa" class="ml-4 p-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all" title="Security Settings">
 							<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
@@ -88,65 +91,6 @@ export function loadProfilePage(): HTMLElement {
 		</div>
 
 		<br>
-
-		<!-- Friend Request -->
-		<section
-            id="friend-request-card"
-            class="relative rounded-xl p-8 border border-white/20
-                    bg-slate-800/60 backdrop-blur
-                    transition-all duration-300
-                    hover:shadow-lg hover:shadow-white/10
-                    focus-within:ring-2 focus-within:ring-cyan-400"
-            >
-                <div class="text-center">
-                    <!-- Icon -->
-                    <div class="text-5xl mb-4" aria-hidden="true">👤➕</div>
-
-                    <!-- Title -->
-                    <h3 class="text-xl font-bold text-white mb-2">
-                        Friend request
-                    </h3>
-
-                    <!-- Description -->
-                    <p class="text-sm text-white/70 mb-4">
-                        Send a friend request
-                    </p>
-
-                    <!-- Form -->
-                    <form id="friend-request-form" class="flex flex-col gap-3">
-                        <label for="friend-request-username" class="sr-only">
-                            Player username
-                        </label>
-
-                        <input
-                            id="friend-request-username"
-                            name="username"
-                            type="text"
-                            required
-                            placeholder="Username"
-                            class="rounded-md px-4 py-2
-                                bg-slate-900 text-white
-                                border border-white/20
-                                placeholder-white/40
-                                focus:outline-none focus:ring-2 focus:ring-cyan-400"
-                        />
-
-                        <button
-                            type="submit"
-                            class="mt-2 inline-flex items-center justify-center gap-2
-                                rounded-md px-4 py-2
-                                bg-cyan-600 hover:bg-cyan-500
-                                text-white font-semibold
-                                transition-colors
-                                focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-400"
-                        >
-                            <span aria-hidden="true">✉️</span>
-                            Send Request
-                        </button>
-                    </form>
-                </div>
-            </section>
-
 
 		<!-- MATCH HISTORY -->
 		<div id="match-history" class="mt-12 w-full max-w-4xl flex flex-col space-y-3 font-mono">
@@ -181,8 +125,7 @@ export function loadProfilePage(): HTMLElement {
 
 	let currentUser: UserProfile;
 
-	getUserProfile().then(user => {
-		console.log("server response:", user);
+	getUserProfile(me.user.username).then(user => {
 		currentUser = user;
 		const usernameElem = div.querySelector('h1');
 		const bioElem = div.querySelector('p');
@@ -218,15 +161,13 @@ export function loadProfilePage(): HTMLElement {
 		console.error("Error loading user profile:", error);
 	});
 	
-	getUserGames().then(games => {
-		console.log("game response:", games);
-
+	getUserGames(me.user.username).then(async games => {
 		const history = div.querySelector('#match-history');
 		if (!history) throw Error("History div not found");
-
 		// loops through games and adds them
 		for (const g of games.reverse()/* .history */) {
-			history.appendChild(createHistoryBar(g));
+			const game = await createHistoryBar(g);
+			history.appendChild(game);
 		}
 	}).catch(error => {
 		console.error("Error loading user profile:", error);
@@ -239,6 +180,7 @@ export function loadProfilePage(): HTMLElement {
 
 	// EDIT PROFILE BTN
 	const editBtn = div.querySelector('#edit-profile-btn') as HTMLButtonElement;
+	const settingFa = div.querySelector('#settingFa') as HTMLElement;
 	const modal = div.querySelector('#edit-profile-modal') as HTMLDivElement;
 	const closeBtn = div.querySelector('#close-edit-modal') as HTMLButtonElement;
 	const form = div.querySelector('#edit-profile-form') as HTMLFormElement;
@@ -290,7 +232,6 @@ export function loadProfilePage(): HTMLElement {
 			const file = avatarFileInput.files?.[0];
 			if (!file) return;
 			const formData = new FormData();
-			console.log('formData', formData);
 			formData.append('file', file);
 			const response = await fetch('/api/profile/avatar', {
 				method: 'POST',
@@ -300,10 +241,8 @@ export function loadProfilePage(): HTMLElement {
 			if (response.ok) {
 				const data = await response.json();
 				// 3. Aggiorniamo l'immagine nella UI
-				if (data.avatarUrl) {
+				if (data.avatarUrl)
 					avatarImgElement.src = data.avatarUrl;
-					console.log("Avatar aggiornato con successo!");
-				}
 			} else {
 				const errorData = await response.json();
 				console.error("Errore durante l'upload:", errorData.error);
@@ -311,52 +250,14 @@ export function loadProfilePage(): HTMLElement {
 			}
 		});
 	} catch (err) {
-		console.log('Erro while trying to update profile', err);
+		// console.log('Erro while trying to update profile', err);
 	}
 
-	/* -------------------------------- */
-	/*          FRIEND REQUEST          */
-
-	const friendCard = div.querySelector("#friend-request-card") as HTMLElement;
-
-	// friend request btn
-	const freqform = div.querySelector("#friend-request-form") as HTMLFormElement;
-	freqform.addEventListener("submit", (event) => {
-		event.preventDefault(); // stop page reload
-
-		// get the username
-		const form = event.currentTarget as HTMLFormElement;
-		const data = new FormData(form);
-
-		const username = data.get("username");
-
-		if (typeof username !== "string" || username.trim() === "") {
-			console.error("Invalid username");
-			return;
-		}
-
-
-		// send the request to the backend
-		try{
-			sendPostRequest(`/api/friend-request`, {
-				target: username
-			}, 'application/json')
-			.then(() => {
-				// update the UI
-				window.dispatchEvent(
-					new CustomEvent('update:friends', { bubbles: true })
-				);
-			});
-		} catch (err) {
-			console.log('Erro while trying to friend request', err);
-		}
-	});
-
 	// MYSELF or NOT logic
-	if (mainUsername !== 'me'){
+	if (paramUsername !== 'me') {
 		editBtn.classList.add('hidden');
-		friendCard.classList.add('hidden');
 		changeAvatarBtn.classList.add('hidden');
+		settingFa.classList.add('hidden');
 	}
 	return div;
 }
@@ -375,20 +276,15 @@ interface UserProfile {
 	avatarUrl: string | null;
 }
 
-export async function getUserProfile(): Promise<UserProfile> {
+export async function getUserProfile(routeUsername:string): Promise<UserProfile> {
 	/* ----- get username (todo better) ----- */
 	let username;
-	if (mainUsername === 'me') {
-		const user = await sendGetRequest(`/api/isauth`);
-		if (user.ok === false) {
-			throw new Error('No authentication token found');
-		}
-		username = user.user.username;
+	if (paramUsername === 'me') {
+		username = routeUsername;
 		if (!username) throw new Error('username not found')
 	}
 	else
-		username = mainUsername;
-
+		username = paramUsername;
 	/* --------------------------------- */
 	const profileResponse = await sendGetRequest(`/api/user?username=${username}`);
 	const butlerResponse = await sendGetRequest(`/api/profile?username=${username}`);
@@ -459,27 +355,21 @@ export function createDonutChart(wins: number, losses: number, text:string): HTM
 }
 
 // @topiana- ecarbona collab
-export async function getUserGames(): Promise</* { history:  */GameData[]/*  } */> {
+export async function getUserGames(routeUsername:string): Promise</* { history:  */GameData[]/*  } */> {
 	// const token = localStorage.getItem('authToken');
 	// const linkid = localStorage.getItem('userId');
 
 	/* ----- get username (todo better) ----- */
 	let username;
-	if (mainUsername === 'me') {
-		const user = await sendGetRequest(`/api/isauth`);
-		if (user.ok === false) {
-			throw new Error('No authentication token found');
-		}
-		console.log('got cookie from butler', user);
-		username = user.user.username;
+	if (paramUsername === 'me') {
+		username = routeUsername;
 		if (!username) throw new Error('username not found')
 	}
 	else
-		username = mainUsername;
+		username = paramUsername;
 	/* --------------------------------- */
 
 
 	const response = await sendGetRequest(`/api/game?username=${username}`);
 	return response;
 }
-

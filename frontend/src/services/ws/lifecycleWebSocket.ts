@@ -52,16 +52,37 @@ export async function ConnectLifecycleSocket(): Promise<WebSocket | null>
 		return socket;
 	}
 
+	
 	// connect with auth refresh
 	socket = await authWebSocket();
 	if (!socket) {
-		console.log("User not authenticated, can't connect to lifecycle websocket");
+		// console.log("User not authenticated, can't connect to lifecycle websocket");
 		return null;
 	}
+	
+	// ping logic
+	let pingtimeout: number | undefined = undefined;
+
+	/* define ping-pong logic */
+	const ping = () => {
+
+		pingtimeout = setTimeout(() => {
+			if (socket?.readyState === WebSocket.OPEN) {
+				socket.send('ping');
+			}
+			// loop back
+			ping();
+
+		// ping every 20s
+		}, 20_000);
+	}
+
 
 	socket.onopen = () => {
-		console.log('[WS] connected to \'' + BUTLER_URL + '\'');
-		// if (socket) socket.send("Ciao Butler");
+		// console.log('[WS] connected to \'' + BUTLER_URL + '\'');
+
+		// start pinging
+		ping();
 	}
 
 	/*  #friend-request
@@ -73,7 +94,17 @@ export async function ConnectLifecycleSocket(): Promise<WebSocket | null>
 	socket.onmessage = (ev: MessageEvent<string>) => {
 		try
 		{
+			// pong logic
+			if (ev.data.toString() === 'pong') {
+				/* #debug */
+				// // console.log('We Lobby PONG-ing');
+				return ;
+			}
+
+			// actual messages
 			const msg = JSON.parse(ev.data);
+
+			// console.log('[WS] got message', msg);
 
 			// handle notifications
 			if (msg?.what === "NOTIFY")
@@ -83,24 +114,31 @@ export async function ConnectLifecycleSocket(): Promise<WebSocket | null>
 				switch (msg.type)
 				{
 					case "friend-request":
-						console.log("Friend request", msg.sender);
-						toastNotification.friend('Friend Request', `${msg.sender} vorrebbe essere tuo amico`, 
-							() => { alert('Pagina Friends');},
-							() => acceptFriendRequest(msg.sender),
-							() => declineFriendRequest(msg.sender),
-							5000);
+						// console.log("Friend request", msg.sender);
+
+						// update the UI
+						window.dispatchEvent(
+							new CustomEvent('update:friends', { bubbles: true })
+						);
+						
+						if (router.getCurrentRoute()?.path !== '/profile/:username')
+							toastNotification.friend('Friend Request', `${msg.sender} vorrebbe essere tuo amico`, 
+								() => { },
+								() => acceptFriendRequest(msg.sender),
+								() => declineFriendRequest(msg.sender),
+								5000);
 						
 						break ;
 					case "lobby-invite":
-						console.log("Lobby invite", msg.content);
+						// console.log("Lobby invite", msg.content);
 						toastNotification.invite('Lobby Invite', `${msg.sender} ti ha invitato nella sua lobby`,
-							undefined,
+							() => { },
 							() => router.push(`/lobby/online?lobby-id=${msg.content}`),
 							() => {},
 							10_000);
 						break ;
 					case "tournament-invite":
-						console.log("Tournament invite", msg.content);
+						// console.log("Tournament invite", msg.content);
 						toastNotification.invite('TEST', 'X e\' dietro di te',
 							() => {alert('SAIK')},
 							undefined,
@@ -108,7 +146,7 @@ export async function ConnectLifecycleSocket(): Promise<WebSocket | null>
 							10_000);
 						break ;
 					default:
-						console.log(`Unknown type ${msg.type}`, msg.content);
+						// console.log(`Unknown type ${msg.type}`, msg.content);
 				}
 			}
 
@@ -120,7 +158,7 @@ export async function ConnectLifecycleSocket(): Promise<WebSocket | null>
 				switch (msg.type)
 				{
 					case "friend":
-						console.log("Friend update", msg.sender);
+						// console.log("Friend update", msg.sender);
 						// update the UI
 						window.dispatchEvent(
 							new CustomEvent('update:friends', { bubbles: true })
@@ -128,23 +166,23 @@ export async function ConnectLifecycleSocket(): Promise<WebSocket | null>
 						
 						break ;
 					default:
-						console.log(`Unknown type ${msg.type}`, msg.content);
+						// console.log(`Unknown type ${msg.type}`, msg.content);
 				}
 			}
 		}
-		catch (err)
-		{
-			console.log('Error while receiving from butler', err);
+		catch (err) {
+			console.warn('Error while receiving from butler', err);
 		}
 	}
 
 	socket.onclose = () => {
-		console.log("Closing Lifecycle WebSocket");
+		// console.log("Closing Lifecycle WebSocket");
+		if (pingtimeout) clearInterval(pingtimeout);
 		socket = null;
 	}
 
 	socket.onerror = (err) => {
-		console.log("Lifecycle WebSocket error", err);
+		// console.log("Lifecycle WebSocket error", err);
 		socket?.close();
 	}
 

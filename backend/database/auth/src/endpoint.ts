@@ -1,5 +1,5 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
-import { register, login, generateTokens, googleAuth, auth2FA,
+import { register, login, googleAuth, auth2FA,
 		changeProfile, changeAvatar, generateQR,
 		enable2FA, disable2FA} from "./function";
 import { Account, PrismaClient as authPrismaClient } from "../database/generate/auth";
@@ -32,16 +32,7 @@ export async function authEndpoint(fastify: FastifyInstance) {
 				return reply.code(401).send({ message: "Verifica 2FA richiesta", twoFactorRequired: true });
 			}
 			// write reply
-			reply
-				.code(200)
-				/* adding cookies for auth */
-				/* .setCookie('token', tokens.accessToken, {
-					httpOnly: true,
-					secure: false,        // true in production (HTTPS)
-					sameSite: 'lax',
-					path: '/',
-				}) */
-				.send({ ...user, ok: true });
+			reply.code(200).send({ ...user, ok: true });
 		
 			logInfo('{auth} [200] token generato con successo');
 		} catch (err) {
@@ -83,9 +74,8 @@ export async function authEndpoint(fastify: FastifyInstance) {
 				throw new BadRequest('Google ID o Email non fornita', 'auth');
 			let user = await googleAuth(googleData);
 			if (user) {
-				const tokens = await generateTokens(user);
 				logInfo('{auth} [200] Autenticazione Google riuscita');
-				reply.code(200).send({ message: 'Autenticazione Google riuscita', ...tokens, user });
+				reply.code(200).send(user);
 			}
 		} catch (err) {
 			if (err instanceof Error) {
@@ -106,7 +96,7 @@ export async function authEndpoint(fastify: FastifyInstance) {
 				throw new BadRequest('Email e codice 2FA sono richiesti', 'auth');
 			const user = await auth2FA(googleData);
 			logInfo('{auth} [200] 2FA riuscita');
-			reply.code(200).send({ ...user, user, ok: true });
+			reply.code(200).send({ ...user, ok: true });
 		} catch (err) {
 			if (err instanceof Error) {
 				reply.code((err as any).statusCode).send({ error: err.message });

@@ -9,8 +9,9 @@ import {
     getProfileData,
     getUserData,
     getUserInfo,
+    getUserId,
     getUserGames,
-    replaceAllData
+    /* replaceAllData */
 } from "./function";
 
 // @topiana-
@@ -32,10 +33,10 @@ interface ProfileQuery {
 export async function profileEndpoint(fastify: FastifyInstance) {
     //GET /api/user -> Ottieni i dati dello user
     fastify.get<{ Querystring: ProfileQuery }>('/user', async (request, reply) => {
+        const userId = Number(request.headers['x-user-id']);
+        const secret = request.headers['x-gateway-secret'];
+        const { username } = request.query;
         try {
-            const userId = Number(request.headers['x-user-id'])
-			const secret = request.headers['x-gateway-secret']
-            const { username } = request.query;
 
             if (!userId || secret !== 'biscottini') {throw new Unauthorized('Utente non autorizzato', 'profile'); }
             if (!username) {throw new NotFound('Username query not found', 'profile'); }
@@ -55,18 +56,18 @@ export async function profileEndpoint(fastify: FastifyInstance) {
 
     // get game history (all the arrays of the requestd user (userId in query))
     fastify.get<{ Querystring: ProfileQuery }>('/game', async (request, reply) => {
+        const userId = Number(request.headers['x-user-id']);
+        const secret = request.headers['x-gateway-secret'];
+        const { username } = request.query;
         try {
-            const userId = Number(request.headers['x-user-id'])
-			const secret = request.headers['x-gateway-secret']
-            const { username } = request.query;
 
 			if (!userId || secret !== 'biscottini') {throw new Unauthorized('Utente non autorizzato', 'profile'); }
             if (!username) {throw new NotFound('Username query not found', 'profile'); }
             
             const data = await getUserGames(username);
-            const validUsername = await replaceAllData(data)
+            // const validUsername = await replaceAllData(data)
             logInfo('{profile} [200] Dati game utente recuperati con successo');
-            return reply.status(200).send(validUsername);
+            return reply.status(200).send(data);
         } catch (err) {
             if (err instanceof Error) {
                 const status = (err as any).statusCode || 500;
@@ -79,18 +80,42 @@ export async function profileEndpoint(fastify: FastifyInstance) {
 
     // @topiana-
     fastify.get<{ Querystring: ProfileQuery }>('/userinfo', async (request, reply) => {
-        
+        // check della query
+        const userId = Number(request.headers['x-user-id']);
+        const secret = request.headers['x-gateway-secret'];
+        const { linkId, username } = request.query;
         try {
-            // check della query
-            const userId = Number(request.headers['x-user-id'])
-			const secret = request.headers['x-gateway-secret']
-            const { username } = request.query;
+
+			if (!userId || secret !== 'biscottini') {throw new Unauthorized('Utente non autorizzato', 'profile'); }
+            if (!linkId && !username) {throw new NotFound('linkId/username query not found', 'profile'); }
+
+            // get the user info (username and avarat url)
+            const data = await getUserInfo(linkId, username);
+            // successfule return
+            logInfo('{profile} [200] Account trovato');
+            reply.code(200).send(data);
+        } catch (err) {
+            if (err instanceof Error) {
+                const status = (err as any).statusCode || 500;
+                return reply.status(status).send({ error: err.message });
+            }
+            logError('{profile} [500] errore interno del server');
+            return reply.status(500).send({ error: "Internal server error" });
+        }
+    });
+
+    fastify.get<{ Querystring: ProfileQuery }>('/id-to-username', async (request, reply) => {
+        // check della query
+        const userId = Number(request.headers['x-user-id']);
+        const secret = request.headers['x-gateway-secret'];
+        const { username } = request.query;
+        try {
 
 			if (!userId || secret !== 'biscottini') {throw new Unauthorized('Utente non autorizzato', 'profile'); }
             if (!username) {throw new NotFound('Username query not found', 'profile'); }
 
             // get the user info (username and avarat url)
-            const data = await getUserInfo(username);
+            const data = await getUserId(username);
             // successfule return
             logInfo('{profile} [200] Account trovato');
             reply.code(200).send(data);
@@ -106,9 +131,9 @@ export async function profileEndpoint(fastify: FastifyInstance) {
 
     // GET /api/friends -> Ottieni amici e richieste
     fastify.get('/friends', async (request: FastifyRequest, reply: FastifyReply) => {
+        const userId = Number(request.headers['x-user-id']);
+        const secret = request.headers['x-gateway-secret'];
         try {
-            const userId = Number(request.headers['x-user-id'])
-			const secret = request.headers['x-gateway-secret']
 
 			if (!userId || secret !== 'biscottini') {throw new Unauthorized('Utente non autorizzato', 'profile'); }
             const data = await getProfileData(userId);
@@ -124,11 +149,13 @@ export async function profileEndpoint(fastify: FastifyInstance) {
     });
 
     // POST /api/friend/request -> Invia richiesta
+    // !!!! THE ONLY ENPOINT with target = username (all others got target = linkId)
     fastify.post('/friend/request', async (request: FastifyRequest, reply: FastifyReply) => {
         const { target } = request.body as { target: string };
+        const userId = Number(request.headers['x-user-id']);
+        const secret = request.headers['x-gateway-secret'];
+        // console.log('friend/request got', target, userId);
         try {
-            const userId = Number(request.headers['x-user-id'])
-			const secret = request.headers['x-gateway-secret']
 
 			if (!userId || secret !== 'biscottini') {throw new Unauthorized('Utente non autorizzato', 'profile'); }
             if (!target)
@@ -148,14 +175,15 @@ export async function profileEndpoint(fastify: FastifyInstance) {
     // POST /api/friend/accept -> Accetta richiesta
     fastify.post('/friend/accept', async (request: FastifyRequest, reply: FastifyReply) => {
         const { target } = request.body as { target: string };
+        const userId = Number(request.headers['x-user-id']);
+        const secret = request.headers['x-gateway-secret'];
+        // console.log('friend/accept got', target, userId);
         try {
-            const userId = Number(request.headers['x-user-id'])
-			const secret = request.headers['x-gateway-secret']
 
 			if (!userId || secret !== 'biscottini') {throw new Unauthorized('Utente non autorizzato', 'profile'); }
             if (!target)
                 throw new BadRequest("Username richiesto per accettare", "profile");
-            const result = await acceptFriendRequest(userId, target);
+            const result = await acceptFriendRequest(userId, Number(target));
             
             logInfo(`{profile} [200] Richiesta amicizia accettata per ${target}`);
             return reply.status(200).send(result);
@@ -170,14 +198,15 @@ export async function profileEndpoint(fastify: FastifyInstance) {
     // DELETE /api/friend/remove -> Rifiuta/Annulla richiesta o Rimuovi amico
     fastify.post('/friend/remove', async (request: FastifyRequest, reply: FastifyReply) => {
         const { target } = request.body as { target: string };
+        const userId = Number(request.headers['x-user-id']);
+        const secret = request.headers['x-gateway-secret'];
+        // console.log('friend/remove got', target, userId);
         try {
-            const userId = Number(request.headers['x-user-id'])
-			const secret = request.headers['x-gateway-secret']
 
 			if (!userId || secret !== 'biscottini') {throw new Unauthorized('Utente non autorizzato', 'profile'); }
             if (!target)
                 throw new BadRequest("Username richiesto per rimuovere", "profile");
-            const result = await removeFriendRequest(userId, target);
+            const result = await removeFriendRequest(userId, Number(target));
             
             logInfo(`{profile} [200] Relazione rimossa con ${target}`);
             return reply.status(200).send(result);

@@ -13,27 +13,6 @@ type StandardReturn = {
 
 /*
 {
-	method: 'PING',     (mandatory)
-}
-
-Description: ensure the client-server comunication is still alive (application level)
-Reply:
-{
-	method: 'PONG',
-}
-*/
-
-export function PONG()
-{
-	// success return
-	return {
-		status: "success",
-		reply: JSON.stringify({ method: 'PONG' }),
-	};
-}
-
-/*
-{
 	method: 'CREATE',     (mandatory)
 	size: <size>,		  (optional)
 	format: <format>      (optional)
@@ -182,6 +161,48 @@ export function JOIN(msg:object,
 		player: outplayer,
 		tournament: tournament.ID
 	}
+}
+
+/*
+{
+	method: 'STATE'
+} 
+Description: Asks for the tournament state. On successful request the reply will be the tournament state itself
+Reply:
+{
+	method: 'STAE_REPLY',
+	status: 'failure',
+	comment: <comment>
+}
+*/
+
+export function STATE(outournament:string | undefined): StandardReturn
+{
+	// check if you joined a tournament
+	if (outournament === undefined) {
+		return {
+			status: "failure",
+			reply: JSON.stringify({ method: 'STATE_REPLY', status: 'failure', comment: "Not in a tournament" })
+		};
+	}
+
+	// find the tournament
+	const tourament = findTournament((t) => t.ID === outournament);
+	if (!tourament) {
+		return {
+			status: "failure",
+			reply: JSON.stringify({ method: 'STATE_REPLY', status: 'failure', comment: "Internal server error" })
+		};
+	}
+	
+
+	// successfule return
+	return {
+		status: "success",
+		reply: tourament.stateJSON,
+		// player: outplayer,
+		tournament: outournament
+	};
 }
 
 /*

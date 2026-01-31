@@ -219,23 +219,23 @@ fastify.register(async function (fastify) {
 		console.log(`Client connected from ${clientIP}`);
 
 		/* --------- CHECK AUTH --------- */
-		const username = request.headers['x-user-username'] as string;
+		const userid = request.headers['x-user-id'] as string;
   		const secret = request.headers['x-gateway-secret'];
 
-		if (!username || secret !== GATEWAY_SECRET) {
+		if (!userid || secret !== GATEWAY_SECRET) {
 			connection.close(1008, "Invalid user authentication");
 			return ;
 		}
 
 		/* --------- AUTO JOIN  --------- */
 
-		const checklobby = findLobby((l) => l.has(username));
-		checklobby?.join(username, connection);
+		const checklobby = findLobby((l) => l.has(userid));
+		checklobby?.join(userid, connection);
 
 		/* ------------------------------ */
 
 		// playerID not verified with JWT yet
-		const player:string = username;
+		const player:string = userid;
 		// lobbyID
 		let lobby:string | undefined = checklobby?.ID;
 
@@ -249,9 +249,19 @@ fastify.register(async function (fastify) {
 		});
 
 		// Handle incoming messages
-		connection.on('message', (message:string) => {
+		connection.on('message', (message) => {
 			
-			interpreter(message, lobby, player, connection, (retLobby:string | undefined/* , retPlayer:string | undefined */) => {
+			const msg = message.toString();
+
+			// application-level ping-pong logic
+			if (msg === 'ping') {
+				if (connection.readyState === WebSocket.OPEN) {
+					connection.send('pong');
+				}
+				return ;
+			}
+
+			interpreter(msg, lobby, player, connection, (retLobby:string | undefined/* , retPlayer:string | undefined */) => {
 				// save lobbyid
 				lobby = retLobby;
 			})

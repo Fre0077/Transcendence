@@ -10,8 +10,10 @@ import { loadPongPlayerPage } from '@pages/protected/game/online/loadPongPlayerP
 // import { loadLocalGamePage } from "./pages/protected/game/local/localGame";
 
 // local stuff
-import { loadLocalPongPage } from "./pages/protected/game/local/loadLocalPongPage";
-import { loadLocalTournamentPage } from "./pages/protected/game/local/loadLocalTournamentPage";
+import { loadLocalPongPage } from "./pages/public/local/game/loadLocalPongPage";
+import { loadLocalTournamentPage } from "./pages/public/local/game/loadLocalTournamentPage";
+import { loadSelectionPage } from "./pages/public/loadSelectionPage";
+import { loadLocalGameHub } from "./pages/public/local/loadLocalGameHub";
 
 import { loadHomePage } from "./pages/protected/home/home";
 import { loadProfilePage } from "./pages/protected/profile/profile";
@@ -28,6 +30,7 @@ import { loadChatApiTest } from "./pages/test/chatApiTest";
 // services
 import { authService } from "@services/authService";
 import { sendDeleteRequest } from "@services/api/sendRequests";
+import { chatStorage } from "@services/storage/chatStorage";
 
 type RouteComponent = () => HTMLElement | Promise<HTMLElement>;
 
@@ -188,6 +191,8 @@ class Router {
         return;
       }
     }
+
+    // route.meta?.user = user
     
     const has2FA = authService.has2FAEnabled();
     
@@ -206,6 +211,7 @@ class Router {
 
     // Update current route and render
     this.currentRoute = route;
+    // console.log('route', this.currentRoute);
     this.render(route);
   }
 
@@ -284,6 +290,14 @@ const routes: RouteConfig[] = [
   // PUBLIC ROUTES (No authentication required)
   // ============================================
   {
+    path: '/select',
+    name: 'select',
+    component: () => {
+      return loadSelectionPage();
+    },
+    meta: { title: 'Welcome - ft_transcendence', },
+  },
+  {
     path: '/login',
     name: 'login',
     component: () => {
@@ -303,8 +317,11 @@ const routes: RouteConfig[] = [
   {
     path: '/logout',
     name: 'logout',
-    component: () => {
-      sendDeleteRequest(`http://${window.location.hostname}:3029/api/logout`);
+    component: async () => {
+			sendDeleteRequest('/api/logout');
+
+			// Clear local chat storage
+			await chatStorage.clearAll();
       
       // notify logout
 			document.dispatchEvent(
@@ -343,6 +360,33 @@ const routes: RouteConfig[] = [
     },
     meta: { title: 'Forgot Password - ft_transcendence', requiresGuest: true },
   },
+  /* ====================== */
+  /*      LOCAL STUFF       */
+  {
+    path: '/local',
+    name: 'local',
+    component: () => {
+      return loadLocalGameHub();
+    },
+    meta: { title: 'Local Host - ft_transcendence' },
+  },
+	{
+		path: '/game/local',
+		name: 'local-game',
+		component: () => {
+			return loadLocalPongPage();
+		},
+		meta: { title: 'Local Game - ft_transcendence' },
+	},
+  {
+		path: '/tournament/local',
+		name: 'local-tournament',
+		component: () => {
+			return loadLocalTournamentPage();
+		},
+		meta: { title: 'Local Tournament - ft_transcendence' },
+	},
+  /* ======================= */
 
   // ============================================
   // PROTECTED ROUTES (Authentication required)
@@ -371,7 +415,7 @@ const routes: RouteConfig[] = [
     component: () => {
       return loadProfilePage();
     },
-    meta: { title: 'User Profile - ft_transcendence' },
+    meta: { title: 'User Profile - ft_transcendence', requiresAuth: true, requires2FA: true },
   },
   {
     // TODO: Implement edit profile page
@@ -407,25 +451,6 @@ const routes: RouteConfig[] = [
     },
     meta: { title: 'Game Lobby - ft_transcendence', requiresAuth: true, requires2FA: true },
   },
-  /* ====================== */
-  /* LOCAL STUFF (maybe to move?) */
-	{
-		path: '/game/local',
-		name: 'local-game',
-		component: () => {
-			return loadLocalPongPage();
-		},
-		meta: { title: 'Local Game - ft_transcendence', requiresAuth: true, requires2FA: true },
-	},
-  {
-		path: '/tournament/local',
-		name: 'local-tournament',
-		component: () => {
-			return loadLocalTournamentPage();
-		},
-		meta: { title: 'Local Game - ft_transcendence', requiresAuth: true, requires2FA: true },
-	},
-  /* ======================= */
   {
     path: '/lobby/online',
     name: 'online-game',

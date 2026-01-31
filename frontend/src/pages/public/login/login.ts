@@ -124,7 +124,7 @@ export function loadLoginPage(): HTMLElement {
             }
             
             // === SUCCESSO ===
-            console.log('Login riuscito:', data);
+            // console.log('Login riuscito:', data);
 
             // Backend sends { ...user, user, ok: true }
             // User data is both at root level and in data.user
@@ -166,10 +166,10 @@ export function loadLoginPage(): HTMLElement {
     googleButton.addEventListener('click', async () => {
         try {
             const userInfo = await googleLoginFunction(import.meta.env.VITE_CLIENT_ID || '');
-            console.log('Google user info:', userInfo);
+            // console.log('Google user info:', userInfo);
 
             // 1. Chiama il nuovo endpoint /api/auth/google
-            const data = await sendPostRequest('http://localhost:3001/api/auth/google',
+            const data = await sendPostRequest('/api/auth/google',
                 {
                     name: userInfo.given_name,
                     surname: userInfo.family_name,
@@ -180,7 +180,7 @@ export function loadLoginPage(): HTMLElement {
             );
 
             // 2. Gestisci il successo (come il login standard)
-            console.log('Login con Google riuscito:', data);
+            // console.log('Login con Google riuscito:', data);
             
             // Update auth service state - user data could be at root or in data.user
             const userData = data.user || data;

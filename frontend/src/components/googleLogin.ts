@@ -20,7 +20,7 @@ async function fetchGoogleUserInfo(accessToken: string): Promise<any> {
 async function handleGoogleAuthSuccess(token: string): Promise<void> {
 		try {
 				const userInfo = await fetchGoogleUserInfo(token);
-				console.log("User info received:", userInfo);
+				// console.log("User info received:", userInfo);
 
 				// Send to your Fastify + Prisma backend for login/signup
 				const response = await sendPostRequest(
@@ -35,7 +35,7 @@ async function handleGoogleAuthSuccess(token: string): Promise<void> {
 						"application/json"
 				);
 			  
-				console.log("Authentication response:", response);
+				// console.log("Authentication response:", response);
 			  
 				// Store user data in localStorage for session management
 				if (response.success) {
@@ -51,9 +51,9 @@ async function handleGoogleAuthSuccess(token: string): Promise<void> {
 					  
 						// Show welcome message
 						if (response.isNewUser) {
-								console.log("Welcome! Your account has been created.");
+								// console.log("Welcome! Your account has been created.");
 						} else {
-								console.log("Welcome back!");
+								// console.log("Welcome back!");
 						}
 
 						router.push('/home');
@@ -104,7 +104,7 @@ function pollForAuthCompletion(popup: Window): Promise<string> {
 				if (currentUrl.includes(window.location.origin)) {
 					clearInterval(pollInterval);
 
-					console.log("Popup redirected to:", currentUrl);
+					// console.log("Popup redirected to:", currentUrl);
 
 					// Extract token from URL
 					const token = extractTokenFromUrl(currentUrl);
@@ -148,13 +148,13 @@ export function googleLoginFunction(clientId: string): Promise<any> {
 	const redirectUri = encodeURIComponent(window.location.origin + "/callback");
 	const scope = encodeURIComponent("email profile");
 
-	console.log("Current origin:", window.location.origin);
-	console.log("Current pathname:", window.location.pathname);
-	console.log("Redirect URI:", decodeURIComponent(redirectUri));
+	// console.log("Current origin:", window.location.origin);
+	// console.log("Current pathname:", window.location.pathname);
+	// console.log("Redirect URI:", decodeURIComponent(redirectUri));
 
 	const authUrl = `https://accounts.google.com/o/oauth2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=token&scope=${scope}`;
 
-	console.log("Opening Google auth popup with URL:", authUrl);
+	// console.log("Opening Google auth popup with URL:", authUrl);
 
 	const popup = window.open(authUrl, "Google Login", "width=500,height=600,scrollbars=yes,resizable=yes");
 
@@ -169,7 +169,7 @@ export function googleLoginFunction(clientId: string): Promise<any> {
 	// Poll for authentication completion and return the Promise
 	return pollForAuthCompletion(popup)
 		.then((token) => {
-			console.log("Authentication successful, token received");
+			// console.log("Authentication successful, token received");
 			return fetchGoogleUserInfo(token);
 		})
 		.catch((error) => {

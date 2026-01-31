@@ -1,4 +1,24 @@
-1)	Risolvere il problema di RabbitMQ per chat. Se lo user è già stato aggiunto e la richiesta viene inviata di nuovo il server 
-	crasha cercando di aggiungere un linkId già esistente [fatto da testare]
+1)	fiinire di testare tutti glie endpoint di chat
 
-2)	fiinire di testare tutti glie endpoint di chat
+
+2) cancellare i cookie quando ti slogghi
+
+3) aggiungere un router.push a /select
+
+4) aggiungere regole e map dei tasti come popup
+
+5) aggiungere GoogleId per Oauth
+
+6)winner linkId to username
+
+7) invito alla lobby da ovunque
+
+8) status sulla chat
+
+9) check live chat
+
+10) REMOVE BACKDOR PASS=A
+
+11) username nei tornei online
+
+12) remove console.log()

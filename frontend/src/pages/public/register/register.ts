@@ -110,7 +110,7 @@ export function loadRegisterPage(): HTMLElement {
             }
 
             // === SUCCESSO ===
-            console.log('Registrazione riuscita:', data);
+            // console.log('Registrazione riuscita:', data);
             // TODO: (Ideale) Effettuare il login automatico qui
             router.push('/login'); // O reindirizza a /home se gestisci il token
         } catch (error) {
@@ -131,7 +131,7 @@ export function loadRegisterPage(): HTMLElement {
     googleButton.addEventListener('click', async () => {
         try {
             const userInfo = await googleLoginFunction(import.meta.env.VITE_CLIENT_ID || '');
-            console.log("User info received:", userInfo);
+            // console.log("User info received:", userInfo);
 
             // 1. Chiama il nuovo endpoint /api/auth/google
             const data = await sendPostRequest(`/api/auth/google`,
@@ -145,7 +145,7 @@ export function loadRegisterPage(): HTMLElement {
             );
             
             // 2. Gestisci il successo (come il login standard)
-            console.log('Registrazione con Google riuscita:', data);
+            // console.log('Registrazione con Google riuscita:', data);
             
             // Update auth service state - user data could be at root or in data.user
             const userData = data.user || data;

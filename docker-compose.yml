@@ -3,10 +3,8 @@ services:
   rabbitmq:
     image: rabbitmq:3-management
     container_name: rabbitmq
-    environment:
-      - RABBITMQ_DEFAULT_USER=guest
-      - RABBITMQ_DEFAULT_PASS=guest
-      - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=-rabbitmq_prometheus
+    env_file:
+      - .env
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 5s
@@ -24,9 +22,8 @@ services:
     volumes:
       - ./frontend:/app
       - /app/node_modules
-    environment:
-      - NODE_ENV=development
-      - RABBITMQ_URL=amqp://trans:strongpassword@rabbitmq:5672
+    env_file:
+      - .env
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -39,6 +36,7 @@ services:
     container_name: prometheus
     volumes:
       - ./monitor/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./monitor/alert_rules.yml:/etc/prometheus/alert_rules.yml
       - prometheus_dat:/prometheus
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
@@ -57,11 +55,8 @@ services:
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
-    environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SERVER_ROOT_URL=https://localhost:4443/grafana/
-      - GF_SERVER_SERVE_FROM_SUB_PATH=true
+    env_file:
+      - .env
     volumes:
       - grafana_dat:/var/lib/grafana
       - ./monitor/grafana/datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml
@@ -73,6 +68,20 @@ services:
       - transcendence
     restart: always
 
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: alertmanager
+    volumes:
+      - ./monitor/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+      - alertmanager_dat:/alertmanager
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+    depends_on:
+      - prometheus
+    networks:
+      - transcendence
+    restart: always
 
   # 2.5 BUTLER che rompe i coglioni
   butler:
@@ -111,9 +120,8 @@ services:
       context: ./backend/database/
       dockerfile: auth/Dockerfile
     container_name: auth
-    environment:
-      - NODE_ENV=production
-      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+    env_file:
+      - .env
     volumes:
       - auth_db:/app/database
       - avatar_data:/app/database/public/uploads
@@ -133,9 +141,8 @@ services:
       context: ./backend/database/
       dockerfile: chat/Dockerfile
     container_name: chat
-    environment:
-      - NODE_ENV=production
-      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+    env_file:
+      - .env
     volumes:
       - chat_db:/app/database
     depends_on:
@@ -154,9 +161,8 @@ services:
       context: ./backend/database/
       dockerfile: profile/Dockerfile
     container_name: profile
-    environment:
-      - NODE_ENV=production
-      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+    env_file:
+      - .env
     volumes:
       - profile_db:/app/database
     depends_on:
@@ -176,13 +182,13 @@ services:
       context: ./backend/services/ft_bunny
       dockerfile: Dockerfile
     container_name: ft_bunny
+    env_file:
+      - .env
     depends_on:
       rabbitmq:
         condition: service_healthy
       butler:
         condition: service_started
-    environment:
-      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
     networks:
       - transcendence
     restart: always
@@ -252,6 +258,7 @@ volumes:
   auth_db:
   chat_db:
   profile_db:
-  prometheus_dat:
-  grafana_dat:
   avatar_data:
+  grafana_dat:
+  prometheus_dat:
+  alertmanager_dat:

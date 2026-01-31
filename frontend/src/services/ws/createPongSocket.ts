@@ -31,7 +31,7 @@ export interface PongSocket {
 
 // already parsed message
 const playerSecretary = (data:any, ws:WebSocket) => {
-	console.log('Player Socket got', data);
+	// console.log('Player Socket got', data);
 	ws;
 }
 
@@ -57,12 +57,12 @@ export function createPlayerSocket(): PongSocket
 					const msg = JSON.parse(e.data);
 					
 					/* #debug */
-					// console.log('Msg received', msg);
+					// // console.log('Msg received', msg);
 
 					if (msg.method) playerSecretary(msg, ws);
 					else handler(msg);
 				} catch (err) {
-					// console.log(err);
+					// // console.log(err);
 				}
 			};
 		},
@@ -80,7 +80,7 @@ export function createPlayerSocket(): PongSocket
 
 // already parsed message
 const spectateSecretary = (data:any, ws:WebSocket) => {
-	console.log('Spectator Socket got', data);
+	// console.log('Spectator Socket got', data);
 	ws;
 }
 
@@ -111,18 +111,18 @@ export function createSpectatorSocket(/* , playerid:string */matchid:string): Po
 					const msg = JSON.parse(e.data);
 
 					/* #debug */
-					// console.log('Msg received', msg);
+					// // console.log('Msg received', msg);
 
 					if (msg.method) spectateSecretary(msg, ws);
 					else handler(msg);
 				} catch (err) {
-					// console.log(err);
+					// // console.log(err);
 				}
 			};
 		},
 		close() {
 			ws.close();
-			console.log('closed spectator socket');
+			// console.log('closed spectator socket');
 		}
 	};
 }
@@ -134,7 +134,7 @@ export function createSpectatorSocket(/* , playerid:string */matchid:string): Po
 
 // already parsed message
 const replaySecretary = (data:any, ws:WebSocket) => {
-	console.log('Spectator Socket got', data);
+	// console.log('Spectator Socket got', data);
 	ws;
 }
 
@@ -142,7 +142,7 @@ const replaySecretary = (data:any, ws:WebSocket) => {
 // behaviour of the spectator socket
 export function createReplaySocket(/* , playerid:string */replaystring:string): PongSocket
 {
-	console.log('[WS] connecting to', `${PONG_BACKEND_URL}/replay`);
+	// console.log('[WS] connecting to', `${PONG_BACKEND_URL}/replay`);
 	const ws = new WebSocket(`${PONG_BACKEND_URL}/replay`);
 
 	return {
@@ -166,12 +166,12 @@ export function createReplaySocket(/* , playerid:string */replaystring:string): 
 					const msg = JSON.parse(e.data);
 
 					/* #debug */
-					// console.log('Msg received', msg);
+					// // console.log('Msg received', msg);
 
 					if (msg.method) replaySecretary(msg, ws);
 					else handler(msg);
 				} catch (err) {
-					// console.log(err);
+					// // console.log(err);
 				}
 			};
 		},

@@ -18,7 +18,7 @@ export function loadTournamentHubPage(): HTMLElement
     const query = router.getQuery().get("tourn-id");
     if (query) tourn_code = query;
 
-    console.log('Got query', tourn_code);
+    // console.log('Got query', tourn_code);
     /* ----------------------------------------- */
 
     const div = document.createElement('div');
@@ -311,8 +311,9 @@ export function loadTournamentHubPage(): HTMLElement
 
 
     /* !!! DESTRUCTOR !!! */
+    // The tournament websocket, once connected, disconnects only if the client leaves a tournament
     (div as any).destroy = () => {
-        DisconnectTournamentSocket();
+        if (tournamentWS?.getid() === undefined) DisconnectTournamentSocket();
     }
 
     return div;

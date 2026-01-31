@@ -91,11 +91,11 @@ export async function sendFriendRequest(myLinkId: number, targetUsername: string
         }
     });
 
-    return { message: `Richiesta inviata a ${targetUsername}` };
+    return { target: targetUser.linkId, message: `Richiesta inviata a ${targetUser.linkId}` };
 }
 
-export async function acceptFriendRequest(myLinkId: number, senderUsername: string) {
-    const senderUser = await profilePrisma.user.findFirst({ where: { username: senderUsername } });
+export async function acceptFriendRequest(myLinkId: number, senderLinkId: number) {
+    const senderUser = await profilePrisma.user.findFirst({ where: { linkId: senderLinkId } });
     if (!senderUser) 
         throw new NotFound("Utente non trovato.", "profile");
     if (senderUser.linkId === myLinkId) 
@@ -138,12 +138,12 @@ export async function acceptFriendRequest(myLinkId: number, senderUsername: stri
         })
     ]);
     
-    return { message: `Ora sei amico di ${senderUsername}` };
+    return { target: senderLinkId, message: `Ora sei amico di ${senderLinkId}` };
 }
 
 //Rifiuta o Annulla una richiesta, funziona per entrambi i casi
-export async function removeFriendRequest(myLinkId: number, targetUsername: string) {
-    const targetUser = await profilePrisma.user.findFirst({ where: { username: targetUsername } });
+export async function removeFriendRequest(myLinkId: number, targetLinkId: number) {
+    const targetUser = await profilePrisma.user.findFirst({ where: { linkId: targetLinkId } });
     if (!targetUser) 
         throw new NotFound("Utente non trovato.", "profile");
     if (targetUser.linkId === myLinkId) 
@@ -207,9 +207,10 @@ export async function getProfileData(myLinkId: number) {
         where: { linkId: myLinkId },
         select: {
             username: true,
-            friends: { select: { username: true, avatarUrl: true, /* #todo remove */linkId: true } },
-            incomingRequests: { select: { username: true, avatarUrl: true } },
-            outgoingRequests: { select: { username: true, avatarUrl: true } }
+            linkId: true,
+            friends: { select: { linkId: true, username: true, avatarUrl: true, } },
+            incomingRequests: { select: { linkId: true, username: true, avatarUrl: true } },
+            outgoingRequests: { select: { linkId: true, username: true, avatarUrl: true } }
         }
     });
 
@@ -250,60 +251,60 @@ export interface GameData {
 	winner:string;		// winner as a string array
 }
 
-export async function replaceLinkId(data: GameData) {
-    try {
-        const winnerid:string[] = JSON.parse(data.winner);
-        const players = JSON.parse(data.gamePlayers);
+// export async function replaceLinkId(data: GameData) {
+//     try {
+//         const winnerid:string[] = JSON.parse(data.winner);
+//         const players = JSON.parse(data.gamePlayers);
 
-        const idToUser:Map<string, string> = new Map();
-        // save bot
-        for (const p of players)
-        {
-            if (isNaN(Number(p)))
-                idToUser.set(p, p);
-        }
+//         const idToUser:Map<string, string> = new Map();
+//         // save bot
+//         for (const p of players)
+//         {
+//             if (isNaN(Number(p)))
+//                 idToUser.set(p, p);
+//         }
 
-        const maybeLinkIds: number[] = players
-            .filter((p: string) => !isNaN(Number(p)))
-            .map((p: string) => Number(p));
+//         const maybeLinkIds: number[] = players
+//             .filter((p: string) => !isNaN(Number(p)))
+//             .map((p: string) => Number(p));
 
-        // get usernames
-        if (data.gamePlayers.length > 0) {
-            const existingUsers = await profilePrisma.user.findMany({
-                where: {
-                    linkId: { in: maybeLinkIds }
-                },
-                select: { linkId: true, username: true }
-            });
+//         // get usernames
+//         if (data.gamePlayers.length > 0) {
+//             const existingUsers = await profilePrisma.user.findMany({
+//                 where: {
+//                     linkId: { in: maybeLinkIds }
+//                 },
+//                 select: { linkId: true, username: true }
+//             });
 
-            // save usernames
-            for (const user of existingUsers) {
-                idToUser.set(String(user.linkId), String(user.username));
-            }
-        }
+//             // save usernames
+//             for (const user of existingUsers) {
+//                 idToUser.set(String(user.linkId), String(user.username));
+//             }
+//         }
 
-        // swap players
-        data.gamePlayers = JSON.stringify(Array.from(idToUser.values()));
+//         // swap players
+//         data.gamePlayers = JSON.stringify(Array.from(idToUser.values()));
 
-        // swap winners
-        const replaceWinners = winnerid
-            .map(id => idToUser.get(id))
-            .filter((v): v is string => v !== undefined);
-        data.winner = JSON.stringify(replaceWinners);
+//         // swap winners
+//         const replaceWinners = winnerid
+//             .map(id => idToUser.get(id))
+//             .filter((v): v is string => v !== undefined);
+//         data.winner = JSON.stringify(replaceWinners);
 
-        console.log("replaced linkids with usernames:", data);
-    } catch (err) {
-        console.log("⚠️:", err);
-    }
-    return data;
-}
+//         console.log("replaced linkids with usernames:", data);
+//     } catch (err) {
+//         console.log("⚠️:", err);
+//     }
+//     return data;
+// }
 
-export async function replaceAllData(GameData: GameData[]) {
-    for (let i = 0; i < GameData.length; i++){
-        GameData[i] = await replaceLinkId(GameData[i]);
-    }
-    return GameData;
-}
+// export async function replaceAllData(GameData: GameData[]) {
+//     for (let i = 0; i < GameData.length; i++){
+//         GameData[i] = await replaceLinkId(GameData[i]);
+//     }
+//     return GameData;
+// }
 
 //Ottieni la lista dei games
 export async function getUserGames(user: string) : Promise<GameData[]> {
@@ -330,13 +331,39 @@ export async function getUserGames(user: string) : Promise<GameData[]> {
 }
 
 //Ottieni username e avatarUrl
-export async function getUserInfo(user: string) {
+export async function getUserInfo(linkId: string | undefined, username:string | undefined) {
+    
+    let data;
+    if (linkId) {
+        data = await profilePrisma.user.findUnique({
+            where: { linkId: Number(linkId)},
+            select: {
+                linkId: true,
+                username: true,
+                avatarUrl: true
+            }
+        });
+    }
+    else
+    {
+        data = await profilePrisma.user.findUnique({
+            where: { username: username},
+            select: {
+                linkId: true,
+                username: true,
+                avatarUrl: true
+            }
+        });
+    }
+    if (!data)
+        throw new NotFound("Profilo utente non trovato.", "profile");
+    return data;
+}
+
+export async function getUserId(username: string) {
     const data = await profilePrisma.user.findUnique({
-        where: { username: user },
-        select: {
-            username: true,
-            avatarUrl: true
-        }
+        where: { username: username },
+        select: { linkId: true }
     });
     if (!data)
         throw new NotFound("Profilo utente non trovato.", "profile");

@@ -7,22 +7,31 @@ import { sendGetRequest } from "@/services/api/sendRequests";
 // elements
 import { generateInitialsAvatar } from "@/components/createDefaultImage";
 
-export function createProfileCard(username: string): HTMLElement {
+export function createProfileCard(playerid: string, opts?:any): HTMLElement {
     const container = document.createElement('div');
     
+    const local = (opts?.local) ? opts.local : false;
+
     // Classi Tailwind come da tua richiesta
     container.className = 'relative w-full bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex flex-col rounded-xl border border-white/10 shadow-lg overflow-hidden transition-all duration-300';
     container.style.minHeight = '250px'; // Altezza minima per evitare "salti" nel layout
 
+    if (local) {
+        if (opts.icon && opts.phrase)
+            container.innerHTML = loadIconCard(playerid, opts.icon, opts.phrase);
+        else container.innerHTML = loadGuestCard(playerid);
+        return container;
+    }
+
     // Bot Check
-    if (username.startsWith('BOT')) {
-        container.innerHTML = loadBotCard(username);
+    if (playerid.startsWith('BOT')) {
+        container.innerHTML = loadBotCard(playerid);
         return container;
     }
 
     // Guest Check
-    if (username.startsWith('Guest')) {
-        container.innerHTML = loadGuestCard(username);
+    if (playerid.startsWith('Guest')) {
+        container.innerHTML = loadGuestCard(playerid);
         return container;
     }
 
@@ -35,10 +44,11 @@ export function createProfileCard(username: string): HTMLElement {
     `;
     (async () => {
         try {
-            const data = await sendGetRequest(`/api/userinfo?username=${username}`);
+            const data = await sendGetRequest(`/api/userinfo?linkId=${playerid}`);
             
             // Dati ricevuti: username e avatarUrl (o image)
-            const avatar = data?.avatarUrl || data?.image || "";
+            const avatar = data?.avatarUrl || data?.image || generateInitialsAvatar(data.username);
+            const username = data.username;
             // 4. Aggiorniamo l'HTML con i dati reali
             container.innerHTML = /* html */`
                 <div class="flex flex-col items-center p-8 z-10 w-full">
@@ -48,7 +58,7 @@ export function createProfileCard(username: string): HTMLElement {
                             src="${avatar}" 
                             alt="${username}" 
                             class="relative w-24 h-24 rounded-full object-cover border-2 border-slate-800 shadow-2xl"
-                            onerror="this.src=this.src=${generateInitialsAvatar(username)}"
+                            onerror="⚠️"
                         />
                     </div>
                     
@@ -73,43 +83,34 @@ export function createProfileCard(username: string): HTMLElement {
         } catch (error) {
             console.error("Errore caricamento profilo:", error);
             // Stato di Errore
-            container.innerHTML = loadErrorCard(username);
+            container.innerHTML = loadErrorCard('Error_' + playerid);
         }
     })();
 
     return container;
 }
 
-function loadErrorCard(linkid:string): string
+function loadIconCard(username:string, icon:string, phrase:string)
 {
     return /* html */`<div class="flex flex-col items-center justify-center h-full p-6 text-red-400 text-center">
-                <span class="text-4xl mb-2">⚠️</span>
-                <p class="font-bold">Impossibile caricare il profilo</p>
-                <p class="text-xs opacity-70 mt-1">${linkid}</p>
+                <span class="text-4xl mb-2">${icon}</span>
+                <p class="font-bold">${phrase}</p>
+                <p class="text-xs opacity-70 mt-1">${username}</p>
             </div>
         `;
+}
+
+function loadErrorCard(linkid:string): string
+{
+    return loadIconCard(linkid, '⚠️', 'Impossibile caricare il profilo');
 }
 
 function loadBotCard(botid:string): string
 {
-    return /* html */`<div class="flex flex-col items-center justify-center h-full p-6 text-red-400 text-center">
-                <span class="text-4xl mb-2">🤖</span>
-                <p class="font-bold">${botid}</p>
-                <p class="text-indigo-200 text-sm mb-6 font-medium tracking-wider uppercase">
-                    Bot Profile
-                </p>
-            </div>
-        `;
+    return loadIconCard(botid, '🤖', 'Bot Profile');
 }
 
 function loadGuestCard(guestid:string): string
 {
-    return /* html */`<div class="flex flex-col items-center justify-center h-full p-6 text-red-400 text-center">
-                <span class="text-4xl mb-2">🥷</span>
-                <p class="font-bold">${guestid}</p>
-                <p class="text-indigo-200 text-sm mb-6 font-medium tracking-wider uppercase">
-                    Guest Profile
-                </p>
-            </div>
-        `;
+    return loadIconCard(guestid, '🥷', 'Guest Profile');
 }

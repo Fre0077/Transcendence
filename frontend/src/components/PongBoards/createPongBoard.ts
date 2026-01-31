@@ -106,7 +106,7 @@ export function createPongBoard(socket:PongSocket, widget_opts?:any): PongBoard 
 	async function update(state: any)
 	{
 		/* #debug */
-		// console.log('Updating board...', state);
+		// // console.log('Updating board...', state);
 
 		try {
 
@@ -114,7 +114,7 @@ export function createPongBoard(socket:PongSocket, widget_opts?:any): PongBoard 
 			if (!playersInitialized && state.players.length === 2) {
 
 				/* #debug */
-				// console.log('Drawing cards...');
+				// // console.log('Drawing cards...');
 
 				// save widgets
 				let player1, player2;
@@ -180,7 +180,7 @@ export function createPongBoard(socket:PongSocket, widget_opts?:any): PongBoard 
 			draw(state);
 
 		} catch (err) {
-			console.log('Error while drawing board', err);
+			// console.log('Error while drawing board', err);
 		}
 
 	}

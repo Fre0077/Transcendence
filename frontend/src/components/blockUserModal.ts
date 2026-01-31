@@ -217,7 +217,7 @@ async function blockUser(userId: number) {
 			throw new Error('Failed to block user');
 		}
 		
-		console.log('User blocked successfully');
+		// console.log('User blocked successfully');
 	} catch (error) {
 		console.error('Error blocking user:', error);
 		alert('Failed to block user. Please try again.');
@@ -245,7 +245,7 @@ async function unblockUser(userId: number) {
 			throw new Error('Failed to unblock user');
 		}
 		
-		console.log('User unblocked successfully');
+		// console.log('User unblocked successfully');
 	} catch (error) {
 		console.error('Error unblocking user:', error);
 		alert('Failed to unblock user. Please try again.');

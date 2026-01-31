@@ -100,5 +100,10 @@ export function loadPongPlayerPage(): HTMLElement
 		});
 	}
 
+
+	(div as any).destroy=() => {
+		board.destroy();
+	}
+
 	return div;
 }

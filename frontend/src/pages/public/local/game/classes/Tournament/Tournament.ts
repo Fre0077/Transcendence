@@ -55,7 +55,7 @@ function buildSE(players:number, roomsize:number): string
 	const pow = getPowOfTwo(players / roomsize);
 
 	/* #debug */
-	// console.log(`2^${pow} = ${players}`);
+	// // console.log(`2^${pow} = ${players}`);
 	
 	if (!pow) throw `Invalid player size for 'single-elimination' format: ${players}`;
 
@@ -76,7 +76,7 @@ function buildSE(players:number, roomsize:number): string
 	format += `|(${layers},0)-W-X|`;
 
 	/* #debug */
-	console.log(`Single elimination for '${players}' players:\n`, format);
+	// console.log(`Single elimination for '${players}' players:\n`, format);
 
 	return format;
 }
@@ -127,7 +127,7 @@ function nextroom(format:string, idx:RoomIdx): { winner:RoomIdx, loser:RoomIdx }
 		const nexts = c.split('-');
 		
 		/* #debug */
-		// console.log('splitted cells', nexts);
+		// // console.log('splitted cells', nexts);
 
 		if (nexts[0] !== key) continue;
 
@@ -143,7 +143,7 @@ function nextroom(format:string, idx:RoomIdx): { winner:RoomIdx, loser:RoomIdx }
 
 	// return same cell on invalid cells
 	/* #debug */
-	console.log('Invalid cell asked in nextroom() DANGER!!!!', idx);
+	// console.log('Invalid cell asked in nextroom() DANGER!!!!', idx);
 	return {
 		winner: idx,
 		loser: idx
@@ -187,12 +187,12 @@ function idxToKey(roomidx:RoomIdx): RoomKey
 function keyToIdx(key: RoomKey): RoomIdx
 {
 	/* #debug */
-	// console.log('KeyToIdx-ing:', key);
+	// // console.log('KeyToIdx-ing:', key);
 	
 	const parts = key.substring(1, key.length - 1).split(",");
 
 	/* #debug */
-	// console.log('KeyToIndx removed brackets:', parts);
+	// // console.log('KeyToIndx removed brackets:', parts);
 
 	const layer = Number(parts[0]);
 	const idx = Number(parts[1]);
@@ -451,7 +451,7 @@ export class Tournament
 				changed = true;
 
 				/* #debug */
-				// console.log('Started room of', room.players);
+				// // console.log('Started room of', room.players);
 			}
 
 		}
@@ -555,7 +555,7 @@ export class Tournament
 			});
 
 			/* #debug */
-			// console.log('Advanced room', key);
+			// // console.log('Advanced room', key);
 
 			// set the room as advanced
 			room.advanced = true;
@@ -619,7 +619,7 @@ export class Tournament
 		this._winners = finals.winners;
 		
 		/* #debug */
-		console.log('Tournament finished, winner(s)', this._winners);
+		// console.log('Tournament finished, winner(s)', this._winners);
 
 		return true;
 	}
@@ -671,7 +671,7 @@ export class Tournament
 
 		const room = [...this._rooms.values()].find(r => r.gameid === gameid);
 		if (room === undefined) {
-			console.log('Tournament::finalizeRoom::Error(): Room not found');
+			// console.log('Tournament::finalizeRoom::Error(): Room not found');
 			return ;
 		}
 
@@ -699,7 +699,7 @@ export class Tournament
 
 		const room = [...this._rooms.values()].find(r => r.gameid === gameid);
 		if (room === undefined) {
-			console.log('Tournament::killRoom()::Error: Room not found');
+			// console.log('Tournament::killRoom()::Error: Room not found');
 			return ;
 		}
 
@@ -707,7 +707,7 @@ export class Tournament
 		room.aborted = true;
 
 		/* #debug */
-		console.log(`Room of ${room.players.values()} aborted`);
+		// console.log(`Room of ${room.players.values()} aborted`);
 
 		// routine check
 		this.routine();
@@ -717,7 +717,7 @@ export class Tournament
 	private close()
 	{
 		if (this._players.size !== this._size) {
-			console.log('Failed to close tournament: not enough players');
+			// console.log('Failed to close tournament: not enough players');
 			return ;
 		}
 
@@ -725,7 +725,7 @@ export class Tournament
 		for (const r of allrooms(this._format))
 		{
 			/* #debug */
-			console.log(`Adding room ${r}`);
+			// console.log(`Adding room ${r}`);
 
 			// adding room
 			this._rooms.set(r, new Room(this._rsize));
@@ -741,7 +741,7 @@ export class Tournament
 			const room = this._rooms.get(idxToKey({ layer:0, idx:i }));
 			if (room === undefined)
 			{
-				console.log('Error while assigning players to the rooms. Room not found', { layer:0, idx:i });
+				// console.log('Error while assigning players to the rooms. Room not found', { layer:0, idx:i });
 				// clear all rooms
 				return ;
 			}
@@ -752,7 +752,7 @@ export class Tournament
 
 		// closed tournament
 		this._closed = true;
-		console.log(`Closed tournament ${this._ID}, no more player allowed, games can now start`);
+		// console.log(`Closed tournament ${this._ID}, no more player allowed, games can now start`);
 
 		// send the rooms
 		this.routine();
@@ -768,7 +768,7 @@ export class Tournament
 		// check player existance
 		const player = this._players.get(playerid);
 		if (player === undefined) {
-			console.log('Error::movePlayer: Player not found');
+			// console.log('Error::movePlayer: Player not found');
 			return ;
 		}
 
@@ -776,11 +776,11 @@ export class Tournament
 		const fromRoom = this._rooms.get(from);
 		const toRoom = this._rooms.get(to);
 		if (!fromRoom || !toRoom) {
-			console.log('Error::movePlayer: Room(s) not found');
+			// console.log('Error::movePlayer: Room(s) not found');
 			return ;
 		}
 
-		console.log(`Moved player ${playerid} from '${from}' to '${to}'`);
+		// console.log(`Moved player ${playerid} from '${from}' to '${to}'`);
 		toRoom.players.add(playerid);
 	}
 
@@ -807,7 +807,7 @@ export class Tournament
 		// check if player in a room
 		const roomIdx = this.roomOf(playerid);
 		if (roomIdx === undefined) {
-			console.log('Error::Tournnament::Ready: Not in a room');
+			// console.log('Error::Tournnament::Ready: Not in a room');
 			return {
 				status: "failure",
 				reason: 'Not in a room'
@@ -817,7 +817,7 @@ export class Tournament
 		// check if the room is in game
 		const room = this._rooms.get(roomIdx) as Room;
 		if (room.ingame === true) {
-			console.log('Error::Tournnament::Ready: Room in-game');
+			// console.log('Error::Tournnament::Ready: Room in-game');
 			return {
 				status: "failure",
 				reason: 'Room in-game'
@@ -826,7 +826,7 @@ export class Tournament
 
 		// check if room already played
 		if (room.played === true) {
-			console.log('Error::Tournnament::Ready: Room already played');
+			// console.log('Error::Tournnament::Ready: Room already played');
 			return {
 				status: "failure",
 				reason: 'Room already played'
@@ -857,12 +857,12 @@ export class Tournament
 		{
 			if (target.status === "connected")
 			{
-				console.log('Player already joined');
+				// console.log('Player already joined');
 				return false;
 			}
 			else if (target.status === "left")
 			{
-				console.log('Player previously left the tournament');
+				// console.log('Player previously left the tournament');
 				return false;
 			}
 			else
@@ -880,7 +880,7 @@ export class Tournament
 		// check if tournament is full
 		if (this._players.size === this._size)
 		{
-			console.log('The tournament is full');
+			// console.log('The tournament is full');
 			return false;
 		}
 
@@ -906,7 +906,7 @@ export class Tournament
 		const player = this._players.get(playerid);
 		if (player === undefined)
 		{
-			console.log(`player '${playerid}' not in the tournament`);
+			// console.log(`player '${playerid}' not in the tournament`);
 			return false;
 		}
 
@@ -926,7 +926,7 @@ export class Tournament
 			}
 		}
 	
-		console.log(`Player ${playerid} didn't join a room yet`);
+		// console.log(`Player ${playerid} didn't join a room yet`);
 		player.disconnect();
 
 		// update status
@@ -943,7 +943,7 @@ export class Tournament
 		const player = this._players.get(playerid);
 		if (player === undefined)
 		{
-			console.log(`player '${playerid}' not in the tournament`);
+			// console.log(`player '${playerid}' not in the tournament`);
 			return false;
 		}
 
@@ -954,7 +954,7 @@ export class Tournament
 		if (roomkey !== undefined) this._rooms.get(roomkey)?.autowin();
 
 		// logging
-		console.log(`${playerid} left the tournament...`);
+		// console.log(`${playerid} left the tournament...`);
 
 		// update status
 		this.routine();

@@ -22,6 +22,28 @@ export async function userList(linkId: number): Promise<string> {
 	return JSON.stringify(userList)
 }
 
+interface ChatUser {
+	linkId:number,
+	username:string | null,
+}
+
+// ritorna la lista degli user in una chat
+export async function userInChat(chatId: number): Promise<ChatUser[] | undefined> {
+	const userList = await chatPrisma.chats.findFirst({ 
+		where: { chatId: chatId },
+		select: {
+			users: true,
+			host: true
+		}
+	});
+
+	const users = userList?.users;
+	if (!users)
+		return userList?.host ? [userList?.host] : undefined;
+	users?.push(userList?.host);
+	return users;
+}
+
 //ricerca delle chat  a cui uno user appartiene
 export async function chatList(linkId: number): Promise<string> {
 	//ricerca dello user
@@ -55,6 +77,33 @@ export async function chatList(linkId: number): Promise<string> {
 	}));
 
 	return JSON.stringify(result);
+}
+
+/* @topiana- funzione che ritorna un array di chatId */
+export async function chatIdList(linkId: number): Promise<{ chatId:number }[]> {
+	//ricerca dello user
+	const user = await chatPrisma.user.findUnique({
+		where: { linkId: linkId },
+		include: { members: true }
+	});
+	if (!user)
+		throw new NotFound(`User with linkId '${linkId}' does not exist`, "chat");
+
+	//ricerca delle chat
+	const chats = await chatPrisma.chats.findMany({
+		where: {
+			OR: [
+				{ users: { some: { linkId: linkId } } },
+				{ host: { linkId: linkId } }
+			]
+		},
+		select: {
+			chatId: true,
+		},
+
+	});
+
+	return chats;
 }
 
 //ricerca tutti i messaggi apperteneti ad una chat
@@ -108,8 +157,17 @@ export async function messageList(input: number[]): Promise<string> {
 	return JSON.stringify(messages);
 }
 
+// @topiana- greasy hands
+interface Message {
+	linkId: number,
+	id: number,
+	message:
+	string,
+	date: Date,
+}
+
 //ricerca tutti i messaggi apperteneti ad una chat
-export async function singleMessage(input: number[]): Promise<string> {
+export async function singleMessage(input: number[]): Promise<Message | null> {
 	if (!Array.isArray(input) || input.length < 2)
 		throw new BadRequest('Input must be an array: [chatId, linkId]', "chat");
 
@@ -143,10 +201,9 @@ export async function singleMessage(input: number[]): Promise<string> {
 	}
 
 	//ricerca dei messaggi
-	const messages = await chatPrisma.messages.findMany({
+	const message = await chatPrisma.messages.findFirst({
 		where: { chatId },
 		orderBy: { date: 'desc' },
-		take: 1,
 		select: {
 			id: true,
 			linkId: true,
@@ -154,11 +211,12 @@ export async function singleMessage(input: number[]): Promise<string> {
 			date: true
 		}
 	});
-	return JSON.stringify(messages);
+
+	return message;
 }
 
 //creazione di una nuova chat
-export async function newChat(input: NewChat): Promise<void> {
+export async function newChat(input: NewChat): Promise<number> {
 	//controllo input
 	if (input.chatName.toString().trim() === '')
 		throw new BadRequest(`no chat name provided`, "chat");
@@ -178,7 +236,7 @@ export async function newChat(input: NewChat): Promise<void> {
 	}
 
 	//creazione della chat
-	await chatPrisma.chats.create({
+	const newChat = await chatPrisma.chats.create({
 		data: {
 			name: input.chatName.toString(),
 			hostId: input.host,
@@ -187,6 +245,11 @@ export async function newChat(input: NewChat): Promise<void> {
 			}
 		}
 	});
+	
+	if (!newChat)
+		throw new Error(`Failed to create chat`);
+
+	return newChat.chatId;
 }
 
 //aggiunta del messaggio al database

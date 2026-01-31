@@ -3,16 +3,12 @@ import { router } from "@/router";
 // import { load404Page } from "@/pages/errors/404";
 
 // services
-import { sendPostRequest } from "@/services/api/sendRequests";
-import { LobbyWebSocket,
-	ConnectLobbySocket, DisconnectLobbySocket } from "@/services/ws/lobbyWebSocket";
+import { sendGetRequest, sendPostRequest } from "@/services/api/sendRequests";
+import { LobbyWebSocket, ConnectLobbySocket } from "@/services/ws/lobbyWebSocket";
 
 // components
 import { loadNavbar } from "@/components/navbar";
 import { createProfileCard } from "@components/createProfileCard.js";
-
-// URLS
-const BACKEND_APIS_URL = `/api`;
 
 // globals
 interface Player {
@@ -29,7 +25,7 @@ export function loadOnlineLobbyPage(): HTMLElement
 	const query = router.getQuery().get("lobby-id");
 	if (query) lobby_code = query;
 
-	console.log('Got Lobby-ID', lobby_code);
+	// console.log('Got Lobby-ID', lobby_code);
 	/* ----------------------------------------- */
 
 	const div = document.createElement('div');
@@ -156,9 +152,9 @@ export function loadOnlineLobbyPage(): HTMLElement
 
 
 	/* !!! DESTRUCTOR !!! */
-	(div as any).destroy = () => {
-		DisconnectLobbySocket();
-	}
+	// (div as any).destroy = () => {
+	// 	DisconnectLobbySocket();
+	// }
 
 	return div;
 }
@@ -197,7 +193,7 @@ function removeAllChildNodes(parent:HTMLElement) {
 function updateLobbyInfo(state:any)
 {
 	if (state.ID === undefined || state.players === undefined) {
-		console.log('Invalid lobby state')
+		// console.log('Invalid lobby state')
 	}
 
 	// save lobby code
@@ -428,13 +424,25 @@ function sendLobbyInvite(event:SubmitEvent)
 	}
 
 	/* #debug */
-	console.log('Inviting', username, "to", lobby_code);
+	// console.log('Inviting', username, "to", lobby_code);
 
-	// send the request to the backend
-	sendPostRequest(`${BACKEND_APIS_URL}/lobby-invite`, {
-		lobbyid: lobby_code,
-		target: username
-	}, 'application/json');
+	sendGetRequest('/api/userinfo?username=' + username)
+	.then(target => {
+		if (!target) {
+			console.log('Error, User not found');
+			return ;
+		}
+
+		console.log('target', target);
+
+		// send the request to the backend
+		sendPostRequest('/api/lobby-invite', {
+			lobbyid: lobby_code,
+			target: target.linkId,
+		}, 'application/json');
+	})
+	.catch(() => null);
+
 }
 
 // create invite card

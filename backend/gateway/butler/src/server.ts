@@ -83,7 +83,6 @@ async function sendNotify(username: string, ) {
 
 import { 
 	/* HTTP */
-	fetchBackend,
 	authForward,
 	noAuthForward,
 
@@ -93,10 +92,12 @@ import {
 from './forwarders.js';
 
 import {
-	sendLobbyInvite,
 	authWebSocket,
-	sendFriendRequest,
-	attachFriendStatus
+	attachFriendStatus,
+	attachChatUsersStatus,
+	sendLobbyInvite,
+	sendFriendUpdate,
+	sendFriendNotification,
 } from './backendbypass.js';
 
 
@@ -113,18 +114,15 @@ const PONG_URL = process.env.PONG_URL ?? 'http://pong:3040';
 fastify.register(async function (fastify) {
 
 	// helper to forwarder for backend HTTP services
+	/* @handler: (data:any, reply:FastifyReply) => any, this function modifies the returned 'data'
+	   @updater: (user:any) => void, this function sends an update to all connected users related to 'user'
+	   @notifier: (sender:string, data:any) => void, this function sends a notification to 'target' user (found in data) if connected */
 	function httpforwarder(endpoint:string, type:string, opts?:any) {
 
 		// if no auth
-		if (opts?.auth === false) {
-			if (opts?.handler) return async (request:FastifyRequest, reply:FastifyReply) => await noAuthForward(request, reply, endpoint, type, opts.handler);
-			else return async (request:FastifyRequest, reply:FastifyReply) => await noAuthForward(request, reply, endpoint, type);
-		}
+		if (opts?.auth === false) return async (request:FastifyRequest, reply:FastifyReply) => await noAuthForward(request, reply, endpoint, type, opts.handler);
 		// if auth
-		else {
-			if (opts?.handler) return async (request:FastifyRequest, reply:FastifyReply) => await authForward(request, reply, endpoint, type, opts.handler);
-			else return async (request:FastifyRequest, reply:FastifyReply) => await authForward(request, reply, endpoint, type);
-		}
+		else return async (request:FastifyRequest, reply:FastifyReply) => await authForward(request, reply, endpoint, type, opts.handler, opts?.updater, opts?.notifier);
 	}
 
 	// authentication endpoint
@@ -134,7 +132,7 @@ fastify.register(async function (fastify) {
 	// auth backend APIs
 	fastify.post('/login', httpforwarder(`${AUTH_URL}/api/login`, 'application/json', { auth: false, handler: attachAllCookies }));
 	fastify.post('/register', httpforwarder(`${AUTH_URL}/api/register`, 'application/json', { auth: false }));
-	fastify.post('/auth/google', httpforwarder(`${AUTH_URL}/api/auth/google`, 'application/json', { auth: false }));
+	fastify.post('/auth/google', httpforwarder(`${AUTH_URL}/api/auth/google`, 'application/json', { auth: false, handler: attachAllCookies}));
 	fastify.post('/2fa/verify', httpforwarder(`${AUTH_URL}/api/2fa/verify`, 'application/json', { auth: false, handler: attachAllCookies }));
 	fastify.get('/profile',  httpforwarder(`${AUTH_URL}/api/profile`, 'application/json', { auth: true }));
 	fastify.patch('/profile',  httpforwarder(`${AUTH_URL}/api/profile`, 'application/json', { auth: true, handler: attachAllCookies }));
@@ -150,15 +148,16 @@ fastify.register(async function (fastify) {
 	fastify.get('/game', httpforwarder(`${PROFILE_URL}/api/game`, 'application/json', { auth: true }));
 	fastify.get('/userinfo', httpforwarder(`${PROFILE_URL}/api/userinfo`, 'application/json', { auth: true }));
 	fastify.get('/friends', httpforwarder(`${PROFILE_URL}/api/friends`, 'application/json', { auth: true, handler: attachFriendStatus }));
-	fastify.post('/friend/request', httpforwarder(`${PROFILE_URL}/api/friend/request`, 'application/json', { auth: true }));
-	fastify.post('/friend/accept', httpforwarder(`${PROFILE_URL}/api/friend/accept`, 'application/json', { auth: true }));
-	fastify.post('/friend/remove', httpforwarder(`${PROFILE_URL}/api/friend/remove`, 'application/json', { auth: true }));
+	fastify.post('/friend/request', httpforwarder(`${PROFILE_URL}/api/friend/request`, 'application/json', { auth: true, updater: sendFriendUpdate, notifier: sendFriendNotification }));
+	fastify.post('/friend/accept', httpforwarder(`${PROFILE_URL}/api/friend/accept`, 'application/json', { auth: true, updater: sendFriendUpdate }));
+	fastify.post('/friend/remove', httpforwarder(`${PROFILE_URL}/api/friend/remove`, 'application/json', { auth: true, updater: sendFriendUpdate }));
 	// ... add others
 
 	// chat backend APIs
 	fastify.get('/chat-list', httpforwarder(`${CHAT_URL}/api/chat-list`, 'application/json', { auth: true }));
 	fastify.post('/message-list', httpforwarder(`${CHAT_URL}/api/message-list`, 'application/json', { auth: true }));
 	fastify.post('/user-list', httpforwarder(`${CHAT_URL}/api/user-list`, 'application/json', { auth: true }));
+	fastify.get('/chat-users', httpforwarder(`${CHAT_URL}/api/chat-users`, 'application/json', { auth: true, handler: attachChatUsersStatus }));
 	fastify.post('/new-message', httpforwarder(`${CHAT_URL}/api/new-message`, 'application/json', { auth: true }));
 	fastify.post('/new-chat', httpforwarder(`${CHAT_URL}/api/new-chat`, 'application/json', { auth: true }));
 	fastify.post('/delete-chat-messages', httpforwarder(`${CHAT_URL}/api/delete-chat-messages`, 'application/json', { auth: true }));
@@ -171,40 +170,11 @@ fastify.register(async function (fastify) {
 	fastify.post('/blocked-users', httpforwarder(`${CHAT_URL}/api/blocked-users`, 'application/json', { auth: true }));
 	// ... add others
 
-	// Fetches the desired backend endpoint (if specified). Then on successfule response calls the 'forward' function.
-	// NOTE that the 'splitforwarder()' needs 'isCookieAuthenticated()' as preHandler, so that it cann attach the 'user' to the request.
-	function splitforwarder(endpoint:string | undefined, forwarder: (request:FastifyRequest, reply:FastifyReply) => void)
-	{
-		return async (request:FastifyRequest, reply:FastifyReply) => {
-
-			// fetch the desired endpoint
-			if (endpoint !== undefined)
-			{
-				let ret;
-				try {
-					ret = await fetchBackend(request, endpoint, 'application/json', { ok:true, user:(request as any).user });
-				} catch (err) {
-					console.log('Error', err);
-					reply.code(502).send("Backend service unreachable");
-					return ;
-				}
-
-				// if fetch went wrong don't forward second part
-				if (ret.status !== 200) {
-					reply.code(ret.status).send(ret.statusText);
-					return ;
-				}
-			}
-
-			// execute the second part
-			forwarder(request, reply);
-		};
-	}
 
 	// backend bypass endpoints (interact with the users connected to butler)
 	// All these endpoint require an authenticated connection
-	fastify.post('/lobby-invite', { preHandler: [isCookieAuthenticated] }, splitforwarder(undefined, sendLobbyInvite));
-	fastify.post('/friend-request', { preHandler: [isCookieAuthenticated] }, splitforwarder(`${PROFILE_URL}/api/friend/request`, sendFriendRequest));
+	fastify.post('/lobby-invite', { preHandler: [isCookieAuthenticated] }, sendLobbyInvite);
+	// fastify.post('/friend-request', { preHandler: [isCookieAuthenticated] }, splitforwarder(`${PROFILE_URL}/api/friend/request`, sendFriendRequest));
 
 
 }, { prefix: '/api' });

@@ -68,7 +68,7 @@ class ChatService {
      */
     async initialize(): Promise<boolean> {
         if (this.isInitialized) {
-            console.log('[ChatService] Already initialized');
+            // console.log('[ChatService] Already initialized');
             return true;
         }
 
@@ -80,7 +80,7 @@ class ChatService {
             return false;
         }
 
-        console.log('[ChatService] Initializing for user:', this.userId);
+        // console.log('[ChatService] Initializing for user:', this.userId);
 
         // Initialize IndexedDB
         try {
@@ -104,7 +104,7 @@ class ChatService {
      * Shutdown the service and close all connections
      */
     shutdown(): void {
-        console.log('[ChatService] Shutting down...');
+        // console.log('[ChatService] Shutting down...');
         
         this.disconnectBroadcast();
         
@@ -151,7 +151,7 @@ class ChatService {
         }
 
         if (this.isConnecting) {
-            console.log('[ChatService] Already connecting...');
+            // console.log('[ChatService] Already connecting...');
             return;
         }
 
@@ -159,13 +159,13 @@ class ChatService {
         this.isConnecting = true;
 
         const wsUrl = CHAT_WS_URL;
-        console.log('[ChatService] Connecting to broadcast:', wsUrl);
+        // console.log('[ChatService] Connecting to broadcast:', wsUrl);
 
         try {
             this.broadcastWs = new WebSocket(wsUrl);
 
             this.broadcastWs.onopen = () => {
-                console.log('[ChatService] Connected to broadcast');
+                // console.log('[ChatService] Connected to broadcast');
                 this.isConnecting = false;
                 this.reconnectAttempts = 0;
                 
@@ -183,7 +183,7 @@ class ChatService {
             };
 
             this.broadcastWs.onclose = () => {
-                console.log('[ChatService] Disconnected from broadcast');
+                // console.log('[ChatService] Disconnected from broadcast');
                 this.isConnecting = false;
                 this.emit('disconnected', { reason: 'Connection closed' });
                 
@@ -230,7 +230,7 @@ class ChatService {
                     break;
 
                 default:
-                    console.log('[ChatService] Unknown broadcast event:', event.type);
+                    // console.log('[ChatService] Unknown broadcast event:', event.type);
             }
 
         } catch (error) {
@@ -282,7 +282,7 @@ class ChatService {
                 // Emit update event
                 this.emit('chats-updated', { chats: normalizedChats });
 
-                console.log(`[ChatService] Fetched ${normalizedChats.length} chats`);
+                // console.log(`[ChatService] Fetched ${normalizedChats.length} chats`);
                 return normalizedChats;
             }
 
@@ -338,7 +338,7 @@ class ChatService {
 
                 // Save to IndexedDB
                 await chatStorage.saveMessages(normalizedMessages);
-                console.log(`[ChatService] Fetched ${normalizedMessages.length} messages for chat ${chatId}`);
+                // console.log(`[ChatService] Fetched ${normalizedMessages.length} messages for chat ${chatId}`);
 
                 return normalizedMessages;
             }
@@ -353,7 +353,9 @@ class ChatService {
 
     // ==================== MESSAGE HANDLING ====================
 
-    private async handleIncomingMessage(chatId: number, message: Message): Promise<void> {
+	private async handleIncomingMessage(chatId: number, message: Message): Promise<void> {
+				// console.log(`[ChatService] Received message from ${message.userId} in chat ${chatId}`);
+				// console.log(`[ChatService] Received message: ${JSON.stringify(message)}`);
         // Save message to IndexedDB
         await chatStorage.saveMessages([message]);
 
@@ -572,7 +574,7 @@ class ChatService {
             30000 // Max 30 seconds
         );
 
-        console.log(`[ChatService] Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts + 1}/${this.maxReconnectAttempts})`);
+        // console.log(`[ChatService] Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts + 1}/${this.maxReconnectAttempts})`);
 
         this.reconnectTimer = setTimeout(() => {
             this.reconnectTimer = null;

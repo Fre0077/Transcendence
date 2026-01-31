@@ -1,7 +1,19 @@
+
+export class HttpError extends Error {
+  status: number;
+  statusText?: string;
+
+  constructor(status: number, statusText?: string) {
+    super(`HTTP error! status: ${status}${statusText ? `, ${statusText}` : ''}`);
+    this.status = status;
+    this.statusText = statusText;
+  }
+}
+
 export function sendPostRequest(
     url: string,
     data: any = null,
-    type?: string
+    type: string = 'application/json'
 ): Promise<any> {
     return new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
@@ -10,30 +22,35 @@ export function sendPostRequest(
         // AUTH
         xhr.withCredentials = true; // 🔥 REQUIRED 4 Cookies
 
-        // defualt type
-        if (type) xhr.setRequestHeader("Content-Type", type);
-        else xhr.setRequestHeader("Content-Type", 'application/json');
+        // set type
+        xhr.setRequestHeader("Content-Type", type);
 
-        xhr.onreadystatechange = function () {
-            if (xhr.readyState === XMLHttpRequest.DONE) {
-                if (xhr.status === 200) {
-                    try {
-                        const response = JSON.parse(xhr.responseText);
-                        resolve(response);
-                    } catch (e: any) {
-                        reject(new Error("Failed to parse JSON response: " + e.message));
-                    }
-                } else {
-                    reject(
-                        new Error(
-                            `HTTP error! status: ${xhr.status}, statusText: ${xhr.statusText}`
-                        )
-                    );
+        // Onload safer because fires only once
+        xhr.onload = () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+                try {
+                    const response = xhr.responseText
+                        ? JSON.parse(xhr.responseText)
+                        : null;
+                    resolve(response);
+                } catch (e: any) {
+                    reject(new Error("Failed to parse JSON response: " + e.message));
                 }
+            } else {
+                reject(new HttpError(xhr.status, xhr.statusText));
             }
         };
+
+        xhr.onerror = () => {
+            reject(new HttpError(0, 'Network error'));
+        };
+
         if (data) {
-            xhr.send(JSON.stringify(data));
+            xhr.send(
+                type === 'application/json'
+                    ? JSON.stringify(data)
+                    : data
+            );
         } else {
             xhr.send();
         }
@@ -42,38 +59,36 @@ export function sendPostRequest(
 
 export function sendGetRequest(
 	url: string,
-	token?: string //questo va cancellato :)
 ): Promise<any> {
 	return new Promise((resolve, reject) => {
 		const xhr = new XMLHttpRequest();
 		xhr.open("GET", url, true);
 
-
         // AUTH
-        xhr.withCredentials = true;
-		xhr.setRequestHeader("Authorization", `Bearer ${token}`);   // deprecated
-		
-        
-        xhr.onreadystatechange = function () {
-			if (xhr.readyState === XMLHttpRequest.DONE) {
-				if (xhr.status === 200) {
-					try {
-						const response = JSON.parse(xhr.responseText);
-						resolve(response);
-					} catch (e: any) {
-						reject(new Error("Failed to parse JSON response: " + e.message));
-					}
-				} else {
-					reject(
-						new Error(
-							`HTTP error! status: ${xhr.status}, statusText: ${xhr.statusText}`
-						)
-					);
-				}
-			}
-		};
-		xhr.send();
-	});
+        xhr.withCredentials = true; // 🔥 REQUIRED 4 Cookies
+
+        // Onload safer because fires only once
+        xhr.onload = () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+                try {
+                    const response = xhr.responseText
+                        ? JSON.parse(xhr.responseText)
+                        : null;
+                    resolve(response);
+                } catch (e: any) {
+                    reject(new Error("Failed to parse JSON response: " + e.message));
+                }
+            } else {
+                reject(new HttpError(xhr.status, xhr.statusText));
+            }
+        };
+
+        xhr.onerror = () => {
+            reject(new HttpError(0, 'Network error'));
+        };
+
+        xhr.send();
+    });
 }
 
 export function sendDeleteRequest(
@@ -86,24 +101,26 @@ export function sendDeleteRequest(
         // AUTH
         xhr.withCredentials = true; // 🔥 REQUIRED 4 Cookies
 
-        xhr.onreadystatechange = function () {
-            if (xhr.readyState === XMLHttpRequest.DONE) {
-                if (xhr.status === 200) {
-                    try {
-                        const response = JSON.parse(xhr.responseText);
-                        resolve(response);
-                    } catch (e: any) {
-                        reject(new Error("Failed to parse JSON response: " + e.message));
-                    }
-                } else {
-                    reject(
-                        new Error(
-                            `HTTP error! status: ${xhr.status}, statusText: ${xhr.statusText}`
-                        )
-                    );
+        // Onload safer because fires only once
+        xhr.onload = () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+                try {
+                    const response = xhr.responseText
+                        ? JSON.parse(xhr.responseText)
+                        : null;
+                    resolve(response);
+                } catch (e: any) {
+                    reject(new Error("Failed to parse JSON response: " + e.message));
                 }
+            } else {
+                reject(new HttpError(xhr.status, xhr.statusText));
             }
         };
+
+        xhr.onerror = () => {
+            reject(new HttpError(0, 'Network error'));
+        };
+
         xhr.send();
     });
 }
@@ -116,21 +133,41 @@ export function sendPatchRequest(
     return new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         xhr.open("PATCH", url, true);
-        xhr.withCredentials = true;
+
+        // AUTH
+        xhr.withCredentials = true; // 🔥 REQUIRED 4 Cookies
+
+        // set type
         xhr.setRequestHeader("Content-Type", type);
-        xhr.onreadystatechange = () => {
-            if (xhr.readyState === XMLHttpRequest.DONE) {
-                if (xhr.status === 200) {
-                    try {
-                        resolve(JSON.parse(xhr.responseText));
-                    } catch (e: any) {
-                        reject(new Error("JSON parse error: " + e.message));
-                    }
-                } else {
-                    reject(new Error(`HTTP ${xhr.status}: ${xhr.statusText}`));
+
+        // Onload safer because fires only once
+        xhr.onload = () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+                try {
+                    const response = xhr.responseText
+                        ? JSON.parse(xhr.responseText)
+                        : null;
+                    resolve(response);
+                } catch (e: any) {
+                    reject(new Error("Failed to parse JSON response: " + e.message));
                 }
+            } else {
+                reject(new HttpError(xhr.status, xhr.statusText));
             }
         };
-        xhr.send(data ? JSON.stringify(data) : null);
+
+        xhr.onerror = () => {
+            reject(new HttpError(0, 'Network error'));
+        };
+
+        if (data) {
+            xhr.send(
+                type === 'application/json'
+                    ? JSON.stringify(data)
+                    : data
+            );
+        } else {
+            xhr.send();
+        }
     });
 }

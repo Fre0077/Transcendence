@@ -240,7 +240,9 @@ export function deleteGame(gameid:string, reason:string | void)
 	if (winner !== -1)
 	{
 		// create player array based on Player.idx
-		const players = entry.game.players.sort((a, b) => a.idx - b.idx).map(p => p.ID);
+		const players = entry.game.players.map(p => p.ID);
+
+		console.log('>players', players);
 
 		// what will be sent to RabbitMQ and ft_bunnyMQ @ecarbona
 		const history = {
@@ -305,7 +307,7 @@ fastify.register(async function (fastify) {
 
 
 		/* --------- CHECK AUTH --------- */
-		const userid = request.headers['x-user-username'] as string;	// dangerous?
+		const userid = request.headers['x-user-id'] as string;	// dangerous?
 		const secret = request.headers['x-gateway-secret'];
 		
 		if (!userid || secret !== GATEWAY_SECRET) {
@@ -410,7 +412,7 @@ fastify.register(async function (fastify) {
 
 
 		/* --------- CHECK AUTH --------- */
-		const userid = request.headers['x-user-username'] as string;	// dangerous?
+		const userid = request.headers['x-user-id'] as string;	// dangerous?
 		const secret = request.headers['x-gateway-secret'];
 		
 		if (!userid || secret !== GATEWAY_SECRET) {
@@ -505,7 +507,7 @@ fastify.register(async function (fastify) {
 
 
 		/* --------- CHECK AUTH --------- */
-		const username = request.headers['x-user-username'] as string;	// dangerous?
+		const username = request.headers['x-user-id'] as string;	// dangerous?
 		const secret = request.headers['x-gateway-secret'];
 		
 		if (!username || secret !== GATEWAY_SECRET) {

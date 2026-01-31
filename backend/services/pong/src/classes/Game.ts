@@ -605,7 +605,7 @@ export class Game
 				const actions = m.move.split('_');
 
 				/* #debug */
-				console.log('Playing move', actions);
+				// console.log('Playing move', actions);
 		
 				if (actions[0] === "START") this.launch();
 				else if (actions[1] === 'PRESS') this.press(m.player, actions[0]);

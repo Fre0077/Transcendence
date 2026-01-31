@@ -4,8 +4,11 @@ import { loadNavbar } from "@/components/navbar";
 // import { load404Page } from "@/pages/errors/404";
 
 // services
-import { TournamentWebSocket, ConnectTournamentSocket, DisconnectTournamentSocket } from "@/services/ws/tournamentWebSocket";
 // import { isauth } from "@/services/api/isauth";
+import { toastNotification } from "@/services/toastNotification";
+import { TournamentWebSocket, ConnectTournamentSocket, DisconnectTournamentSocket } from "@/services/ws/tournamentWebSocket";
+import { sendGetRequest } from "@/services/api/sendRequests";
+
 // elements
 import { loadPongSpectatorDiv } from "@pages/protected/game/online/loadPongSpectatorDiv";
 import { createProfileCard } from "@/components/createProfileCard";
@@ -98,8 +101,9 @@ export function loadOnlineTournamentPage(): HTMLElement
 	tourn_code = tournamentWS.getid();
 
 	/* !!! DESTRUCTOR !!! */
+	// The tournament websocket, once connected, disconnects only if the client leaves a tournament
 	(div as any).destroy = () => {
-		DisconnectTournamentSocket();
+		if (tournamentWS?.getid() === undefined) DisconnectTournamentSocket();
 	}
 
 	return div;
@@ -115,11 +119,11 @@ export function loadOnlineTournamentPage(): HTMLElement
 async function spectate(gameid: string) {
     // If already spectating this game, do nothing
     if (spectatingGames.has(gameid)) {
-        console.log(`Already spectating game ${gameid}`);
+        // console.log(`Already spectating game ${gameid}`);
         return;
     }
 
-    console.log('Spectating game:', gameid);
+    // console.log('Spectating game:', gameid);
 
     const container = document.getElementById('spectateGameDiv');
     if (!container) return;
@@ -155,7 +159,7 @@ async function spectate(gameid: string) {
     // Optional: If spectateDiv has a close button, remove game from set when closed
 	spectateDiv.addEventListener('spectate:close', () => {
 
-		console.log('Clearing spectator tab');
+		// console.log('Clearing spectator tab');
 
 		container.removeChild(spectateDiv);
 		spectatingGames.delete(gameid);
@@ -246,9 +250,22 @@ function renderWinnersPanel(status:'aborted' | 'finished', winners: string[]): H
 }
 
 // Render player list on the right, also only place where you can leave the tournament
-function renderPlayerList(players:Player[])
+async function renderPlayerList(players:Player[])
 {
-	 /* ---------------- Players list ---------------- */
+	let usernames:Map<string, string> = new Map();
+	if (players.length) {
+		for (const p of players) {
+			if (p.ID.startsWith('BOT')) usernames.set(p.ID, p.ID);
+			else {
+				const uname = await sendGetRequest('/api/userinfo?linkId=' + p.ID);
+				if (uname) usernames.set(p.ID, uname.username);
+				else usernames.set(p.ID, p.ID);
+			}
+
+		}
+	}
+
+	/* ---------------- Players list ---------------- */
 	const playersListElem = document.getElementById('tournament-connected-players');
 	if (playersListElem) {
 		if (players.length > 0) {
@@ -273,7 +290,7 @@ function renderPlayerList(players:Player[])
 								<li class="flex items-center justify-between text-sm text-white/80">
 									<div class="flex items-center gap-2">
 										<span class="w-2 h-2 rounded-full ${statusColor}"></span>
-										<span class="truncate max-w-[140px]">${player.ID}</span>
+										<span class="truncate max-w-[140px]">${usernames.get(player.ID)}</span>
 									</div>
 								</li>
 							`;
@@ -310,21 +327,25 @@ function renderPlayerList(players:Player[])
 
 
 // Render each bracket
-function renderBracketColumn(layer: number, rooms: Room[]): string {
+async function renderBracketColumn(layer: number, rooms: Room[]): Promise<string>
+{
+	const cards = await Promise.all(
+		rooms
+			.sort((a, b) => a.idx - b.idx)
+			.map(room => renderRoomCard(room))
+	);
+
 	return `
 		<div class="flex flex-col gap-6 items-center justify-center">
 			<h4 class="text-xs text-white/50 text-center mb-2">
 				Round ${layer + 1}
 			</h4>
-			${rooms
-			.sort((a, b) => a.idx - b.idx)
-			.map(room => renderRoomCard(room))
-			.join('')}
+			${cards.join('')}
 		</div>
 	`;
 }
 
-function renderTournamentLayout(rooms:Room[])
+async function renderTournamentLayout(rooms:Room[])
 {
 	/* ---------------- Tournament rooms ---------------- */
 	const roomsContainer = document.getElementById('tournamentRooms');
@@ -345,12 +366,15 @@ function renderTournamentLayout(rooms:Room[])
 		.sort((a, b) => a - b);
 
 	// This is the big container that holds all the brackets
+	const columns = await Promise.all(
+		sortedLayers
+			.map(layer => renderBracketColumn(layer, roomsByLayer[layer]))
+	);
+
 	const bracketHtml = `
 		<div class="relative overflow-x-auto pb-2">
 			<div class="flex gap-6 items-center justify-center min-w-max">
-			${sortedLayers
-				.map(layer => renderBracketColumn(layer, roomsByLayer[layer]))
-				.join('')}
+			${columns.join('')}
 			</div>
 		</div>
 	`;
@@ -369,17 +393,22 @@ function renderTournamentLayout(rooms:Room[])
 /* ------------------------------------------------------ */
 /*	 					UPDATE LOGIC					  */
 
-
+let page_layer:number = -1;
 
 function updateTournamentInfo(state:TournamentState) {
-	console.log('Updating tournament info ...');
+	// console.log('Updating tournament info ...');
 
 	// read data
-	const { players, rooms, finished, aborted, winners } = state;
+	const { players, rooms, current_layer, finished, aborted, winners } = state;
 
 	// verify
-	if (!players || !rooms || finished === undefined || !winners) {
-		console.log('Invalid tournament-state', state);
+	if (!players
+		|| !rooms
+		|| current_layer === undefined
+		|| finished === undefined
+		|| aborted === undefined
+		|| !winners) {
+		// console.log('Invalid tournament-state', state);
 		return ;
 	}
 
@@ -390,11 +419,38 @@ function updateTournamentInfo(state:TournamentState) {
 	renderTournamentLayout(rooms);
 
 	// update winners panel
-	// update winners panel
 	const winnersPanel = document.getElementById('winnersPanel');
 	if (winnersPanel && winnersPanel.childElementCount === 0 && (finished || aborted)) {
 		const status = (finished) ? 'finished' : 'aborted';
 		winnersPanel.appendChild(renderWinnersPanel(status, winners));
+	}
+
+
+	/* NOTIFICATION */
+	// send round update notification
+	if (finished === false && aborted === false && page_layer !== current_layer) {
+		toastNotification.info(
+			'New Round',
+			`The Round ${current_layer + 1} of the tournament just started!`,
+			() => {
+				if (router.getCurrentRoute()?.path !== '/tournament/:tournamentId') {
+					// console.log('we are in', router.getCurrentRoute()?.path, 'so we go in', `/tournament/${tourn_code}`);
+					router.push(`/tournament/${tourn_code}`);
+				}
+			},
+			10000
+		);
+		page_layer = current_layer;
+	}
+
+	// tournament finished notification
+	if (finished === true) {
+		toastNotification.success('Tournament Finished', `The Tournament Finished. Winners: ${winners}`);
+	}
+
+	// tournament aborted notification
+	if (aborted === true) {
+		toastNotification.error('Tournament Aborted', `The Tournament was aborted before it's conclusion`);
 	}
 }
 

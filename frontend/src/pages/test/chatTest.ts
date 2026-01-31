@@ -436,7 +436,7 @@ function logApi(label: string, data: any) {
     const timestamp = new Date().toLocaleTimeString();
     const text = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
     logEl.textContent = `[${timestamp}] ${label}\n${text}\n\n${logEl.textContent}`;
-    console.log(`[Chat Test] ${label}`, data);
+    // console.log(`[Chat Test] ${label}`, data);
 }
 
 function escapeHtml(text: string): string {

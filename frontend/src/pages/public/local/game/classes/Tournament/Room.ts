@@ -96,13 +96,13 @@ export class Room
 	public finalize(winners:string[], score:number[])
 	{
 		if (this.played === true) {
-			console.log('Room:finalize(): Room already played');
+			// console.log('Room:finalize(): Room already played');
 			return ;
 		}
 
 		// check if not ingame
 		if (this.ingame === false && this.justwin === false) {
-			console.log('Room:finalize():: Room not in-game');
+			// console.log('Room:finalize():: Room not in-game');
 			return ;
 		}
 
