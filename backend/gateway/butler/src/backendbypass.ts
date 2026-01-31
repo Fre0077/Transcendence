@@ -263,7 +263,7 @@ export function sendLobbyInvite(request:FastifyRequest, reply:FastifyReply)
 		sender: (request as any).user.username
 	});
 
-	if (ret === false) reply.code(404).send(JSON.stringify({ ok:false, error:"The user isn't connected" }));
+	if (ret === false) reply.code(200).send(JSON.stringify({ ok:false, error:"The user isn't connected" }));
 	else reply.code(200).send(JSON.stringify({ ok:true, comment:"Message sent correctly" }));
 }
 

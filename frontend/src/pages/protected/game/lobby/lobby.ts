@@ -3,7 +3,7 @@ import { router } from "@/router";
 // import { load404Page } from "@/pages/errors/404";
 
 // services
-import { sendPostRequest } from "@/services/api/sendRequests";
+import { sendGetRequest, sendPostRequest } from "@/services/api/sendRequests";
 import { LobbyWebSocket,
 	ConnectLobbySocket, DisconnectLobbySocket } from "@/services/ws/lobbyWebSocket";
 
@@ -430,11 +430,23 @@ function sendLobbyInvite(event:SubmitEvent)
 	/* #debug */
 	console.log('Inviting', username, "to", lobby_code);
 
-	// send the request to the backend
-	sendPostRequest(`${BACKEND_APIS_URL}/lobby-invite`, {
-		lobbyid: lobby_code,
-		target: username
-	}, 'application/json');
+	sendGetRequest('/api/userinfo?username=' + username)
+	.then(target => {
+		if (!target) {
+			console.log('Error, User not found');
+			return ;
+		}
+
+		console.log('target', target);
+
+		// send the request to the backend
+		sendPostRequest('/api/lobby-invite', {
+			lobbyid: lobby_code,
+			target: target.linkId,
+		}, 'application/json');
+	})
+	.catch(() => null);
+
 }
 
 // create invite card
