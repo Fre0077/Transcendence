@@ -156,9 +156,9 @@ export function loadOnlineLobbyPage(): HTMLElement
 
 
 	/* !!! DESTRUCTOR !!! */
-	(div as any).destroy = () => {
-		DisconnectLobbySocket();
-	}
+	// (div as any).destroy = () => {
+	// 	DisconnectLobbySocket();
+	// }
 
 	return div;
 }

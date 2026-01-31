@@ -216,7 +216,7 @@ export async function singleMessage(input: number[]): Promise<Message | null> {
 }
 
 //creazione di una nuova chat
-export async function newChat(input: NewChat): Promise<void> {
+export async function newChat(input: NewChat): Promise<number> {
 	//controllo input
 	if (input.chatName.toString().trim() === '')
 		throw new BadRequest(`no chat name provided`, "chat");
@@ -236,7 +236,7 @@ export async function newChat(input: NewChat): Promise<void> {
 	}
 
 	//creazione della chat
-	await chatPrisma.chats.create({
+	const newChat = await chatPrisma.chats.create({
 		data: {
 			name: input.chatName.toString(),
 			hostId: input.host,
@@ -245,6 +245,11 @@ export async function newChat(input: NewChat): Promise<void> {
 			}
 		}
 	});
+	
+	if (!newChat)
+		throw new Error(`Failed to create chat`);
+
+	return newChat.chatId;
 }
 
 //aggiunta del messaggio al database

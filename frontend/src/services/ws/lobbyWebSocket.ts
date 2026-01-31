@@ -206,7 +206,7 @@ export class LobbyWebSocket {
 }
 
 // Singleton
-let lobbyWS:LobbyWebSocket | null = null;
+export let lobbyWS:LobbyWebSocket | null = null;
 let lobby_id:string | undefined = undefined;
 
 

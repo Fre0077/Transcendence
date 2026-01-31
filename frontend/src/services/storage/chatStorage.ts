@@ -26,7 +26,8 @@ export interface Chat {
 export interface Message {
     messageId: number;
     chatId: number;
-    userId: number;
+		userId: number;
+		senderUsername: string;
     message: string;
     date: string;
 }

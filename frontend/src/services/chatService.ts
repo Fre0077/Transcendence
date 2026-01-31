@@ -353,7 +353,9 @@ class ChatService {
 
     // ==================== MESSAGE HANDLING ====================
 
-    private async handleIncomingMessage(chatId: number, message: Message): Promise<void> {
+	private async handleIncomingMessage(chatId: number, message: Message): Promise<void> {
+				console.log(`[ChatService] Received message from ${message.userId} in chat ${chatId}`);
+				console.log(`[ChatService] Received message: ${JSON.stringify(message)}`);
         // Save message to IndexedDB
         await chatStorage.saveMessages([message]);
 
