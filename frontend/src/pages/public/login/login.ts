@@ -1,6 +1,6 @@
 import { googleLoginFunction } from "@/components/googleLogin";
 import { router } from "@/router";
-import { sendPostRequest } from "@/services/api/sendRequests";
+import { HttpError, sendPostRequest } from "@/services/api/sendRequests";
 import { authService } from "@/services/authService";
 
 export function loadLoginPage(): HTMLElement {
@@ -198,9 +198,9 @@ export function loadLoginPage(): HTMLElement {
 
         } catch (error) {
             // 4. Gestisci l'errore
-            console.error('Errore durante il login con Google:', error);
+            // console.error('Errore durante il login con Google:', error);
             let errorMessage = "Errore Google Login. Riprova.";
-            if (error instanceof Error) {
+            if (error instanceof Error || error instanceof HttpError) {
                 errorMessage = error.message;
             }
             // Mostra l'errore nell'UI
