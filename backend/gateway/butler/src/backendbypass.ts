@@ -112,8 +112,8 @@ export function attachFriendStatus(data:any)
 	
 		// adding all relations
 		user.relations.add_block(friends);
-		user.relations.add_block(incoming);
 		user.relations.add_block(outgoing);
+		user.relations.add_block(incoming);
 
 		console.log('>>>new relations', user.relations.data);
 	}

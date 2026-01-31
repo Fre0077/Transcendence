@@ -177,8 +177,8 @@ class AuthService {
     async logout(): Promise<void> {
         try {
             // Call logout endpoint to clear cookies
-            const response = await fetch(`${GATEWAY_URL}/logout`, {
-                method: 'POST',
+            const response = await fetch(`/api/logout`, {
+                method: 'DELETE',
                 credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
