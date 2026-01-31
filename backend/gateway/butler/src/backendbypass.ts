@@ -76,6 +76,31 @@ export function authWebSocket(connection:WebSocket, request:FastifyRequest)
 	}
 }
 
+/*
+data {
+	...
+	users: {
+			linkId: number;
+			username: string | null;
+		}[];
+	...
+} */
+export function attachChatUsersStatus(data:any)
+{
+	// check status on each friend
+	data.users = data.users.map((u:any) => {
+		const connected = connected_users.get(u.linkId);
+
+		return {
+			...u,
+			online: connected?.status === "online" ? true : false,
+		};
+	});
+
+	console.log('--> data after attaching chat-users', data);
+
+	return data;
+}
 
 // this function appends the status of the friend looking at the connected_users map
 /* expecting
