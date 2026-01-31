@@ -220,7 +220,7 @@ export async function createBot(gamestr:string, botid:string, gameid:string, lev
 				}
 				
 				/* #debug */
-				console.log('valid state message', msg);
+				// console.log('valid state message', msg);
 
 				// check if we are playing
 				if (msg.playing === true)

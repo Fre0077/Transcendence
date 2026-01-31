@@ -98,6 +98,16 @@ export class PongBot
 	{
 		let ball:Ball, paddle:Paddle, idx:number;
 	
+		// if in timeout
+		if (this._level !== 42 && this._timeout > 0)
+		{
+			// #debug
+			console.log('timer', this._timeout);
+
+			--this._timeout;
+			return ;
+		}
+
 		try {
 			// parse state
 			const data = this.parse(state);
@@ -120,29 +130,29 @@ export class PongBot
 	
 		// calculate coordinate of bot paddle
 		const botX = (idx == 1) ? 1 - (paddle.offset + paddle.width) : paddle.offset + paddle.width;
+		const loopX = (idx == 1) ? -botX : 2 -botX;
+
 
 		// calculate hitY of the ball
 		if ((idx === 1 && (ball.angle < Math.PI / 2 || ball.angle > 3 * Math.PI / 2))
 			|| (idx === 0 && (ball.angle > Math.PI / 2 && ball.angle < 3 * Math.PI / 2)))
 		{
-			// if not in timeout
-			if (this._timeout > 0)
-			{
-				// #debug
-				// console.log('timer', this._timeout);
-
-				--this._timeout;
-			}
-			// and point not calculated yet
-			else if (!this._calculated)
+			// if point not calculated yet
+			if (this._calculated === false)
 			{
 				// #todo maybe error too small
-				this._exp = expectedPos(ball.pos, ball.angle, botX) + error(this._level / 500);
+				this._exp = expectedPos(ball.pos, ball.angle, botX) + ((this._level !== 42) ? error(this._level / 500) : 0);
 				
 				// #debug
 				// console.log('exp', this._exp);
 
 				this._calculated = true;
+
+				// delay move
+				this._timeout = Math.floor(this._level) / 2;
+
+				// come again for now
+				return ;
 			}
 		}
 		else
@@ -153,10 +163,14 @@ export class PongBot
 				// console.log('Resetting');
 
 				// reset stats
-				this._exp = 0.5;
+				this._exp = (this._level === 42) ? expectedPos(ball.pos, ball.angle, loopX) : 0.5;
 				this._calculated = false;
-				this._timeout = Math.floor(this._level) / 1.5;
 
+				// delay move
+				this._timeout = Math.floor(this._level) / 2;
+
+				// come again for now
+				return ;
 			}
 		}
 
