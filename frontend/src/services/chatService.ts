@@ -328,6 +328,9 @@ class ChatService {
 
             if (Array.isArray(messages)) {
                 // Normalize incoming messages
+
+                // IN TEORIA QUI` C'E` ANCHE l'USERNAME
+
                 const normalizedMessages: Message[] = messages.map(m => ({
                     messageId: m.messageId ?? m.id,
                     chatId: m.chatId ?? chatId,
