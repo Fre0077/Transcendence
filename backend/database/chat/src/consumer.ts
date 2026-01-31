@@ -40,7 +40,6 @@ export async function startChatConsumer() {
           username: data.username,
         }
       });
-      channel!.ack(msg);
 
     } catch (err) {
       const e = err as any;
