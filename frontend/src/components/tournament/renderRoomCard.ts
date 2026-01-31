@@ -2,6 +2,8 @@
 /* ---------------------------------------- */
 /* ---------- RENDER ROOM CARDS ------------*/
 
+import { sendGetRequest } from "@/services/api/sendRequests";
+
 export interface Room {
 	// id room
 	layer:number;
@@ -82,15 +84,27 @@ function getRoomStyles(status: RoomStatus) {
 
 
 // IMPORTANT: the global event __spectate(gameid:string) should be defined for the specate button to work
-export function renderRoomCard(
+export async function renderRoomCard(
 	room: Room,
 	type: "local" | "online" = "online",
-): string {
+): Promise<string> {
 	const styles = getRoomStyles(room.status);
 
 	const containerClasses =
 	`relative min-w-[180px] rounded-lg border p-3 transition ${styles.container} overflow-hidden`;
 
+	let usernames:Map<string, string> = new Map();
+	if (room.players.length) {
+		for (const id of room.players) {
+			if (id.startsWith('BOT')) usernames.set(id, id);
+			else {
+				const uname = await sendGetRequest('/api/userinfo?linkId=' + id);
+				if (uname) usernames.set(id, uname.username);
+				else usernames.set(id, id);
+			}
+
+		}
+	}
 
 	/* -------- Players -------- */
 	const playersHtml = room.players.length
@@ -109,7 +123,7 @@ export function renderRoomCard(
 						cls += ' text-white/70';
 					}
 
-					return `<li class="${cls}">• ${player}</li>`;
+					return `<li class="${cls}">• ${usernames.get(player)}</li>`;
 				})
 				.join('')
 		: `<li class="text-xs text-white/40 italic">Waiting...</li>`;
@@ -126,7 +140,7 @@ export function renderRoomCard(
 	} else if (room.winner.length) {
 		footerHtml = `
 			<p class="text-xs text-emerald-400 mt-2">
-				Winner: ${room.winner.join(', ')}
+				Winner: ${room.winner.map(w => usernames.get(w)).join(', ')}
 			</p>
 		`;
 	} else {
