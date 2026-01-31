@@ -423,6 +423,16 @@ function updateTournamentInfo(state:TournamentState) {
 	if (winnersPanel && winnersPanel.childElementCount === 0 && (finished || aborted)) {
 		const status = (finished) ? 'finished' : 'aborted';
 		winnersPanel.appendChild(renderWinnersPanel(status, winners));
+
+		// tournament finished notification
+		if (finished === true) {
+			toastNotification.success('Tournament Finished', `The Tournament Finished. Winners: ${winners}`);
+		}
+
+		// tournament aborted notification
+		if (aborted === true) {
+			toastNotification.error('Tournament Aborted', `The Tournament was aborted before it's conclusion`);
+		}
 	}
 
 
@@ -441,16 +451,6 @@ function updateTournamentInfo(state:TournamentState) {
 			10000
 		);
 		page_layer = current_layer;
-	}
-
-	// tournament finished notification
-	if (finished === true) {
-		toastNotification.success('Tournament Finished', `The Tournament Finished. Winners: ${winners}`);
-	}
-
-	// tournament aborted notification
-	if (aborted === true) {
-		toastNotification.error('Tournament Aborted', `The Tournament was aborted before it's conclusion`);
 	}
 }
 

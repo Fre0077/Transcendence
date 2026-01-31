@@ -69,7 +69,7 @@ export async function startprofileConsumer() {
 						})
 						.filter((userid: number | null): userid is number => userid !== null);
 					// Eseguiamo la query solo se abbiamo trovato almeno un numero valido
-					let validUsername: number[] = [];
+					let validLinkId: number[] = [];
 					if (potentialLinkId.length > 0) {
 						const existingUsers = await profilePrisma.user.findMany({
 							where: {
@@ -77,17 +77,17 @@ export async function startprofileConsumer() {
 							},
 							select: { linkId: true }
 						});
-						validUsername = existingUsers.map(u => u.linkId!);
+						validLinkId = existingUsers.map(u => u.linkId!);
 					}
-					if (validUsername.length === 0) {
+					if (validLinkId.length === 0) {
 						console.log("ℹ️ Nessun utente registrato coinvolto (es. Guest vs Bot). History non salvata su Profile.");
 						channel!.ack(msg);
 						if (historyData.metadata?.room === 'finals')
 							setTournamentScore(historyData);
 						return;
 					}
-					for (const player of validUsername){
-						if (historyData.winner.includes(player)){
+					for (const player of validLinkId){
+						if (historyData.winner.includes(String(player))){
 							await profilePrisma.user.update({
 								where: { linkId: Number(player)},
 								data: {wins: {increment: 1}}
@@ -109,7 +109,7 @@ export async function startprofileConsumer() {
 							score: JSON.stringify(historyData.score), 
 							replay: historyData.replay || "",
 							players: {
-								connect: validUsername.map(linkId => ({ linkId }))
+								connect: validLinkId.map(linkId => ({ linkId }))
 							},
 							gamePlayers: JSON.stringify(historyData.players),
 							metadata: {
@@ -123,7 +123,7 @@ export async function startprofileConsumer() {
 					});
 					if (historyData.metadata?.room === 'finals')
                         setTournamentScore(historyData);
-					console.log(`✅ Game ${historyData.ID} salvato. Collegato agli utenti: ${validUsername.join(", ")}`);
+					console.log(`✅ Game ${historyData.ID} salvato. Collegato agli utenti: ${validLinkId.join(", ")}`);
 					channel!.ack(msg);
 				} catch (err) {
 					console.error("❌ Errore critico salvataggio history:", err);

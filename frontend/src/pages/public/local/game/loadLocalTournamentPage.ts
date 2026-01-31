@@ -294,21 +294,24 @@ function renderPlayerList(players: Player[])
 
 
 // Render each bracket
-function renderBracketColumn(layer: number, rooms: Room[]): string {
+async function renderBracketColumn(layer: number, rooms: Room[]): Promise<string>
+{
+	const cards = await Promise.all(
+		rooms
+			.sort((a, b) => a.idx - b.idx)
+			.map(room => renderRoomCard(room, "local"))
+	);
+
 	return `
 		<div class="flex flex-col gap-6 items-center justify-center">
 			<h4 class="text-xs text-white/50 text-center mb-2">
 				Round ${layer + 1}
 			</h4>
-			${rooms
-			.sort((a, b) => a.idx - b.idx)
-			.map(room => renderRoomCard(room, "local"))
-			.join('')}
+			${cards.join('')}
 		</div>
 	`;
 }
-
-function renderTournamentLayout(rooms:Room[])
+async function renderTournamentLayout(rooms:Room[])
 {
 	/* ---------------- Tournament rooms ---------------- */
 	const roomsContainer = document.getElementById('tournamentRooms');
@@ -329,12 +332,15 @@ function renderTournamentLayout(rooms:Room[])
 		.sort((a, b) => a - b);
 
 	// This is the big container that holds all the brackets
+	const columns = await Promise.all(
+		sortedLayers
+			.map(layer => renderBracketColumn(layer, roomsByLayer[layer]))
+	);
+
 	const bracketHtml = `
 		<div class="relative overflow-x-auto pb-2">
 			<div class="flex gap-6 items-center justify-center min-w-max">
-			${sortedLayers
-				.map(layer => renderBracketColumn(layer, roomsByLayer[layer]))
-				.join('')}
+			${columns.join('')}
 			</div>
 		</div>
 	`;
