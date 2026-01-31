@@ -5,7 +5,6 @@ COSE BRUTTE
 6) [] [CHAT] 3 utenti (A,B,C). A blocca B. C crea una chat con A e B. New achievement unlocked: Message factory (NOTA: anche se A blocca B dopo la creazione della chat)
 9) [] [TOURNAMENT] joinare un torneo e` painful
 12) [] [LOBBY] No error feedbacks (just on player invites)
-13) [] [AUTH] Se sei loggato con google e provi a loggare con quella main e una password a caso rimane bloccato in 'Signing in...'
 14) [] [TOURNAMENTS] Quando ricarica lo status del torneo si dimentica quali partite stavi spectando e toglie lo status dai bottoni (anche se poi nn fanno nulla)
 
 
@@ -16,6 +15,7 @@ COSE BRUTTE
 8) [x] [TOURNAMENT] La notifica del primo round arriva subito appena carica la pagina del torneo, non quando inizi il primo round...
 10) [x] [FRONTEND] match history displaya nomi sbagliati nel pannello (non nel replay)
 11) [x] [LOBBY] Serve un doppio leave se fai un game dalla lobby contro un'altro player (palese un doppio router.push('/game/<gameid>') che sfancula la history)
+13) [x] [AUTH] Se sei loggato con google e provi a loggare con quella main e una password a caso rimane bloccato in 'Signing in...'
 15) [x] [CHAT] se cambi usename nelle chat rimane quello vecchio e se pigi sul profilo nn lo carica
 16) [x] [CHAT] nelle nuove chat nn arrivano i messaggi (ancora)
 
