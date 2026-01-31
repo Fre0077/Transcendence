@@ -59,7 +59,7 @@ export async function register(input: userLogin): Promise<Account> {
 	const findEmail = await authPrisma.account.findUnique({ where: { email: input.email.toString() } })
 	if (findEmail) 
 		throw new Conflict(`The email ${input.email} already exist`, "auth")
-	const check = input.email.slice(input.email.lastIndexOf('.'));
+	const check = input.email.slice(input.email.lastIndexOf('.') + 1);
 	if (!check || check.includes('@'))
 		throw new Conflict(`Incomplete email`, "auth")
 

@@ -94,6 +94,12 @@ export function loadLoginPage(): HTMLElement {
 
         const email = emailInput.value;
         const password = passwordInput.value;
+        
+        if (!email || !password) {
+            errorEl.textContent = 'Inserisci email e password';
+            errorEl.classList.remove('hidden');
+            return;
+        }
 
         try {
             const response = await fetch(`/api/login`,{ 
