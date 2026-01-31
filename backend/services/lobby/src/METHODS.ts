@@ -292,7 +292,7 @@ Reply:
 
 import { bunnyPublish } from './bunny.js';
 
-export async function START(outlobby:string | undefined): Promise<StandardReturn>
+export async function START(outlobby:string | undefined, outplayer:string): Promise<StandardReturn>
 {
 	// check if you joined a lobby
 	if (outlobby === undefined) {
@@ -352,7 +352,7 @@ export async function START(outlobby:string | undefined): Promise<StandardReturn
 	const reply:string = JSON.stringify({ method: 'START_REPLY', status: 'success', value: lobby.gameID, comment: "The lobby is now in game"});
 	
 	// broadcast to everyone
-	lobby.broadcast(reply);
+	lobby.broadcast(reply, outplayer);
 
 	// #debg
 	console.log(`Starting lobby ${lobby.ID} ...`);

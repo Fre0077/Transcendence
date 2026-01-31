@@ -345,11 +345,12 @@ export class Lobby<T extends MySocket> {
 	}
 
 	// broadcast a message to the whole lobby
-	public broadcast(message:string)
+	public broadcast(message:string, sender?:string)
 	{
-		this._players.forEach((player) => {
+		for (const [id, player] of this._players) {
+			if (id === sender) continue;
 			player.send(message);
-		});
+		}
 	}
 
 	// send to all users the lobby state

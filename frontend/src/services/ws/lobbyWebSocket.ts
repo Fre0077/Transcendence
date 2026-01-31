@@ -82,7 +82,7 @@ function connectsocket(
 		// console.log('Disconnected from lobby WebSocket');
 
 		// reset lobbyWS
-		lobbyWS = null;
+		// lobbyWS = null;
 	};
 
 	return socket;
@@ -132,6 +132,10 @@ export class LobbyWebSocket {
 		// setup reconnect routine
 		this.persistor = (cb: (socket:WebSocket) => void) => {
 			if (this.socket.readyState !== WebSocket.OPEN) {
+
+				// safety measures
+				this.socket.close();
+
 				isauth().then(auth => {
 					if (auth === true) this.socket = connectsocket(onstart, onstate, cb, onerr);
 				});

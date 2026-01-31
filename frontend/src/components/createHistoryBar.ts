@@ -68,7 +68,7 @@ export async function createHistoryBar(data: GameData): Promise<HTMLElement> {
 	const winners = safeParseArray(data.winner);
 	const gameIcon = getGameIcon(data.game);
 	
-	let p1 = "Player 1"
+	let p1 = players[0];
 	if (!isNaN(Number(players[0])))
 	{
 		const p1Data = await sendGetRequest('/api/userinfo?linkId=' + players[0])
@@ -76,16 +76,18 @@ export async function createHistoryBar(data: GameData): Promise<HTMLElement> {
 		{
 			p1 = p1Data.username;
 		}
+		else p1 = "Player_1";
 	}
 
-	let p2 = "Player 1"
-	if (!isNaN(Number(players[0])))
+	let p2 = players[1];
+	if (!isNaN(Number(players[1])))
 	{
-		const p2Data = await sendGetRequest('/api/userinfo?linkId=' + players[0])
+		const p2Data = await sendGetRequest('/api/userinfo?linkId=' + players[1])
 		if (p2Data)
 		{
 			p2 = p2Data.username;
 		}
+		else p2 = "Player_2";
 	}
 	
 	// :)
