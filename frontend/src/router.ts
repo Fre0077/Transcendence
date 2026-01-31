@@ -101,7 +101,7 @@ class Router {
   // Go back in history
   back() {
     // @topiana- #todo remove event listeners
-    window.history.back();   
+    window.history.back();
   }
 
   // Find route that matches the given path
@@ -170,7 +170,7 @@ class Router {
     // ============================================
     // AUTHENTICATION GUARDS
     // ============================================
-    
+
     // For guest routes (login, register, 2fa-verify), skip auth check
     // These routes explicitly require NOT being authenticated
     if (route.meta?.requiresGuest) {
@@ -184,7 +184,7 @@ class Router {
     } else {
       // For all other routes, check authentication with backend
       const isAuthenticated = await authService.checkAuth();
-      
+
       // Protected routes - redirect to login if not authenticated
       if (route.meta?.requiresAuth && !isAuthenticated) {
         this.replace('/login');
@@ -193,9 +193,9 @@ class Router {
     }
 
     // route.meta?.user = user
-    
+
     const has2FA = authService.has2FAEnabled();
-    
+
     // 2FA protected routes - For now, we allow access even without 2FA
     // In the future, you can uncomment this to enforce 2FA for certain routes
     // if (route.meta?.requires2FA && !has2FA) {
@@ -232,8 +232,8 @@ class Router {
       // Clear and render new component (handle both sync and async components)
       this.rootElement.innerHTML = '';
       const componentResult = route.component();
-      const component = componentResult instanceof Promise 
-        ? await componentResult 
+      const component = componentResult instanceof Promise
+        ? await componentResult
         : componentResult;
       this.rootElement.appendChild(component);
 
@@ -321,13 +321,13 @@ const routes: RouteConfig[] = [
 			sendDeleteRequest('/api/logout');
 
 			// Clear local chat storage
-			await chatStorage.clearAll();
-      
+      await chatStorage.clearAll();
+
       // notify logout
 			document.dispatchEvent(
 				new CustomEvent("auth:logout", { bubbles: true })
 			);
-      
+
       return loadLoginPage();
     },
     meta: { title: 'Login - ft_transcendence', requiresGuest: true },
