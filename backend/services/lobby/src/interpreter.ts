@@ -144,7 +144,7 @@ export async function interpreter(
 				Note: the other player will be notified that the lobby was successfully started by the 'ingame' propery of the
 				lobbyStatus that gets sent once every second
 			*/
-			let sret = await START(lobby);
+			let sret = await START(lobby, player);
 
 			// just for the update
 			callback(lobby/* , player */);

@@ -246,7 +246,7 @@ export class Tournament<T extends MySocket>
 		this._finals = getfinals(this._format);
 
 		this._closed = false;
-		this._current_layer = 0;
+		this._current_layer = -1;
 		this._finished = false;
 		this._aborted = false;
 		this._winners = [];
@@ -781,6 +781,8 @@ export class Tournament<T extends MySocket>
 
 		// closed tournament
 		this._closed = true;
+		// set current layer to 0
+		this._current_layer = 0;
 		console.log(`Closed tournament ${this._ID}, no more player allowed, games can now start`);
 
 		// send the rooms
