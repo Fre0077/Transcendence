@@ -4,15 +4,11 @@ import { router } from "@/router";
 
 // services
 import { sendGetRequest, sendPostRequest } from "@/services/api/sendRequests";
-import { LobbyWebSocket,
-	ConnectLobbySocket, DisconnectLobbySocket } from "@/services/ws/lobbyWebSocket";
+import { LobbyWebSocket, ConnectLobbySocket } from "@/services/ws/lobbyWebSocket";
 
 // components
 import { loadNavbar } from "@/components/navbar";
 import { createProfileCard } from "@components/createProfileCard.js";
-
-// URLS
-const BACKEND_APIS_URL = `/api`;
 
 // globals
 interface Player {
