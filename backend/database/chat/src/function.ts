@@ -149,9 +149,14 @@ export async function messageList(input: number[]): Promise<string> {
 		take: 100,
 		select: {
 			id: true,
-			linkId: true,
 			message: true,
-			date: true
+			date: true,
+			user: {
+				select: {
+					linkId: true,
+					username: true
+				}
+			}
 		}
 	});
 	return JSON.stringify(messages);

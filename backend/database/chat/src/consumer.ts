@@ -27,17 +27,23 @@ export async function startChatConsumer() {
     const data = JSON.parse(msg.content.toString());
     console.log("📥 Chat ricevuto:", data);
 
-    try {
-      // Block duplicate accounts by unique linkId
-      const existingByLink = await chatPrisma.user.findUnique({
-        where: { linkId: data.linkId }
-      });
 
-      if (existingByLink) {
-        console.log("⛔ Utente già registrato (linkId), tentativo bloccato:", data.linkId);
-        channel.ack(msg);
-        return;
-      }
+
+    try {
+      await chatPrisma.user.upsert({
+        where: { 
+          linkId: data.linkId
+        },
+        update: {
+          username: data.username,
+          ...(data.imageProfile !== undefined ? { avatarUrl: data.imageProfile } : {})
+        },
+        create: {
+          linkId: data.linkId,
+          username: data.username,
+        }
+      });
+      channel!.ack(msg);
 
       // Create only if not existing
       await chatPrisma.user.create({
