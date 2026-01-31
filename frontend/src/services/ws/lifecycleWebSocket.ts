@@ -56,7 +56,7 @@ export async function ConnectLifecycleSocket(): Promise<WebSocket | null>
 	// connect with auth refresh
 	socket = await authWebSocket();
 	if (!socket) {
-		console.log("User not authenticated, can't connect to lifecycle websocket");
+		// console.log("User not authenticated, can't connect to lifecycle websocket");
 		return null;
 	}
 	
@@ -79,7 +79,7 @@ export async function ConnectLifecycleSocket(): Promise<WebSocket | null>
 
 
 	socket.onopen = () => {
-		console.log('[WS] connected to \'' + BUTLER_URL + '\'');
+		// console.log('[WS] connected to \'' + BUTLER_URL + '\'');
 
 		// start pinging
 		ping();
@@ -97,14 +97,14 @@ export async function ConnectLifecycleSocket(): Promise<WebSocket | null>
 			// pong logic
 			if (ev.data.toString() === 'pong') {
 				/* #debug */
-				// console.log('We Lobby PONG-ing');
+				// // console.log('We Lobby PONG-ing');
 				return ;
 			}
 
 			// actual messages
 			const msg = JSON.parse(ev.data);
 
-			console.log('[WS] got message', msg);
+			// console.log('[WS] got message', msg);
 
 			// handle notifications
 			if (msg?.what === "NOTIFY")
@@ -114,7 +114,7 @@ export async function ConnectLifecycleSocket(): Promise<WebSocket | null>
 				switch (msg.type)
 				{
 					case "friend-request":
-						console.log("Friend request", msg.sender);
+						// console.log("Friend request", msg.sender);
 
 						// update the UI
 						window.dispatchEvent(
@@ -130,7 +130,7 @@ export async function ConnectLifecycleSocket(): Promise<WebSocket | null>
 						
 						break ;
 					case "lobby-invite":
-						console.log("Lobby invite", msg.content);
+						// console.log("Lobby invite", msg.content);
 						toastNotification.invite('Lobby Invite', `${msg.sender} ti ha invitato nella sua lobby`,
 							() => { },
 							() => router.push(`/lobby/online?lobby-id=${msg.content}`),
@@ -138,7 +138,7 @@ export async function ConnectLifecycleSocket(): Promise<WebSocket | null>
 							10_000);
 						break ;
 					case "tournament-invite":
-						console.log("Tournament invite", msg.content);
+						// console.log("Tournament invite", msg.content);
 						toastNotification.invite('TEST', 'X e\' dietro di te',
 							() => {alert('SAIK')},
 							undefined,
@@ -146,7 +146,7 @@ export async function ConnectLifecycleSocket(): Promise<WebSocket | null>
 							10_000);
 						break ;
 					default:
-						console.log(`Unknown type ${msg.type}`, msg.content);
+						// console.log(`Unknown type ${msg.type}`, msg.content);
 				}
 			}
 
@@ -158,7 +158,7 @@ export async function ConnectLifecycleSocket(): Promise<WebSocket | null>
 				switch (msg.type)
 				{
 					case "friend":
-						console.log("Friend update", msg.sender);
+						// console.log("Friend update", msg.sender);
 						// update the UI
 						window.dispatchEvent(
 							new CustomEvent('update:friends', { bubbles: true })
@@ -166,7 +166,7 @@ export async function ConnectLifecycleSocket(): Promise<WebSocket | null>
 						
 						break ;
 					default:
-						console.log(`Unknown type ${msg.type}`, msg.content);
+						// console.log(`Unknown type ${msg.type}`, msg.content);
 				}
 			}
 		}
@@ -176,13 +176,13 @@ export async function ConnectLifecycleSocket(): Promise<WebSocket | null>
 	}
 
 	socket.onclose = () => {
-		console.log("Closing Lifecycle WebSocket");
+		// console.log("Closing Lifecycle WebSocket");
 		if (pingtimeout) clearInterval(pingtimeout);
 		socket = null;
 	}
 
 	socket.onerror = (err) => {
-		console.log("Lifecycle WebSocket error", err);
+		// console.log("Lifecycle WebSocket error", err);
 		socket?.close();
 	}
 

@@ -13,10 +13,10 @@ const TOURNAMENT_FORMAT = 'single-eliminatin';
 function connectsocket(onopen: (socket:WebSocket) => void, onerr?: (err:any) => void): WebSocket
 {
 	const socket = new WebSocket(TOURNAMENT_WEBSOCKET_URL);
-	console.log("Websocketing to", TOURNAMENT_WEBSOCKET_URL);
+	// console.log("Websocketing to", TOURNAMENT_WEBSOCKET_URL);
 
 	socket.onopen = () => {
-		console.log('Connected to tournament WebSocket');
+		// console.log('Connected to tournament WebSocket');
 
 		onopen(socket);
 	};
@@ -32,7 +32,7 @@ function connectsocket(onopen: (socket:WebSocket) => void, onerr?: (err:any) => 
 	};
 
 	socket.onclose = () => {
-		console.log('Disconnected from Tournament WebSocket');
+		// console.log('Disconnected from Tournament WebSocket');
 
 		// reset tournamentWS every time the websocket is disconnected
 		tournamentWS = null;
@@ -134,13 +134,13 @@ export class TournamentWebSocket {
 					// pong logic
 					if (event.data.toString() === 'pong') {
 						/* #debug */
-						// console.log('We Tournament PONG-ing');
+						// // console.log('We Tournament PONG-ing');
 						return ;
 					}
 
 					// actual tournament operation
 					const data = JSON.parse(event.data);
-					console.log('Tournament WebSocket message received:', data);
+					// console.log('Tournament WebSocket message received:', data);
 
 					// get method
 					const method = data.method || undefined;
@@ -148,7 +148,7 @@ export class TournamentWebSocket {
 					// successful START reply
 					if (method === 'START_REPLY') {
 						if (data.status === 'success') onstart?.(data.value);
-						else console.log('Failed to start room');
+						else // console.log('Failed to start room');
 					}
 					// successful JOIN reply
 					else if (method === 'JOIN_REPLY') {
@@ -160,7 +160,7 @@ export class TournamentWebSocket {
 							onjoin?.(data.value);
 						}
 						else {
-							console.log('Failed to join tourament');
+							// console.log('Failed to join tourament');
 
 							// clear tournament id
 							tournament_id = undefined;
@@ -175,7 +175,7 @@ export class TournamentWebSocket {
 							// callback
 							onjoin?.(data.value);
 						}
-						else console.log('Failed to create tourament');
+						else // console.log('Failed to create tourament');
 					}
 					// 
 					else if (data.ID && data.players) {
@@ -248,7 +248,7 @@ export function ConnectTournamentSocket(
 		}
 		else
 		{
-			console.log('Asking for state');
+			// console.log('Asking for state');
 			tournamentWS.send({ method: 'STATE' });
 		}
 

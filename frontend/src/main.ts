@@ -18,7 +18,7 @@ import { loadStoredSession } from '@services/session';
 
 // Initialize the application when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
-	console.log('🚀 ft_transcendence initializing...');
+	// console.log('🚀 ft_transcendence initializing...');
 
 	// --- 2. AGGIUNGI TUTTA QUESTA LOGICA (DA QUI...) ---
 	const urlParams = new URLSearchParams(window.location.search);
@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		// Esegue la pagina di test e ferma il resto
 		renderTestPage(rootElement); 
 		
-		console.log('✅ Test page initialized');
+		// console.log('✅ Test page initialized');
 	
 	} else {
 		// --- 3. QUESTA ERA LA TUA LOGICA ORIGINALE (...FINO A QUI) ---
@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // Check if user is already logged in (page reload)
       const session = loadStoredSession();
       if (session.userId && session.user) {
-        console.log('User already authenticated, reconnecting services...');
+        // console.log('User already authenticated, reconnecting services...');
         
         // Reconnect WebSocket
         ConnectLifecycleSocket();
@@ -67,15 +67,15 @@ document.addEventListener('DOMContentLoaded', () => {
         // Reinitialize chat service
         try {
           await chatService.initialize();
-          console.log('✅ Chat service reconnected');
+          // console.log('✅ Chat service reconnected');
         } catch (error) {
           console.error('Failed to reconnect chat service:', error);
         }
       }
 
-		console.log('✅ Application initialized');
+		// console.log('✅ Application initialized');
 	  // --- FINE DEL BLOCCO MODIFICATO ---
-      console.log('✅ Application initialized');
+      // console.log('✅ Application initialized');
     }, 500);
   }
   // --- FINE DEL BLOCCO MODIFICATO ---
@@ -84,7 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // Handle authentication events (for future use)
 // (Tutto il resto del tuo file rimane identico)
 window.addEventListener('auth:login', async () => {
-  console.log('User logged in');
+  // console.log('User logged in');
   
 	// connect to Gateway for notifications
   	ConnectLifecycleSocket();
@@ -92,7 +92,7 @@ window.addEventListener('auth:login', async () => {
   // Initialize chat service
   try {
     await chatService.initialize();
-    console.log('✅ Chat service initialized');
+    // console.log('✅ Chat service initialized');
   } catch (error) {
     console.error('Failed to initialize chat service:', error);
   }
@@ -101,7 +101,7 @@ window.addEventListener('auth:login', async () => {
 });
 
 window.addEventListener('auth:logout', () => {
-	console.log('User logged out');
+	// console.log('User logged out');
 
 	// disconnect from gateway
 	DisconnectLifecycleSocket();

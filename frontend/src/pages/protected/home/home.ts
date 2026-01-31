@@ -78,7 +78,7 @@ export async function loadHomePage(): Promise<HTMLElement> {
 
 	async function checkAuthAndPlay(event: MouseEvent) {
         event.preventDefault(); 
-        console.log("Controllo autorizzazione per giocare...");
+        // console.log("Controllo autorizzazione per giocare...");
 
         try {
             const isAuthenticated = await isauth();
@@ -88,7 +88,7 @@ export async function loadHomePage(): Promise<HTMLElement> {
 			}
 
             // === SUCCESSO ===
-            console.log("Autorizzazione confermata! Avvio del gioco...");
+            // console.log("Autorizzazione confermata! Avvio del gioco...");
             router.push('/game'); // Reindirizza alla pagina di gioco
 
         } catch (error) {

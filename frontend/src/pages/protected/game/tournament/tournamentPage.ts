@@ -118,11 +118,11 @@ export function loadOnlineTournamentPage(): HTMLElement
 async function spectate(gameid: string) {
     // If already spectating this game, do nothing
     if (spectatingGames.has(gameid)) {
-        console.log(`Already spectating game ${gameid}`);
+        // console.log(`Already spectating game ${gameid}`);
         return;
     }
 
-    console.log('Spectating game:', gameid);
+    // console.log('Spectating game:', gameid);
 
     const container = document.getElementById('spectateGameDiv');
     if (!container) return;
@@ -158,7 +158,7 @@ async function spectate(gameid: string) {
     // Optional: If spectateDiv has a close button, remove game from set when closed
 	spectateDiv.addEventListener('spectate:close', () => {
 
-		console.log('Clearing spectator tab');
+		// console.log('Clearing spectator tab');
 
 		container.removeChild(spectateDiv);
 		spectatingGames.delete(gameid);
@@ -375,7 +375,7 @@ function renderTournamentLayout(rooms:Room[])
 let page_layer:number = -1;
 
 function updateTournamentInfo(state:TournamentState) {
-	console.log('Updating tournament info ...');
+	// console.log('Updating tournament info ...');
 
 	// read data
 	const { players, rooms, current_layer, finished, aborted, winners } = state;
@@ -387,7 +387,7 @@ function updateTournamentInfo(state:TournamentState) {
 		|| finished === undefined
 		|| aborted === undefined
 		|| !winners) {
-		console.log('Invalid tournament-state', state);
+		// console.log('Invalid tournament-state', state);
 		return ;
 	}
 
@@ -413,7 +413,7 @@ function updateTournamentInfo(state:TournamentState) {
 			`The Round ${current_layer + 1} of the tournament just started!`,
 			() => {
 				if (router.getCurrentRoute()?.path !== '/tournament/:tournamentId') {
-					console.log('we are in', router.getCurrentRoute()?.path, 'so we go in', `/tournament/${tourn_code}`);
+					// console.log('we are in', router.getCurrentRoute()?.path, 'so we go in', `/tournament/${tourn_code}`);
 					router.push(`/tournament/${tourn_code}`);
 				}
 			},

@@ -250,7 +250,7 @@ export async function loadProfilePage(): Promise<HTMLElement> {
 			}
 		});
 	} catch (err) {
-		console.log('Erro while trying to update profile', err);
+		// console.log('Erro while trying to update profile', err);
 	}
 
 	// MYSELF or NOT logic

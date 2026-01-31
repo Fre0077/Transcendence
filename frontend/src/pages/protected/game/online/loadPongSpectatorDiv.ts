@@ -62,7 +62,7 @@ export function loadPongSpectatorDiv(matchid:string): HTMLElement
 	const closeBtn = div.querySelector('#close-btn');
 	if (closeBtn) {
 		closeBtn.addEventListener('click', () => {
-			console.log('Stopped spectating');
+			// console.log('Stopped spectating');
 
 			// destroy board
 			board.destroy();

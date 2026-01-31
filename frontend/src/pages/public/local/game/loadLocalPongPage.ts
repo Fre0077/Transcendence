@@ -53,7 +53,7 @@ function createLocalSocket(game: Game, playerid: string): PongSocket
 					// mimic ws.onmessage(JSON)
 					stateHandler?.(state);
 				} catch (err) {
-					/* console.log(err) */;
+					/* // console.log(err) */;
 				}
 			});
 

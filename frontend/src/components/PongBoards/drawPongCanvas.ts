@@ -68,7 +68,7 @@ export default function drawPongCanvas(root: HTMLElement)
 	// returns a function
 	return function draw(state: any) {
 
-		// console.log('Drawing', state);
+		// // console.log('Drawing', state);
 
 		// clear the board
 		ctx.clearRect(0, 0, canvas.width, canvas.height);

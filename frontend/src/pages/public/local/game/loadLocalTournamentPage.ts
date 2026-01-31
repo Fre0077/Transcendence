@@ -231,7 +231,7 @@ function renderWinnersPanel(status:'aborted' | 'finished', winners: string[]): H
 // Render player list on the right, also you can delete the tournament
 function renderPlayerList(players: Player[])
 {
-	console.log('players', players);
+	// console.log('players', players);
 
 	const playersListElem = document.getElementById('tournament-connected-players');
 	if (!playersListElem) return;
@@ -356,14 +356,14 @@ function renderTournamentLayout(rooms:Room[])
 
 
 function updateTournamentInfo(state:TournamentState) {
-	console.log('Updating tournament info ...', state);
+	// console.log('Updating tournament info ...', state);
 
 	// read data
 	const { players, rooms, finished, aborted, winners } = state;
 
 	// verify
 	if (!players || !rooms || finished === undefined || !winners) {
-		console.log('Invalid tournament-state', state);
+		// console.log('Invalid tournament-state', state);
 		return ;
 	}
 

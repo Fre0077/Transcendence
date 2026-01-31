@@ -47,10 +47,10 @@ async function getFriendsList(){
 	try {
 		const data = await sendGetRequest(`/api/friends`);
 		// const friends = JSON.parse(data);
-		// console.log('data', friends);
+		// // console.log('data', friends);
 		return data;
 	} catch (err) {
-		console.log(err);
+		// console.log(err);
 		return undefined;
 	}
 }

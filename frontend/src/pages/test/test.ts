@@ -288,7 +288,7 @@ function updateAvatarDisplay(avatarUrl: string | null) {
 }
 
 function setAuthenticated(access: string, refresh: string, user: any) {
-    console.log("%cLOGGED IN", "color: green"); 
+    // console.log("%cLOGGED IN", "color: green"); 
     accessToken = access;
     currentRefreshToken = refresh;
     
@@ -349,7 +349,7 @@ async function apiCall(endpoint: string, method: 'GET' | 'POST' | 'PATCH' | 'DEL
     try {
         const res = await fetch(fullUrl, config);
         const data = await res.json();
-        console.log(`API [${method} ${fullUrl}]`, data);
+        // console.log(`API [${method} ${fullUrl}]`, data);
         logResponse(data); 
         return data; 
     } catch (err: any) {
