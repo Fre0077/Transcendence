@@ -4,6 +4,7 @@
  */
 
 import { loadStoredSession, clearSession, persistSession } from './session';
+import { chatStorage } from './storage/chatStorage';
 
 const GATEWAY_URL = `/api`;
 
@@ -91,7 +92,7 @@ class AuthService {
             }
 
             const data = await response.json();
-            
+
             if (data.ok === true && data.user) {
                 // Update auth state
                 this.state.isAuthenticated = true;
@@ -101,7 +102,7 @@ class AuthService {
 
                 // Persist to localStorage
                 persistSession(null, data.user, null);
-                
+
                 return true;
             } else {
                 // Not authenticated
@@ -154,7 +155,7 @@ class AuthService {
         this.state.user = user;
         this.state.userId = user.userId || user.id;
         this.state.twoFactorEnabled = twoFactorEnabled;
-        
+
         // Persist to localStorage
         persistSession(null, user, null);
     }
@@ -167,7 +168,7 @@ class AuthService {
         this.state.user = null;
         this.state.userId = null;
         this.state.twoFactorEnabled = false;
-        
+
         clearSession();
     }
 
@@ -185,7 +186,9 @@ class AuthService {
                 },
                 body: JSON.stringify({}), // Send empty object in case backend expects a body
             });
-            
+
+            chatStorage.clearAll();
+
             if (!response.ok) {
                 console.warn(`[AuthService] Logout endpoint returned ${response.status}, proceeding with local logout`);
             }

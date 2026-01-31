@@ -9,14 +9,14 @@ import { loadStoredSession } from './session';
 import { chatStorage, type Chat, type Message } from './storage/chatStorage';
 import { notificationService } from './notificationService';
 
-const CHAT_WS_URL = '/ws/broadcast'; 
+const CHAT_WS_URL = '/ws/broadcast';
 const CHAT_HTTP_URL = '/api';
 
-export type ChatEventType = 
-    | 'connected' 
-    | 'disconnected' 
-    | 'chats-updated' 
-    | 'message-received' 
+export type ChatEventType =
+    | 'connected'
+    | 'disconnected'
+    | 'chats-updated'
+    | 'message-received'
     | 'unread-updated'
     | 'error';
 
@@ -33,22 +33,22 @@ type ChatEventListener<T extends ChatEventType> = (data: ChatEventData[T]) => vo
 
 class ChatService {
     private static instance: ChatService | null = null;
-    
+
     private broadcastWs: WebSocket | null = null;
-    
+
     private userId: number | null = null;
     private isInitialized: boolean = false;
     private isConnecting: boolean = false;
-    
+
     // Auto-reconnect
     private reconnectAttempts: number = 0;
     private maxReconnectAttempts: number = 10;
     private reconnectDelay: number = 3000;
     private reconnectTimer: NodeJS.Timeout | null = null;
-    
+
     // Event listeners
     private listeners: Map<ChatEventType, Set<Function>> = new Map();
-    
+
     private constructor() {
         // Private constructor for singleton
     }
@@ -92,10 +92,10 @@ class ChatService {
 
         // Connect to broadcast WebSocket
         await this.connectToBroadcast();
-        
+
         // Load initial chat list via HTTP
         await this.fetchChatList();
-        
+
         this.isInitialized = true;
         return true;
     }
@@ -105,19 +105,19 @@ class ChatService {
      */
     shutdown(): void {
         // console.log('[ChatService] Shutting down...');
-        
+
         this.disconnectBroadcast();
-        
+
         if (this.reconnectTimer) {
             clearTimeout(this.reconnectTimer);
             this.reconnectTimer = null;
         }
-        
+
         this.listeners.clear();
         this.isInitialized = false;
         this.userId = null;
         this.reconnectAttempts = 0;
-        
+
         // Close IndexedDB
         chatStorage.close();
     }
@@ -168,7 +168,7 @@ class ChatService {
                 // console.log('[ChatService] Connected to broadcast');
                 this.isConnecting = false;
                 this.reconnectAttempts = 0;
-                
+
                 this.emit('connected', { reconnect: this.reconnectAttempts > 0 });
             };
 
@@ -186,7 +186,7 @@ class ChatService {
                 // console.log('[ChatService] Disconnected from broadcast');
                 this.isConnecting = false;
                 this.emit('disconnected', { reason: 'Connection closed' });
-                
+
                 // Auto-reconnect
                 this.scheduleReconnect();
             };
@@ -334,7 +334,8 @@ class ChatService {
                 const normalizedMessages: Message[] = messages.map(m => ({
                     messageId: m.messageId ?? m.id,
                     chatId: m.chatId ?? chatId,
-                    userId: m.userId ?? m.linkId,
+                    userId: m.user.linkId,
+                    senderUsername: m.user.username,
                     message: m.message || '',
                     date: m.date || new Date().toISOString()
                 }));

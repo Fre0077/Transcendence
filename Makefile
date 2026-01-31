@@ -1,8 +1,8 @@
 all: consegners
 
 consegners:
-	docker compose up
-	
+	docker compose up --build
+
 up: credentials
 	docker compose up --build -d
 
@@ -11,7 +11,7 @@ down:
 
 game:
 	docker compose up --build ft_bunny pong lobby tournament bots frontend
-	
+
 build: credentials
 	docker compose build
 

@@ -1,5 +1,7 @@
 COSE BRUTTE
 
+1) [x] [AUTH] Google login nn fa (error 500 che fa bocciare instant)
+2) [x] [FRONTEND] CANCEL dopo 2FA rimane stuck su generating
 3) [] [TOURNAMENT] /tournament/<qualsiasi-cosa> ti connette al torneo attuale, feature?
 5) [] [CHAT] usernames nella chat (sometimes??? (quando pigi sulla chat))
 6) [] [CHAT] 3 utenti (A,B,C). A blocca B. C crea una chat con A e B. New achievement unlocked: Message factory (NOTA: anche se A blocca B dopo la creazione della chat)

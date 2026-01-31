@@ -82,7 +82,7 @@ export class ChatsPage {
 					<div id="chatList" class="w-80 flex flex-col overflow-y-auto pr-2" style="max-height: 100%;">
 						<div class="text-white/50 text-center py-8">Loading chats...</div>
 					</div>
-					
+
 					<!-- Chat Display -->
 					<div id="chatDisplay" class="flex-1 flex flex-col">
 						<div id="chatHeader" class="mb-4 pb-3 border-b border-white/10 flex justify-between items-center">
@@ -356,7 +356,7 @@ export class ChatsPage {
 		// Load messages from IndexedDB
 		const messages = await chatService.getMessages(chat.chatId);
 		this.messages = messages.map((m) => ({
-			sender: m.userId === this.currentUserId ? "You" : "User " + m.userId,
+			sender: m.userId === this.currentUserId ? "You" : m.senderUsername,
 			content: m.message,
 			timestamp: new Date(m.date).toLocaleTimeString([], {
 				hour: "2-digit",

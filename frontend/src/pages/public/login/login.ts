@@ -61,7 +61,7 @@ export function loadLoginPage(): HTMLElement {
                                 <a href="/register" data-link class="text-purple-300 hover:text-purple-200 font-medium">Create one</a>
                             </p>
                             <hr class="my-6 border-white/10" />
-                            
+
                             <button
                                 type="button"
                                 id="login-google-button"
@@ -86,7 +86,7 @@ export function loadLoginPage(): HTMLElement {
 
     // Event listener per il LOGIN STANDARD (rimane invariato)
     form.addEventListener('submit', async (event) => {
-        event.preventDefault(); 
+        event.preventDefault();
         errorEl.classList.add('hidden');
         errorEl.textContent = '';
         submitButton.disabled = true;
@@ -94,15 +94,17 @@ export function loadLoginPage(): HTMLElement {
 
         const email = emailInput.value;
         const password = passwordInput.value;
-        
+
         if (!email || !password) {
             errorEl.textContent = 'Inserisci email e password';
             errorEl.classList.remove('hidden');
+            submitButton.disabled = false;
+            submitButton.textContent = 'Sign in';
             return;
         }
 
         try {
-            const response = await fetch(`/api/login`,{ 
+            const response = await fetch(`/api/login`,{
                 method: 'POST',
                 credentials: 'include',
                 headers: {
@@ -118,17 +120,17 @@ export function loadLoginPage(): HTMLElement {
                     sessionStorage.setItem('2fa-email', email);
                     errorEl.textContent = '2FA verification required. Redirecting...';
                     errorEl.classList.remove('hidden');
-                    
+
                     // Redirect to 2FA page (you'll need to create this)
                     setTimeout(() => {
                         router.push('/2fa-verify');
                     }, 1000);
                     return;
                 }
-                
+
                 throw new Error(data.error || 'Login fallito');
             }
-            
+
             // === SUCCESSO ===
             // console.log('Login riuscito:', data);
 
@@ -140,15 +142,15 @@ export function loadLoginPage(): HTMLElement {
             /* @ecarbona @topiana business */
             /* const socket =  *//* ConnectLifecycleWebsocket() */;
             /* 	#TODO mettere il router sul butler e fare che ogni PAGE sia
-                cleanable quindi con procedura di chiusura (distruzione div, 
+                cleanable quindi con procedura di chiusura (distruzione div,
                 chiusura socket, rimozione eventListeners)
             */
-            
+
             // emit auth event
             window.dispatchEvent(
                 new CustomEvent('auth:login', { bubbles: true })
 			);
-            
+
             // Small delay to ensure cookies are set before navigation
             await new Promise(resolve => setTimeout(resolve, 100));
             router.push('/home');
@@ -181,13 +183,13 @@ export function loadLoginPage(): HTMLElement {
                     surname: userInfo.family_name,
                     email: userInfo.email,
                     googleId: userInfo.id
-                }, 
+                },
                 'application/json'
             );
 
             // 2. Gestisci il successo (come il login standard)
             // console.log('Login con Google riuscito:', data);
-            
+
             // Update auth service state - user data could be at root or in data.user
             const userData = data.user || data;
             authService.setAuthState(userData, userData?.twoFactorEnabled ?? false);
