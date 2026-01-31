@@ -252,7 +252,12 @@ export function sendLobbyInvite(request:FastifyRequest, reply:FastifyReply)
 
 	// avoid inviting yourself
 	if (Number(target) === Number((request as any).user.userId))
+	{
+		reply
+			.code(409)
+			.send("You can't invite yourself");
 		return ;
+	}
 
 	// send lobby invite
 	const ret = sendMessageTo(target, {
@@ -263,7 +268,7 @@ export function sendLobbyInvite(request:FastifyRequest, reply:FastifyReply)
 		sender: (request as any).user.username
 	});
 
-	if (ret === false) reply.code(200).send(JSON.stringify({ ok:false, error:"The user isn't connected" }));
+	if (ret === false) reply.code(404).send(JSON.stringify({ ok:false, error:"The user isn't connected" }));
 	else reply.code(200).send(JSON.stringify({ ok:true, comment:"Message sent correctly" }));
 }
 

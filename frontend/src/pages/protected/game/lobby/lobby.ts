@@ -3,7 +3,7 @@ import { router } from "@/router";
 // import { load404Page } from "@/pages/errors/404";
 
 // services
-import { sendGetRequest, sendPostRequest } from "@/services/api/sendRequests";
+import { HttpError, sendGetRequest, sendPostRequest } from "@/services/api/sendRequests";
 import { LobbyWebSocket, ConnectLobbySocket } from "@/services/ws/lobbyWebSocket";
 
 // components
@@ -402,7 +402,7 @@ function loadLeaveLobbyCard(onclick?: () => void): HTMLElement
 /*          PLAYER INVITE           */
 
 // invite-player-btn event
-function sendLobbyInvite(event:SubmitEvent)
+async function sendLobbyInvite(root:HTMLElement, event:SubmitEvent)
 {
 	event.preventDefault(); // stop page reload
 
@@ -426,27 +426,35 @@ function sendLobbyInvite(event:SubmitEvent)
 	/* #debug */
 	// console.log('Inviting', username, "to", lobby_code);
 
-	sendGetRequest('/api/userinfo?username=' + username)
-	.then(target => {
+	try {
+		const target = await sendGetRequest('/api/userinfo?username=' + username)
 		if (!target) {
 			console.log('Error, User not found');
 			return ;
 		}
 
-		console.log('target', target);
+		// console.log('target', target);
 
 		// send the request to the backend
-		sendPostRequest('/api/lobby-invite', {
+		await sendPostRequest('/api/lobby-invite', {
 			lobbyid: lobby_code,
 			target: target.linkId,
 		}, 'application/json');
-	})
-	.catch(() => null);
+		
+	} catch (err) {
+		if (err instanceof HttpError) {
+			root.dispatchEvent(
+				new CustomEvent('invite-error', {
+					detail: { message: `Error [${err.status}] while sending invite` }
+				})
+			);
+		}
+	}
 
 }
 
 // create invite card
-function createUserInviteDiv(onclick: (event:SubmitEvent) => void): HTMLElement
+function createUserInviteDiv(onclick: (root:HTMLElement, event:SubmitEvent) => void): HTMLElement
 {
 	const div = document.createElement('div');
 
@@ -506,14 +514,28 @@ function createUserInviteDiv(onclick: (event:SubmitEvent) => void): HTMLElement
 					Send
 				</button>
 			</form>
+			<p id="error-msg" class="mt-3 text-xs text-red-400 hidden"></p>
 		</div>
 	</section>
 `;
 
 
-	// Add event listener
+	// get the elements
+	const errorMsg = div.querySelector('#error-msg')!;
 	const inviteform = div.querySelector("#invite-form") as HTMLFormElement;
-	inviteform.addEventListener("submit", (event) => onclick(event));
+
+	// Add event listener
+	inviteform.addEventListener("submit", (event) => {
+		errorMsg.classList.add('hidden');
+		onclick(div, event);}
+	);
+
+	// Catch errors on invite card
+	div.addEventListener('invite-error', (e) => {
+		const event = e as CustomEvent<{ message: string }>;
+		errorMsg.textContent = event.detail.message;
+		errorMsg.classList.remove('hidden');
+	});
 
 	return div;
 }

@@ -77,7 +77,7 @@ export function loadNavbar(): HTMLElement {
 				<div class="flex items-center space-x-8">
 					<a href="/" class="text-white font-bold text-xl hover:text-purple-300 transition">ft_transcendence</a>
 					<div class="hidden md:flex space-x-6">
-						<a href="/" class="text-white/90 hover:text-white px-4 py-2 rounded-lg bg-white/10 transition">HOME</a>
+						<a href="/home" class="text-white/90 hover:text-white px-4 py-2 rounded-lg bg-white/10 transition">HOME</a>
 						<a href="/game" class="text-white/70 hover:text-white px-4 py-2 rounded-lg hover:bg-white/10 transition">PLAY</a>
 						<a href="/tournaments" class="text-white/70 hover:text-white px-4 py-2 rounded-lg hover:bg-white/10 transition">TOURNAMENTS</a>
 						<a href="/leaderboard" class="text-white/70 hover:text-white px-4 py-2 rounded-lg hover:bg-white/10 transition">LEADERBOARD</a>

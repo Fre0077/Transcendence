@@ -191,7 +191,9 @@ function renderChatInfo(
 
 		if (inviteButton) {
 			const userId = inviteButton.getAttribute('data-user-id');
-			if (lobbyWS && lobbyWS.getid() && userId) {
+			if (!lobbyWS || !lobbyWS.getid())
+				alert('Join a lobby before inviting');
+			else if (userId) {
 				sendPostRequest(
 					`/api/lobby-invite`,
 					{
