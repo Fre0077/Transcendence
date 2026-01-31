@@ -32,16 +32,7 @@ export async function authEndpoint(fastify: FastifyInstance) {
 				return reply.code(401).send({ message: "Verifica 2FA richiesta", twoFactorRequired: true });
 			}
 			// write reply
-			reply
-				.code(200)
-				/* adding cookies for auth */
-				/* .setCookie('token', tokens.accessToken, {
-					httpOnly: true,
-					secure: false,        // true in production (HTTPS)
-					sameSite: 'lax',
-					path: '/',
-				}) */
-				.send({ ...user, ok: true });
+			reply.code(200).send({ ...user, ok: true });
 		
 			logInfo('{auth} [200] token generato con successo');
 		} catch (err) {
