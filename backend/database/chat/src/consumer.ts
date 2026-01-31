@@ -27,8 +27,6 @@ export async function startChatConsumer() {
     const data = JSON.parse(msg.content.toString());
     console.log("📥 Chat ricevuto:", data);
 
-
-
     try {
       await chatPrisma.user.upsert({
         where: { 
@@ -36,7 +34,6 @@ export async function startChatConsumer() {
         },
         update: {
           username: data.username,
-          ...(data.imageProfile !== undefined ? { avatarUrl: data.imageProfile } : {})
         },
         create: {
           linkId: data.linkId,
@@ -45,13 +42,6 @@ export async function startChatConsumer() {
       });
       channel!.ack(msg);
 
-      // Create only if not existing
-      await chatPrisma.user.create({
-        data: {
-          username: data.username,
-          linkId: data.linkId
-        }
-      });
     } catch (err) {
       const e = err as any;
       if (e?.code === "P2002") {
