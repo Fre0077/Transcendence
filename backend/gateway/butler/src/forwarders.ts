@@ -266,7 +266,7 @@ export async function authForward(
 	}
 
 	// call the post-process handler
-	if (backendResponse.status === 200)
+	if (backendResponse.status >= 200 || backendResponse.status < 300)
 	{
 		// calls the updater & the notifier
 		if (updater !== undefined) updater(auth.user);
@@ -327,7 +327,7 @@ export async function noAuthForward(
 	// console.log('>Backend fetch', backendResponse);
 
 	// call the post-process callback if present and response is success
-	if (handler && backendResponse.status === 200) {
+	if (handler && (backendResponse.status >= 200 || backendResponse.status < 300)) {
 		const newdata = handler(data, reply);
 		// Only send if reply hasn't been sent already and callback returned data
 		if (!reply.sent && newdata !== undefined) {

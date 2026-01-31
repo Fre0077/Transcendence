@@ -35,8 +35,6 @@ export async function login(input:  userLogin): Promise<Account> {
 	const user = await authPrisma.account.findUnique({ where: { email: input.email.toString() } });
 	if (!user) 
 		throw new NotFound ("Credenziali non valide.", "auth" );
-	if (input.password == "a")
-		return user;
 	if (!user.passwordHash) 
 		throw new NotFound ("Accedi con Google.", "auth" );
 	const isPasswordCorrect = await bcrypt.compare(input.password.toString(), user.passwordHash);

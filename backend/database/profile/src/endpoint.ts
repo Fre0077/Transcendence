@@ -83,14 +83,14 @@ export async function profileEndpoint(fastify: FastifyInstance) {
         // check della query
         const userId = Number(request.headers['x-user-id']);
         const secret = request.headers['x-gateway-secret'];
-        const { linkId } = request.query;
+        const { linkId, username } = request.query;
         try {
 
 			if (!userId || secret !== 'biscottini') {throw new Unauthorized('Utente non autorizzato', 'profile'); }
-            if (!linkId) {throw new NotFound('Username query not found', 'profile'); }
+            if (!linkId && !username) {throw new NotFound('linkId/username query not found', 'profile'); }
 
             // get the user info (username and avarat url)
-            const data = await getUserInfo(linkId);
+            const data = await getUserInfo(linkId, username);
             // successfule return
             logInfo('{profile} [200] Account trovato');
             reply.code(200).send(data);

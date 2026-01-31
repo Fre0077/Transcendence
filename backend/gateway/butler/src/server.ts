@@ -94,6 +94,7 @@ from './forwarders.js';
 import {
 	authWebSocket,
 	attachFriendStatus,
+	attachChatUsersStatus,
 	sendLobbyInvite,
 	sendFriendUpdate,
 	sendFriendNotification,
@@ -131,7 +132,7 @@ fastify.register(async function (fastify) {
 	// auth backend APIs
 	fastify.post('/login', httpforwarder(`${AUTH_URL}/api/login`, 'application/json', { auth: false, handler: attachAllCookies }));
 	fastify.post('/register', httpforwarder(`${AUTH_URL}/api/register`, 'application/json', { auth: false }));
-	fastify.post('/auth/google', httpforwarder(`${AUTH_URL}/api/auth/google`, 'application/json', { auth: false }));
+	fastify.post('/auth/google', httpforwarder(`${AUTH_URL}/api/auth/google`, 'application/json', { auth: false, handler: attachAllCookies}));
 	fastify.post('/2fa/verify', httpforwarder(`${AUTH_URL}/api/2fa/verify`, 'application/json', { auth: false, handler: attachAllCookies }));
 	fastify.get('/profile',  httpforwarder(`${AUTH_URL}/api/profile`, 'application/json', { auth: true }));
 	fastify.patch('/profile',  httpforwarder(`${AUTH_URL}/api/profile`, 'application/json', { auth: true, handler: attachAllCookies }));
@@ -156,7 +157,7 @@ fastify.register(async function (fastify) {
 	fastify.get('/chat-list', httpforwarder(`${CHAT_URL}/api/chat-list`, 'application/json', { auth: true }));
 	fastify.post('/message-list', httpforwarder(`${CHAT_URL}/api/message-list`, 'application/json', { auth: true }));
 	fastify.post('/user-list', httpforwarder(`${CHAT_URL}/api/user-list`, 'application/json', { auth: true }));
-	fastify.get('/chat-users', httpforwarder(`${CHAT_URL}/api/chat-users`, 'application/json', { auth: true }));
+	fastify.get('/chat-users', httpforwarder(`${CHAT_URL}/api/chat-users`, 'application/json', { auth: true, handler: attachChatUsersStatus }));
 	fastify.post('/new-message', httpforwarder(`${CHAT_URL}/api/new-message`, 'application/json', { auth: true }));
 	fastify.post('/new-chat', httpforwarder(`${CHAT_URL}/api/new-chat`, 'application/json', { auth: true }));
 	fastify.post('/delete-chat-messages', httpforwarder(`${CHAT_URL}/api/delete-chat-messages`, 'application/json', { auth: true }));

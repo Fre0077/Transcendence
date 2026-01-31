@@ -169,7 +169,7 @@ export function loadLoginPage(): HTMLElement {
             // console.log('Google user info:', userInfo);
 
             // 1. Chiama il nuovo endpoint /api/auth/google
-            const data = await sendPostRequest('http://localhost:3001/api/auth/google',
+            const data = await sendPostRequest('/api/auth/google',
                 {
                     name: userInfo.given_name,
                     surname: userInfo.family_name,

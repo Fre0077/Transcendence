@@ -91,10 +91,10 @@ function loadCompactWidget(
 	return /* html */ `
 		<div class="flex items-center gap-2">
 			<img
-				src="${avatar}"
+				src="${avatar || generateInitialsAvatar(username)}"
 				alt="${username}"
 				class="w-8 h-8 rounded-full object-cover border border-white/20"
-				onerror="this.src='${generateInitialsAvatar(username)}'"
+				onerror="this.src='⚠️'"
 			/>
 
 			<div class="flex flex-col leading-tight">
@@ -122,9 +122,9 @@ function loadWidget(
 					<div class="absolute -inset-1 bg-gradient-to-r from-pink-600 to-purple-600 rounded-full opacity-70 blur transition duration-200"></div>
 					<img 
 						src="${avatar}" 
-						alt="${username}" 
+						alt="${username}"
 						class="relative w-24 h-24 rounded-full object-cover border-2 border-slate-800 shadow-2xl"
-						onerror="this.src=${generateInitialsAvatar(username)}"
+						onerror="⚠️"
 					/>
 				</div>
 
@@ -156,7 +156,7 @@ async function loadPlayerWidget(linkid:string, compact:boolean): Promise<string>
 		const data = await sendGetRequest(`/api/userinfo?linkId=${linkid}`);
 		
 		// Dati ricevuti: linkid e avatarUrl (o image)
-		const avatar = data.avatarUrl || data.image || "";
+		const avatar = data.avatarUrl || data.image || generateInitialsAvatar(data.username);
 		const username = data.username;
 		// 4. Aggiorniamo l'HTML con i dati reali
 

@@ -47,7 +47,7 @@ export function createProfileCard(playerid: string, opts?:any): HTMLElement {
             const data = await sendGetRequest(`/api/userinfo?linkId=${playerid}`);
             
             // Dati ricevuti: username e avatarUrl (o image)
-            const avatar = data?.avatarUrl || data?.image || "";
+            const avatar = data?.avatarUrl || data?.image || generateInitialsAvatar(data.username);
             const username = data.username;
             // 4. Aggiorniamo l'HTML con i dati reali
             container.innerHTML = /* html */`
@@ -56,9 +56,9 @@ export function createProfileCard(playerid: string, opts?:any): HTMLElement {
                         <div class="absolute -inset-1 bg-gradient-to-r from-pink-600 to-purple-600 rounded-full opacity-70 blur transition duration-200"></div>
                         <img 
                             src="${avatar}" 
-                            alt="${playerid}" 
+                            alt="${username}" 
                             class="relative w-24 h-24 rounded-full object-cover border-2 border-slate-800 shadow-2xl"
-                            onerror="this.src=this.src=${generateInitialsAvatar(username)}"
+                            onerror="⚠️"
                         />
                     </div>
                     
