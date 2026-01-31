@@ -68,13 +68,12 @@ export async function authEndpoint(fastify: FastifyInstance) {
 	//Enpoint POST per l'autenticazione tramite google
 	fastify.post('/auth/google', async (request: FastifyRequest, reply: FastifyReply) => {
 		const googleData = request.body as userLogin;
-
-		console.error('googleData', googleData);
 		try {
 			if (!googleData.googleId || !googleData.email)
 				throw new BadRequest('Google ID o Email non fornita', 'auth');
+			googleData.name = googleData.name ?? '';
+			googleData.surname = googleData.surname ?? '';
 			let user = await googleAuth(googleData);
-			console.error('user', user)
 			if (user) {
 				logInfo('{auth} [200] Autenticazione Google riuscita');
 				reply.code(200).send(user);
