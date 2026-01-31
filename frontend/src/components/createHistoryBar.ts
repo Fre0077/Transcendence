@@ -67,10 +67,30 @@ export async function createHistoryBar(data: GameData): Promise<HTMLElement> {
 	const scores = safeParseArray(data.score);
 	const winners = safeParseArray(data.winner);
 	const gameIcon = getGameIcon(data.game);
+	
+	let p1 = "Player 1"
+	if (!isNaN(Number(players[0])))
+	{
+		const p1Data = await sendGetRequest('/api/userinfo?linkId=' + players[0])
+		if (p1Data)
+		{
+			p1 = p1Data.username;
+		}
+	}
 
+	let p2 = "Player 1"
+	if (!isNaN(Number(players[0])))
+	{
+		const p2Data = await sendGetRequest('/api/userinfo?linkId=' + players[0])
+		if (p2Data)
+		{
+			p2 = p2Data.username;
+		}
+	}
+	
 	// :)
-	const p1 = !isNaN(Number(players[0])) ? (await sendGetRequest('/api/userinfo?linkId=' + players[0]))?.username ?? "Player 1" : players[0];
-	const p2 = !isNaN(Number(players[1])) ? (await sendGetRequest('/api/userinfo?linkId=' + players[1]))?.username ?? "Player 2" : players[1];
+	// const p1 = !isNaN(Number(players[0])) ? (await sendGetRequest('/api/userinfo?linkId=' + players[0]))?.username ?? "Player 1" : players[0];
+	// const p2 = !isNaN(Number(players[1])) ? (await sendGetRequest('/api/userinfo?linkId=' + players[1]))?.username ?? "Player 2" : players[1];
 	const s1 = scores[0] ?? "-";
 	const s2 = scores[1] ?? "-";
 
@@ -85,7 +105,7 @@ export async function createHistoryBar(data: GameData): Promise<HTMLElement> {
 			</span>
 
 			<span class="text-green-400 font-semibold">
-				Winner: ${winners.join(", ")}
+				Winner: ${p1Win ? p1 : p2}
 			</span>
 		</div>
 
@@ -170,4 +190,3 @@ export async function createHistoryBar(data: GameData): Promise<HTMLElement> {
 
 	return div;
 }
-
