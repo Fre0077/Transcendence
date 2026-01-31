@@ -7,6 +7,7 @@ import { loadNavbar } from "@/components/navbar";
 // import { isauth } from "@/services/api/isauth";
 import { toastNotification } from "@/services/toastNotification";
 import { TournamentWebSocket, ConnectTournamentSocket, DisconnectTournamentSocket } from "@/services/ws/tournamentWebSocket";
+import { sendGetRequest } from "@/services/api/sendRequests";
 
 // elements
 import { loadPongSpectatorDiv } from "@pages/protected/game/online/loadPongSpectatorDiv";
@@ -249,9 +250,22 @@ function renderWinnersPanel(status:'aborted' | 'finished', winners: string[]): H
 }
 
 // Render player list on the right, also only place where you can leave the tournament
-function renderPlayerList(players:Player[])
+async function renderPlayerList(players:Player[])
 {
-	 /* ---------------- Players list ---------------- */
+	let usernames:Map<string, string> = new Map();
+	if (players.length) {
+		for (const p of players) {
+			if (p.ID.startsWith('BOT')) usernames.set(p.ID, p.ID);
+			else {
+				const uname = await sendGetRequest('/api/userinfo?linkId=' + p.ID);
+				if (uname) usernames.set(p.ID, uname.username);
+				else usernames.set(p.ID, p.ID);
+			}
+
+		}
+	}
+
+	/* ---------------- Players list ---------------- */
 	const playersListElem = document.getElementById('tournament-connected-players');
 	if (playersListElem) {
 		if (players.length > 0) {
@@ -276,7 +290,7 @@ function renderPlayerList(players:Player[])
 								<li class="flex items-center justify-between text-sm text-white/80">
 									<div class="flex items-center gap-2">
 										<span class="w-2 h-2 rounded-full ${statusColor}"></span>
-										<span class="truncate max-w-[140px]">${player.ID}</span>
+										<span class="truncate max-w-[140px]">${usernames.get(player.ID)}</span>
 									</div>
 								</li>
 							`;
@@ -313,21 +327,25 @@ function renderPlayerList(players:Player[])
 
 
 // Render each bracket
-function renderBracketColumn(layer: number, rooms: Room[]): string {
+async function renderBracketColumn(layer: number, rooms: Room[]): Promise<string>
+{
+	const cards = await Promise.all(
+		rooms
+			.sort((a, b) => a.idx - b.idx)
+			.map(room => renderRoomCard(room))
+	);
+
 	return `
 		<div class="flex flex-col gap-6 items-center justify-center">
 			<h4 class="text-xs text-white/50 text-center mb-2">
 				Round ${layer + 1}
 			</h4>
-			${rooms
-			.sort((a, b) => a.idx - b.idx)
-			.map(room => renderRoomCard(room))
-			.join('')}
+			${cards.join('')}
 		</div>
 	`;
 }
 
-function renderTournamentLayout(rooms:Room[])
+async function renderTournamentLayout(rooms:Room[])
 {
 	/* ---------------- Tournament rooms ---------------- */
 	const roomsContainer = document.getElementById('tournamentRooms');
@@ -348,12 +366,15 @@ function renderTournamentLayout(rooms:Room[])
 		.sort((a, b) => a - b);
 
 	// This is the big container that holds all the brackets
+	const columns = await Promise.all(
+		sortedLayers
+			.map(layer => renderBracketColumn(layer, roomsByLayer[layer]))
+	);
+
 	const bracketHtml = `
 		<div class="relative overflow-x-auto pb-2">
 			<div class="flex gap-6 items-center justify-center min-w-max">
-			${sortedLayers
-				.map(layer => renderBracketColumn(layer, roomsByLayer[layer]))
-				.join('')}
+			${columns.join('')}
 			</div>
 		</div>
 	`;
