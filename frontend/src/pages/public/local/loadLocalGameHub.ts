@@ -30,6 +30,40 @@ export function loadLocalGameHub(): HTMLElement
 			</a>
 
 		</div>
+		<!-- Rules and Controls Section -->
+		<div class="mt-16 text-center">
+			<h2 class="text-4xl font-bold text-white mb-8">Pong Rules & Controls</h2>
+			<div class="max-w-4xl mx-auto grid md:grid-cols-2 gap-8 text-left">
+
+				<!-- Rules Card -->
+				<div class="bg-slate-800/50 border border-white/10 rounded-2xl p-8">
+					<h3 class="text-2xl font-bold text-white mb-4">Rules</h3>
+					<p class="text-white/70 leading-relaxed">
+						The game is played with two paddles, one on each side of the screen. The objective is to hit the ball with your paddle and make your opponent miss it. The first player to score 11 points wins the game.
+					</p>
+				</div>
+
+				<!-- Controls Card -->
+				<div class="bg-slate-800/50 border border-white/10 rounded-2xl p-8">
+					<h3 class="text-2xl font-bold text-white mb-4">Controls</h3>
+					<div class="space-y-4">
+						<div>
+							<h4 class="font-semibold text-white">Local Game</h4>
+							<p class="text-white/70">Player 1: <kbd class="px-2 py-1.5 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded-lg">W</kbd> and <kbd class="px-2 py-1.5 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded-lg">S</kbd></p>
+							<p class="text-white/70">Player 2: <kbd class="px-2 py-1.5 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded-lg">↑</kbd> and <kbd class="px-2 py-1.5 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded-lg">↓</kbd></p>
+						</div>
+						<div>
+							<h4 class="font-semibold text-white">Online Game</h4>
+							<p class="text-white/70">Use either <kbd class="px-2 py-1.5 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded-lg">W</kbd>/<kbd class="px-2 py-1.5 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded-lg">S</kbd> or <kbd class="px-2 py-1.5 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded-lg">↑</kbd>/<kbd class="px-2 py-1.5 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded-lg">↓</kbd></p>
+						</div>
+						<div>
+							<h4 class="font-semibold text-white">Start Round</h4>
+							<p class="text-white/70">Press <kbd class="px-2 py-1.5 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded-lg">Space</kbd> to start the round in any game mode.</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
 	</div>
 	`;
 	return div;

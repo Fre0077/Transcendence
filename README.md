@@ -1,7 +1,7 @@
 COSE BRUTTE
 
 1) [] [AUTH] Google login nn fa (error 500 che fa bocciare instant)
-2) [] [FRONTEND] CANCEL dopo 2FA rimane stuck su generating
+2) [x] [FRONTEND] CANCEL dopo 2FA rimane stuck su generating
 3) [] [TOURNAMENT] /tournament/<qualsiasi-cosa> ti connette al torneo attuale, feature?
 4) [] [TOURNAMENT] Local tournament needs a better emoji (crown)
 5) [] [CHAT] usernames nella chat (sometimes??? (quando pigi sulla chat))
