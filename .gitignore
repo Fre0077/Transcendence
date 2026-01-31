@@ -3,6 +3,7 @@
 **/.env
 VSCode.sh
 .DS_Store
+nginx/ssl/*
 **/*.log
 **/database/generate
 **/database/*.db
