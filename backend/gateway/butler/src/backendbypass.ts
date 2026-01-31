@@ -25,8 +25,10 @@ export function authWebSocket(connection:WebSocket, request:FastifyRequest)
 	}
 	/* ------------------- */
 
+	const userId = auth.user.userId;
+
 	/* #debug */
-	console.log(`[WS] connected with Authorized user '${auth.user.userId}'`);
+	console.log(`[WS] connected with Authorized user '${userId}'`);
 
 	// Handle incoming messages
 	socket.on('message', (message:any) => {
@@ -54,17 +56,17 @@ export function authWebSocket(connection:WebSocket, request:FastifyRequest)
 		sendFriendUpdate(auth.user);
 
 		// set as offline
-		const user = connected_users.get(auth.user.userId);
+		const user = connected_users.get(userId);
 		if (user) user.status = "offline";
 	});
 
 
 	// check if already stored
-	const user = connected_users.get(auth.user.userId);
+	const user = connected_users.get(userId);
 
 	// store the connection
 	if (user === undefined)
-		connected_users.set(auth.user.userId as string /* in god we trust pt.2*/, new ConnectedUser(auth.user.userId, connection));
+		connected_users.set(userId, new ConnectedUser(userId, connection));
 	else
 	{
 		// save new socket
@@ -152,9 +154,17 @@ interface Message {
 /* export  */function sendMessageTo(linkId:string, message:Message): boolean
 {
 	// searches the user
-	const user = connected_users.get(linkId);
+	let user;
 
-	console.log('sendMessageTo', linkId, user?.ID, user?.status);
+	// manually search to make sure it's right
+	for (const [id, us] of connected_users) {
+		if (Number(id) === Number(linkId)) {
+			user = us;
+			break ;
+		}
+	}
+	
+	console.log(`sendMessageTo, '${linkId}', ${user?.ID}, ${user?.status}`);
 
 	if (!user || user.status !== "online") {
 		// error back to the frontend
@@ -177,20 +187,16 @@ interface Message {
 }
 
 // send an update to all ppl related to usernam
-function updateRelatedUsers(username:string, data:Message)
+function updateRelatedUsers(linkId:string, data:Message)
 {
-	console.log('about to send updates for', username);
-	const user = connected_users.get(username);
+	const user = connected_users.get(linkId);
 	if (user === undefined || user.status !== "online") return ;	// no notifications will be sent if the user is offline
 
-	console.log('user got updates', user.ID);
 	connected_users.forEach(u => {
 		if (u.ID !== user.ID && user.relations.has(u.ID)) {
-			console.log('sending message to', u.ID);
 			sendMessageTo(u.ID, data);
 		}
 	});
-	console.log('sent update for', username);
 }
 /* ------------------------------------------------------------------------- */
 
@@ -218,6 +224,10 @@ export function sendLobbyInvite(request:FastifyRequest, reply:FastifyReply)
 			.send("Invalid body");
 		return ; // important
 	}
+
+	// avoid inviting yourself
+	if (Number(target) === Number((request as any).user.userId))
+		return ;
 
 	// send lobby invite
 	const ret = sendMessageTo(target, {
@@ -247,6 +257,10 @@ export function sendFriendNotification(sender:string, data:any)
 		return;
 	}
 
+	// avoid notifying yourself
+	if (Number(target) === Number(sender))
+		return ;
+
 	// #relation (welp, we add also here)
 	const user1 = connected_users.get(sender);
 	const user2 = connected_users.get(target);
@@ -254,9 +268,6 @@ export function sendFriendNotification(sender:string, data:any)
 		user1.relations.add(user2.ID)
 		user2.relations.add(user1.ID)
 	}
-
-	console.log('target', target);
-	console.log('sender', sender);
 
 	// send friend request
 	sendMessageTo(target, {
