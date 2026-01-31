@@ -7,7 +7,6 @@ import { /* sendGetRequest,  */sendPostRequest } from "../api/sendRequests";
 import { authWebSocket } from "@services/ws/authWebSocket";
 
 // URLs
-const BUTLER_URL = `/ws`;
 const BACKEND_APIS_URL = `/api`;
 
 let socket:WebSocket | null = null;
@@ -181,7 +180,7 @@ export async function ConnectLifecycleSocket(): Promise<WebSocket | null>
 		socket = null;
 	}
 
-	socket.onerror = (err) => {
+	socket.onerror = () => {
 		// console.log("Lifecycle WebSocket error", err);
 		socket?.close();
 	}
