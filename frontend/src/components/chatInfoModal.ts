@@ -98,7 +98,7 @@ export async function openChatInfoModal(
 			return { users: [] }; // Return an empty list on error
 		});
 	const playerList: UserList[] = responseData.users;
-	console.log(playerList);
+	// console.log(playerList);
 
 	renderChatInfo(
 		content as HTMLElement,

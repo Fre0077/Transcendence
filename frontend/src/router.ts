@@ -210,7 +210,7 @@ class Router {
 
     // Update current route and render
     this.currentRoute = route;
-    console.log('route', this.currentRoute);
+    // console.log('route', this.currentRoute);
     this.render(route);
   }
 

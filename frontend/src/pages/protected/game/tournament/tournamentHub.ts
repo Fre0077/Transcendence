@@ -18,7 +18,7 @@ export function loadTournamentHubPage(): HTMLElement
     const query = router.getQuery().get("tourn-id");
     if (query) tourn_code = query;
 
-    console.log('Got query', tourn_code);
+    // console.log('Got query', tourn_code);
     /* ----------------------------------------- */
 
     const div = document.createElement('div');

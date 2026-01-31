@@ -29,7 +29,7 @@ export function loadOnlineLobbyPage(): HTMLElement
 	const query = router.getQuery().get("lobby-id");
 	if (query) lobby_code = query;
 
-	console.log('Got Lobby-ID', lobby_code);
+	// console.log('Got Lobby-ID', lobby_code);
 	/* ----------------------------------------- */
 
 	const div = document.createElement('div');
@@ -197,7 +197,7 @@ function removeAllChildNodes(parent:HTMLElement) {
 function updateLobbyInfo(state:any)
 {
 	if (state.ID === undefined || state.players === undefined) {
-		console.log('Invalid lobby state')
+		// console.log('Invalid lobby state')
 	}
 
 	// save lobby code
@@ -428,7 +428,7 @@ function sendLobbyInvite(event:SubmitEvent)
 	}
 
 	/* #debug */
-	console.log('Inviting', username, "to", lobby_code);
+	// console.log('Inviting', username, "to", lobby_code);
 
 	// send the request to the backend
 	sendPostRequest(`${BACKEND_APIS_URL}/lobby-invite`, {

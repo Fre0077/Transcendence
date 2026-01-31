@@ -310,7 +310,7 @@ export class Game
 
 	// /* sets the score a player must reach to win the game */
 	// public setFormat(format:number) {
-	// 	if (format <= 0) {console.log(`Error: Invalid format ${format}`);}
+	// 	if (format <= 0) {// console.log(`Error: Invalid format ${format}`);}
 	// 	else {this.targetScore = format;}
 	// }
 
@@ -318,14 +318,14 @@ export class Game
 	public setDirections(dirs:number[]) {
 		if (dirs.length != (this.targetScore * 2) - 1)
 		{
-			console.log(`Error: Invalid directions number: ${dirs.length}, expected: ${(this.targetScore * 2) - 1}`);
+			// console.log(`Error: Invalid directions number: ${dirs.length}, expected: ${(this.targetScore * 2) - 1}`);
 			return ;
 		}
 		for (let i = 0; i < dirs.length; ++i) {
 			if (Math.abs(dirs[i]) > Math.PI / 4
 			|| Math.abs(dirs[i]) < 0)
 			{
-				console.log(`Error: Invalid direction value: ${Math.abs(dirs[i])}, expected: 0 < |value| < PI / 4`);
+				// console.log(`Error: Invalid direction value: ${Math.abs(dirs[i])}, expected: 0 < |value| < PI / 4`);
 				return ;
 			}
 		}
@@ -413,7 +413,7 @@ export class Game
 			{
 				// this.ball.angle = bounce_90_deg('x', this.ball.angle);
 				const offdeg = (collisionY - this.players[0].posY) * 90;
-				// console.log('offset deg:', offdeg);
+				// // console.log('offset deg:', offdeg);
 				this.ball.bounceX(offdeg);
 
 				this.ball.speed += 0.001;
@@ -436,7 +436,7 @@ export class Game
 			{
 				// this.ball.angle = bounce_90_deg('x', this.ball.angle);
 				const offdeg = (collisionY - this.players[1].posY) * 90;
-				// console.log('offset deg:', -offdeg);
+				// // console.log('offset deg:', -offdeg);
 				this.ball.bounceX(-offdeg);
 		
 				this.ball.speed += 0.001;
@@ -558,7 +558,7 @@ export class Game
 		if (this.lastScored === 1) {Ball.clamp(this.ball.angle += Math.PI);}
 		if (this.lastScored === 0) {/* do nothing */;}
 
-		console.log(`launching ball with angle ${this.ball.angle}`);
+		// console.log(`launching ball with angle ${this.ball.angle}`);
 	}
 
 	/* play a tick of the game, one game logic progression.

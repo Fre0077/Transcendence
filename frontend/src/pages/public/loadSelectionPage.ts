@@ -45,13 +45,13 @@ export function loadSelectionPage(): HTMLElement {
     // Event Listeners for Routing
     div.querySelector('#btn-local')?.addEventListener('click', () => {
         // Replace this with your actual router logic (e.g., router.push('/local'))
-        console.log('Navigating to /local');
+        // console.log('Navigating to /local');
         router.push('/local');
     });
 
     div.querySelector('#btn-online')?.addEventListener('click', () => {
         // Replace this with your actual router logic (e.g., router.push('/login'))
-        console.log('Navigating to /login');
+        // console.log('Navigating to /login');
         router.push('/login');
     });
 

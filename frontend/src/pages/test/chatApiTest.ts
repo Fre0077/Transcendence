@@ -27,7 +27,7 @@ import { loadNavbar } from "@/components/navbar";
 // });
 // // register your event handlers
 // ws.on("someEventName", function (data) {
-//   console.log("someEventName event happened. data: ", data);
+//   // console.log("someEventName event happened. data: ", data);
 // });
 // // Then I have registered my sample event handler for a sample event name. On the client side, I have added an emit method to the WebSocket prototype to conveniently send messages to the websocket server:
 
@@ -163,7 +163,7 @@ function loadMessagesPanel(): HTMLElement
 		socket = new WebSocket('/ws/broadcast');
 
 		socket.onopen = () => {
-			console.log('Dispatching chat event');
+			// console.log('Dispatching chat event');
 			sleep(100).then(() => socket?.send(JSON.stringify({ chatId:1, index:0 })));
 
 		};
@@ -177,15 +177,15 @@ function loadMessagesPanel(): HTMLElement
 					return;
 				}
 
-				console.log('parsed data', data);
+				// console.log('parsed data', data);
 
 				if (data.type === "ChatList")
 				{
-					console.log('New Chat list');
+					// console.log('New Chat list');
 				}
 				else if (data.type === "MessageList")
 				{
-					console.log('New Message list');
+					// console.log('New Message list');
 				}
 
 				// E` una chatlist?
@@ -198,13 +198,13 @@ function loadMessagesPanel(): HTMLElement
 				// container.innerHTML = '';
 				
 				// for (const msg of messages.reverse()) {
-				// 	console.log('rendering message', msg);
+				// 	// console.log('rendering message', msg);
 				// 	renderMessage(msg);
 				// }
 
 				// scrollToBottom();
 			} catch (err) {
-				console.log('Error while parsing message', err);
+				// console.log('Error while parsing message', err);
 			}
 		};
 

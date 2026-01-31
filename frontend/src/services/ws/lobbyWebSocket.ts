@@ -16,10 +16,10 @@ function connectsocket(
 	onerr?: (err:any) => void): WebSocket
 {
 	const socket = new WebSocket(LOBBY_WEBSOCKET_URL);
-	console.log("Websocketing to", LOBBY_WEBSOCKET_URL);
+	// console.log("Websocketing to", LOBBY_WEBSOCKET_URL);
 
 	socket.onopen = () => {
-		console.log('Connected to lobby WebSocket');
+		// console.log('Connected to lobby WebSocket');
 
 		// callback
 		onopen(socket);
@@ -30,18 +30,18 @@ function connectsocket(
 			// pong logic
 			if (event.data.toString() === 'pong') {
 				/* #debug */
-				// console.log('We Lobby PONG-ing');
+				// // console.log('We Lobby PONG-ing');
 				return ;
 			}
 
 			// actual lobby operation
 			const data = JSON.parse(event.data);
-			console.log('Lobby WebSocket message received:', data);
+			// console.log('Lobby WebSocket message received:', data);
 
 			const method = data.method || undefined;
 			if (method === 'START_REPLY') {
 				if (data.status === 'success') onstart(data.value);
-				else console.log('Failed to start lobby');
+				else // console.log('Failed to start lobby');
 			}
 			else if (method === 'JOIN_REPLY' || method === 'CREATE_REPLY') {
 				if (data.status === 'success') {
@@ -49,7 +49,7 @@ function connectsocket(
 					lobby_id = data.value;
 				}
 				else {
-					console.log('Failed to create/start the lobby');
+					// console.log('Failed to create/start the lobby');
 					// clear lobby id
 					if (data.reason !== 'rejoin') lobby_id = undefined;
 				}
@@ -79,7 +79,7 @@ function connectsocket(
 	};
 
 	socket.onclose = () => {
-		console.log('Disconnected from lobby WebSocket');
+		// console.log('Disconnected from lobby WebSocket');
 
 		// reset lobbyWS
 		lobbyWS = null;
@@ -221,7 +221,7 @@ export function ConnectLobbySocket(
 	// if already connected don't connect
 	if (lobbyWS && lobbyWS.socket.readyState === WebSocket.OPEN)
 	{
-		console.log('Valid lobbyWS with ids', outlobbyid, lobby_id);
+		// console.log('Valid lobbyWS with ids', outlobbyid, lobby_id);
 		// if an outlobby id was passed
 		if (outlobbyid !== undefined && outlobbyid !== lobby_id)
 		{
@@ -232,7 +232,7 @@ export function ConnectLobbySocket(
 		}
 		else	// ask for the state
 		{
-			console.log('Asking for state');
+			// console.log('Asking for state');
 			lobbyWS.send({ method: 'STATE' });
 		}
 

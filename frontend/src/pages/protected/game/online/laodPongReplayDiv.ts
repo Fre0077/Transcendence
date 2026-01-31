@@ -72,7 +72,7 @@ export function loadPongReplayDiv(replay:string): HTMLElement
 
 	// cleanup hook
 	(div as any).destroy = () => {
-		console.log("closing socket");
+		// console.log("closing socket");
 		board.destroy();
 	};
 
@@ -84,7 +84,7 @@ export function loadPongReplayDiv(replay:string): HTMLElement
 	const closeBtn = div.querySelector('#close-btn');
 	if (closeBtn) {
 		closeBtn.addEventListener('click', () => {
-			console.log('Stopped watching replay');
+			// console.log('Stopped watching replay');
 
 			// destroy board
 			board.destroy();
