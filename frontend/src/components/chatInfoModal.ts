@@ -149,6 +149,10 @@ function renderChatInfo(
 			.map((user) => {
 				// TODO: change online to be a green or red dot
 				return `<div class="flex items-center space-x-2">
+				<span
+					class="h-3 w-3 rounded-full inline-block ${user.online ? 'bg-green-500' : 'bg-red-500'}"
+					title="${user.online ? 'Online' : 'Offline'}"
+				></span>
 				<span class="text-white">${user.username}</span>
 				<a class="user-profile-link text-white/60 hover:text-white transition" href="/profile/${user.username}">
 					👤
@@ -156,7 +160,6 @@ function renderChatInfo(
 				<button class="invite-to-game-btn text-white/60 hover:text-white transition" data-user-id="${user.userId}">
 					🎮
 				</button>
-				<span class="text-white/60 text-sm">${user.online}</span>
 			</div>`;
 			})
 			.join("");

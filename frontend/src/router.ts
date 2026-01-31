@@ -30,6 +30,7 @@ import { loadChatApiTest } from "./pages/test/chatApiTest";
 // services
 import { authService } from "@services/authService";
 import { sendDeleteRequest } from "@services/api/sendRequests";
+import { chatStorage } from "@services/storage/chatStorage";
 
 type RouteComponent = () => HTMLElement | Promise<HTMLElement>;
 
@@ -316,8 +317,11 @@ const routes: RouteConfig[] = [
   {
     path: '/logout',
     name: 'logout',
-    component: () => {
-      sendDeleteRequest('/api/logout');
+    component: async () => {
+			sendDeleteRequest('/api/logout');
+
+			// Clear local chat storage
+			await chatStorage.clearAll();
       
       // notify logout
 			document.dispatchEvent(

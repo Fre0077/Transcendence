@@ -41,7 +41,7 @@ function connectsocket(
 			const method = data.method || undefined;
 			if (method === 'START_REPLY') {
 				if (data.status === 'success') onstart(data.value);
-				else // console.log('Failed to start lobby');
+				// else // console.log('Failed to start lobby');
 			}
 			else if (method === 'JOIN_REPLY' || method === 'CREATE_REPLY') {
 				if (data.status === 'success') {

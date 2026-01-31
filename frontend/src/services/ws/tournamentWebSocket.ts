@@ -148,7 +148,7 @@ export class TournamentWebSocket {
 					// successful START reply
 					if (method === 'START_REPLY') {
 						if (data.status === 'success') onstart?.(data.value);
-						else // console.log('Failed to start room');
+						// else // console.log('Failed to start room');
 					}
 					// successful JOIN reply
 					else if (method === 'JOIN_REPLY') {
@@ -175,7 +175,7 @@ export class TournamentWebSocket {
 							// callback
 							onjoin?.(data.value);
 						}
-						else // console.log('Failed to create tourament');
+						// else // console.log('Failed to create tourament');
 					}
 					// 
 					else if (data.ID && data.players) {

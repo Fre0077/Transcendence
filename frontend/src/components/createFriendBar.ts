@@ -95,9 +95,6 @@ function createFriendCard(root:HTMLElement, friend: Friend): HTMLElement {
 
 		<!-- Hidden actions -->
 		<div class="friend-actions hidden border-t border-white/10 bg-black/20">
-			<button class="w-full px-3 py-2 text-sm text-left text-white hover:bg-white/10">
-				Send Message
-			</button>
 			<button class="view-profile w-full px-3 py-2 text-sm text-left text-white hover:bg-white/10">
 				View Profile
 			</button>
@@ -475,5 +472,3 @@ function loadFriendBarContent(bar: HTMLElement) {
 		);
 	});
 }
-
-
