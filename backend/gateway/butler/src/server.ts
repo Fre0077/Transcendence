@@ -132,7 +132,7 @@ fastify.register(async function (fastify) {
 	// auth backend APIs
 	fastify.post('/login', httpforwarder(`${AUTH_URL}/api/login`, 'application/json', { auth: false, handler: attachAllCookies }));
 	fastify.post('/register', httpforwarder(`${AUTH_URL}/api/register`, 'application/json', { auth: false }));
-	fastify.post('/auth/google', httpforwarder(`${AUTH_URL}/api/auth/google`, 'application/json', { auth: false }));
+	fastify.post('/auth/google', httpforwarder(`${AUTH_URL}/api/auth/google`, 'application/json', { auth: false, handler: attachAllCookies}));
 	fastify.post('/2fa/verify', httpforwarder(`${AUTH_URL}/api/2fa/verify`, 'application/json', { auth: false, handler: attachAllCookies }));
 	fastify.get('/profile',  httpforwarder(`${AUTH_URL}/api/profile`, 'application/json', { auth: true }));
 	fastify.patch('/profile',  httpforwarder(`${AUTH_URL}/api/profile`, 'application/json', { auth: true, handler: attachAllCookies }));

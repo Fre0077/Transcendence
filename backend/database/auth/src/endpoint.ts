@@ -1,5 +1,5 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
-import { register, login, generateTokens, googleAuth, auth2FA,
+import { register, login, googleAuth, auth2FA,
 		changeProfile, changeAvatar, generateQR,
 		enable2FA, disable2FA} from "./function";
 import { Account, PrismaClient as authPrismaClient } from "../database/generate/auth";
@@ -74,9 +74,8 @@ export async function authEndpoint(fastify: FastifyInstance) {
 				throw new BadRequest('Google ID o Email non fornita', 'auth');
 			let user = await googleAuth(googleData);
 			if (user) {
-				const tokens = await generateTokens(user);
 				logInfo('{auth} [200] Autenticazione Google riuscita');
-				reply.code(200).send({ message: 'Autenticazione Google riuscita', ...tokens, user });
+				reply.code(200).send(user);
 			}
 		} catch (err) {
 			if (err instanceof Error) {
